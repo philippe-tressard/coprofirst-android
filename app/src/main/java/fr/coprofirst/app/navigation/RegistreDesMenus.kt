@@ -61,7 +61,7 @@ object RegistreDesMenus {
 
         "delegations" to { contexte -> fr.coprofirst.app.fonctions.delegations.EcranDelegations(contexte) },
 
-        // "admin" — #26
+        "admin" to { contexte -> fr.coprofirst.app.fonctions.admin.EcranAdmin(contexte) },
 
     )
 
