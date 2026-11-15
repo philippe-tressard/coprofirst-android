@@ -15,7 +15,9 @@
 #      depuis coprofirst ;
 #   7. aucune requête HTTP ni route écrite à la main dans l'app : le client généré
 #      (client-api) seul — autotest d'abord pour chaque motif.
-#   8. aucun chemin de .claude/worktrees/ suivi.
+#   8. un seul bouton plein, `BoutonPlein` (Composants.kt) ;
+#   9. le générateur des palettes passe ses tests (scripts/test_generer_charte.py) ;
+#  10. aucun chemin de .claude/worktrees/ suivi.
 #
 # Il juge les fichiers que git connaît (index compris) : un fichier ignoré n'est
 # pas livré, il n'a pas à passer.
@@ -45,7 +47,7 @@ FICHIERS=$(git ls-files --cached)
 
 # Dispensés de la limite de longueur : produits par un outil ou textes de licence,
 # jamais écrits à la main. Toute autre exception se discute, elle ne s'ajoute pas.
-DISPENSES_LONGUEUR='^(LICENSE|LICENSES/.*|contrat/openapi\.json)$'
+DISPENSES_LONGUEUR='^(LICENSE|LICENSES/.*|contrat/openapi\.json|contrat/tables-clients\.json)$'
 
 while IFS= read -r f; do
   [ -f "$f" ] || continue
@@ -127,6 +129,17 @@ autotest_motif "routes en dur" "$REQUETE_MAIN" 'val u = "https://" + hote + "/ap
 # l'iOS (PreuveAASA.swift), dans ce fichier et lui seul.
 DISPENSES_REQUETE='^app/src/main/java/fr/coprofirst/app/session/PreuveHote\.kt$'
 interdire "$REQUETE_MAIN" "requête ou route écrite à la main — passer par le client généré (client-api)" "$DISPENSES_REQUETE"
+
+# Le bouton plein (fond `primaryPlein`, texte `surPlein`, comme le `.plein` de l'iOS)
+# s'écrit une fois, dans `BoutonPlein` : un `Button(` de Material ailleurs reprendrait
+# les couleurs par défaut, illisibles au sombre (constaté le 15/11/2026).
+BOUTON_PLEIN='(^|[^A-Za-z])Button\('
+autotest_motif "bouton plein" "$BOUTON_PLEIN" '    Button(onClick = f) { Text("x") }' '    TextButton(onClick = f) { Text("x") }'
+interdire "$BOUTON_PLEIN" "bouton plein écrit à la main — passer par BoutonPlein" '^app/src/main/java/fr/coprofirst/app/entree/Composants\.kt$'
+
+# Le générateur des palettes : ses tests, dont la génération des tables du plancher.
+python3 -I scripts/test_generer_charte.py >/dev/null 2>&1 \
+  || echec "scripts/test_generer_charte.py en échec (python3 -I scripts/test_generer_charte.py)"
 
 ! grep -q '^\.claude/worktrees/' <<< "$FICHIERS" || echec ".claude/worktrees/ suivi : git rm -r --cached .claude/worktrees"
 
