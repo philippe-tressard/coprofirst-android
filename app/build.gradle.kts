@@ -85,8 +85,8 @@ android {
 /**
  * Ce qui se GÉNÈRE au build par un script Python du dépôt, depuis un fichier recopié à
  * l'octet : les palettes (contrat/tables-clients.json → scripts/generer_charte.py), les
- * tables de navigation, la liste blanche du texte riche et les règles des pièces jointes
- * (→ scripts/generer_tables.py)
+ * tables de navigation, la liste blanche du texte riche, les règles des pièces jointes et
+ * les natures du fil (→ scripts/generer_tables.py)
  * et le logo au format d'Android
  * (app/src/main/logo/logo.svg → scripts/generer_logo.py).
  * Rien de généré n'est versionné ; aucune couleur ne s'écrit à la main.
@@ -115,6 +115,10 @@ fun generation(nom: String, entree: String, generateur: String) = tasks.register
 val genererCharte = generation("genererCharte", "contrat/tables-clients.json", "scripts/generer_charte.py")
 val genererLogo = generation("genererLogo", "app/src/main/logo/logo.svg", "scripts/generer_logo.py")
 val genererTables = generation("genererTables", "contrat/tables-clients.json", "scripts/generer_tables.py")
+
+// Les natures du fil nomment leurs teintes par les jetons de `Couleurs` : generer_tables.py
+// les lit dans generer_charte.py (`propriete`, jetons portés), qu'il charge par son chemin.
+genererTables.configure { inputs.file(rootProject.layout.projectDirectory.file("scripts/generer_charte.py")) }
 
 androidComponents {
     onVariants { variante ->
