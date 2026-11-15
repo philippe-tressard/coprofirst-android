@@ -5,18 +5,8 @@ package fr.coprofirst.app.fonctions.espacecs
 
 import fr.coprofirst.app.commun.TonAvis
 import fr.coprofirst.app.fonctions.monlot.TypeAcces
-import fr.coprofirst.app.session.AdresseInstallation
 import fr.coprofirst.app.session.ErreurService
-import fr.coprofirst.app.session.Installation
-import fr.coprofirst.app.session.SessionOuverte
-import fr.coprofirst.app.session.SessionsParHote
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
-import mockwebserver3.Dispatcher
-import mockwebserver3.MockResponse
-import mockwebserver3.MockWebServer
-import mockwebserver3.RecordedRequest
-import okhttp3.OkHttpClient
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -30,26 +20,14 @@ import org.junit.Test
  * bonne route avec le bon corps, et l'état de la file suit le serveur.
  */
 class ServiceEspaceCSTest {
-    private val residence = ResidenceSimuleeCS()
-    private val serveur = MockWebServer().apply {
-        dispatcher = object : Dispatcher() {
-            override fun dispatch(request: RecordedRequest): MockResponse {
-                val (code, corps) = residence.repondre(request.method, request.url.encodedPath, request.body?.utf8().orEmpty())
-                return MockResponse.Builder().code(code).addHeader("Content-Type", "application/json").body(corps).build()
-            }
-        }
-        start()
-    }
-    private val session = SessionOuverte(
-        Installation("https://residence.test", "Les Glycines"),
-        SessionsParHote(OkHttpClient()),
-        Dispatchers.Unconfined,
-    ) { _: AdresseInstallation -> serveur.url("/api").toString() }
+    private val banc = ServeurCS()
+    private val residence = banc.residence
+    private val session = banc.session
     private val validations = ServiceValidationsApi(session)
     private val badges = ServiceBadgesApi(session)
 
     @After
-    fun arreter() = serveur.close()
+    fun arreter() = banc.close()
 
     @Test
     fun laFileSeLitParLesTypesGeneres() = runTest {
