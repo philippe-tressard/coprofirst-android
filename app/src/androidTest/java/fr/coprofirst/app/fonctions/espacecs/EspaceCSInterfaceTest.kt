@@ -53,7 +53,8 @@ class EspaceCSInterfaceTest {
         useHttps(HandshakeCertificates.Builder().heldCertificate(certificat).build().sslSocketFactory())
         dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
-                val (code, corps) = residence.repondre(request.method, request.url.encodedPath, request.body?.utf8().orEmpty())
+                val chemin = request.url.encodedPath + request.url.encodedQuery?.let { "?$it" }.orEmpty()
+                val (code, corps) = residence.repondre(request.method, chemin, request.body?.utf8().orEmpty())
                 return MockResponse.Builder().code(code).addHeader("Content-Type", "application/json").body(corps).build()
             }
         }
@@ -156,6 +157,37 @@ class EspaceCSInterfaceTest {
         attendreRepere(ReperesEspaceCS.badge("vigik-4"))
         disparu(ReperesEspaceCS.badge("vigik-1"))
         attendre("1 badge sur 5")
+    }
+
+    @Test
+    fun unCourrielSeDeplie() {
+        atteindre(ReperesOnglets.onglet("courriels"))
+        attendre("Les 50 derniers messages")
+        atteindre(ReperesEspaceCS.courriel(40))
+        attendre("Aucune affaire ne porte le numéro TK-E000066")
+        attendre("Camille Essai · envoyé le")
+        atteindre(ReperesEspaceCS.courriel(41))
+        attendreRepere(ReperesEspaceCS.courrielAffaire(41))
+        attendre("Affaire #TK-A00012")
+    }
+
+    @Test
+    fun creerPuisArchiverUneAnnonce() {
+        atteindre(ReperesOnglets.onglet("annonces-hall"))
+        toucher(ReperesEspaceCS.NOUVELLE_TITRE)
+        ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_TITRE).performTextInput("Ascenseur à l'arrêt")
+        ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_MESSAGE).performTextInput("Lundi matin.")
+        atteindre(ReperesEspaceCS.nouvelleFormat("a5"))
+        atteindre(ReperesEspaceCS.NOUVELLE_CREER)
+        attendre("Annonce A5 créée et envoyée à 1 membre du CS")
+        assertTrue(residence.recues.any { it.startsWith("POST /api/annonces-hall ") && it.contains("\"a5\"") })
+
+        // Les archives : en cours puis archivées ; le menu « … » range une affiche.
+        attendreRepere(ReperesEspaceCS.annonce(2))
+        atteindre(ReperesEspaceCS.annonceGestes(5))
+        toucher(ReperesEspaceCS.ANNONCE_ARCHIVER)
+        attendre("Annonce archivée")
+        assertTrue(residence.recues.any { it.startsWith("PATCH /api/annonces-hall/5") })
     }
 
     private companion object {
