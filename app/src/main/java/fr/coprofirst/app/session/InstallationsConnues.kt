@@ -40,6 +40,12 @@ class InstallationsConnues(private val stockage: StockageResidences) {
         enregistrer()
     }
 
+    /** « Oublier toutes les résidences » : comme une app neuve. */
+    fun vider() {
+        liste = emptyList()
+        enregistrer()
+    }
+
     private fun lireListe(): List<Installation> {
         val texte = stockage.lire() ?: return emptyList()
         // Un stockage illisible ne fait pas tomber l'app : on repart d'une liste vide.
