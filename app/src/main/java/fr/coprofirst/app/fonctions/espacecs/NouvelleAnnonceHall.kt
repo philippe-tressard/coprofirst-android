@@ -32,9 +32,9 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
-import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.BoutonPlein
 import fr.coprofirst.app.commun.Carte
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.Pastille
 import fr.coprofirst.app.session.ErreurService
@@ -130,7 +130,7 @@ internal fun NouvelleAnnonceHall(service: ServiceAnnoncesHall, creee: (AnnonceHa
 private fun Champ(libelle: Int, aide: Int? = null, controle: @Composable () -> Unit) {
     val c = LocalCouleurs.current
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(stringResource(libelle).uppercase(), style = Typo.libelle(), color = c.textMuted)
+        Libelle(stringResource(libelle))
         controle()
         aide?.let { Text(stringResource(it), style = MaterialTheme.typography.bodySmall, color = c.textMuted) }
     }
