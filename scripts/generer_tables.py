@@ -9,6 +9,9 @@
   l'ordre par défaut, et le titre du fil (`titreFil`) ;
 - `OngletsDuSite` : les onglets de chaque page et leur réserve, les pages réservées à
   l'administration, qui porte chaque droit (`rolesDuDroit`, `statutsDuProfil`) ;
+- `BalisesDuSite` (paquet `commun.texte`) : la liste blanche du texte riche — balises et
+  attributs admis (`balisesAdmises`, `attributsAdmis`), schémas d'un lien touchable —
+  comme l'iOS (`scripts/generateurs/charte.py`, `balises`) ;
 - `TablesCommunes` (paquet `commun`) : le libellé et la pastille de chaque statut et de
   chaque rôle (`attributsStatut`, `attributsRole`, `libellesHerites`), les options du
   thème de l'appareil (`optionsTheme`, `themeParDefaut`, `cookieTheme`).
@@ -27,6 +30,11 @@ import re
 import sys
 
 PAQUET = "fr.coprofirst.app.navigation"
+PAQUET_TEXTE = "fr.coprofirst.app.commun.texte"
+# Les schémas d'un lien touchable : SCHEMAS_URL de coprofirst (api/app/utils/html_sur.py),
+# non publiés dans tables-clients.json — à générer quand coprofirst#2757 les publiera.
+SCHEMAS_DE_LIEN = ("http", "https", "mailto")
+NOM_DE_BALISE = re.compile(r"^[a-z][a-z0-9-]*$")
 RESERVES = {"proprioOuCS": "ProprioOuCS", "nonLocataire": "NonLocataire", "operateur": "Operateur",
             "nonGestionnaire": "NonGestionnaire"}
 
@@ -114,6 +122,37 @@ def kotlin(tables: dict, source: str) -> str:
     return "\n".join(l)
 
 
+def noms(tables: dict, table: str, minimum: int) -> list[str]:
+    """Une liste publiée de noms de balise ou d'attribut : en minuscules, sans doublon."""
+    valeur = tables.get(table, {}).get("valeur")
+    if (not isinstance(valeur, list) or len(valeur) < minimum or len(set(valeur)) != len(valeur)
+            or not all(isinstance(v, str) and NOM_DE_BALISE.match(v) for v in valeur)):
+        raise TableInattendue(f"{table} n'est pas une liste d'au moins {minimum} noms en minuscules, sans doublon")
+    return valeur
+
+
+def kotlin_balises(tables: dict, source: str) -> str:
+    """`BalisesDuSite` : ce que le texte riche de l'app rend, et rien d'autre."""
+    balises, attributs = noms(tables, "balisesAdmises", 10), noms(tables, "attributsAdmis", 1)
+    if "href" not in attributs:
+        raise TableInattendue("attributsAdmis sans href — un lien ne se lirait plus")
+    return "\n".join([
+        "// GÉNÉRÉ par scripts/generer_tables.py — NE PAS MODIFIER À LA MAIN.",
+        f"// Source : {source} (balisesAdmises, attributsAdmis) ; schémas : SCHEMAS_DE_LIEN du générateur.",
+        f"package {PAQUET_TEXTE}",
+        "",
+        "/** La liste blanche du texte riche du site : ce que l'app rend, et rien d'autre. */",
+        "object BalisesDuSite {",
+        f"    val balises: Set<String> = {ensemble(balises)}",
+        f"    val attributs: Set<String> = {ensemble(attributs)}",
+        "",
+        "    /** Les schémas d'un lien touchable (`SCHEMAS_URL`, appliqué par l'API). */",
+        f"    val schemasDeLien: Set<String> = {ensemble(list(SCHEMAS_DE_LIEN))}",
+        "}",
+        "",
+    ])
+
+
 def attributs(tables: dict, table: str) -> dict:
     valeur = tables.get(table, {}).get("valeur")
     if not isinstance(valeur, dict) or not valeur:
@@ -166,14 +205,15 @@ def main(argv: list[str]) -> int:
     try:
         tables = json.loads(entree.read_text(encoding="utf-8"))["tables"]
         fichiers = {
-            PAQUET.replace(".", "/") + "/TablesDuSite.kt": kotlin(tables, entree.name),
-            "fr/coprofirst/app/commun/TablesCommunes.kt": kotlin_commun(tables, entree.name),
+            (PAQUET, "TablesDuSite.kt"): kotlin(tables, entree.name),
+            ("fr.coprofirst.app.commun", "TablesCommunes.kt"): kotlin_commun(tables, entree.name),
+            (PAQUET_TEXTE, "BalisesDuSite.kt"): kotlin_balises(tables, entree.name),
         }
     except TableInattendue as e:
         print(f"❌ {entree.name} : {e}", file=sys.stderr)
         return 1
-    for chemin, texte in fichiers.items():
-        fichier = sortie / chemin
+    for (paquet, nom), texte in fichiers.items():
+        fichier = sortie / paquet.replace(".", "/") / nom
         fichier.parent.mkdir(parents=True, exist_ok=True)
         fichier.write_text(texte, encoding="utf-8")
     return 0

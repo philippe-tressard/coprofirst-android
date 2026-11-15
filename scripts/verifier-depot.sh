@@ -16,6 +16,7 @@
 #   7. aucune requête HTTP ni route écrite à la main dans l'app : le client généré
 #      (client-api) seul — autotest d'abord pour chaque motif.
 #   7 bis. aucun format de date ou de nombre hors de FormatsDuSite ;
+#   7 ter. aucun HTML rendu par une vue web ou le lecteur HTML d'Android : TexteDuSite ;
 #   8. un seul bouton plein, `BoutonPlein` (commun/Boutons.kt) ;
 #   9. les générateurs du build passent leurs tests (scripts/test_*.py) ;
 #  10. aucun chemin de .claude/worktrees/ suivi.
@@ -143,6 +144,15 @@ interdire "$BOUTON_PLEIN" "bouton plein écrit à la main — passer par BoutonP
 FORMAT_MAIN='DateTimeFormatter|SimpleDateFormat|NumberFormat|DecimalFormat|String\.format\(|"%[0-9.]*[df]"'
 autotest_motif "formats" "$FORMAT_MAIN" 'val t = DateTimeFormatter.ofPattern("dd/MM")' 'val t = FormatsDuSite.dateCourte(instant)'
 interdire "$FORMAT_MAIN" "format de date ou de nombre écrit à la main — passer par FormatsDuSite" '^app/src/main/java/fr/coprofirst/app/commun/formats/FormatsDuSite\.kt$'
+
+# Le texte riche du site passe par SA porte, `commun/texte` (`TexteDuSite`, `TexteRiche`) :
+# un lecteur maison sur la liste blanche générée, qui ne charge ni n'exécute rien. Une vue
+# web ou le lecteur HTML d'Android chargeraient des ressources distantes — l'iOS refuse de
+# même WKWebView et l'import HTML de NSAttributedString. Aucune dispense.
+HTML_MAIN='WebView|Html\.fromHtml|HtmlCompat|loadData\('
+autotest_motif "HTML hors de TexteDuSite" "$HTML_MAIN" '    Text(HtmlCompat.fromHtml(html, 0).toString())' '    TexteRiche(html = affaire.description)'
+autotest_motif "vue web" "$HTML_MAIN" '    AndroidView(factory = { WebView(it) })' '    Text(TexteDuSite.apercu(html))'
+interdire "$HTML_MAIN" "texte HTML rendu hors de commun/texte (vue web, lecteur HTML d'Android) — passer par TexteDuSite ou TexteRiche"
 
 # Les générateurs du build (palettes, logo) : leurs tests, dont la génération des
 # fichiers recopiés. Chaque `scripts/test_*.py` versionné est joué.

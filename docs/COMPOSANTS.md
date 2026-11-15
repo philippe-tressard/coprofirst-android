@@ -128,6 +128,32 @@ chacune prend un `Instant` ou la chaîne ISO servie (`lire` la lit comme le navi
 Nombres : `nombre`, `montant`, `octets`. Personnes : `nom(affiche, prenom, nom)` — le
 `nom_affiche` servi d'abord, jamais composé dans un écran.
 
+## Texte du site — `fr.coprofirst.app.commun.texte`
+
+Le HTML riche du site (descriptions, textes du fil, suites, sondages — l'éditeur Tiptap)
+ne s'affiche **jamais** tel quel, et ne se convertit nulle part ailleurs qu'ici : un
+lecteur maison, sur la liste blanche du site, qui ne charge ni n'exécute rien. Une vue web
+ou le lecteur HTML d'Android sont refusés par `verifier-depot.sh`.
+
+| API | Pendant iOS | Usage |
+|---|---|---|
+| `TexteRiche(html, style?, couleur?)` | `TexteRiche` | Le texte riche d'un détail : gras, italique, souligné, barré, code, titres, citations, `br`, `hr`, listes à puces et numérotées avec **retrait suspendu**, liens en `primary` (ouverts par le système). `style` : `bodyLarge` par défaut ; `couleur` : `text`. |
+| `TexteDuSite.apercu(html)` | `.apercu` | Le texte simple d'une carte : balises retirées, entités décodées, paragraphes en espaces (la vue tronque ensuite). |
+| `TexteDuSite.riche(html)`, `.blocs(html)` | `.riche`, `.blocs` | Les mêmes en `AnnotatedString` (pour un `Text` seul) ou bloc par bloc (`BlocDuSite` : `niveau`, `marqueur`, `texte`, `ecart`). `blocs(html).isEmpty()` : rien à montrer. |
+| `TexteDuSite.html(saisi = …)` | `.html(saisi:)` | Un texte SAISI dans l'app → le HTML de l'éditeur du site (`<p>`, `<br>`, `<` échappé). À envoyer tel quel. |
+| `TexteDuSite.saisi(html)` | `.saisi(html:)` | Le texte à réécrire d'un HTML servi — `null` si le réenregistrer perdrait sa mise en forme : l'écran le montre sans champ, avec `TexteDuSite.MISE_EN_FORME_AU_SITE`. |
+| `TexteDuSite.lienSur(href)` | `.lienSur` | L'adresse si elle est absolue, d'un schéma de `BalisesDuSite.schemasDeLien`, sans caractère de contrôle ; sinon `null` (texte inerte). |
+| `BalisesDuSite` | `BalisesDuSite` | La liste blanche, **générée** (`scripts/generer_tables.py`) : `balises`, `attributs` (`balisesAdmises`, `attributsAdmis` de `tables-clients.json`), `schemasDeLien` (`http`, `https`, `mailto` — pas encore publiés par coprofirst : tenus par le générateur). |
+| `Recherche.contientTousLesMots(champs, recherche)` | `Recherche` | Le filtre d'une liste : tous les mots, dans n'importe quel ordre, sans accents ni casse, sur ce que la ligne affiche. |
+
+Exemple :
+
+```kotlin
+Carte { Text(TexteDuSite.apercu(affaire.description), maxLines = 3, overflow = TextOverflow.Ellipsis) }
+TexteRiche(affaire.description, style = MaterialTheme.typography.bodyMedium)
+val texte = TexteDuSite.saisi(affaire.description) // null : montrer, ne pas proposer de champ
+```
+
 ## Charte — `fr.coprofirst.app.charte`, `ThemeCoproFirst`
 
 | API | Rôle |
@@ -139,7 +165,7 @@ Nombres : `nombre`, `montant`, `octets`. Personnes : `nom(affiche, prenom, nom)`
 
 ## À venir dans la couche commune
 
-Texte du site (HTML sur liste blanche) et tables de libellés — 15b ; cadre à onglets,
-droits par onglet, avis éphémère, recherche — 15c ; pièces jointes, photo protégée,
+Tables de libellés — 15b ; cadre à onglets, droits par onglet, avis éphémère, champ de
+recherche — 15c ; pièces jointes, photo protégée,
 document — 15d ; le fil d'activité (page `tableau-de-bord`) et la cloche — #11, #22.
 Le suivi : #15, #11.
