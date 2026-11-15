@@ -4,14 +4,10 @@
 package fr.coprofirst.app.fonctions.espacecs
 
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Icon
@@ -25,7 +21,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -147,39 +142,14 @@ private fun FileValidations(etat: EtatValidations, avis: AvisDuGeste) {
     }
 }
 
-/** Les deux compteurs du haut : en alerte quand la file n'est pas vide ; empilés aux grandes tailles. */
+/** Les deux compteurs du haut : en alerte quand la file n'est pas vide. */
 @Composable
 private fun Compteurs(comptes: Int, commandes: Int) {
-    val grand = LocalDensity.current.fontScale >= 1.5f
-    if (grand) {
-        Column(verticalArrangement = Arrangement.spacedBy(Mise.ecart)) {
-            Compteur(comptes, R.string.espacecs_comptes_a_valider, ReperesEspaceCS.COMPTEUR_COMPTES, Modifier.fillMaxWidth())
-            Compteur(commandes, R.string.espacecs_demandes_d_acces, ReperesEspaceCS.COMPTEUR_COMMANDES, Modifier.fillMaxWidth())
-        }
-    } else {
-        Row(horizontalArrangement = Arrangement.spacedBy(Mise.ecart)) {
-            Compteur(comptes, R.string.espacecs_comptes_a_valider, ReperesEspaceCS.COMPTEUR_COMPTES, Modifier.weight(1f))
-            Compteur(commandes, R.string.espacecs_demandes_d_acces, ReperesEspaceCS.COMPTEUR_COMMANDES, Modifier.weight(1f))
-        }
-    }
-}
-
-@Composable
-private fun Compteur(valeur: Int, libelle: Int, repere: String, modifier: Modifier) {
-    val c = LocalCouleurs.current
-    val alerte = valeur > 0
-    val forme = RoundedCornerShape(Mise.rayon)
-    Column(
-        modifier
-            .background(if (alerte) c.warningFond else c.surface, forme)
-            .border(1.dp, if (alerte) c.warningBordure else c.border, forme)
-            .padding(16.dp)
-            .semantics(mergeDescendants = true) {}
-            .testTag(repere),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        Text(FormatsDuSite.nombre(valeur), style = Typo.titre(MaterialTheme.typography.displaySmall), color = if (alerte) c.warningTexte else c.text)
-        Text(stringResource(libelle), style = MaterialTheme.typography.bodyMedium, color = c.textMuted)
+    val alerte = { n: Int -> if (n > 0) AlerteChiffre.Avertissement else null }
+    val grand = MaterialTheme.typography.displaySmall
+    RangeeDeChiffres { m ->
+        Chiffre(comptes, stringResource(R.string.espacecs_comptes_a_valider), m, alerte(comptes), grand, ReperesEspaceCS.COMPTEUR_COMPTES)
+        Chiffre(commandes, stringResource(R.string.espacecs_demandes_d_acces), m, alerte(commandes), grand, ReperesEspaceCS.COMPTEUR_COMMANDES)
     }
 }
 

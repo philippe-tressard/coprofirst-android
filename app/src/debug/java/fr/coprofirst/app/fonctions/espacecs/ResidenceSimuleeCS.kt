@@ -41,6 +41,8 @@ class ResidenceSimuleeCS {
                 ?: (200 to FixturesEspaceCS.VIGIKS)
             "GET /acces/admin/telecommandes" -> 200 to FixturesEspaceCS.TELECOMMANDES
             "GET /courriels-affaires" -> 200 to FixturesAnnoncesCourriels.JOURNAL
+            "GET /suivi-affaires" -> 200 to if (chemin.contains("mode=entretien")) FixturesReporting.ENTRETIEN else FixturesReporting.AFFAIRES
+            "GET /reporting/renouvellements" -> 200 to FixturesReporting.RENOUVELLEMENTS
             "GET /annonces-hall" -> 200 to if (chemin.contains("archivees=true")) {
                 FixturesAnnoncesCourriels.ARCHIVEES
             } else {
