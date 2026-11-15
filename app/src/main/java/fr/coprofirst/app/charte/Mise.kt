@@ -27,6 +27,15 @@ object Mise {
 
     /** L'espace entre deux cartes d'une liste. */
     val ecart = 12.dp
+
+    /** La hauteur de la mosaïque des photos d'un élément ouvert (`MosaiquePhotos`). */
+    val mosaique = 220.dp
+
+    /** La même, sous une suite de l'Historique ou dans un message. */
+    val mosaiqueCompacte = 140.dp
+
+    /** Le côté de la vignette d'une carte du fil (`VignettePieces`). */
+    val vignette = 56.dp
 }
 
 /** Les styles de texte de la charte, au-delà de ceux de Material. */

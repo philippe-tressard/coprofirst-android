@@ -127,10 +127,14 @@ interdire "$COULEURS_MAIN" "couleur écrite à la main — à générer depuis c
 REQUETE_MAIN='Request\.Builder|HttpURLConnection|openConnection\(|\.newCall\(|"/api/|/api/[a-z]'
 autotest_motif "requêtes à la main" "$REQUETE_MAIN" 'val r = Request.Builder().url(u).build()' 'ConfigApi(base, client).getConfig()'
 autotest_motif "routes en dur" "$REQUETE_MAIN" 'val u = "https://" + hote + "/api/config"' 'val base = "https://$hote/api"'
-# Seule exception : la preuve qu'un hôte est une installation de CoproFirst se lit dans
-# un fichier qui n'est pas une route de l'API (/.well-known/…, hors contrat) — comme
-# l'iOS (PreuveAASA.swift), dans ce fichier et lui seul.
-DISPENSES_REQUETE='^app/src/main/java/fr/coprofirst/app/session/PreuveHote\.kt$'
+# Deux exceptions, nommées, chacune dans SON fichier et lui seul :
+# - la preuve qu'un hôte est une installation de CoproFirst se lit dans un fichier qui
+#   n'est pas une route de l'API (/.well-known/…, hors contrat) — comme l'iOS
+#   (PreuveAASA.swift) ;
+# - les fichiers protégés (photos, pièces jointes de /uploads/) sont servis derrière la
+#   session, hors du contrat — comme l'iOS (fichierProtege) : la porte n'accepte que
+#   l'hôte de la session (commun/pieces/FichierProtege.kt).
+DISPENSES_REQUETE='^app/src/main/java/fr/coprofirst/app/(session/PreuveHote|commun/pieces/FichierProtege)\.kt$'
 interdire "$REQUETE_MAIN" "requête ou route écrite à la main — passer par le client généré (client-api)" "$DISPENSES_REQUETE"
 
 # Le bouton plein (fond `primaryPlein`, texte `surPlein`, comme le `.plein` de l'iOS)

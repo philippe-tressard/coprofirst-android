@@ -113,5 +113,26 @@ class Balises(unittest.TestCase):
                 g.kotlin_balises(mauvaise, "t")
 
 
+class Fichiers(unittest.TestCase):
+    def test_les_valeurs_de_l_ios(self):
+        texte = g.kotlin_fichiers()
+        self.assertIn("package fr.coprofirst.app.commun.pieces", texte)
+        # Celles de la table générée de l'iOS (`FichiersDuSite.swift`) : `jpe?g`, `tiff?` dépliés.
+        self.assertIn('val extensionsImage: Set<String> = setOf("avif", "bmp", "gif", "heic", "heif", "jpeg", '
+                      '"jpg", "png", "tif", "tiff", "webp")', texte)
+        self.assertIn("const val LONGUEUR_PREFIXE: Int = 32", texte)
+        for cle, valeur in (("JPEG", "JPG"), ("XLS", "EXCEL"), ("DOCX", "WORD"), ("PPT", "POWERPOINT"), ("TXT", "TEXTE")):
+            self.assertIn(f'"{cle}" to "{valeur}",', texte)
+        self.assertNotIn('"pdf"', texte)
+
+    def test_une_forme_inattendue_arrete(self):
+        for mauvais in ({"extensions": ()}, {"extensions": ("JPG",)}, {"extensions": ("jpg", "jpg")},
+                        {"extensions": ("j.pg",)}, {"prefixe": 0}, {"prefixe": "32"}, {"prefixe": True},
+                        {"familles": ()}, {"familles": (("docx", "WORD"),)}, {"familles": (("DOC", "word"),)},
+                        {"familles": (("DOC", "WORD"), ("DOC", "TEXTE"))}, {"familles": (("DOC", " "),)}):
+            with self.assertRaises(g.TableInattendue, msg=repr(mauvais)):
+                g.kotlin_fichiers(**mauvais)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1)
