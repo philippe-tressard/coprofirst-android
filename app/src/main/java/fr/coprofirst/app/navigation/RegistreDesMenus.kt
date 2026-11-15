@@ -79,7 +79,7 @@ object RegistreDesMenus {
      *     "affaire" to FicheDeMenu("Affaire") { contexte, id -> DetailAffaire(contexte, id) },
      */
     val fiches: Map<String, FicheDeMenu> = mapOf(
-        // "affaire" — #16
+        "affaire" to FicheDeMenu("Affaire") { contexte, id -> fr.coprofirst.app.fonctions.affaires.EcranFicheAffaire(contexte, id) },
 
         // "sondage" — #70
 

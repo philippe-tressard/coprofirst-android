@@ -105,18 +105,28 @@ class AffairesInterfaceTest {
     @get:Rule
     val ecran = createComposeRule()
 
+    /** Les fiches que les cartes ont demandées à la porte. */
+    private val fiches = mutableListOf<Int>()
+    private val session = SessionOuverte(Installation("https://residence.exemple.test", "Les Glycines"), SessionsParHote())
+
     private fun ouvrir(droits: DroitsOnglet = DroitsOnglet(cs = true, proprioOuCS = true)): AffairesSimulees {
         val service = AffairesSimulees()
         val barre = BarreDuHaut()
-        val session = SessionOuverte(Installation("https://residence.exemple.test", "Les Glycines"), SessionsParHote())
         ecran.setContent {
             ThemeCoproFirst {
                 Column {
                     Row { ActionsDeclarees(barre) }
-                    EcranAffaires(service, session, barre, droits, "Mes affaires") { "https://residence.exemple.test/tickets/$it" }
+                    EcranAffaires(service, barre, droits, { "https://residence.exemple.test/tickets/$it" }) { fiches += it }
                 }
             }
         }
+        return service
+    }
+
+    /** La fiche, telle que la porte la pousse. */
+    private fun ouvrirFiche(id: Int): AffairesSimulees {
+        val service = AffairesSimulees()
+        ecran.setContent { ThemeCoproFirst { FicheAffaire(id, service, session) } }
         return service
     }
 
@@ -212,19 +222,24 @@ class AffairesInterfaceTest {
         attendre(ReperesAffaires.archive("A-0004"))
     }
 
-    /** Une carte ouvre la fiche : le fil, la suite, les messages ; le retour ramène à la liste. */
+    /** Une carte ouvre sa fiche par la porte. */
     @Test
-    fun laFicheSOuvreEtSeQuitte() {
+    fun uneCarteOuvreSaFicheParLaPorte() {
         ouvrir()
         attendre(ReperesAffaires.carte("A-0001"))
         el(ReperesAffaires.carte("A-0001")).performClick()
+        ecran.waitUntil(DELAI_MS) { fiches == listOf(1) }
+    }
+
+    /** La fiche : le fil, la suite, les messages ; un toucher ouvre une entrée. */
+    @Test
+    fun laFicheMontreLeFilEtLesMessages() {
+        ouvrirFiche(1)
         attendre(ReperesAffaires.etape(EtapeFil.Cle.Suite))
         attendreTexte("Ouvert → Chez le syndic")
         attendre(ReperesAffaires.message(41))
         el(ReperesAffaires.element("suite.31")).performClick()
         attendreTexte("Le syndic est prévenu.")
-        el(ReperesAffaires.RETOUR).performClick()
-        attendre(ReperesAffaires.carte("A-0001"))
     }
 
     private companion object {

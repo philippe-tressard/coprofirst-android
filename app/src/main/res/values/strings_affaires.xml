@@ -65,12 +65,10 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="archives_replier">Replie l\'année</string>
 
     <!-- Fiche -->
-    <string name="affaire_retour">Retour à %1$s</string>
     <string name="affaire_actualite">Actualité</string>
     <string name="affaire_affaire">Affaire</string>
     <string name="affaire_epinglee">Épinglée</string>
     <string name="affaire_archivee">Archivée</string>
-    <string name="affaire_lieu">Lieu : %1$s</string>
     <string name="affaire_messages">Messages</string>
     <string name="affaire_vous">Vous</string>
     <string name="affaire_interne">interne</string>

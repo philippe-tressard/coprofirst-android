@@ -9,15 +9,13 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Place
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,7 +32,6 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -48,6 +45,10 @@ import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.lecture.EtiquetteLieu
+import fr.coprofirst.app.commun.lecture.Lecture
+import fr.coprofirst.app.commun.lecture.PastilleLecture
+import fr.coprofirst.app.commun.lecture.enClair
 import fr.coprofirst.app.commun.texte.TexteDuSite
 import fr.coprofirst.app.session.ErreurService
 
@@ -114,12 +115,13 @@ private fun Modifier.desaturee(actif: Boolean): Modifier = if (!actif) this else
 
 /**
  * Une affaire dans la liste ou aux Archives, comme l'iOS (`CarteAffaire`) : date, urgence,
- * numéro, titre, aperçu sur trois lignes, statut et lieu.
+ * numéro, titre, aperçu sur trois lignes, statut, qui la lit et lieu.
  *
- * ⚠️ Divergences déclarées : la date s'écrit en jour court (« mar. 17 nov. »,
+ * ⚠️ Divergence déclarée : la date s'écrit en jour court (« mar. 17 nov. »,
  * `FormatsDuSite.jourCourt`) — l'iOS la dit relative (« il y a 3 jours »), un format que
- * `FormatsDuSite` n'a pas (#89) ; « Qui la lit » se tait jusqu'au composant commun (#70).
+ * `FormatsDuSite` n'a pas (#89).
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun CarteAffaire(affaire: Affaire, archive: Boolean, ouvrir: () -> Unit, modifier: Modifier = Modifier, gestes: (() -> Unit)? = null) {
     val c = LocalCouleurs.current
@@ -128,7 +130,8 @@ internal fun CarteAffaire(affaire: Affaire, archive: Boolean, ouvrir: () -> Unit
         if (affaire.urgente) stringResource(R.string.affaires_urgente) else null,
         affaire.titre, affaire.statutLibelle,
         if (archive) stringResource(R.string.affaires_archivee_vocal) else null,
-        date, affaire.lieu, TexteDuSite.apercu(affaire.apercu),
+        date, affaire.lieu?.let { enClair(it) }, Lecture.aMontrer(affaire.lecture)?.let { enClair(it) },
+        TexteDuSite.apercu(affaire.apercu),
     ).joinToString(", ")
     CarteTouchable(affaire.urgente, archive, vocal, ouvrir, modifier, gestes = gestes) {
         Carte {
@@ -149,26 +152,13 @@ internal fun CarteAffaire(affaire: Affaire, archive: Boolean, ouvrir: () -> Unit
                     TexteDuSite.apercu(affaire.apercu), style = MaterialTheme.typography.bodyMedium, color = c.textMuted,
                     maxLines = 3, overflow = TextOverflow.Ellipsis,
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp), itemVerticalAlignment = Alignment.CenterVertically) {
                     PastilleStatut(affaire.statut, affaire.statutLibelle)
-                    affaire.lieu?.let { Lieu(it) }
+                    PastilleLecture(affaire.lecture)
+                    EtiquetteLieu(affaire.lieu)
                 }
             }
         }
-    }
-}
-
-/**
- * Le lieu servi : l'épingle et le libellé (`EtiquetteLieu` de l'iOS). PROVISOIRE : il cède
- * la place à l'étiquette commune demandée par #70 dès qu'elle est sur `main`.
- */
-@Composable
-internal fun Lieu(lieu: String, modifier: Modifier = Modifier) {
-    val c = LocalCouleurs.current
-    val vocal = stringResource(R.string.affaire_lieu, lieu)
-    Row(modifier.clearAndSetSemantics { contentDescription = vocal }, horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-        Icon(Icons.Outlined.Place, contentDescription = null, tint = c.textMuted, modifier = Modifier.size(16.dp))
-        Text(lieu, style = MaterialTheme.typography.bodySmall, color = c.textMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 

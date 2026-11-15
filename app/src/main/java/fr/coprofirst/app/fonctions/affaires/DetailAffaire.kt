@@ -8,6 +8,8 @@ import fr.coprofirst.api.modeles.CrPublieRead
 import fr.coprofirst.api.modeles.SyntheseEtat
 import fr.coprofirst.api.modeles.TicketEvolutionRead
 import fr.coprofirst.api.modeles.TicketRead
+import fr.coprofirst.app.commun.lecture.Lecture
+import fr.coprofirst.app.commun.lecture.LieuServi
 import java.time.Instant
 
 /**
@@ -15,7 +17,7 @@ import java.time.Instant
  * fiche la montre (GET /tickets/{id}, ses suites, ses messages), comme l'iOS
  * (`DetailAffaire`). Les gestes permis sont SERVIS (`peut_*`) : jamais déduits du profil.
  *
- * ⚠️ Pour l'heure dans le paquet des affaires : l'Espace CS (#24) la réclamera par un
+ * ⚠️ Pour l'heure dans le paquet des affaires (la fiche se déclare à la porte : `"affaire"`) : l'Espace CS (#24) la réclamera par un
  * ticket `commun` quand il ouvrira une affaire à son tour.
  */
 data class DetailAffaire(
@@ -57,6 +59,8 @@ data class DetailAffaire(
     val comptesRendus: List<CompteRenduAffaire>? = emptyList(),
     /** Sa synthèse, d'une affaire close seulement. */
     val synthese: SyntheseAffaire? = null,
+    /** « Qui la lit », servie (`lecture`). */
+    val lecture: Lecture? = null,
 ) {
     val estActualite: Boolean get() = categorie == TablesAffaires.CATEGORIE_ACTUALITE
 
@@ -86,7 +90,7 @@ data class DetailAffaire(
         fun lue(t: TicketRead, evolutions: List<TicketEvolutionRead>) = DetailAffaire(
             id = t.id, numero = t.numero, titre = t.titre, description = t.description, categorie = t.categorie,
             statut = t.statut, statutLibelle = t.statutLibelle, urgente = t.urgente, creeLe = t.creeLe.toInstant(),
-            auteur = t.saisiPourAffichage ?: t.auteurNom, lieu = t.perimetreLibelle?.takeIf { it.isNotEmpty() },
+            auteur = t.saisiPourAffichage ?: t.auteurNom, lieu = LieuServi.lieu(t.perimetreLibelle),
             pieces = t.photosUrls.orEmpty() + t.fichiersUrls.orEmpty(),
             suites = evolutions.map(SuiteAffaire::depuis).sortedBy { it.date },
             droits = DroitsServisAffaire(
@@ -99,6 +103,7 @@ data class DetailAffaire(
             suiviActualiteLibelle = t.suiviActualiteLibelle,
             prestataires = t.prestataires.orEmpty().map { it.nom },
             rythme = t.contrat?.frequenceLibelle ?: t.frequenceLibelle, close = t.close,
+            lecture = t.lecture?.let(Lecture::depuis),
         )
     }
 }

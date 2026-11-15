@@ -18,7 +18,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.Archive
@@ -29,7 +28,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -51,6 +49,8 @@ import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.lecture.EtiquetteLieu
+import fr.coprofirst.app.commun.lecture.LectureDetaillee
 import fr.coprofirst.app.commun.pieces.FormatPieces
 import fr.coprofirst.app.commun.pieces.PiecesJointes
 import fr.coprofirst.app.commun.pieces.PiecesJointesVue
@@ -64,35 +64,29 @@ import java.time.Instant
  * rendus, la synthèse) et, sauf sur une actualité, le fil des messages.
  *
  * ⚠️ Pour l'heure en lecture : les gestes du bandeau de l'iOS (Répondre, Suite, Modifier,
- * options, archiver, lien) arrivent avec la PR suivante de #16 ; « Qui la lit » se tait
- * jusqu'au composant commun (#70).
+ * options, archiver, lien) arrivent avec la PR suivante de #16.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun FicheAffaire(id: Int, service: ServiceAffaires, session: SessionOuverte, titrePage: String, retour: () -> Unit) {
+internal fun FicheAffaire(id: Int, service: ServiceAffaires, session: SessionOuverte) {
     Chargement(
         charger = { service.affaire(id) },
         cle = id,
-        squelette = { ContenuAffaire(SQUELETTE, session, titrePage, retour) },
+        squelette = { ContenuAffaire(SQUELETTE, session) },
     ) { affaire, recharger ->
         PullToRefreshBox(isRefreshing = false, onRefresh = recharger, modifier = Modifier.fillMaxSize()) {
-            ContenuAffaire(affaire, session, titrePage, retour)
+            ContenuAffaire(affaire, session)
         }
     }
 }
 
 @Composable
-private fun ContenuAffaire(affaire: DetailAffaire, session: SessionOuverte, titrePage: String, retour: () -> Unit) {
+private fun ContenuAffaire(affaire: DetailAffaire, session: SessionOuverte) {
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Column(Modifier.widthIn(max = 720.dp).fillMaxWidth().padding(horizontal = Mise.marge), verticalArrangement = Arrangement.spacedBy(20.dp)) {
-            TextButton(onClick = retour, modifier = Modifier.testTag(ReperesAffaires.RETOUR)) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.size(6.dp))
-                Text(stringResource(R.string.affaire_retour, titrePage))
-            }
+        Column(Modifier.widthIn(max = 720.dp).fillMaxWidth().padding(horizontal = Mise.marge).padding(top = 16.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
             EnTeteAffaire(affaire)
             FilAffaire(affaire, session)
             // Pas de messages sur une actualité : elle informe, on n'y répond pas.
@@ -117,16 +111,17 @@ private fun EnTeteAffaire(affaire: DetailAffaire) {
             Spacer(Modifier.weight(1f))
             affaire.etat?.let { PastilleStatut(it.code, it.libelle) }
         }
-        // Le numéro : la barre du haut garde le titre de la page (divergence déclarée dans EcranAffaires).
+        // Le numéro : la barre du haut porte le titre de la fiche (« Affaire »), l'iOS y met le numéro.
         Text(affaire.numero, style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum"), color = c.textMuted)
         Text(affaire.titre, Modifier.semantics { heading() }, style = Typo.titre(MaterialTheme.typography.headlineSmall), color = c.text)
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            affaire.lieu?.let { Lieu(it) }
+            EtiquetteLieu(affaire.lieu, style = MaterialTheme.typography.bodySmall)
             Meta(Icons.Outlined.CalendarMonth, FormatsDuSite.dateHeure(affaire.creeLe))
             affaire.auteur?.let { Meta(Icons.Outlined.Person, it) }
             // Une ligne par prestataire, le rythme après le dernier.
             affaire.intervenants.takeIf { it.isNotEmpty() }?.let { Meta(Icons.Outlined.Engineering, it.joinToString("\n")) }
         }
+        LectureDetaillee(affaire.lecture)
     }
 }
 

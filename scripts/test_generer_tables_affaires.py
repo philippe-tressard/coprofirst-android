@@ -21,7 +21,6 @@ def t(v):
 
 def tables(**remplace):
     base = {
-        "naturesAffaire": t([{"val": "actualite", "emoji": "📰", "libelle": "Actualité"}]),
         "groupesSuivi": t([{"value": "en_cours", "label": "🟡 En cours", "statuts": ["en_ag", "en_cours"]}]),
         "colonnesKanban": t([{"id": "syndic", "label": "Syndic", "color": "var(--kanban-syndic)"}]),
         "motColonneVide": t("Aucune affaire"),
@@ -37,7 +36,6 @@ def tables(**remplace):
 class TablesAffaires(unittest.TestCase):
     def test_les_tables(self):
         texte = g.kotlin(tables(), "test.json")
-        self.assertIn('NatureAffaire("actualite", "Actualité", "📰"),', texte)
         # Le groupe du filtre perd son émoji, comme l'iOS.
         self.assertIn('GroupeDeSuivi("en_cours", "En cours", setOf("en_ag", "en_cours")),', texte)
         # La teinte d'une colonne est un JETON de la palette, jamais une couleur.
@@ -47,8 +45,7 @@ class TablesAffaires(unittest.TestCase):
         self.assertIn('const val COLONNE_VIDE = "Aucune affaire"', texte)
 
     def test_ce_qui_change_de_forme_arrete(self):
-        for casse in ({"naturesAffaire": t([{"val": "x"}])},
-                      {"groupesSuivi": t([{"value": "x", "label": "X"}])},
+        for casse in ({"groupesSuivi": t([{"value": "x", "label": "X"}])},
                       {"colonnesKanban": t([{"id": "ag", "color": "#123456"}])},
                       {"statutsTicketHistoriques": t([])},
                       {"motColonneVide": t(None)}):
@@ -58,7 +55,7 @@ class TablesAffaires(unittest.TestCase):
     def test_le_plancher_se_genere(self):
         publiees = json.loads((RACINE / "contrat" / "tables-clients.json").read_text(encoding="utf-8"))["tables"]
         texte = g.kotlin(publiees, "tables-clients.json")
-        for attendu in ('"annule" to { it.kanbanAnnule }', '"chez_prestataire" to ', 'NatureAffaire("calendrier"'):
+        for attendu in ('"annule" to { it.kanbanAnnule }', '"chez_prestataire" to '):
             self.assertIn(attendu, texte)
 
 

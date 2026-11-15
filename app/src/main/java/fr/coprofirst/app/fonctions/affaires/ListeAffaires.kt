@@ -62,6 +62,8 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.charte.NaturesAffaire
+import fr.coprofirst.app.charte.Pictogrammes
 import fr.coprofirst.app.commun.ChampRecherche
 import fr.coprofirst.app.commun.EtatVide
 import fr.coprofirst.app.commun.Pastille
@@ -247,12 +249,13 @@ private fun MenuFiltres(ctx: ContexteAffaires) {
                     stringResource(R.string.affaires_nature), Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     style = MaterialTheme.typography.labelMedium, color = LocalCouleurs.current.textMuted,
                 )
-                val natures = listOf<Pair<String?, String>>(null to stringResource(R.string.affaires_toutes_natures)) +
-                    TablesAffaires.natures.map { it.code to "${it.emoji} ${it.libelle}" }
-                natures.forEach { (code, texte) ->
+                val natures = listOf<Triple<String?, String, String?>>(Triple(null, stringResource(R.string.affaires_toutes_natures), null)) +
+                    NaturesAffaire.toutes.map { Triple(it.code, it.libelle, it.icone) }
+                natures.forEach { (code, texte, icone) ->
                     DropdownMenuItem(
                         text = { Text(texte) },
                         leadingIcon = { RadioButton(etat.filtres.nature == code, onClick = null) },
+                        trailingIcon = icone?.let { { Icon(Pictogrammes.icone(it), contentDescription = null) } },
                         onClick = { etat.filtres = etat.filtres.copy(nature = code) },
                         modifier = Modifier.testTag(ReperesAffaires.nature(code)),
                     )

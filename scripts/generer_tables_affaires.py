@@ -4,11 +4,11 @@
 """Les tables de « Mes affaires » (#16), générées au build depuis
 `contrat/tables-clients.json` — comme l'iOS (`scripts/generateurs/affaires.py`).
 
-Le contrat d'API sert les colonnes du Kanban, les états et les catégories
+Les natures d'une affaire sont générées par la couche commune (`NaturesAffaire`,
+scripts/generer_tables.py). Le contrat d'API sert les colonnes du Kanban, les états et les catégories
 (`GET /tickets/referentiels`) ; ce qu'il ne sert pas vit dans le front du site, qui le
 publie dans `tables-clients.json` :
 
-- les natures d'une affaire (`naturesAffaire`, `NATURES`) ;
 - les groupes du filtre « Suivi » (`groupesSuivi`, `GROUPES_SUIVI`), sans leur émoji ;
 - la teinte de chaque colonne du Kanban (`colonnesKanban`, `var(--kanban-*)`) → le jeton
   de la palette générée (`Couleurs.kanban*`), jamais une couleur ;
@@ -70,8 +70,6 @@ def pastilles(tables: dict) -> list[tuple[str, str]]:
 
 
 def kotlin(tables: dict, source: str) -> str:
-    natures = [(texte(n, "val", "naturesAffaire"), texte(n, "libelle", "naturesAffaire"),
-                texte(n, "emoji", "naturesAffaire")) for n in valeur(tables, "naturesAffaire")]
     groupes = []
     for g in valeur(tables, "groupesSuivi"):
         statuts = g.get("statuts")
@@ -85,7 +83,7 @@ def kotlin(tables: dict, source: str) -> str:
         raise TableInattendue("motColonneVide ou categorieActualite n'est pas un texte")
     l = [
         "// GÉNÉRÉ par scripts/generer_tables_affaires.py — NE PAS MODIFIER À LA MAIN.",
-        f"// Source : {source} (naturesAffaire, groupesSuivi, colonnesKanban, motColonneVide,",
+        f"// Source : {source} (groupesSuivi, colonnesKanban, motColonneVide,",
         "// categorieActualite, statutsTicket, statutsTicketHistoriques, statutsTicketSansCycle).",
         f"package {PAQUET}",
         "",
@@ -94,12 +92,8 @@ def kotlin(tables: dict, source: str) -> str:
         "",
         "/** Ce que le site écrit des affaires et que le contrat ne sert pas. */",
         "object TablesAffaires {",
-        "    /** Les natures d'une affaire, dans l'ordre du filtre (`NATURES`). */",
-        "    val natures: List<NatureAffaire> = listOf(",
     ]
-    l += [f"        NatureAffaire({chaine(c)}, {chaine(lib)}, {chaine(e)})," for c, lib, e in natures]
-    l += ["    )", "",
-          "    /** Des statuts que le filtre « Suivi » réunit sous une option (`GROUPES_SUIVI`). */",
+    l += ["    /** Des statuts que le filtre « Suivi » réunit sous une option (`GROUPES_SUIVI`). */",
           "    val groupesDeSuivi: List<GroupeDeSuivi> = listOf("]
     l += [f"        GroupeDeSuivi({chaine(c)}, {chaine(lib)}, setOf({', '.join(chaine(s) for s in st)}))," for c, lib, st in groupes]
     l += ["    )", "",

@@ -6,6 +6,8 @@ package fr.coprofirst.app.fonctions.affaires
 import fr.coprofirst.api.modeles.ReferentielsAffaires as ReferentielsServis
 import fr.coprofirst.api.modeles.TicketRead
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.lecture.Lecture
+import fr.coprofirst.app.commun.lecture.LieuServi
 import java.time.Instant
 import java.time.ZonedDateTime
 
@@ -47,6 +49,8 @@ data class Affaire(
     val peutDeplacer: Boolean = false,
     /** 📦 Archiver (`peut_archiver`), servi lui aussi. */
     val peutArchiver: Boolean = false,
+    /** « Qui la lit », servie (`lecture`) ; `null` : aucune pastille. */
+    val lecture: Lecture? = null,
 ) {
     val estActualite: Boolean get() = categorie == TablesAffaires.CATEGORIE_ACTUALITE
 
@@ -61,14 +65,12 @@ data class Affaire(
             categorie = t.categorie, categorieLibelle = t.categorieLibelle, urgente = t.urgente,
             meConcerne = t.meConcerne, archivee = t.archivee ?: false, suiviKanban = t.suiviKanban ?: false,
             natures = t.natures.orEmpty(), prestataires = t.prestataires.orEmpty().map { it.nom },
-            lieu = t.perimetreLibelle?.takeIf { it.isNotEmpty() }, colonne = t.colonneKanban,
+            lieu = LieuServi.lieu(t.perimetreLibelle), colonne = t.colonneKanban,
             peutDeplacer = t.peutDeplacerAuKanban ?: false, peutArchiver = t.peutArchiver ?: false,
+            lecture = t.lecture?.let(Lecture::depuis),
         )
     }
 }
-
-/** Une nature d'affaire (`NATURES`, généré dans `TablesAffaires`). */
-data class NatureAffaire(val code: String, val libelle: String, val emoji: String)
 
 /** Une option du filtre « Suivi » qui réunit plusieurs statuts (`GROUPES_SUIVI`). */
 data class GroupeDeSuivi(val code: String, val libelle: String, val statuts: Set<String>)
