@@ -5,14 +5,12 @@ package fr.coprofirst.app.fonctions.residence
 
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
-import androidx.compose.ui.test.hasScrollToNodeAction
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.ThemeCoproFirst
@@ -48,11 +46,13 @@ class ResidenceInterfaceTest {
     private fun attendreRepere(repere: String) =
         ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(repere)).fetchSemanticsNodes().isNotEmpty() }
 
-    /** Amène un repère à l'écran dans la page qui défile, puis le rend. */
+    /**
+     * Amène un repère à l'écran, puis le rend. Les pages défilent par `verticalScroll`
+     * (pas une liste paresseuse) : `performScrollTo`, pas `performScrollToNode`.
+     */
     private fun amener(repere: String) = run {
         attendreRepere(repere)
-        ecran.onAllNodes(hasScrollToNodeAction()).onFirst().performScrollToNode(hasTestTag(repere))
-        ecran.onNodeWithTag(repere)
+        ecran.onNodeWithTag(repere).performScrollTo()
     }
 
     @Test
@@ -90,7 +90,7 @@ class ResidenceInterfaceTest {
         attendreRepere(ReperesResidence.FONDEMENTS)
         attendre("Renvoi sans extrait")
         assertTrue("sections pliées", ecran.onAllNodes(hasTestTag(ReperesResidence.extrait("AG1"))).fetchSemanticsNodes().isEmpty())
-        ecran.onNodeWithTag(ReperesResidence.fondement("AG1")).performClick()
+        amener(ReperesResidence.fondement("AG1")).performClick()
         attendreRepere(ReperesResidence.extrait("AG1"))
         attendre("Résolution 12")
     }
