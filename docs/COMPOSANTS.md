@@ -55,8 +55,10 @@ et, dans `RegistreDesMenus.kt`, la ligne réservée `// "profil" — #21` devien
 (`SessionOuverte`, pour ses services), `droits` (`DroitsOnglet` du compte : `cs`,
 `administrateur`, `locataire`… — un geste fin se juge sur le `peut_*` servi avec l'objet,
 jamais sur ces droits seuls), `sortie` (`GestesDeSortie` : `deconnecter()`,
-`oublierTout()` — toujours confirmés par `ConfirmationDeSortie`) et `apparence`
-(`Apparence` : le thème de l'appareil, `choix`, `options`, `choisir(valeur)`). Le titre de la page est posé par la barre : l'écran n'en
+`oublierTout()` — toujours confirmés par `ConfirmationDeSortie`), `apparence`
+(`Apparence` : le thème de l'appareil, `choix`, `options`, `choisir(valeur)`) et `barre`
+(la barre du haut : `ActionsDeBarre(contexte) { IconButton(…) }` y pose les actions de
+l'écran — le `toolbar` de l'iOS ; elles se retirent quand l'écran se quitte). Le titre de la page est posé par la barre : l'écran n'en
 pose pas. Une page sans ligne au registre affiche « Bientôt ».
 
 ## Navigation — `fr.coprofirst.app.navigation` (à la couche commune)
@@ -68,6 +70,7 @@ pose pas. Une page sans ligne au registre affiche « Bientôt ».
 | `DroitsOnglet`, `PagesOuvertes`, `OngletsDuSite.ouverts(page, droits)` | idem | Qui voit quelle page, quel onglet (tables générées). |
 | `PagesParDefaut`, `OrdrePages`, `Installation.pages` | idem | La barre : ordre servi (`pages_order`), libellés (`page_config_*`). |
 | `EcranResidence` | `OngletsView` | La barre (4 pages + « Plus »). |
+| `ActionsDeBarre(contexte) { … }` | `.toolbar` | Les actions de la barre du haut, déclarées par l'écran affiché. |
 
 ## Session — `fr.coprofirst.app.session`
 
