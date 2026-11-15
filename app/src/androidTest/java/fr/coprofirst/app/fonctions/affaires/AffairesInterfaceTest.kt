@@ -1,0 +1,231 @@
+// SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+// SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+
+package fr.coprofirst.app.fonctions.affaires
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.test.SemanticsNodeInteraction
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.longClick
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import fr.coprofirst.app.ThemeCoproFirst
+import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.navigation.ActionsDeclarees
+import fr.coprofirst.app.navigation.BarreDuHaut
+import fr.coprofirst.app.navigation.DroitsOnglet
+import fr.coprofirst.app.session.ErreurService
+import fr.coprofirst.app.session.Installation
+import fr.coprofirst.app.session.SessionOuverte
+import fr.coprofirst.app.session.SessionsParHote
+import kotlinx.coroutines.delay
+import org.junit.Assert.assertEquals
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+
+/**
+ * Une résidence simulée, comme l'API simulée de l'iOS : des affaires inventées (aucune
+ * personne), le conseil syndical qui les lit — il déplace au Kanban et archive.
+ */
+private class AffairesSimulees : ServiceAffaires {
+    val deplacements = mutableListOf<Pair<Int, String>>()
+    val archivees = mutableListOf<Int>()
+    private val maintenant = Instant.now()
+    var affaires = listOf(
+        affaire(1, "A-0001", "Fuite dans le local vélos", "ouvert", "Ouvert", "cs", urgente = true),
+        affaire(2, "A-0002", "Ascenseur du bâtiment B en panne", "en_cours", "Chez le syndic", "syndic"),
+        affaire(3, "A-0003", "Coupure d'eau jeudi", "publie", "Publiée", null, categorie = "actualite", natures = listOf("actualite")),
+        affaire(4, "A-0004", "Porte du hall réparée", "résolu", "Résolu", null, archivee = true, jours = 400),
+        affaire(5, "A-0005", "Éclairage du parking", "résolu", "Résolu", null, archivee = true, jours = 20),
+    )
+
+    private fun affaire(
+        id: Int, numero: String, titre: String, statut: String, libelle: String, colonne: String?,
+        urgente: Boolean = false, archivee: Boolean = false, categorie: String = "panne",
+        natures: List<String> = listOf("activite"), jours: Long = 2,
+    ) = Affaire(
+        id = id, numero = numero, titre = titre, apercu = "<p>Le détail de « $titre ».</p>",
+        creeLe = maintenant.minus(jours, ChronoUnit.DAYS), statut = statut, statutLibelle = libelle, close = archivee,
+        categorie = categorie, categorieLibelle = if (categorie == "actualite") "Actualité" else "Panne", urgente = urgente,
+        archivee = archivee, suiviKanban = colonne != null, natures = natures, colonne = colonne,
+        peutDeplacer = true, peutArchiver = true,
+    )
+
+    override suspend fun affaires(): List<Affaire> {
+        delay(100)
+        return affaires
+    }
+    override suspend fun referentiels() = ReferentielsAffaires(
+        listOf(ColonneKanban("cs", "CS (en cours)", "CS"), ColonneKanban("syndic", "Syndic (en cours)", "Syndic"), ColonneKanban("termine", "Terminé", "Terminé")),
+        listOf(
+            ReferentielsAffaires.Statut("ouvert", "Ouvert", false, "cs", true),
+            ReferentielsAffaires.Statut("en_cours", "Chez le syndic", false, "syndic", true),
+            ReferentielsAffaires.Statut("résolu", "Résolu", true, "termine", true),
+            ReferentielsAffaires.Statut("publie", "Publiée", false, null, false),
+        ),
+        emptyList(),
+    )
+    override suspend fun rechercher(terme: String) = affaires.filter { terme.lowercase() in it.titre.lowercase() }.map { it.id }
+    override suspend fun offrirMeConcerne() = true
+    override suspend fun candidatesALaFusion(id: Int) = 2
+    override suspend fun deplacer(id: Int, statut: String) {
+        deplacements += id to statut
+    }
+    override suspend fun archiver(affaire: Affaire): Affaire {
+        archivees += affaire.id
+        return affaire.copy(archivee = true)
+    }
+    override suspend fun affaire(id: Int): DetailAffaire {
+        val a = affaires.firstOrNull { it.id == id } ?: throw ErreurService.Introuvable
+        return DetailAffaire(
+            id = a.id, numero = a.numero, titre = a.titre, description = a.apercu, categorie = a.categorie, statut = a.statut,
+            statutLibelle = a.statutLibelle, creeLe = a.creeLe, auteur = "Le conseil syndical",
+            suites = listOf(SuiteAffaire(31, "etat", a.creeLe.plusSeconds(3600), "Le syndic", "<p>Le syndic est prévenu.</p>", "ouvert", "en_cours")),
+            messages = listOf(MessageAffaire(41, "<p>Merci pour le suivi.</p>", a.creeLe.plusSeconds(7200), true, null, null, false)),
+            referentiels = ReferentielsAffaires(emptyList(), emptyList(), emptyList()),
+        )
+    }
+}
+
+/** « Mes affaires », comme les tests d'interface de l'iOS (`AffairesUITests`). */
+@RunWith(AndroidJUnit4::class)
+class AffairesInterfaceTest {
+    @get:Rule
+    val ecran = createComposeRule()
+
+    private fun ouvrir(droits: DroitsOnglet = DroitsOnglet(cs = true, proprioOuCS = true)): AffairesSimulees {
+        val service = AffairesSimulees()
+        val barre = BarreDuHaut()
+        val session = SessionOuverte(Installation("https://residence.exemple.test", "Les Glycines"), SessionsParHote())
+        ecran.setContent {
+            ThemeCoproFirst {
+                Column {
+                    Row { ActionsDeclarees(barre) }
+                    EcranAffaires(service, session, barre, droits, "Mes affaires") { "https://residence.exemple.test/tickets/$it" }
+                }
+            }
+        }
+        return service
+    }
+
+    private fun attendre(tag: String) = ecran.waitUntil(DELAI_MS) {
+        ecran.onAllNodes(hasTestTag(tag), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()
+    }
+
+    private fun disparait(tag: String) = ecran.waitUntil(DELAI_MS) {
+        ecran.onAllNodes(hasTestTag(tag), useUnmergedTree = true).fetchSemanticsNodes().isEmpty()
+    }
+
+    private fun attendreTexte(texte: String) = ecran.waitUntil(DELAI_MS) {
+        ecran.onAllNodes(hasText(texte, substring = true), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()
+    }
+
+    private fun el(tag: String): SemanticsNodeInteraction = ecran.onNodeWithTag(tag, useUnmergedTree = true)
+
+    /** La liste montre les affaires actives ; le filtre « Suivi » retient un état, son compte sur la pastille. */
+    @Test
+    fun laListeSeFiltreParSuivi() {
+        ouvrir()
+        attendre(ReperesAffaires.carte("A-0001"))
+        el(ReperesAffaires.carte("A-0002")).assertIsDisplayed()
+        disparait(ReperesAffaires.carte("A-0004"))
+        el(ReperesAffaires.suivi("ouvert")).performClick()
+        disparait(ReperesAffaires.carte("A-0002"))
+        el(ReperesAffaires.carte("A-0001")).assertIsDisplayed()
+        el(ReperesAffaires.suivi(null)).performClick()
+        attendre(ReperesAffaires.carte("A-0002"))
+    }
+
+    /** La recherche interroge le serveur et propose les archives qu'elle a trouvées. */
+    @Test
+    fun laRechercheProposeLesArchives() {
+        ouvrir()
+        attendre(ReperesAffaires.carte("A-0001"))
+        el(ReperesAffaires.RECHERCHE).performTextInput("porte")
+        attendre(ReperesAffaires.INCLURE_ARCHIVES)
+        attendreTexte("Aucune affaire trouvée")
+    }
+
+    /** L'appui long offre « Archiver » : la carte part aux Archives. */
+    @Test
+    fun uneAffaireSArchive() {
+        val service = ouvrir()
+        attendre(ReperesAffaires.carte("A-0002"))
+        el(ReperesAffaires.carte("A-0002")).performTouchInput { longClick() }
+        attendre(ReperesAffaires.archiver("A-0002"))
+        el(ReperesAffaires.archiver("A-0002")).performClick()
+        disparait(ReperesAffaires.carte("A-0002"))
+        assertEquals(listOf(2), service.archivees)
+    }
+
+    /** Au Kanban, « Déplacer vers… » pose l'état servi ; clore demande d'abord, à cause des liées. */
+    @Test
+    fun uneCarteSeDeplaceAuKanban() {
+        val service = ouvrir()
+        attendre("onglet.kanban")
+        el("onglet.kanban").performClick()
+        attendre(ReperesAffaires.carteKanban("A-0001"))
+        attendreTexte("2 affaires suivies")
+        el(ReperesAffaires.carteKanban("A-0001")).performTouchInput { longClick() }
+        attendre(ReperesAffaires.deplacer("A-0001", "syndic"))
+        el(ReperesAffaires.deplacer("A-0001", "syndic")).performClick()
+        ecran.waitUntil(DELAI_MS) { service.deplacements == listOf(1 to "en_cours") }
+        el(ReperesAffaires.carteKanban("A-0002")).performTouchInput { longClick() }
+        attendre(ReperesAffaires.deplacer("A-0002", "termine"))
+        el(ReperesAffaires.deplacer("A-0002", "termine")).performClick()
+        attendre(ReperesAffaires.CLORE_SANS_FUSION)
+        el(ReperesAffaires.CLORE_SANS_FUSION).performClick()
+        ecran.waitUntil(DELAI_MS) { service.deplacements.lastOrNull() == (2 to "résolu") }
+    }
+
+    /** Le Kanban est réservé : un locataire ne le voit pas. */
+    @Test
+    fun unLocataireNAPasDeKanban() {
+        ouvrir(DroitsOnglet(locataire = true))
+        attendre("onglet.archives")
+        disparait("onglet.kanban")
+    }
+
+    /** Les Archives se rangent par année : la plus récente ouverte, les autres repliées. */
+    @Test
+    fun lesArchivesSeReplientParAnnee() {
+        ouvrir()
+        attendre("onglet.archives")
+        el("onglet.archives").performClick()
+        attendre(ReperesAffaires.archive("A-0005"))
+        disparait(ReperesAffaires.archive("A-0004"))
+        // 400 jours plus tôt : toujours une autre année que 20 jours plus tôt.
+        val annee = Instant.now().minus(400, ChronoUnit.DAYS).atZone(FormatsDuSite.PARIS).year
+        el(ReperesAffaires.annee(annee)).performClick()
+        attendre(ReperesAffaires.archive("A-0004"))
+    }
+
+    /** Une carte ouvre la fiche : le fil, la suite, les messages ; le retour ramène à la liste. */
+    @Test
+    fun laFicheSOuvreEtSeQuitte() {
+        ouvrir()
+        attendre(ReperesAffaires.carte("A-0001"))
+        el(ReperesAffaires.carte("A-0001")).performClick()
+        attendre(ReperesAffaires.etape(EtapeFil.Cle.Suite))
+        attendreTexte("Ouvert → Chez le syndic")
+        attendre(ReperesAffaires.message(41))
+        el(ReperesAffaires.element("suite.31")).performClick()
+        attendreTexte("Le syndic est prévenu.")
+        el(ReperesAffaires.RETOUR).performClick()
+        attendre(ReperesAffaires.carte("A-0001"))
+    }
+
+    private companion object {
+        const val DELAI_MS = 10_000L
+    }
+}
