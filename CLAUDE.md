@@ -58,8 +58,12 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   l'énumération des installations est interdite (spec `multi-coproprietes.md`
   §4.1 bis de coprofirst).
 - **Réseau** : un seul client HTTP, `session/ClientHttp.kt` (aucune redirection
-  suivie, clair refusé par le manifeste) ; aucune requête ni route écrite à la main —
-  `verifier-depot.sh` le refuse. Le plancher du contrat (`VERSION_CONTRAT_PLANCHER`)
+  suivie, clair refusé par le manifeste), décliné par hôte avec ses cookies en mémoire
+  (`SessionsParHote`) ; aucune requête ni route écrite à la main — `verifier-depot.sh`
+  le refuse, sauf dans `PreuveHote.kt` (dispense nommée : le fichier d'association
+  n'est pas une route de l'API).
+- **Mot de passe** : un seul chemin, la garde de l'hôte (`GardeHote`, comme l'iOS) —
+  un hôte jamais vu se confirme avant tout envoi. Le plancher du contrat (`VERSION_CONTRAT_PLANCHER`)
   est généré depuis `contrat/openapi.json` ; une installation qui sert un contrat plus
   ancien ne s'ouvre pas.
 - **Sauvegarde** : rien ne quitte l'appareil (`res/xml/regles_extraction.xml`,

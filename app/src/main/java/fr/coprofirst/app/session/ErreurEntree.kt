@@ -12,8 +12,8 @@ import java.io.IOException
 import java.net.UnknownHostException
 
 /**
- * Ce qui peut empêcher d'entrer dans une installation : chaque cas dit une phrase,
- * jamais un code brut (le code reste dans l'exception d'origine).
+ * Ce qui peut empêcher d'entrer dans une installation — la reconnaître, s'y connecter :
+ * chaque cas dit une phrase, celle de l'iOS (\`ErreurService\`), jamais un code brut.
  */
 sealed class ErreurEntree(@param:StringRes val phrase: Int) : Exception() {
     /** 421 : l'adresse répond, mais aucune résidence n'y est installée. */
@@ -27,6 +27,12 @@ sealed class ErreurEntree(@param:StringRes val phrase: Int) : Exception() {
 
     /** Une installation qui sert un contrat plus ancien que le plancher de l'app. */
     data object ResidenceAMettreAJour : ErreurEntree(R.string.erreur_residence_a_mettre_a_jour)
+
+    /** Adresse électronique ou mot de passe refusés. */
+    data object IdentifiantsRefuses : ErreurEntree(R.string.erreur_identifiants_refuses)
+
+    /** Trop d'essais : le serveur demande d'attendre. */
+    data object TropDEssais : ErreurEntree(R.string.erreur_trop_d_essais)
 
     /** Tout le reste : la résidence n'a pas pu répondre. */
     data object Inattendue : ErreurEntree(R.string.erreur_inattendue)

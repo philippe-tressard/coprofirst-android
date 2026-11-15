@@ -19,9 +19,16 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   résidence CoproFirst, résidence à mettre à jour). La dernière résidence ouverte est
   pré-remplie ; elle reste sur l'appareil seul. La démonstration ouvre cet écran à son
   adresse.
+- **Se connecter** : adresse électronique et mot de passe, sous la résidence. Avant le
+  premier mot de passe envoyé à une adresse jamais vue, « Vérifiez l'adresse » montre
+  l'hôte en entier et dit s'il est reconnu comme une installation CoproFirst ; sinon,
+  il faut cocher « Je connais cette adresse… » pour continuer. « Mot de passe oublié ? »
+  et « Demander l'accès » ouvrent le site de la résidence. La session reste en mémoire
+  le temps de l'usage ; « Se déconnecter » la ferme.
 
-Pas encore : la connexion au compte et les personnages de la démo, le QR code de la
-fiche d'arrivée, les liens d'application (tickets ouverts).
+Pas encore : les écrans de la résidence après la connexion, le courriel retenu et la
+biométrie, les personnages de la démo, le QR code, les liens d'application (tickets
+ouverts).
 
 ## Construire
 

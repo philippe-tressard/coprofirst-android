@@ -47,7 +47,7 @@ import fr.coprofirst.app.session.Installation
 
 /**
  * « Connectez-vous à votre espace », comme l'iOS (`ConnexionView`) : un seul écran,
- * la résidence d'abord, puis les identifiants — qui arrivent avec la connexion (#5).
+ * la résidence d'abord, puis les identifiants ; un hôte jamais vu se confirme avant.
  */
 @Composable
 fun EcranConnexion(etat: EtatEntree, parcours: ActionsEntree) {
@@ -66,13 +66,10 @@ fun EcranConnexion(etat: EtatEntree, parcours: ActionsEntree) {
                 modifier = Modifier.semantics { heading() },
             )
             ChampResidence(etat, parcours::saisir)
-            Text(
-                stringResource(R.string.connexion_bientot),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            ChampsIdentifiants(etat, parcours)
         }
     }
+    etat.confirmation?.let { FeuilleConfirmationHote(it, parcours) }
 }
 
 /**
@@ -97,7 +94,7 @@ private fun ChampResidence(etat: EtatEntree, saisir: (String) -> Unit) {
                 capitalization = KeyboardCapitalization.None,
                 autoCorrectEnabled = false,
                 keyboardType = KeyboardType.Uri,
-                imeAction = ImeAction.Next,
+                    imeAction = ImeAction.Next,
             ),
             modifier = Modifier.fillMaxWidth().focusRequester(focus),
         )

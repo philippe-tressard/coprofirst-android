@@ -94,12 +94,18 @@ autotest_motif() {
   rm -rf "${d:?}"
   [ $ok -eq 0 ] || echec "verifier-depot.sh : autotest « $1 » en échec"
 }
-# $1 : motif ; $2 : message. Juge le code et les ressources de l'app.
+# $1 : motif ; $2 : message ; $3 (facultatif) : les fichiers DISPENSÉS, nommément (ERE
+# sur le chemin). Juge le code et les ressources de l'app. Une dispense qui ne couvre
+# plus aucun motif échoue : une exception sans objet se retire.
 interdire() {
-  local f motif
+  local f motif dispense=${3:-}
   while IFS= read -r f; do
     [ -f "$f" ] || continue
     motif=$(premier_motif "$1" "$f")
+    if [ -n "$dispense" ] && [[ "$f" =~ $dispense ]]; then
+      [ -n "$motif" ] || echec "$f : dispensé de « $2 » sans en avoir besoin — retirer la dispense"
+      continue
+    fi
     [ -z "$motif" ] || echec "$f : $2 ($motif)"
   done < <(grep -E '^app/src/main/.*\.(kt|xml)$' <<< "$FICHIERS")
 }
@@ -116,7 +122,11 @@ interdire "$COULEURS_MAIN" "couleur écrite à la main — à générer depuis c
 REQUETE_MAIN='Request\.Builder|HttpURLConnection|openConnection\(|\.newCall\(|"/api/|/api/[a-z]'
 autotest_motif "requêtes à la main" "$REQUETE_MAIN" 'val r = Request.Builder().url(u).build()' 'ConfigApi(base, client).getConfig()'
 autotest_motif "routes en dur" "$REQUETE_MAIN" 'val u = "https://" + hote + "/api/config"' 'val base = "https://$hote/api"'
-interdire "$REQUETE_MAIN" "requête ou route écrite à la main — passer par le client généré (client-api)"
+# Seule exception : la preuve qu'un hôte est une installation de CoproFirst se lit dans
+# un fichier qui n'est pas une route de l'API (/.well-known/…, hors contrat) — comme
+# l'iOS (PreuveAASA.swift), dans ce fichier et lui seul.
+DISPENSES_REQUETE='^app/src/main/java/fr/coprofirst/app/session/PreuveHote\.kt$'
+interdire "$REQUETE_MAIN" "requête ou route écrite à la main — passer par le client généré (client-api)" "$DISPENSES_REQUETE"
 
 ! grep -q '^\.claude/worktrees/' <<< "$FICHIERS" || echec ".claude/worktrees/ suivi : git rm -r --cached .claude/worktrees"
 
