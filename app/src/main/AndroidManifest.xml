@@ -3,9 +3,12 @@
 SPDX-FileCopyrightText: 2026 Philippe TRESSARD
 SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 -->
-<!-- Aucun droit demandé à l'amorce : un droit neuf se déclare aussi dans la section
-     « Sécurité des données » de Google Play (standards/14 §3 bis). -->
+<!-- Un droit neuf se déclare aussi dans la section « Sécurité des données » de Google
+     Play (standards/14 §3 bis). INTERNET : lire l'API de la résidence donnée par
+     l'utilisateur, rien d'autre. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="false"
@@ -13,6 +16,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
         android:fullBackupContent="@xml/regles_sauvegarde"
         android:label="@string/nom_app"
         android:supportsRtl="true"
+        android:usesCleartextTraffic="false"
         android:theme="@android:style/Theme.Material.NoActionBar">
         <activity
             android:name=".ActiviteAccueil"

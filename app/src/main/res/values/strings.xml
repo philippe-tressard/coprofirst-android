@@ -3,8 +3,30 @@
 SPDX-FileCopyrightText: 2026 Philippe TRESSARD
 SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 -->
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="fr">
     <string name="nom_app">CoproFirst</string>
-    <string name="accueil_sous_titre">Gestion de copropriété, logiciel libre</string>
-    <string name="accueil_amorce">Application Android en amorce.</string>
+    <string name="retour">Retour</string>
+
+    <string name="accueil_devise">La copropriété, enfin partagée.</string>
+    <string name="accueil_entrer">Entrer dans ma résidence</string>
+    <string name="accueil_demo">Découvrir la démo</string>
+    <string name="accueil_connues">Vos résidences</string>
+    <string name="accueil_rouvrir">ouvrir</string>
+
+    <string name="adresse_titre">Votre résidence</string>
+    <string name="adresse_champ">Adresse de la résidence</string>
+    <string name="adresse_exemple">residence.exemple.fr</string>
+    <string name="adresse_aide">Elle figure sur votre fiche d\'arrivée.</string>
+    <string name="adresse_continuer">Continuer</string>
+
+    <string name="residence_titre">Résidence reconnue</string>
+    <string name="residence_bientot">La connexion à votre compte arrivera dans une prochaine version de l\'app.</string>
+    <string name="residence_oublier">Oublier cette résidence</string>
+
+    <string name="erreur_adresse_invalide">Ce n\'est pas une adresse. Saisissez-la comme sur votre fiche d\'arrivée, par exemple residence.exemple.fr.</string>
+    <string name="erreur_hote_inconnu">Cette adresse répond, mais aucune résidence n\'y est installée. Vérifiez-la sur votre fiche d\'arrivée.</string>
+    <string name="erreur_injoignable">Impossible de joindre cette adresse. Vérifiez-la, ou réessayez dans un instant.</string>
+    <string name="erreur_pas_coprofirst">Cette adresse ne mène pas à une résidence CoproFirst.</string>
+    <string name="erreur_residence_a_mettre_a_jour">Cette résidence doit être mise à jour pour s\'ouvrir dans l\'app. Prévenez son administrateur.</string>
+    <string name="erreur_inattendue">La résidence n\'a pas pu répondre. Réessayez dans un instant.</string>
 </resources>
