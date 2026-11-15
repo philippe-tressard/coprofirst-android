@@ -3,11 +3,11 @@
 
 package fr.coprofirst.app.fonctions.prestataires
 
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
@@ -87,8 +87,10 @@ class EcranPrestatairesInterfaceTest {
     @After
     fun fermer() = serveur.close()
 
+    /** Un texte à l'écran — ou dans la description d'un élément qui la remplace (`LigneDocument`). */
     private fun attendre(texte: String) = ecran.waitUntil(DELAI_MS) {
-        ecran.onAllNodes(hasText(texte, substring = true)).fetchSemanticsNodes().isNotEmpty()
+        ecran.onAllNodes(hasText(texte, substring = true) or hasContentDescription(texte, substring = true))
+            .fetchSemanticsNodes().isNotEmpty()
     }
 
     private fun attendreRepere(repere: String) =
