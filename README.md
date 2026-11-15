@@ -59,7 +59,10 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   motif, date de fin facultative). Une délégation est en lecture seule : l'aidant consulte,
   sans agir au nom de la personne aidée.
 - **Paramétrage** (administration et opérateur de la plateforme), en partie :
-  **Télémétrie** (quatre vues — jour, 30 jours, 12 mois, 10 ans —, le filtre « sans le
+  **Utilisateurs** (recherche, type, état du compte, compteurs ; la fiche d'un compte,
+  ses rattachements, et les gestes que le serveur offre : interdire ou réautoriser la
+  communauté, ajouter ou retirer un rôle, rejouer l'auto-match des lots, supprimer —
+  chacun confirmé s'il le faut, puis annoncé), **Télémétrie** (quatre vues — jour, 30 jours, 12 mois, 10 ans —, le filtre « sans le
   gestionnaire du site » quand il change quelque chose, les nombres clés, le graphe, les
   pages les plus vues et les utilisateurs actifs) et **Maintenance** (à l'opérateur, la
   santé des tâches planifiées et leurs échecs récents ; à l'administration, le dernier

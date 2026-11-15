@@ -46,8 +46,9 @@ import fr.coprofirst.app.navigation.OngletsDuSite
  * (`OngletsDuSite.ouverts`), donc ici la seule Maintenance. Le serveur refuse chaque
  * route à qui n'a pas le rôle.
  *
- * ⚠️ Étape intermédiaire déclarée (#26) : « À traiter » et « Utilisateurs » ne sont pas
- * encore inscrits ici — ils paraissent dans « Sur le site », avec leur lien, jusqu'à leur PR.
+ * ⚠️ Étape intermédiaire déclarée (#26) : « À traiter » n'est pas encore inscrit ici — il
+ * paraît dans « Sur le site », avec son lien, jusqu'à ce que la file des comptes de l'Espace
+ * CS (#24), qu'il réemploie, soit sur main.
  */
 @Composable
 fun EcranAdmin(contexte: ContexteDeMenu) {
@@ -68,6 +69,8 @@ object OngletsAdmin {
     fun page(service: ServiceAdmin) = PageAOnglets(
         PAGE,
         mapOf(
+            "utilisateurs" to { contexte -> OngletUtilisateurs(contexte, service) },
+
             "telemetry" to { contexte -> OngletTelemetrie(contexte, service) },
 
             "maintenance" to { contexte -> OngletMaintenance(contexte, service) },
@@ -87,6 +90,21 @@ object ReperesAdmin {
     const val FILTRE = "admin.telemetrie.filtre"
     const val INDICATEURS = "admin.telemetrie.indicateurs"
     const val GRAPHE = "admin.telemetrie.graphe"
+    const val RECHERCHE = "admin.utilisateurs.recherche"
+    const val TYPE = "admin.utilisateurs.type"
+    fun filtre(filtre: FiltreCompte) = "admin.utilisateurs.compte." + when (filtre) {
+        FiltreCompte.Tous -> "tous"
+        FiltreCompte.Actifs -> "actifs"
+        FiltreCompte.EnAttente -> "enAttente"
+    }
+    fun utilisateur(id: Int) = "admin.utilisateur.$id"
+    const val FICHE_FERMER = "admin.fiche.fermer"
+    const val FICHE_COMMUNAUTE = "admin.fiche.communaute"
+    const val FICHE_RAPPROCHEMENT = "admin.fiche.rapprochement"
+    const val FICHE_SUPPRIMER = "admin.fiche.supprimer"
+    const val FICHE_CONFIRMER = "admin.fiche.confirmer"
+    const val FICHE_EXPLOITANT = "admin.fiche.operateur-exploitant"
+    fun role(role: String) = "admin.fiche.role.$role"
 }
 
 /**

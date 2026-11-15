@@ -65,4 +65,81 @@ GÉNÉRÉS (`TablesAdmin`).
     <string name="admin_telemetrie_kpi_moy_vues_an">Moy. vues / an</string>
     <string name="admin_telemetrie_kpi_record_jour">Record jour — %1$s</string>
     <string name="admin_telemetrie_kpi_record_mois">Record mois — %1$s</string>
+
+    <!-- Utilisateurs (`OngletUtilisateurs.svelte`, `FiltresUtilisateurs.svelte`, `#lib/comptes.ts`) -->
+    <string name="admin_utilisateurs_recherche">Rechercher un nom, un e-mail…</string>
+    <string name="admin_utilisateurs_aucun_resultat">Aucun résultat</string>
+    <string name="admin_utilisateurs_type">Type</string>
+    <string name="admin_utilisateurs_tous_types">Tous types</string>
+    <string name="admin_utilisateurs_tous_comptes">Tous comptes</string>
+    <string name="admin_utilisateurs_actifs">Actifs</string>
+    <string name="admin_utilisateurs_en_attente">En attente</string>
+    <string name="admin_utilisateurs_actif">Actif</string>
+    <string name="admin_utilisateurs_email_non_verifie">Email non vérifié</string>
+    <string name="admin_utilisateurs_compteur_tous">%1$s comptes · %2$s au conseil syndical</string>
+    <string name="admin_utilisateurs_compteur_filtre">%1$s sur %2$s · %3$s au conseil syndical</string>
+    <string name="admin_utilisateurs_bailleur">Bailleur : %1$s</string>
+    <string name="admin_utilisateurs_purge_avertie">Inactif, averti le %1$s</string>
+    <string name="admin_utilisateurs_purge_aide">Supprimé trente jours après cet avertissement s\'il ne se reconnecte pas.</string>
+    <string name="admin_utilisateurs_banni">Exclu de la communauté</string>
+    <string name="admin_utilisateurs_ouvrir">Ouvre la fiche du compte</string>
+    <string name="admin_utilisateurs_sur_le_site">Modifier la fiche, ajouter ou retirer un rôle et l\'accueil d\'un arrivant se font sur le site.</string>
+    <string name="admin_utilisateurs_sur_le_site_sans_roles">Modifier la fiche et l\'accueil d\'un arrivant se font sur le site.</string>
+    <string name="admin_utilisateurs_squelette_nom">Prénom Nom du compte</string>
+    <string name="admin_utilisateurs_squelette_email">adresse@exemple.test</string>
+
+    <!-- La fiche d'un compte -->
+    <string name="admin_fiche_fermer">Fermer</string>
+    <string name="admin_fiche_compte">Compte</string>
+    <string name="admin_fiche_email">E-mail</string>
+    <string name="admin_fiche_type">Type</string>
+    <string name="admin_fiche_batiment">Bâtiment</string>
+    <string name="admin_fiche_inscription">Inscription</string>
+    <string name="admin_fiche_derniere_connexion">Dernière connexion</string>
+    <string name="admin_fiche_rattachements">Rattachements</string>
+    <string name="admin_fiche_communaute">Communauté</string>
+    <string name="admin_fiche_autorisee">Autorisée</string>
+    <string name="admin_fiche_banni_pour_de_bon">Banni définitivement</string>
+    <string name="admin_fiche_banni_jusqu_au">Banni jusqu\'au %1$s (probatoire)</string>
+    <string name="admin_fiche_interdire">Interdire la communauté</string>
+    <string name="admin_fiche_autoriser">Autoriser la communauté</string>
+    <string name="admin_fiche_rapprochement">Rejouer l\'auto-match des lots</string>
+    <string name="admin_fiche_supprimer">Supprimer le compte</string>
+    <string name="admin_fiche_confirmer_suppression">Le compte de %1$s (%2$s) sera supprimé définitivement.</string>
+    <string name="admin_fiche_annuler">Annuler</string>
+    <string name="admin_fiche_roles">Rôles</string>
+    <string name="admin_fiche_role_ajouter">Ajouter le rôle %1$s</string>
+    <string name="admin_fiche_role_retirer">Retirer le rôle %1$s</string>
+    <string name="admin_fiche_role_question_ajouter">Ajouter le rôle %1$s à %2$s ?</string>
+    <string name="admin_fiche_role_question_retirer">Retirer le rôle %1$s de %2$s ?</string>
+    <string name="admin_fiche_votre_compte">votre compte</string>
+    <string name="admin_fiche_notifie">Cette personne recevra une notification.</string>
+    <string name="admin_fiche_perdra_administration">Vous perdrez aussitôt l\'accès à l\'administration.</string>
+    <string name="admin_fiche_gardera_supervision">Vous n\'y garderez que la supervision de la plateforme.</string>
+    <string name="admin_fiche_operateur_par_exploitant">Opérateur désigné par l’exploitant</string>
+    <string name="admin_fiche_confirmer">Confirmer</string>
+    <!-- Les rattachements (`ETIQUETTES_COMPTE`), dans l'ordre du site -->
+    <string name="admin_fiche_loti">Loti</string>
+    <string name="admin_fiche_loti_ok">Rattaché à au moins un lot</string>
+    <string name="admin_fiche_loti_manque">Aucun lot rattaché</string>
+    <string name="admin_fiche_tc">TC</string>
+    <string name="admin_fiche_tc_ok">Porte une télécommande</string>
+    <string name="admin_fiche_tc_manque">Un parking, mais aucune télécommande</string>
+    <string name="admin_fiche_tc_sans_objet">Sans objet : aucun parking</string>
+    <string name="admin_fiche_vigik">Vigik</string>
+    <string name="admin_fiche_vigik_ok">Porte un badge Vigik</string>
+    <string name="admin_fiche_vigik_manque">Un appartement, mais aucun Vigik</string>
+    <string name="admin_fiche_vigik_sans_objet">Sans objet : aucun appartement</string>
+    <string name="admin_fiche_bail">Bail</string>
+    <string name="admin_fiche_bail_ok">Un bail enregistré</string>
+    <string name="admin_fiche_bail_manque">Bailleur ou locataire, mais aucun bail enregistré</string>
+    <string name="admin_fiche_bail_sans_objet">Sans objet : ni bailleur, ni locataire</string>
+
+    <!-- Les annonces des gestes -->
+    <string name="admin_annonce_banni_definitivement">%1$s banni définitivement de la communauté.</string>
+    <string name="admin_annonce_banni_un_mois">%1$s banni de la communauté pour 1 mois (probatoire).</string>
+    <string name="admin_annonce_reautorise">%1$s réautorisé à la communauté.</string>
+    <string name="admin_annonce_supprime">%1$s supprimé.</string>
+    <string name="admin_annonce_role_ajoute">Rôle %1$s ajouté à %2$s.</string>
+    <string name="admin_annonce_role_retire">Rôle %1$s retiré de %2$s.</string>
 </resources>
