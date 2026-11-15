@@ -75,8 +75,9 @@ import java.time.Instant
  * recherche au serveur, filtre « Suivi », nature et portée (le filtre de la barre du haut) ;
  * un toucher ouvre l'affaire, un appui long ses gestes.
  *
- * ⚠️ Divergence déclarée : « Archiver » est dans les gestes de l'appui long — l'iOS l'offre
- * aussi au balayage de la carte, geste qu'une liste d'Android ne porte pas d'usage.
+ * ⚠️ Divergences déclarées : « Archiver » est dans les gestes de l'appui long — l'iOS l'offre
+ * aussi au balayage de la carte, geste qu'une liste d'Android ne porte pas d'usage ; et il
+ * attend #99 (`ReglesAffaires.GESTES_PAR_PATCH`).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -155,7 +156,7 @@ private fun LigneAffaire(affaire: Affaire, ctx: ContexteAffaires) {
                 )
             }
             // Ce que le serveur permet à CE lecteur (`peut_archiver`) ; archiver, jamais supprimer.
-            if (affaire.peutArchiver && !affaire.archivee) {
+            if (ReglesAffaires.GESTES_PAR_PATCH && affaire.peutArchiver && !affaire.archivee) {
                 HorizontalDivider()
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.affaires_archiver)) },
