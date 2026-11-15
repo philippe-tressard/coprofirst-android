@@ -22,10 +22,11 @@ precedence = "override"
 SPDX-FileCopyrightText = "2026 Philippe TRESSARD"
 SPDX-License-Identifier = "AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins"
 
-# Le contrat de l'API, publié par coprofirst (même auteur, seul titulaire des droits)
-# avec chaque release, recopié à l'octet par scripts/importer-contrat.sh.
+# Le contrat de l'API et les tables publiées pour les clients (charte), joints par
+# coprofirst (même auteur, seul titulaire des droits) à chaque release, recopiés à
+# l'octet par scripts/importer-contrat.sh.
 [[annotations]]
-path = "contrat/openapi.json"
+path = ["contrat/openapi.json", "contrat/tables-clients.json"]
 precedence = "override"
 SPDX-FileCopyrightText = "2026 Philippe TRESSARD"
 SPDX-License-Identifier = "AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins"

@@ -50,9 +50,13 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
 - **Le logo** de CoproFirst n'est **pas** intégré : sa licence (`LicenseRef-CoproFirst-Logo`)
   a été élargie à l'app iOS seule (coprofirst#2474). D'ici son élargissement à
   Android, pas d'icône (dispense de lint `MissingApplicationIcon`, à retirer avec elle).
-- **Ce dépôt et coprofirst ne partagent que le contrat d'API publié.** Couleurs,
-  tailles, formats : à **générer** depuis les sources de coprofirst ; d'ici là, les
-  couleurs du système (Material You). Un besoin côté serveur devient un ticket dans
+- **Ce dépôt et coprofirst ne partagent que ce que coprofirst publie** avec chaque
+  release : le contrat (`openapi.json`) et les tables pour les clients
+  (`tables-clients.json`), recopiés à l'octet dans `contrat/`. Les **palettes** se
+  génèrent au build (`scripts/generer_charte.py`, testé par `verifier-depot.sh`) : la
+  charte `seine`, celle de la résidence dès qu'elle est reconnue (`site_palette`), clair
+  et sombre — `ThemeCoproFirst` les donne à Material, `LocalCouleurs` pour le reste.
+  Le bouton plein s'écrit une fois, `BoutonPlein` (`verifier-depot.sh` le tient). Un besoin côté serveur devient un ticket dans
   coprofirst, jamais une modification de `/Volumes/Data/Dev/5hostachy` d'ici.
 - **Installation** : aucun annuaire — démo, adresse saisie, QR, lien d'application ;
   l'énumération des installations est interdite (spec `multi-coproprietes.md`

@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -17,7 +16,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -84,11 +82,7 @@ fun FeuilleConfirmationHote(confirmation: ConfirmationHote, parcours: ActionsEnt
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Preuve(confirmation, parcours)
-            Button(
-                onClick = parcours::confirmerHote,
-                enabled = confirmation.confirmable,
-                modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
-            ) { Text(stringResource(R.string.hote_confirmer)) }
+            BoutonPlein(R.string.hote_confirmer, actif = confirmation.confirmable, onClick = parcours::confirmerHote)
             TextButton(onClick = parcours::renoncerHote, modifier = Modifier.fillMaxWidth()) {
                 Text(stringResource(R.string.hote_annuler))
             }

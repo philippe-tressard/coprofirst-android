@@ -7,15 +7,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -97,16 +93,13 @@ fun ChampsIdentifiants(etat: EtatEntree, parcours: ActionsEntree) {
             modifier = Modifier.align(Alignment.End),
         ) { Text(stringResource(R.string.connexion_oublie)) }
         etat.erreurConnexion?.let { MessageErreur(it) }
-        Button(
+        BoutonPlein(
+            R.string.connexion_valider,
+            modifier = Modifier.testTag(Reperes.VALIDER),
+            actif = etat.connexionPossible,
+            enCours = etat.connexionEnCours,
             onClick = parcours::seConnecter,
-            enabled = etat.connexionPossible,
-            modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp).testTag(Reperes.VALIDER),
-        ) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                if (etat.connexionEnCours) CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
-                Text(stringResource(R.string.connexion_valider))
-            }
-        }
+        )
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center,

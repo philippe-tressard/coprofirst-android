@@ -42,6 +42,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.session.Installation
@@ -129,7 +130,7 @@ private fun EtatReconnaissance(enCours: Boolean, reconnue: Installation?) {
         reconnue != null -> Icon(
             Icons.Filled.CheckCircle,
             contentDescription = stringResource(R.string.connexion_coche),
-            tint = MaterialTheme.colorScheme.primary,
+            tint = LocalCouleurs.current.success,
         )
     }
 }

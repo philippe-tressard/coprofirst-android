@@ -49,6 +49,8 @@ service-account*.json
 .env.*
 *secret*
 *token*
+# Le cache de Python (scripts/test_generer_charte.py importe le générateur)
+__pycache__/
 # Réglages locaux de Claude Code (permissions du poste) et worktrees des sessions
 .claude/settings.local.json
 .claude/worktrees/

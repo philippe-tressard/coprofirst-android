@@ -39,6 +39,13 @@ class InstallationTest {
     }
 
     @Test
+    fun laPaletteServieEstGardee() {
+        val avec = Installation.depuisConfig(adresse, mapOf("site_nom" to "Prune", "site_palette" to "prune"))
+        assertEquals("prune", avec.codePalette)
+        assertNull(Installation.depuisConfig(adresse, mapOf("site_nom" to "Sans", "site_palette" to " ")).codePalette)
+    }
+
+    @Test
     fun sansNomCeNEstPasCoproFirst() {
         assertSame(ErreurEntree.PasCoproFirst, refus(emptyMap()))
         assertSame(ErreurEntree.PasCoproFirst, refus(mapOf("site_nom" to "  ")))
