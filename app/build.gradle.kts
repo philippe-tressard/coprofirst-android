@@ -86,13 +86,16 @@ android {
  * Ce qui se GÉNÈRE au build par un script Python du dépôt, depuis un fichier recopié à
  * l'octet : les palettes (contrat/tables-clients.json → scripts/generer_charte.py), les
  * tables des menus — navigation, texte riche, pièces jointes, natures du fil, et celles
- * de chaque menu (→ scripts/generer_tables*.py, une tâche par script ci-dessous)
- * et le logo au format d'Android
+ * de chaque menu (→ scripts/generer_tables*.py, découverts par convention), le registre
+ * des menus (fonctions/<menu>/Inscription.kt → scripts/generer_registre.py) et le logo au format d'Android
  * (app/src/main/logo/logo.svg → scripts/generer_logo.py).
  * Rien de généré n'est versionné ; aucune couleur ne s'écrit à la main.
  */
 abstract class GenererDepuisPython : DefaultTask() {
-    @get:InputFile abstract val entree: RegularFileProperty
+    /** Ce que le script lit : un fichier, ou les fichiers d'un dossier (les inscriptions). */
+    @get:InputFiles @get:PathSensitive(PathSensitivity.RELATIVE) abstract val lus: ConfigurableFileCollection
+    /** Le chemin passé au script (le fichier, ou le dossier). */
+    @get:Input abstract val entree: Property<String>
     @get:InputFile abstract val generateur: RegularFileProperty
     @get:OutputDirectory abstract val sortie: DirectoryProperty
     @get:Inject abstract val processus: ExecOperations
@@ -101,13 +104,14 @@ abstract class GenererDepuisPython : DefaultTask() {
     fun generer() {
         sortie.get().asFile.deleteRecursively()
         processus.exec {
-            commandLine("python3", "-I", generateur.get().asFile.path, entree.get().asFile.path, sortie.get().asFile.path)
+            commandLine("python3", "-I", generateur.get().asFile.path, entree.get(), sortie.get().asFile.path)
         }
     }
 }
 
-fun generation(nom: String, entree: String, generateur: String) = tasks.register<GenererDepuisPython>(nom) {
-    this.entree.set(rootProject.layout.projectDirectory.file(entree))
+fun generation(nom: String, entree: String, generateur: String, lus: Any = entree) = tasks.register<GenererDepuisPython>(nom) {
+    this.lus.from(rootProject.layout.projectDirectory.files(lus))
+    this.entree.set(rootProject.layout.projectDirectory.file(entree).asFile.path)
     this.generateur.set(rootProject.layout.projectDirectory.file(generateur))
     sortie.set(layout.buildDirectory.dir("generated/$nom"))
 }
@@ -115,25 +119,35 @@ fun generation(nom: String, entree: String, generateur: String) = tasks.register
 val genererCharte = generation("genererCharte", "contrat/tables-clients.json", "scripts/generer_charte.py")
 val genererLogo = generation("genererLogo", "app/src/main/logo/logo.svg", "scripts/generer_logo.py")
 val genererTables = generation("genererTables", "contrat/tables-clients.json", "scripts/generer_tables.py")
-val genererTablesMonLot = generation("genererTablesMonLot", "contrat/tables-clients.json", "scripts/generer_tables_mon_lot.py")
-val genererTablesDelegations =
-    generation("genererTablesDelegations", "contrat/tables-clients.json", "scripts/generer_tables_delegations.py")
-val genererTablesEspaceCS = generation("genererTablesEspaceCS", "contrat/tables-clients.json", "scripts/generer_tables_espace_cs.py")
-val genererTablesPrestataires =
-    generation("genererTablesPrestataires", "contrat/tables-clients.json", "scripts/generer_tables_prestataires.py")
 
 // Les natures du fil nomment leurs teintes par les jetons de `Couleurs` : generer_tables.py
 // les lit dans generer_charte.py (`propriete`, jetons portés), qu'il charge par son chemin.
 genererTables.configure { inputs.file(rootProject.layout.projectDirectory.file("scripts/generer_charte.py")) }
 
+// Les tables d'un MENU se découvrent par convention (#109) : chaque
+// `scripts/generer_tables_<menu>.py` a sa tâche, `genererTables<Menu>`. Un écran qui ajoute
+// ses tables n'ajoute qu'un script, et ne touche jamais ce fichier.
+val genererTablesDesMenus = rootProject.layout.projectDirectory.dir("scripts").asFile
+    .listFiles { f -> Regex("""generer_tables_[a-z0-9_]+\.py""").matches(f.name) }.orEmpty()
+    .sortedBy { it.name }
+    .map { script ->
+        val nom = script.nameWithoutExtension.split('_').joinToString("") { it.replaceFirstChar(Char::uppercase) }
+        generation(nom.replaceFirstChar(Char::lowercase), "contrat/tables-clients.json", "scripts/${script.name}")
+    }
+
+// Le registre des menus : les inscriptions des écrans (`fonctions/<menu>/Inscription.kt`).
+val fonctions = "app/src/main/java/fr/coprofirst/app/fonctions"
+val genererRegistre = generation(
+    "genererRegistre", fonctions, "scripts/generer_registre.py",
+    lus = rootProject.fileTree(fonctions) { include("*/Inscription.kt") },
+)
+
 androidComponents {
     onVariants { variante ->
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererCharte, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererTables, GenererDepuisPython::sortie)
-        variante.sources.kotlin?.addGeneratedSourceDirectory(genererTablesMonLot, GenererDepuisPython::sortie)
-        variante.sources.kotlin?.addGeneratedSourceDirectory(genererTablesDelegations, GenererDepuisPython::sortie)
-        variante.sources.kotlin?.addGeneratedSourceDirectory(genererTablesEspaceCS, GenererDepuisPython::sortie)
-        variante.sources.kotlin?.addGeneratedSourceDirectory(genererTablesPrestataires, GenererDepuisPython::sortie)
+        variante.sources.kotlin?.addGeneratedSourceDirectory(genererRegistre, GenererDepuisPython::sortie)
+        genererTablesDesMenus.forEach { variante.sources.kotlin?.addGeneratedSourceDirectory(it, GenererDepuisPython::sortie) }
         variante.sources.res?.addGeneratedSourceDirectory(genererLogo, GenererDepuisPython::sortie)
     }
 }

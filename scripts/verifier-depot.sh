@@ -186,6 +186,17 @@ while IFS= read -r t; do
   python3 -I "$t" >/dev/null 2>&1 || echec "$t en échec (python3 -I $t)"
 done < <(grep -E '^scripts/test_[a-z_]+\.py$' <<< "$FICHIERS")
 
+# Un écran s'inscrit dans SON paquet (#109) : ni le build ni la navigation ne nomment un
+# menu. Les tables d'un menu se découvrent (`scripts/generer_tables_<menu>.py`), ses
+# pages et ses fiches s'inscrivent (`fonctions/<menu>/Inscription.kt`) — sans quoi deux
+# sessions parallèles se rencontrent à nouveau sur build.gradle.kts et le registre.
+! grep -nE 'generer_tables_[a-z]' app/build.gradle.kts \
+  || echec "app/build.gradle.kts nomme un script de tables de menu — il se découvre par convention (#109)"
+while IFS= read -r f; do
+  ! grep -n 'fr\.coprofirst\.app\.fonctions\.' "$f" \
+    || echec "$f : la navigation nomme un menu — il s'inscrit dans son paquet (fonctions/<menu>/Inscription.kt, #109)"
+done < <(grep -E '^app/src/main/java/fr/coprofirst/app/navigation/.*\.kt$' <<< "$FICHIERS")
+
 ! grep -q '^\.claude/worktrees/' <<< "$FICHIERS" || echec ".claude/worktrees/ suivi : git rm -r --cached .claude/worktrees"
 
 if [ "$ECHECS" -gt 0 ]; then
