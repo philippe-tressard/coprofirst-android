@@ -52,9 +52,11 @@ et, dans `RegistreDesMenus.kt`, la ligne réservée `// "profil" — #21` devien
 ```
 
 `ContexteDeMenu` donne à l'écran : `page` (sa page : `titre`, `route`…), `session`
-(`SessionOuverte`, pour ses services) et `droits` (`DroitsOnglet` du compte : `cs`,
+(`SessionOuverte`, pour ses services), `droits` (`DroitsOnglet` du compte : `cs`,
 `administrateur`, `locataire`… — un geste fin se juge sur le `peut_*` servi avec l'objet,
-jamais sur ces droits seuls). Le titre de la page est posé par la barre : l'écran n'en
+jamais sur ces droits seuls), `sortie` (`GestesDeSortie` : `deconnecter()`,
+`oublierTout()` — toujours confirmés par `ConfirmationDeSortie`) et `apparence`
+(`Apparence` : le thème de l'appareil, `choix`, `options`, `choisir(valeur)`). Le titre de la page est posé par la barre : l'écran n'en
 pose pas. Une page sans ligne au registre affiche « Bientôt ».
 
 ## Navigation — `fr.coprofirst.app.navigation` (à la couche commune)
@@ -99,6 +101,9 @@ class ServiceProfilApi(private val session: SessionOuverte) : ServiceProfil {
 | `PastilleTeinte(libelle, badge, compacte?)`, `LibelleTeinte` | `PastilleTeinte` | Une pastille d'état : la classe `badge-*` du site → couleurs de la charte ; `LibelleTeinte.brut(v)` pour une valeur inconnue (en gris). |
 | `BoutonPlein(libelle, actif?, enCours?)` | `.plein` | Le bouton principal ; le seul `Button` de l'app. |
 | `BoutonContour(libelle)` | `.contour` | Le bouton secondaire. |
+| `Roles.statut(v)`, `Roles.role(v)`, `Roles.statutAbrege(v)` | `RolesUtilisateur.libelleStatut` | Le libellé et la pastille (`LibelleTeinte`) d'un statut ou d'un rôle servi, depuis les tables générées ; une clé inconnue s'affiche brute. |
+| `ConfirmationDeSortie(geste, sortie, fermer)`, `GesteDeSortie` | `confirmationDeSortie` | La confirmation de « Se déconnecter » / « Oublier toutes les résidences » (repère `sortie.confirmer`). |
+| `Apparence` | Profil › Apparence | Le thème de l'appareil : `choix` (`auto`, `clair`, `sombre`), `options` (`OPTIONS_THEME`), `choisir(v)` — appliqué à la racine. |
 
 Exemple :
 

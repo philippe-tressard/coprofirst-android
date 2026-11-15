@@ -8,7 +8,10 @@
 - `PagesParDefaut` : les pages de navigation (`pages`, celles qui ont un `href`), dans
   l'ordre par défaut, et le titre du fil (`titreFil`) ;
 - `OngletsDuSite` : les onglets de chaque page et leur réserve, les pages réservées à
-  l'administration, qui porte chaque droit (`rolesDuDroit`, `statutsDuProfil`).
+  l'administration, qui porte chaque droit (`rolesDuDroit`, `statutsDuProfil`) ;
+- `TablesCommunes` (paquet `commun`) : le libellé et la pastille de chaque statut et de
+  chaque rôle (`attributsStatut`, `attributsRole`, `libellesHerites`), les options du
+  thème de l'appareil (`optionsTheme`, `themeParDefaut`, `cookieTheme`).
 
 Une table qui change de forme, une réserve inconnue : la génération s'arrête — l'app
 doit l'apprendre, pas la deviner.
@@ -111,19 +114,68 @@ def kotlin(tables: dict, source: str) -> str:
     return "\n".join(l)
 
 
+def attributs(tables: dict, table: str) -> dict:
+    valeur = tables.get(table, {}).get("valeur")
+    if not isinstance(valeur, dict) or not valeur:
+        raise TableInattendue(f"{table} n'est pas une table non vide")
+    for cle, a in valeur.items():
+        if not isinstance(a, dict) or not isinstance(a.get("libelle"), str) or not isinstance(a.get("badge"), str):
+            raise TableInattendue(f"{table}.{cle} : libelle ou badge manquant")
+    return valeur
+
+
+def kotlin_commun(tables: dict, source: str) -> str:
+    statuts, roles = attributs(tables, "attributsStatut"), attributs(tables, "attributsRole")
+    herites = tables.get("libellesHerites", {}).get("valeur")
+    options = tables.get("optionsTheme", {}).get("valeur")
+    defaut = tables.get("themeParDefaut", {}).get("valeur")
+    cle = tables.get("cookieTheme", {}).get("valeur")
+    if not isinstance(herites, dict) or not all(isinstance(v, str) for v in herites.values()):
+        raise TableInattendue("libellesHerites n'est pas une table de libellés")
+    if not isinstance(options, list) or not all(isinstance(o.get("val"), str) and isinstance(o.get("label"), str) for o in options):
+        raise TableInattendue("optionsTheme n'est pas une liste d'options")
+    if defaut not in [o["val"] for o in options] or not isinstance(cle, str):
+        raise TableInattendue("themeParDefaut ou cookieTheme inattendu")
+
+    def table(nom: str, valeur: dict) -> list[str]:
+        lignes = [f"    val {nom}: Map<String, AttributRole> = mapOf("]
+        for k, a in valeur.items():
+            abrege = chaine(a["abrege"]) if isinstance(a.get("abrege"), str) else "null"
+            lignes.append(f"        {chaine(k)} to AttributRole({chaine(a['libelle'])}, {chaine(a['badge'])}, {abrege}),")
+        return lignes + ["    )"]
+
+    l = ["// GÉNÉRÉ par scripts/generer_tables.py — NE PAS MODIFIER À LA MAIN.",
+         f"// Source : {source} (attributsStatut, attributsRole, libellesHerites, optionsTheme, themeParDefaut, cookieTheme).",
+         "package fr.coprofirst.app.commun", "",
+         "/** Les tables du site que lisent plusieurs écrans : statuts, rôles, thème de l'appareil. */",
+         "object TablesCommunes {", *table("statuts", statuts), *table("roles", roles),
+         "    val libellesHerites: Map<String, String> = mapOf(",
+         *[f"        {chaine(k)} to {chaine(v)}," for k, v in herites.items()], "    )", "",
+         "    val optionsTheme: List<OptionTheme> = listOf(",
+         *[f"        OptionTheme({chaine(o['val'])}, {chaine(o['label'])}, {chaine(o.get('desc') or '')})," for o in options],
+         "    )", f"    const val THEME_PAR_DEFAUT: String = {chaine(defaut)}",
+         f"    const val CLE_THEME: String = {chaine(cle)}", "}", ""]
+    return "\n".join(l)
+
+
 def main(argv: list[str]) -> int:
     if len(argv) != 3:
         print(__doc__.strip().splitlines()[-1], file=sys.stderr)
         return 2
     entree, sortie = pathlib.Path(argv[1]), pathlib.Path(argv[2])
     try:
-        texte = kotlin(json.loads(entree.read_text(encoding="utf-8"))["tables"], entree.name)
+        tables = json.loads(entree.read_text(encoding="utf-8"))["tables"]
+        fichiers = {
+            PAQUET.replace(".", "/") + "/TablesDuSite.kt": kotlin(tables, entree.name),
+            "fr/coprofirst/app/commun/TablesCommunes.kt": kotlin_commun(tables, entree.name),
+        }
     except TableInattendue as e:
         print(f"❌ {entree.name} : {e}", file=sys.stderr)
         return 1
-    fichier = sortie / PAQUET.replace(".", "/") / "TablesDuSite.kt"
-    fichier.parent.mkdir(parents=True, exist_ok=True)
-    fichier.write_text(texte, encoding="utf-8")
+    for chemin, texte in fichiers.items():
+        fichier = sortie / chemin
+        fichier.parent.mkdir(parents=True, exist_ok=True)
+        fichier.write_text(texte, encoding="utf-8")
     return 0
 
 
