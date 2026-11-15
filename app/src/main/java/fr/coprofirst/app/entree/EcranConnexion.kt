@@ -44,6 +44,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
+import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.session.Installation
 
@@ -89,7 +90,6 @@ private fun ChampResidence(etat: EtatEntree, saisir: (String) -> Unit) {
             label = { Text(stringResource(R.string.connexion_residence)) },
             placeholder = { Text(stringResource(R.string.adresse_exemple)) },
             trailingIcon = { EtatReconnaissance(etat.enCours, etat.reconnue) },
-            supportingText = etat.erreur?.let { erreur -> { MessageErreur(erreur) } },
             isError = etat.erreur != null,
             singleLine = true,
             keyboardOptions = KeyboardOptions(
@@ -102,6 +102,9 @@ private fun ChampResidence(etat: EtatEntree, saisir: (String) -> Unit) {
         )
         // Le nom paraît sous le champ : un geste rare, qui confirme — fondu et déploiement,
         // 200 ms ease-out ; il disparaît plus vite qu'il n'arrive.
+        // Comme l'iOS (`ChampResidence`) : sous le champ, l'échec dit en une phrase…
+        etat.erreur?.let { MessageErreur(it) }
+        // … ou le nom de la résidence reconnue.
         AnimatedVisibility(
             visible = etat.reconnue != null,
             enter = fadeIn(tween(200)) + expandVertically(tween(200)),

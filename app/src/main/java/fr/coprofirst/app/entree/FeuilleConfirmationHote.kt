@@ -36,6 +36,7 @@ import androidx.compose.ui.text.style.Hyphens
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.R
+import fr.coprofirst.app.commun.BoutonPlein
 import fr.coprofirst.app.session.PreuveHote
 
 /**

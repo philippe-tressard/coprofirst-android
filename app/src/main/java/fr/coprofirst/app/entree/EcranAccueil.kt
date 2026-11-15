@@ -30,6 +30,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
+import fr.coprofirst.app.commun.BoutonContour
+import fr.coprofirst.app.commun.BoutonPlein
 import fr.coprofirst.app.ThemeCoproFirst
 
 /**
