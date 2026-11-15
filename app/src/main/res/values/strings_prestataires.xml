@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+-->
+<!-- « Prestataires » (#19) : les libellés de l'iOS (TextesPrestataires), mot pour mot. -->
+<resources>
+    <string name="prestataires_reserve">Les prestataires et leurs contrats sont réservés au conseil syndical.</string>
+    <string name="prestataires_gestes_sur_le_site">Ajouter ou corriger une fiche, un contrat ou un relevé, noter un prestataire, archiver : ces gestes du conseil syndical se font sur le site de la résidence.</string>
+    <string name="prestataires_archives">📁 Archives (%1$s)</string>
+    <string name="prestataires_deplier_fiche">Déplie la fiche</string>
+    <string name="prestataires_replier_fiche">Replie la fiche</string>
+    <string name="prestataires_deplier">Déplier</string>
+    <string name="prestataires_replier">Replier</string>
+
+    <!-- Prestataires -->
+    <string name="prestataires_recherche">Nom, métier, équipement, contact, téléphone…</string>
+    <string name="prestataires_categorie">Catégorie</string>
+    <string name="prestataires_contrat">Contrat</string>
+    <string name="prestataires_tous">Tous</string>
+    <string name="prestataires_aucun">Aucun prestataire</string>
+    <string name="prestataires_aucun_criteres">Aucun prestataire pour ces critères</string>
+    <string name="prestataires_aucun_actif">Aucun prestataire actif</string>
+    <string name="prestataires_aucun_actif_criteres">Aucun prestataire actif pour ces critères</string>
+    <string name="prestataires_archives_rangees">Les fiches archivées sont rangées dans les Archives, ci-dessous.</string>
+    <string name="prestataires_sous_contrat">📄 Sous contrat (%1$s)</string>
+    <string name="prestataires_adresse">Adresse</string>
+    <string name="prestataires_contrats">Contrats</string>
+
+    <!-- Contrats -->
+    <string name="prestataires_contrats_actifs_un">%1$s contrat actif</string>
+    <string name="prestataires_contrats_actifs">%1$s contrats actifs</string>
+    <string name="prestataires_sans_echeance_compte">%1$s sans échéance</string>
+    <string name="prestataires_aucun_contrat">Aucun contrat</string>
+    <string name="prestataires_aucun_contrat_actif">Aucun contrat actif</string>
+    <string name="prestataires_contrats_archives_ranges">Les contrats archivés sont rangés dans les Archives, ci-dessous.</string>
+    <string name="prestataires_sans_intervenant">sans intervenant</string>
+    <string name="prestataires_sans_echeance">Sans échéance</string>
+    <string name="prestataires_le_contrat">Le contrat</string>
+    <string name="prestataires_debut">Début</string>
+    <string name="prestataires_duree_initiale">Durée initiale</string>
+    <string name="prestataires_frequence">Fréquence</string>
+    <string name="prestataires_prochaine_visite">Prochaine visite</string>
+    <string name="prestataires_description">Description</string>
+    <string name="prestataires_documents">Documents (%1$s)</string>
+    <string name="prestataires_aucun_document">Aucun document.</string>
+
+    <!-- Consommations -->
+    <string name="prestataires_compteur">Compteur</string>
+    <string name="prestataires_aucun_releve">Aucun relevé</string>
+    <string name="prestataires_index">Index %1$s</string>
+    <string name="prestataires_releve_sans_index">Relevé sans index</string>
+    <string name="prestataires_photo_releve">Relevé de compteur</string>
+    <string name="prestataires_aucun_fournisseur">Aucun fournisseur</string>
+</resources>
