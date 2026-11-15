@@ -31,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
@@ -96,7 +97,7 @@ private fun ChampResidence(etat: EtatEntree, saisir: (String) -> Unit) {
                 keyboardType = KeyboardType.Uri,
                     imeAction = ImeAction.Next,
             ),
-            modifier = Modifier.fillMaxWidth().focusRequester(focus),
+            modifier = Modifier.fillMaxWidth().focusRequester(focus).testTag(Reperes.RESIDENCE),
         )
         // Le nom paraît sous le champ : un geste rare, qui confirme — fondu et déploiement,
         // 200 ms ease-out ; il disparaît plus vite qu'il n'arrive.
