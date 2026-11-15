@@ -7,6 +7,7 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.navigation.BarreDuHaut
+import fr.coprofirst.app.navigation.Destination
 import fr.coprofirst.app.navigation.DroitsOnglet
 import fr.coprofirst.app.navigation.OngletDuSite
 import fr.coprofirst.app.navigation.OngletsDuSite
@@ -36,6 +37,8 @@ data class ContexteOnglet(
     val actualisation: Int,
     /** La barre du haut, où l'onglet pose ses actions. */
     val barre: BarreDuHaut,
+    /** La porte (#85), celle du menu (`ContexteDeMenu.ouvrir`) : `false` si rien ne la porte. */
+    val ouvrir: (Destination) -> Boolean = { false },
 )
 
 /**
