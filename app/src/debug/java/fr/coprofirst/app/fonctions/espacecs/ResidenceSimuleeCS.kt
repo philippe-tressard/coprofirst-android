@@ -33,12 +33,23 @@ class ResidenceSimuleeCS {
         compteTraite.matchEntire(route)?.let { m -> return traiterCompte(m.groupValues[1].toInt(), corps) }
         commandeTraitee.matchEntire(route)?.let { m -> return traiterCommande(m.groupValues[1].toInt(), corps) }
         if (methode == "POST" && accueil.matches(route)) return 200 to FixturesEspaceCS.ACCUEIL
+        annonceGeste.matchEntire(route)?.let { m -> return gesteAnnonce(methode, m.groupValues[1].toInt(), m.groupValues[2]) }
         return when ("$methode $route") {
             "GET /admin/comptes-en-attente" -> 200 to JsonArray(comptes).toString()
             "GET /admin/commandes-acces" -> 200 to JsonArray(commandes).toString()
             "GET /acces/admin/vigiks" -> parcEnEchec?.let { it to """{"detail": "Accès réservé au conseil syndical"}""" }
                 ?: (200 to FixturesEspaceCS.VIGIKS)
             "GET /acces/admin/telecommandes" -> 200 to FixturesEspaceCS.TELECOMMANDES
+            "GET /courriels-affaires" -> 200 to FixturesAnnoncesCourriels.JOURNAL
+            "GET /annonces-hall" -> 200 to if (chemin.contains("archivees=true")) {
+                FixturesAnnoncesCourriels.ARCHIVEES
+            } else {
+                FixturesAnnoncesCourriels.ACTIVES
+            }
+            "POST /annonces-hall" -> {
+                val titre = Json.parseToJsonElement(corps).jsonObject["titre"]?.jsonPrimitive?.content.orEmpty()
+                if (titre.isBlank()) 422 to """{"detail": "Le titre est requis"}""" else 201 to FixturesAnnoncesCourriels.creee(titre)
+            }
             else -> 404 to """{"detail": "Not Found"}"""
         }
     }
@@ -57,10 +68,19 @@ class ResidenceSimuleeCS {
         return 200 to FixturesEspaceCS.commandeTraitee(accepter)
     }
 
+    /** PATCH (archiver), POST …/renvoyer-email, DELETE d'une affiche. */
+    private fun gesteAnnonce(methode: String, id: Int, suite: String): Pair<Int, String> = when {
+        methode == "PATCH" && suite.isEmpty() -> 200 to FixturesAnnoncesCourriels.creee("Affiche $id")
+        methode == "POST" && suite == "/renvoyer-email" -> 204 to ""
+        methode == "DELETE" && suite.isEmpty() -> 204 to ""
+        else -> 404 to """{"detail": "Not Found"}"""
+    }
+
     private companion object {
         val compteTraite = Regex("""/admin/comptes/(\d+)/traiter""")
         val commandeTraitee = Regex("""/admin/commandes-acces/(\d+)/traiter""")
         val accueil = Regex("""/admin/utilisateurs/\d+/accueil-arrivant""")
+        val annonceGeste = Regex("""/annonces-hall/(\d+)(/renvoyer-email)?""")
 
         fun lire(json: String) = Json.parseToJsonElement(json).jsonArray.toMutableList()
 
