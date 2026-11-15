@@ -137,7 +137,8 @@ private fun retour(ton: TonAvis): HapticFeedbackType = when (ton) {
 
 /**
  * Les animations coupées par l'appareil (« Supprimer les animations ») : le mouvement réduit
- * d'Android (`accessibilityReduceMotion` de l'iOS) — l'avis, les barres des résultats d'un sondage.
+ * d'Android (`accessibilityReduceMotion` de l'iOS) — écrit ici une fois, lu aussi par l'avis, les
+ * barres des résultats d'un sondage, `ChoixPerimetres` et `ApercuServi`.
  */
 @Composable
 internal fun animationsCoupees(): Boolean {
