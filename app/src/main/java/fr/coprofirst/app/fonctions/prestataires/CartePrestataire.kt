@@ -30,15 +30,14 @@ import fr.coprofirst.app.fonctions.monlot.LigneFiche
 
 /**
  * La carte d'un prestataire (`CartePrestataire.svelte`), comme l'iOS : repliée, son en-tête
- * l'ouvre ; dépliée, son adresse, ses contrats et sa description.
- *
- * Les avis du conseil syndical (le récapitulatif par exercice) viennent avec #19, suite —
- * ils demandent un contrat plus récent que le plancher.
+ * l'ouvre ; dépliée, son adresse, ses contrats, sa description et les avis du conseil
+ * syndical (`RecapitulatifAvis`), lus quand la fiche s'ouvre.
  */
 @Composable
 internal fun CartePrestataire(
     prestataire: Prestataire,
     donnees: DonneesPrestataires,
+    service: ServicePrestataires,
     compacte: Boolean,
     deplie: Boolean,
     basculer: () -> Unit,
@@ -68,6 +67,7 @@ internal fun CartePrestataire(
                 prestataire.description?.takeIf { it.isNotBlank() }?.let {
                     TexteRiche(it, style = MaterialTheme.typography.bodyMedium)
                 }
+                RecapitulatifAvis(prestataire, service)
             }
         }
     }

@@ -52,7 +52,7 @@ internal fun OngletPrestataires(donnees: DonneesPrestataires, service: ServicePr
     val filtre = recherche.isNotBlank() || categorie != null || contrat != null
     val compacte = courants.size > SEUIL_COMPACT
     val carte: @Composable (Prestataire, Boolean) -> Unit = { p, compact ->
-        CartePrestataire(p, donnees, compact, deplie == p.id) { deplie = if (deplie == p.id) null else p.id }
+        CartePrestataire(p, donnees, service, compact, deplie == p.id) { deplie = if (deplie == p.id) null else p.id }
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(Mise.ecart)) {

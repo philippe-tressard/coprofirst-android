@@ -26,6 +26,7 @@ object ReperesPrestataires {
     const val ARCHIVES = "prestataires.archives"
     fun prestataire(id: Int) = "prestataire.$id"
     fun contrat(id: Int) = "contrat.$id"
+    fun remplacement(contrat: Int, rang: Int) = "contrat.$contrat.remplacement.$rang"
     fun compteur(type: String) = "compteur.$type"
 }
 

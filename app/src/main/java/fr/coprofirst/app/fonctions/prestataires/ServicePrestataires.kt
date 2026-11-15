@@ -12,7 +12,7 @@ import fr.coprofirst.app.session.SessionOuverte
  * Ce que « Prestataires » demande à la résidence (#19), en LECTURE, comme l'iOS
  * (`ServicePrestataires`). Aucune route n'est écrite ici : chacune est une opération du
  * client GÉNÉRÉ. Les gestes du conseil (créer, corriger, archiver, noter, relever un
- * compteur) restent sur le site, comme l'iOS : l'écran le dit.
+ * compteur) restent sur le site, comme l'iOS (#207 : les avis se LISENT) : l'écran le dit.
  */
 interface ServicePrestataires {
     /** GET /prestataires, ou /prestataires/archives. */
@@ -20,6 +20,12 @@ interface ServicePrestataires {
 
     /** GET /prestataires/contrats, ou /prestataires/contrats/archives. */
     suspend fun contrats(archives: Boolean): List<Contrat>
+
+    /**
+     * GET /prestataires/{id}/interventions : le récapitulatif de ses avis, par exercice et
+     * par intervention — regroupé et compté par l'API.
+     */
+    suspend fun interventions(prestataire: Int): List<ExerciceAvis>
 
     /** GET /equipements : les équipements (libellés et ordre). */
     suspend fun equipements(): List<Equipement>
@@ -45,6 +51,9 @@ class ServicePrestatairesApi(private val session: SessionOuverte) : ServicePrest
         val api = PrestatairesApi(b, c)
         (if (archives) api.getPrestatairesContratsArchives() else api.getPrestatairesContrats()).map { it.lu() }
     }
+
+    override suspend fun interventions(prestataire: Int) =
+        session.appeler { b, c -> PrestatairesApi(b, c).getPrestatairesPIdInterventions(prestataire).map { it.lu() } }
 
     override suspend fun equipements() = session.appeler { b, c -> EquipementsApi(b, c).getEquipements().map { it.lu() } }
 
