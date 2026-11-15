@@ -54,7 +54,9 @@ fun EcranAdresse(etat: EtatEntree, parcours: ActionsEntree) {
                 },
                 isError = etat.erreur != null,
                 singleLine = true,
-                enabled = etat.enCours == null,
+                // En lecture seule pendant la vérification, jamais désactivé : un champ
+                // désactivé perd le focus, et après un échec la saisie ne reprendrait pas.
+                readOnly = etat.enCours != null,
                 keyboardOptions = KeyboardOptions(
                     capitalization = KeyboardCapitalization.None,
                     autoCorrectEnabled = false,
