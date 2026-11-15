@@ -28,11 +28,18 @@ class EtatAffairesTest {
             if (refuser) throw ErreurService.Refus("Réservé au conseil syndical.", 403)
             deplacements += id to statut
         }
-        override suspend fun archiver(affaire: Affaire): Affaire {
+        override suspend fun archiver(id: Int): Affaire {
             if (refuser) throw ErreurService.Injoignable
-            return affaire.copy(archivee = true)
+            return affaires.first { it.id == id }.copy(archivee = true, prestataires = emptyList())
         }
         override suspend fun affaire(id: Int) = throw ErreurService.Introuvable
+        override suspend fun perimetres() = emptyList<Perimetre>()
+        override suspend fun creer(saisie: SaisieAffaire) = throw ErreurService.Inattendue
+        override suspend fun repondre(id: Int, texte: String) = Unit
+        override suspend fun ajouterSuite(id: Int, suite: SaisieSuite) = Unit
+        override suspend fun regler(id: Int, option: OptionAffaire, active: Boolean) = Unit
+        override suspend fun corrigerSuite(id: Int, suite: Int, correction: CorrectionSuite): IssueCorrection? = null
+        override suspend fun supprimerSuite(id: Int, suite: Int) = Unit
     }
 
     @Test
@@ -53,6 +60,14 @@ class EtatAffairesTest {
         assertEquals(false, etat.deplacer(avant, REFERENTIELS.statutPourColonne("syndic")!!))
         assertEquals(avant, etat.affaires[0])
         assertEquals("Réservé au conseil syndical.", (etat.avis as ErreurService.Refus).phraseServie)
+    }
+
+    @Test
+    fun unArchivageGardeLesPrestatairesLus() = runTest {
+        val etat = EtatAffaires(Simule().apply { affaires = affaires.map { it.copy(prestataires = listOf("Ascenseurs du Parc")) } }).apply { charger() }
+        etat.archiver(etat.affaires[1])
+        assertTrue(etat.affaires[1].archivee)
+        assertEquals(listOf("Ascenseurs du Parc"), etat.affaires[1].prestataires)
     }
 
     @Test
