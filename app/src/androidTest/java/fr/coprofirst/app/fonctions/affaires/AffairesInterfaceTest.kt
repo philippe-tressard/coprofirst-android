@@ -65,7 +65,9 @@ private class AffairesSimulees : ServiceAffaires {
         delay(100)
         return affaires
     }
-    override suspend fun referentiels() = ReferentielsAffaires(
+    override suspend fun referentiels() = referentielsLus
+
+    private val referentielsLus = ReferentielsAffaires(
         listOf(ColonneKanban("cs", "CS (en cours)", "CS"), ColonneKanban("syndic", "Syndic (en cours)", "Syndic"), ColonneKanban("termine", "Terminé", "Terminé")),
         listOf(
             ReferentielsAffaires.Statut("ouvert", "Ouvert", false, "cs", true),
@@ -92,7 +94,7 @@ private class AffairesSimulees : ServiceAffaires {
             statutLibelle = a.statutLibelle, creeLe = a.creeLe, auteur = "Le conseil syndical",
             suites = listOf(SuiteAffaire(31, "etat", a.creeLe.plusSeconds(3600), "Le syndic", "<p>Le syndic est prévenu.</p>", "ouvert", "en_cours")),
             messages = listOf(MessageAffaire(41, "<p>Merci pour le suivi.</p>", a.creeLe.plusSeconds(7200), true, null, null, false)),
-            referentiels = ReferentielsAffaires(emptyList(), emptyList(), emptyList()),
+            referentiels = referentielsLus,
         )
     }
 }
