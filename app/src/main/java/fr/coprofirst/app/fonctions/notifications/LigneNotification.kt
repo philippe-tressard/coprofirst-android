@@ -25,7 +25,6 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,13 +39,13 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.core.text.HtmlCompat
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.texte.TexteRiche
 import kotlinx.coroutines.launch
 import java.time.Instant
 
@@ -164,10 +163,7 @@ fun CarteNotification(notification: NotificationRecue, choisie: Boolean?, touche
                 if (notification.urgente) {
                     PastilleTeinte(stringResource(R.string.notifications_urgent), "badge-red", compacte = true)
                 }
-                val corps = remember(notification.corps) { texteDuCorps(notification.corps) }
-                if (corps.isNotEmpty()) {
-                    Text(corps, style = MaterialTheme.typography.bodyMedium, color = couleurs.textMuted)
-                }
+                TexteRiche(notification.corps, style = MaterialTheme.typography.bodyMedium, couleur = couleurs.textMuted)
             }
         }
     }
@@ -177,11 +173,3 @@ fun CarteNotification(notification: NotificationRecue, choisie: Boolean?, touche
 fun dateDeLigne(creeLe: Instant, maintenant: Instant = Instant.now()): String =
     if (creeLe.isAfter(maintenant.minus(EtatNotifications.VINGT_QUATRE_HEURES))) FormatsDuSite.heure(creeLe)
     else FormatsDuSite.dateCourte(creeLe)
-
-/**
- * Le corps, du HTML de l'éditeur du site, en texte seul. ⚠️ Divergence déclarée : l'iOS le
- * rend riche (`TexteDuSite`, liste blanche, liens) ; le texte du site arrive dans la couche
- * commune avec 15b (#15), et ce rendu s'y remplacera.
- */
-private fun texteDuCorps(html: String): String =
-    HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_COMPACT).toString().trim()

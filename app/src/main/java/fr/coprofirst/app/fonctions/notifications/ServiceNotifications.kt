@@ -14,7 +14,7 @@ data class NotificationRecue(
     val id: Int,
     val type: String,
     val titre: String,
-    /** Du HTML de l'éditeur du site. */
+    /** Du HTML de l'éditeur du site : il passe par `TexteRiche`. */
     val corps: String,
     val lue: Boolean,
     val urgente: Boolean,
