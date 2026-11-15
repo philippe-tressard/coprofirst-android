@@ -36,6 +36,13 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   choisir plusieurs et les supprimer — toute suppression se confirme, elle est
   définitive. Balayer vers la droite marque lu, vers la gauche supprime. Tirer la liste
   la relit. La cloche de chaque écran et les notifications push viendront ensuite.
+- **Mes lots & accès** (onglet « Accès ») : ses lots et leurs caractéristiques (vue du
+  locataire, du bailleur, ou de tous les autres) ; ses badges Vigik et télécommandes,
+  « Signaler perdu », « Nouvel accès » (pour un de ses lots) et « Déclarer un accès » ;
+  ce que le bailleur a confié au locataire, et, au bailleur, la vue par locataire avec
+  « Tout récupérer » ; la gestion locative en lecture (baux actifs, archives, inventaire).
+  Le tableau des charges, créer ou terminer un bail et tenir l'inventaire restent sur le
+  site, et l'écran le dit.
 
 Pas encore : les écrans des pages, le courriel retenu et la
 biométrie, les personnages de la démo, le QR code, les liens d'application (tickets

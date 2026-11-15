@@ -45,7 +45,7 @@ object RegistreDesMenus {
 
         // "annuaire" — #17
 
-        // "mon-lot" — #18
+        "mon-lot" to { contexte -> fr.coprofirst.app.fonctions.monlot.EcranMonLot(contexte) },
 
         // "prestataires" — #19
 
