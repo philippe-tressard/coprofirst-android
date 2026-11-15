@@ -68,11 +68,14 @@ class ParcoursEntreeInterfaceTest {
         attendre("Vérifiez l'adresse")
         attendre("Adresse reconnue comme une installation CoproFirst.")
         assertEquals("seul GET /config est parti", 1, serveur.serveur.requestCount)
-        serveur.repondre(200)
+        serveur.repondre(200) // POST /auth/login
+        serveur.repondre(404) // GET /auth/me : sans profil, la barre reste celle de tous
         ecran.onNodeWithText("Me connecter à cette adresse").performClick()
-        attendre("Vous êtes connecté à Les Glycines.")
-        serveur.repondre(200)
-        ecran.onNodeWithText("Se déconnecter").performClick()
+        // La résidence ouverte : la barre, la première page (pas encore portée : « Bientôt »).
+        attendre("Bientôt")
+        ecran.onNodeWithText("Plus").performClick()
+        serveur.repondre(200) // POST /auth/logout
+        ecran.onNodeWithTag("plus.deconnexion").performClick()
         attendre("Connectez-vous à votre espace")
     }
 

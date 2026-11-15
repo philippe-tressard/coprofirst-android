@@ -65,7 +65,8 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   l'énumération des installations est interdite (spec `multi-coproprietes.md`
   §4.1 bis de coprofirst).
 - **Composants communs** : leur API est `docs/COMPOSANTS.md` — le contrat des écrans ;
-  un écran la consomme sans la modifier, un besoin devient un ticket.
+  un écran la consomme sans la modifier, un besoin devient un ticket. Un écran = un
+  paquet `fonctions/<menu>` + SA ligne réservée dans `navigation/RegistreDesMenus.kt`.
 - **Réseau** : un seul client HTTP, `session/ClientHttp.kt` (aucune redirection
   suivie, clair refusé par le manifeste), décliné par hôte avec ses cookies en mémoire
   (`SessionsParHote`) ; aucune requête ni route écrite à la main — `verifier-depot.sh`

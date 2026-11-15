@@ -22,8 +22,8 @@ android {
         applicationId = "fr.coprofirst.app"
         minSdk = 26
         targetSdk = 37
-        versionCode = 6
-        versionName = "0.6.0"
+        versionCode = 7
+        versionName = "0.7.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -49,8 +49,9 @@ android {
 
 /**
  * Ce qui se GÉNÈRE au build par un script Python du dépôt, depuis un fichier recopié à
- * l'octet : les palettes (contrat/tables-clients.json → scripts/generer_charte.py) et
- * le logo au format d'Android (app/src/main/logo/logo.svg → scripts/generer_logo.py).
+ * l'octet : les palettes (contrat/tables-clients.json → scripts/generer_charte.py), les
+ * tables de navigation (→ scripts/generer_tables.py) et le logo au format d'Android
+ * (app/src/main/logo/logo.svg → scripts/generer_logo.py).
  * Rien de généré n'est versionné ; aucune couleur ne s'écrit à la main.
  */
 abstract class GenererDepuisPython : DefaultTask() {
@@ -76,10 +77,12 @@ fun generation(nom: String, entree: String, generateur: String) = tasks.register
 
 val genererCharte = generation("genererCharte", "contrat/tables-clients.json", "scripts/generer_charte.py")
 val genererLogo = generation("genererLogo", "app/src/main/logo/logo.svg", "scripts/generer_logo.py")
+val genererTables = generation("genererTables", "contrat/tables-clients.json", "scripts/generer_tables.py")
 
 androidComponents {
     onVariants { variante ->
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererCharte, GenererDepuisPython::sortie)
+        variante.sources.kotlin?.addGeneratedSourceDirectory(genererTables, GenererDepuisPython::sortie)
         variante.sources.res?.addGeneratedSourceDirectory(genererLogo, GenererDepuisPython::sortie)
     }
 }

@@ -41,9 +41,10 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="hote_confirmer">Me connecter à cette adresse</string>
     <string name="hote_annuler">Annuler</string>
 
-    <string name="espace_connecte">Vous êtes connecté à %1$s.</string>
-    <string name="espace_bientot">Les écrans de votre résidence arrivent dans les prochaines versions de l\'app.</string>
-    <string name="espace_deconnecter">Se déconnecter</string>
+    <string name="plus">Plus</string>
+    <string name="se_deconnecter">Se déconnecter</string>
+    <string name="bientot_titre">Bientôt</string>
+    <string name="bientot_explication">« %1$s » arrive dans une prochaine version de l\'app.</string>
 
     <string name="erreur_hote_inconnu">Cette adresse répond, mais aucune résidence n\'y est installée. Vérifiez-la sur votre fiche d\'arrivée.</string>
     <string name="erreur_injoignable">Impossible de joindre cette adresse. Vérifiez-la, ou réessayez dans un instant.</string>

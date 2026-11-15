@@ -24,9 +24,14 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   l'hôte en entier et dit s'il est reconnu comme une installation CoproFirst ; sinon,
   il faut cocher « Je connais cette adresse… » pour continuer. « Mot de passe oublié ? »
   et « Demander l'accès » ouvrent le site de la résidence. La session reste en mémoire
-  le temps de l'usage ; « Se déconnecter » la ferme.
+  le temps de l'usage.
+- **La résidence ouverte** : la barre du bas, dans l'ordre et avec les libellés réglés
+  par l'administration de la résidence, filtrée selon le compte (Espace CS, Prestataires,
+  Délégations, Paramétrage ne paraissent qu'à ceux qui y ont droit) ; « Plus » pour les
+  autres pages, Profil, À propos et « Se déconnecter ». Les écrans des pages arrivent
+  menu par menu : en attendant, chaque page dit « Bientôt ».
 
-Pas encore : les écrans de la résidence après la connexion, le courriel retenu et la
+Pas encore : les écrans des pages, le courriel retenu et la
 biométrie, les personnages de la démo, le QR code, les liens d'application (tickets
 ouverts).
 

@@ -3,6 +3,10 @@
 
 package fr.coprofirst.app.session
 
+import fr.coprofirst.app.navigation.OrdrePages
+import fr.coprofirst.app.navigation.PageDeNavigation
+import fr.coprofirst.app.navigation.PagesParDefaut
+import fr.coprofirst.app.navigation.SurchargePage
 import kotlinx.serialization.Serializable
 
 /**
@@ -19,11 +23,21 @@ data class Installation(
     val versionContrat: String? = null,
     /** Le code de sa palette (`site_palette`) ; absent : la charte. */
     val codePalette: String? = null,
+    /** L'ordre de la barre réglé par l'administration (`pages_order`) ; absent : l'ordre du site. */
+    val ordrePages: List<String>? = null,
+    /** Ce que l'administration a écrit pour chaque page (`page_config_<id>`). */
+    val surchargesPages: Map<String, SurchargePage> = emptyMap(),
 ) {
     val adresse: AdresseInstallation? get() = AdresseInstallation.relire(url)
     val contrat: VersionContrat? get() = VersionContrat.lire(versionContrat)
 
+    /** La barre de cette résidence : ses pages, dans son ordre, avec ses libellés. */
+    val pages: List<PageDeNavigation>
+        get() = OrdrePages.ordonner(PagesParDefaut.toutes, ordrePages, surchargesPages)
+
     companion object {
+        private const val PREFIXE_PAGE = "page_config_"
+
         /**
          * L'installation que décrit GET /config.
          * @throws ErreurService.PasCoproFirst si rien n'y nomme une résidence ;
@@ -34,7 +48,18 @@ data class Installation(
         fun depuisConfig(adresse: AdresseInstallation, cles: Map<String, String?>): Installation {
             val nom = cles["site_nom"]?.trim().orEmpty()
             if (nom.isEmpty()) throw ErreurService.PasCoproFirst
-            val installation = Installation(adresse.url, nom, cles["version_contrat"], cles["site_palette"]?.takeIf { it.isNotBlank() })
+            val surcharges = cles.entries
+                .filter { it.key.startsWith(PREFIXE_PAGE) }
+                .mapNotNull { (cle, json) -> SurchargePage.lire(json)?.let { cle.removePrefix(PREFIXE_PAGE) to it } }
+                .toMap()
+            val installation = Installation(
+                url = adresse.url,
+                nom = nom,
+                versionContrat = cles["version_contrat"],
+                codePalette = cles["site_palette"]?.takeIf { it.isNotBlank() },
+                ordrePages = OrdrePages.lire(cles["pages_order"]),
+                surchargesPages = surcharges,
+            )
             val contrat = installation.contrat
             if (contrat != null && contrat < VersionContrat.PLANCHER) throw ErreurService.ResidenceAMettreAJour
             return installation
