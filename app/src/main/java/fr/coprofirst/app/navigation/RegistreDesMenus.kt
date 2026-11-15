@@ -30,63 +30,56 @@ data class ContexteDeMenu(
     val ouvrir: (Destination) -> Boolean = { false },
 )
 
+/** L'écran d'une page de menu. */
+typealias EcranDeMenu = @Composable (ContexteDeMenu) -> Unit
+
 /**
- * LE registre des écrans de menu, comme l'iOS (`RegistreDesMenus`) : l'identifiant de la
- * page du site → l'écran qui l'ouvre. Une page sans ligne affiche « Bientôt ».
- *
- * RÈGLE (docs/COMPOSANTS.md) : un écran = un paquet `fr.coprofirst.app.fonctions.<menu>`
- * + SA ligne ici. Chaque menu a sa ligne réservée d'avance, entre deux lignes vides :
- * deux sessions parallèles ne touchent jamais la même ligne, et la fusion reste triviale.
+ * Ce qu'un menu INSCRIT au registre, depuis SON paquet (#109) : ses pages (id de la page
+ * du site → l'écran) et les fiches d'éléments qu'il sait ouvrir (`Destination.Element`,
+ * par nature : `affaire`, `sondage`…). Un menu l'écrit dans `fonctions/<menu>/Inscription.kt` :
+ * ```
+ * object InscriptionFaq : InscriptionDeMenu {
+ *     override val ecrans: Map<String, EcranDeMenu> = mapOf("faq" to { contexte -> EcranFaq(contexte) })
+ * }
+ * ```
+ * `scripts/generer_registre.py` les collecte au build (`RegistreGenere`) : aucun écran ne
+ * touche un fichier commun, deux écrans ajoutés en parallèle ne se rencontrent jamais.
  */
-object RegistreDesMenus {
-    val ecrans: Map<String, @Composable (ContexteDeMenu) -> Unit> = mapOf(
-        // UNE ligne réservée par menu : la session du menu remplace SA ligne par
-        //     "profil" to { contexte -> EcranProfil(contexte) },
-        // et ne touche à aucune autre.
+interface InscriptionDeMenu {
+    val ecrans: Map<String, EcranDeMenu> get() = emptyMap()
+    val fiches: Map<String, FicheDeMenu> get() = emptyMap()
+}
 
-        "tableau-de-bord" to { contexte -> fr.coprofirst.app.fonctions.fil.EcranFil(contexte) },
-
-        "mes-demandes" to { contexte -> fr.coprofirst.app.fonctions.affaires.EcranAffaires(contexte) },
-
-        "residence" to { contexte -> fr.coprofirst.app.fonctions.residence.EcranMaResidence(contexte) },
-
-        "annuaire" to { contexte -> fr.coprofirst.app.fonctions.annuaire.EcranAnnuaire(contexte) },
-
-        "mon-lot" to { contexte -> fr.coprofirst.app.fonctions.monlot.EcranMonLot(contexte) },
-
-        "prestataires" to { contexte -> fr.coprofirst.app.fonctions.prestataires.EcranPrestataires(contexte) },
-
-        // "communaute" — #20
-
-        "faq" to { contexte -> fr.coprofirst.app.fonctions.faq.EcranFaq(contexte) },
-
-        "profil" to { contexte -> fr.coprofirst.app.fonctions.profil.EcranProfil(contexte) },
-
-        "notifications" to { contexte -> fr.coprofirst.app.fonctions.notifications.EcranNotifications(contexte) },
-
-        "espace-cs" to { contexte -> fr.coprofirst.app.fonctions.espacecs.EcranEspaceCS(contexte) },
-
-        "delegations" to { contexte -> fr.coprofirst.app.fonctions.delegations.EcranDelegations(contexte) },
-
-        // "admin" — #26
-
-    )
-
-    /**
-     * Les fiches d'éléments, par nature (`Destination.Element`) : ce qu'un menu déclare
-     * savoir ouvrir, pour qu'un autre écran (le fil, une notification) y mène sans dépendre
-     * de son code. Même règle qu'au-dessus : UNE ligne réservée par nature, que la session
-     * du menu remplace par
-     *     "affaire" to FicheDeMenu(R.string.affaire_titre) { contexte, id -> DetailAffaire(contexte, id) },
-     */
-    val fiches: Map<String, FicheDeMenu> = mapOf(
-        "affaire" to FicheDeMenu(R.string.affaire_titre) { contexte, id -> fr.coprofirst.app.fonctions.affaires.EcranFicheAffaire(contexte, id) },
-
+/** Ce que la couche commune inscrit elle-même : la fiche d'un sondage (`commun/detail/sondage`). */
+private object InscriptionCommune : InscriptionDeMenu {
+    override val fiches: Map<String, FicheDeMenu> = mapOf(
         "sondage" to FicheDeMenu(R.string.sondage_titre) { contexte, id ->
             id.toIntOrNull()?.let { fr.coprofirst.app.commun.detail.sondage.PageSondage(it, contexte.session) }
         },
-
     )
+}
+
+/**
+ * LE registre des écrans de menu, comme l'iOS (`RegistreDesMenus`) : l'identifiant de la
+ * page du site → l'écran qui l'ouvre ; la nature d'un élément → sa fiche. Une page sans
+ * écran affiche « Bientôt ». Il se COMPOSE des inscriptions des menus (`RegistreGenere`,
+ * généré) et de la couche commune ; une page ou une fiche inscrite deux fois arrête l'app
+ * au premier accès — et les tests avant elle.
+ */
+object RegistreDesMenus {
+    private val inscriptions: List<InscriptionDeMenu> = RegistreGenere.inscriptions + InscriptionCommune
+
+    val ecrans: Map<String, EcranDeMenu> = fusionner("La page") { it.ecrans }
+
+    val fiches: Map<String, FicheDeMenu> = fusionner("La fiche") { it.fiches }
+
+    private fun <V> fusionner(quoi: String, lire: (InscriptionDeMenu) -> Map<String, V>): Map<String, V> {
+        val tout = LinkedHashMap<String, V>()
+        inscriptions.forEach { inscription ->
+            lire(inscription).forEach { (cle, valeur) -> check(tout.put(cle, valeur) == null) { "$quoi « $cle » est inscrite deux fois" } }
+        }
+        return tout
+    }
 
     /** L'écran de cette page, ou « Bientôt ». */
     @Composable

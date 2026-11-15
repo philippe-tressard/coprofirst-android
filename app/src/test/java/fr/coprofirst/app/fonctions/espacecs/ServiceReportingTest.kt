@@ -4,6 +4,8 @@
 package fr.coprofirst.app.fonctions.espacecs
 
 import fr.coprofirst.app.charte.Palettes
+import fr.coprofirst.app.navigation.Destination
+import fr.coprofirst.app.navigation.RegistreDesMenus
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -68,5 +70,18 @@ class ServiceReportingTest {
         assertEquals(listOf(c.palier2, c.neutreFond), couleursDeTranche("plusieurs", c))
         assertEquals(listOf(c.textMuted), couleursDeTranche("inconnue", c))
         assertEquals(listOf(c.textMuted), couleursDeTranche(null, c))
+    }
+
+    /**
+     * Une affaire s'ouvre par la porte, sous sa nature « affaire » — et seulement quand un menu
+     * déclare sa fiche (Mes affaires) : sinon, pas de lien qui ne mène nulle part.
+     */
+    @Test
+    fun uneAffaireSOuvreParLaPorte() {
+        val demandees = mutableListOf<Destination>()
+        val lien = lienAffaire({ demandees += it; true }, 12)
+        assertEquals("affaire" in RegistreDesMenus.fiches, lien != null)
+        lien?.invoke()
+        if (lien != null) assertEquals(listOf(Destination.Element("affaire", "12")), demandees)
     }
 }

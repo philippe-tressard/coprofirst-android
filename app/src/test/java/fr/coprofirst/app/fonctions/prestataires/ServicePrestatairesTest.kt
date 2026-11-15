@@ -53,7 +53,7 @@ class ServicePrestatairesTest {
     @Test
     fun lesDonneesPartageesSeLisentDuContrat() = runTest {
         val donnees = DonneesPrestataires.lire(service)
-        assertEquals(listOf(1, 2, 3, 4), donnees.prestataires.map { it.id })
+        assertEquals(listOf(1, 2, 3, 4, 5), donnees.prestataires.map { it.id })
         val ascenseurs = donnees.prestataires.first()
         assertEquals("maintenance_depannage", ascenseurs.type)
         assertEquals("les numéros SERVIS, pas le champ brut", listOf("01 99 00 00 11", "01 99 00 00 12"), ascenseurs.telephones)
@@ -71,7 +71,7 @@ class ServicePrestatairesTest {
     fun sansEquipementsLEcranResteLisible() = runTest {
         equipementsEnPanne = true
         val donnees = DonneesPrestataires.lire(service)
-        assertEquals(4, donnees.prestataires.size)
+        assertEquals(5, donnees.prestataires.size)
         assertEquals("ascenseur", donnees.equipement("ascenseur"))
     }
 
@@ -94,6 +94,37 @@ class ServicePrestatairesTest {
                 ),
             ),
         )
+    }
+
+    @Test
+    fun leRemplacementEstLuTelQuilEstServi() = runTest {
+        val contrats = service.contrats(archives = false).associateBy { it.id }
+        val ancien = contrats.getValue(2).remplacement
+        assertEquals("2026-11-30", ancien.resilieLe)
+        assertEquals(ContratLie(4, "Vérification des extincteurs", "Protection Incendie Exemple", "2026-12-01"), ancien.remplacePar)
+        assertTrue(ancien.estDatee)
+        val nouveau = contrats.getValue(4).remplacement
+        assertEquals(listOf("Contrôles Sécurité Exemple"), nouveau.remplace.map { it.prestataireNom })
+        assertEquals("sans remplacement : rien", RemplacementContrat(), contrats.getValue(1).remplacement)
+        assertEquals(3, service.prestataires(archives = false).first().nbNotations)
+    }
+
+    @Test
+    fun leRecapitulatifDesAvisEstCeluiQueLApiSert() = runTest {
+        val exercices = service.interventions(1)
+        assertTrue(simules.recues.contains("GET /api/prestataires/1/interventions"))
+        assertEquals(listOf(2026, 2025), exercices.map { it.annee })
+        val recent = exercices.first()
+        assertEquals(2 to 1, recent.nbInterventions to recent.nbNotees)
+        assertEquals("le compte servi, sans les états à zéro", listOf("excellent" to 2), recent.comptes)
+        assertEquals(listOf("neutre" to 1), exercices[1].comptes)
+        assertEquals("les interventions, puis les avis sans affaire", listOf("t45", "t38", "generaux"), recent.lignes.map { it.cle })
+        assertTrue("une intervention non notée", recent.lignes[1].avis.isEmpty())
+        val avis = recent.lignes.first().avis.single()
+        assertEquals("excellent", avis.etat)
+        assertEquals("Conseil syndical", avis.auteurNom)
+        assertEquals("le droit servi, jamais recalculé", true, recent.lignes.last().avis.single().peutModifier)
+        assertEquals(emptyList<ExerciceAvis>(), service.interventions(2))
     }
 
     @Test
