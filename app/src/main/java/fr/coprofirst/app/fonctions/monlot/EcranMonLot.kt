@@ -6,6 +6,7 @@ package fr.coprofirst.app.fonctions.monlot
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -22,10 +23,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryScrollableTabRow
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -33,7 +30,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -45,16 +41,17 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.commun.AvisDuGeste
+import fr.coprofirst.app.commun.AvisEphemere
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.MessageErreur
+import fr.coprofirst.app.commun.onglets.BarreOnglets
 import fr.coprofirst.app.commun.texte.TexteDuSite
 import fr.coprofirst.app.navigation.ActionsDeBarre
 import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.navigation.ContexteDeMenu
 import fr.coprofirst.app.navigation.DroitsOnglet
-import fr.coprofirst.app.navigation.OngletDuSite
-import kotlinx.coroutines.launch
 
 /** Les repères des tests d'interface : les identifiants d'accessibilité de l'iOS. */
 object ReperesMonLot {
@@ -92,13 +89,17 @@ internal fun EcranMonLot(service: ServiceMonLot, barre: BarreDuHaut, droitsConnu
     var relecture by rememberSaveable { mutableIntStateOf(0) }
     var versionAcces by rememberSaveable { mutableIntStateOf(0) }
     var feuille by rememberSaveable { mutableStateOf<FeuilleAcces?>(null) }
-    val avis = remember { SnackbarHostState() }
-    val portee = rememberCoroutineScope()
+    // L'avis du geste (le « toast » du site) : une feuille le dit à sa fermeture.
+    val avis = remember { AvisDuGeste() }
     val ressources = LocalResources.current
-    // L'avis du geste (le « toast » du site), 4 s : PROVISOIRE, l'avis éphémère commun viendra (#15, #42).
-    val annoncer: (Int) -> Unit = { texte -> portee.launch { avis.showSnackbar(ressources.getString(texte)) } }
+    val annoncer: (Int) -> Unit = { texte -> avis.dire(ressources.getString(texte)) }
+    val annoncerApresFeuille: (Int) -> Unit = { texte -> avis.direApresFermeture(ressources.getString(texte)) }
+    val fermerFeuille = {
+        feuille = null
+        avis.feuilleFermee()
+    }
 
-    Box(Modifier.fillMaxSize()) {
+    AvisEphemere(avis, Modifier.fillMaxSize()) {
         PullToRefreshBox(isRefreshing = false, onRefresh = { relecture++ }, modifier = Modifier.fillMaxSize()) {
             Chargement(
                 charger = { DonneesMonLot.lire(service, droitsConnus) },
@@ -111,7 +112,7 @@ internal fun EcranMonLot(service: ServiceMonLot, barre: BarreDuHaut, droitsConnu
                     Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    BarreOnglets(donnees.onglets, ouvert) { onglet = it }
+                    BarreOnglets(donnees.onglets, ouvert, marges = PaddingValues(horizontal = Mise.marge)) { onglet = it }
                     Column(
                         Modifier.widthIn(max = 720.dp).fillMaxWidth().padding(horizontal = Mise.marge, vertical = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(Mise.ecart),
@@ -120,18 +121,17 @@ internal fun EcranMonLot(service: ServiceMonLot, barre: BarreDuHaut, droitsConnu
                     }
                 }
                 when (feuille) {
-                    FeuilleAcces.Demander -> FeuilleDemander(donnees.lots, service, fermer = { feuille = null }) {
-                        annoncer(R.string.monlot_demande_envoyee)
+                    FeuilleAcces.Demander -> FeuilleDemander(donnees.lots, service, fermer = fermerFeuille) {
+                        annoncerApresFeuille(R.string.monlot_demande_envoyee)
                     }
-                    FeuilleAcces.Declarer -> FeuilleDeclarer(service, fermer = { feuille = null }) { importResolu ->
-                        annoncer(if (importResolu) R.string.monlot_acces_enregistre_import else R.string.monlot_acces_enregistre)
+                    FeuilleAcces.Declarer -> FeuilleDeclarer(service, fermer = fermerFeuille) { importResolu ->
+                        annoncerApresFeuille(if (importResolu) R.string.monlot_acces_enregistre_import else R.string.monlot_acces_enregistre)
                         versionAcces++
                     }
                     null -> Unit
                 }
             }
         }
-        SnackbarHost(avis, Modifier.align(Alignment.BottomCenter).padding(Mise.marge))
     }
 }
 
@@ -197,24 +197,6 @@ private fun GestesAcces(barre: BarreDuHaut, peutDemander: Boolean, ouvrir: (Feui
                     modifier = Modifier.testTag(ReperesMonLot.DECLARER),
                 )
             }
-        }
-    }
-}
-
-/**
- * La barre des onglets de la page, dans l'ordre du site (`OngletsDuSite`), repères
- * `onglet.<id>` comme l'iOS. PROVISOIRE : le cadre à onglets commun viendra (#15, 15c ; #42).
- */
-@Composable
-private fun BarreOnglets(onglets: List<OngletDuSite>, actif: String, choisir: (String) -> Unit) {
-    PrimaryScrollableTabRow(selectedTabIndex = onglets.indexOfFirst { it.id == actif }.coerceAtLeast(0), edgePadding = Mise.marge) {
-        onglets.forEach { o ->
-            Tab(
-                selected = o.id == actif,
-                onClick = { choisir(o.id) },
-                text = { Text(o.libelle) },
-                modifier = Modifier.testTag(ReperesMonLot.onglet(o.id)),
-            )
         }
     }
 }

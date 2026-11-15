@@ -17,7 +17,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Key
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +38,7 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Carte
+import fr.coprofirst.app.commun.Pastille
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 
@@ -71,13 +71,12 @@ private fun LotsStandard(lots: List<LotDuCompte>) {
             Text(stringResource(R.string.monlot_lot_affiche).uppercase(), style = Typo.libelle(), color = LocalCouleurs.current.textMuted)
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 lots.forEach { lot ->
-                    FilterChip(
-                        selected = lot.id == selection?.id,
-                        onClick = { choisi = lot.id },
-                        // « Bât. A / appartement - 15 » (`optionsLots` du site).
-                        label = { Text("${lot.batimentNom ?: FormatsDuSite.TIRET} / ${lot.type ?: FormatsDuSite.TIRET} - ${lot.numero}") },
+                    // « Bât. A / appartement - 15 » (`optionsLots` du site).
+                    Pastille(
+                        libelle = "${lot.batimentNom ?: FormatsDuSite.TIRET} / ${lot.type ?: FormatsDuSite.TIRET} - ${lot.numero}",
+                        retenue = lot.id == selection?.id,
                         modifier = Modifier.testTag(ReperesMonLot.lot(lot.id)),
-                    )
+                    ) { choisi = lot.id }
                 }
             }
         }
