@@ -43,7 +43,7 @@ object RegistreDesMenus {
         //     "profil" to { contexte -> EcranProfil(contexte) },
         // et ne touche à aucune autre.
 
-        // "tableau-de-bord" — #11
+        "tableau-de-bord" to { contexte -> fr.coprofirst.app.fonctions.fil.EcranFil(contexte) },
 
         // "mes-demandes" — #16
 
