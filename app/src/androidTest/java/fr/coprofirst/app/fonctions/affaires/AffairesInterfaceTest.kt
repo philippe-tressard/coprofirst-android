@@ -207,16 +207,16 @@ class AffairesInterfaceTest {
         attendreTexte("Aucune affaire trouvée")
     }
 
-    /** L'appui long ouvre les gestes de la carte ; « Archiver » y attend #99 (les nuls d'un PATCH). */
+    /** L'appui long offre « Archiver » (`peut_archiver` servi) : la carte part aux Archives. */
     @Test
-    fun lAppuiLongOuvreLesGestes() {
+    fun uneAffaireSArchive() {
         val service = ouvrir()
         attendre(ReperesAffaires.carte("A-0002"))
         el(ReperesAffaires.carte("A-0002")).performTouchInput { longClick() }
-        attendre(ReperesAffaires.gestes("A-0002"))
-        attendreTexte("Copier le numéro")
-        assertEquals(ReglesAffaires.GESTES_PAR_PATCH, ecran.onAllNodes(hasTestTag(ReperesAffaires.archiver("A-0002")), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty())
-        assertEquals(emptyList<Int>(), service.archivees)
+        attendre(ReperesAffaires.archiver("A-0002"))
+        el(ReperesAffaires.archiver("A-0002")).performClick()
+        disparait(ReperesAffaires.carte("A-0002"))
+        assertEquals(listOf(2), service.archivees)
     }
 
     /** Au Kanban, « Déplacer vers… » pose l'état servi ; clore demande d'abord, à cause des liées. */

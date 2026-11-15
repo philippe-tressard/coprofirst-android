@@ -99,7 +99,8 @@ class ServiceAffairesApiTest {
     fun archiverPoseArchiveManuel() = runTest {
         routes("PATCH /api/tickets/4" to (200 to ticket(4, archivee = true)))
         val lue = service.archiver(4)
-        assertTrue(recues.single(), "\"archive_manuel\":true" in recues.single())
+        // Rien d'autre ne part : un null envoyé serait appliqué (les affaires liées, #99).
+        assertEquals("PATCH /api/tickets/4 {\"archive_manuel\":true}", recues.single())
         assertTrue(lue.archivee)
     }
 
@@ -191,7 +192,7 @@ class ServiceAffairesApiTest {
         assertTrue(recues.none { it.contains("/messages") })
     }
 
-    /** Un champ du corps JSON d'une requête reçue : `null` s'il est absent OU envoyé à `null` (#99). */
+    /** Un champ du corps JSON d'une requête reçue : `null` s'il est absent. */
     private fun champ(recue: String, cle: String): String? =
         Json.parseToJsonElement(recue.substringAfter(' ').substringAfter(' ')).jsonObject[cle]
             ?.takeUnless { it is JsonNull }?.jsonPrimitive?.content
