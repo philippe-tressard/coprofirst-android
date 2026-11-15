@@ -53,6 +53,11 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   « Tout récupérer » ; la gestion locative en lecture (baux actifs, archives, inventaire).
   Le tableau des charges, créer ou terminer un bail et tenir l'inventaire restent sur le
   site, et l'écran le dit.
+- **Délégations aidant** (Plus › Délégations) : les délégations que le compte voit, leur
+  état et leur période ; « Accepter » et « Révoquer » (confirmé) quand le serveur les ouvre
+  au compte ; au conseil syndical, « Nouvelle délégation » (personne aidée, proche aidant,
+  motif, date de fin facultative). Une délégation est en lecture seule : l'aidant consulte,
+  sans agir au nom de la personne aidée.
 
 Pas encore : les écrans des pages, le courriel retenu et la
 biométrie, les personnages de la démo, le QR code, les liens d'application (tickets
