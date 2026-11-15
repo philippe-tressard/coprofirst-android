@@ -5,6 +5,8 @@ package fr.coprofirst.app.fonctions.admin
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.isSelected
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -35,6 +37,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.time.Instant
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * Le Paramétrage à l'écran, comme l'iOS (`AdminUITests`) : chacun n'y ouvre que ce que son
@@ -75,7 +78,7 @@ class AdminInterfaceTest {
             ecran.onNodeWithTag(ReperesOnglets.onglet(id)).assertExists()
         }
         ecran.onNodeWithTag(ReperesOnglets.onglet("maintenance")).performScrollTo().performClick()
-        ecran.waitUntil(5_000) { service.lectures.contains("export") }
+        ecran.waitUntil(DELAI_MS) { service.lectures.contains("export") }
         ecran.onNodeWithTag(ReperesAdmin.EXPORT).performScrollTo().assertIsDisplayed()
         ecran.onNodeWithTag(ReperesAdmin.tache("backup")).assertDoesNotExist()
         assertEquals("la santé est à l'opérateur seul", false, service.lectures.contains("sante"))
@@ -91,7 +94,7 @@ class AdminInterfaceTest {
         ouvrir(operateur)
         ecran.onNodeWithTag(ReperesOnglets.onglet("maintenance")).assertIsSelected()
         ecran.onNodeWithTag(ReperesOnglets.onglet("telemetry")).assertDoesNotExist()
-        ecran.waitUntil(5_000) { service.lectures.contains("sante") }
+        ecran.waitUntil(DELAI_MS) { service.lectures.contains("sante") }
         ecran.onNodeWithTag(ReperesAdmin.tache("backup")).performScrollTo().assertIsDisplayed()
         ecran.onNodeWithText("NŒUD-B en retard").performScrollTo().assertIsDisplayed()
         ecran.onNodeWithTag(ReperesAdmin.ANOMALIES).performScrollTo().assertIsDisplayed()
@@ -102,21 +105,24 @@ class AdminInterfaceTest {
     fun laTelemetrieChangeDeVue() {
         ouvrir(administrateur)
         ecran.onNodeWithTag(ReperesOnglets.onglet("telemetry")).performScrollTo().performClick()
-        ecran.waitUntil(5_000) { service.portees.isNotEmpty() }
+        ecran.waitUntil(DELAI_MS) { service.portees.isNotEmpty() }
         ecran.onNodeWithTag(ReperesAdmin.GRAPHE).performScrollTo().assertIsDisplayed()
         // Le graphe a fait défiler la page : la pastille revient à l'écran avant d'être touchée.
         ecran.onNodeWithTag(ReperesAdmin.vue(PorteeTelemetrie.Mois)).performScrollTo().performClick()
-        ecran.waitUntil(5_000) { service.portees.lastOrNull() == PorteeTelemetrie.Mois }
-        ecran.onNodeWithTag(ReperesAdmin.vue(PorteeTelemetrie.Mois)).assertIsSelected()
+        // D'abord l'écran (le toucher est-il arrivé ?), puis la relecture qu'il déclenche.
+        ecran.waitUntil(DELAI_MS) {
+            ecran.onAllNodes(hasTestTag(ReperesAdmin.vue(PorteeTelemetrie.Mois)) and isSelected()).fetchSemanticsNodes().isNotEmpty()
+        }
+        ecran.waitUntil(DELAI_MS) { service.portees.lastOrNull() == PorteeTelemetrie.Mois }
         ecran.onNodeWithTag(ReperesAdmin.FILTRE).performScrollTo().performClick()
-        ecran.waitUntil(5_000) { service.sans.lastOrNull() == true }
+        ecran.waitUntil(DELAI_MS) { service.sans.lastOrNull() == true }
     }
 
     @Test
     fun lesUtilisateursEtLaFiche() {
         ouvrir(administrateur)
         ecran.onNodeWithTag(ReperesOnglets.onglet("utilisateurs")).performScrollTo().performClick()
-        ecran.waitUntil(5_000) { service.lectures.contains("utilisateurs") }
+        ecran.waitUntil(DELAI_MS) { service.lectures.contains("utilisateurs") }
         ecran.onNodeWithTag(ReperesAdmin.utilisateur(11)).assertExists()
         ecran.onNodeWithTag(ReperesAdmin.RECHERCHE).performTextInput("dominique")
         ecran.onNodeWithTag(ReperesAdmin.utilisateur(11)).assertDoesNotExist()
@@ -126,41 +132,46 @@ class AdminInterfaceTest {
         ecran.onNodeWithTag(ReperesAdmin.role("operateur")).assertDoesNotExist()
         // Un geste ferme la fiche, son annonce suit.
         ecran.onNodeWithTag(ReperesAdmin.FICHE_COMMUNAUTE).performScrollTo().performClick()
-        ecran.waitUntil(5_000) { service.lectures.contains("ban-12") }
-        ecran.waitUntil(5_000) { ecran.onAllNodesWithTag(ReperesAdmin.FICHE_FERMER).fetchSemanticsNodes().isEmpty() }
+        ecran.waitUntil(DELAI_MS) { service.lectures.contains("ban-12") }
+        ecran.waitUntil(DELAI_MS) { ecran.onAllNodesWithTag(ReperesAdmin.FICHE_FERMER).fetchSemanticsNodes().isEmpty() }
     }
 
     @Test
     fun laConfirmationDitVotreCompte() {
         ouvrir(administrateur)
         ecran.onNodeWithTag(ReperesOnglets.onglet("utilisateurs")).performScrollTo().performClick()
-        ecran.waitUntil(5_000) { service.lectures.contains("utilisateurs") }
+        ecran.waitUntil(DELAI_MS) { service.lectures.contains("utilisateurs") }
         ecran.onNodeWithTag(ReperesAdmin.utilisateur(11)).performScrollTo().performClick()
         ecran.onNodeWithTag(ReperesAdmin.role("conseil_syndical")).performScrollTo().performClick()
         ecran.onNodeWithText("Retirer le rôle Conseil syndical de votre compte ?").assertIsDisplayed()
         ecran.onNodeWithTag(ReperesAdmin.FICHE_CONFIRMER).performClick()
-        ecran.waitUntil(5_000) { service.lectures.contains("role-11-conseil_syndical") }
+        ecran.waitUntil(DELAI_MS) { service.lectures.contains("role-11-conseil_syndical") }
     }
 
     @Test
     fun lesDemandesDeProfilSeTraitent() {
         ouvrir(administrateur)
         ecran.onNodeWithTag(ReperesOnglets.onglet("a_traiter")).assertIsSelected()
-        ecran.waitUntil(5_000) { service.lectures.contains("demandes") }
+        ecran.waitUntil(DELAI_MS) { service.lectures.contains("demandes") }
         ecran.onNodeWithTag(ReperesAdmin.demande(41)).performScrollTo().assertIsDisplayed()
         ecran.onNodeWithTag("${ReperesAdmin.demande(41)}.approuver").performScrollTo().performClick()
-        ecran.waitUntil(5_000) { ecran.onAllNodesWithTag(ReperesAdmin.demande(41)).fetchSemanticsNodes().isEmpty() }
+        ecran.waitUntil(DELAI_MS) { ecran.onAllNodesWithTag(ReperesAdmin.demande(41)).fetchSemanticsNodes().isEmpty() }
         ecran.onNodeWithTag("${ReperesAdmin.demande(42)}.rejeter").performScrollTo().performClick()
         ecran.onNodeWithTag(ReperesAdmin.DEMANDE_MOTIF).performTextInput("Bail non fourni")
         ecran.onNodeWithTag(ReperesAdmin.DEMANDE_REJETER).performClick()
-        ecran.waitUntil(5_000) { service.lectures.contains("rejeter-42-Bail non fourni") }
+        ecran.waitUntil(DELAI_MS) { service.lectures.contains("rejeter-42-Bail non fourni") }
     }
 
-    /** La résidence simulée : des réponses inventées, aucun nom ni machine réels. */
+    private companion object {
+        /** L'émulateur de la CI est lent : le délai des autres tests d'interface. */
+        const val DELAI_MS = 10_000L
+    }
+
+    /** La résidence simulée : des réponses inventées, aucun nom ni machine réels. Lue par le fil du test, écrite par celui de l'écran. */
     private class ServiceSimule : ServiceAdmin {
-        val lectures = mutableListOf<String>()
-        val portees = mutableListOf<PorteeTelemetrie>()
-        val sans = mutableListOf<Boolean>()
+        val lectures: MutableList<String> = CopyOnWriteArrayList()
+        val portees: MutableList<PorteeTelemetrie> = CopyOnWriteArrayList()
+        val sans: MutableList<Boolean> = CopyOnWriteArrayList()
 
         override suspend fun santeTaches(): SanteTaches {
             lectures += "sante"
