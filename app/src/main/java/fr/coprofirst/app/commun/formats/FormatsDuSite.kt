@@ -16,6 +16,7 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.util.Currency
 import java.util.Locale
 
@@ -91,6 +92,32 @@ object FormatsDuSite {
 
     fun jourCourt(iso: String?, semaine: Boolean = true, maintenant: Instant = Instant.now()) =
         jourCourt(lire(iso), semaine, maintenant)
+
+    /**
+     * Une date RELATIVE à `maintenant`, comme l'iOS (`.relative(presentation: .named)`,
+     * `RelativeDateTimeFormatter`) : l'écart se compte à Paris en années, mois, semaines,
+     * jours, heures, minutes puis secondes, et seule la plus grande unité non nulle se dit —
+     * « hier », « il y a 3 jours », « la semaine dernière », « dans 2 heures », « maintenant ».
+     */
+    fun relatif(valeur: Instant?, maintenant: Instant = Instant.now()): String {
+        valeur ?: return TIRET
+        val passe = valeur.isBefore(maintenant)
+        var de = (if (passe) valeur else maintenant).atZone(PARIS)
+        val a = (if (passe) maintenant else valeur).atZone(PARIS)
+        for (unite in UNITES_RELATIVES) {
+            val n = unite.between(de, a)
+            if (n > 0) return Relatif.dire(unite, n, passe)
+            de = de.plus(n, unite)
+        }
+        return "maintenant"
+    }
+
+    fun relatif(iso: String?, maintenant: Instant = Instant.now()) = relatif(lire(iso), maintenant)
+
+    private val UNITES_RELATIVES = listOf(
+        ChronoUnit.YEARS, ChronoUnit.MONTHS, ChronoUnit.WEEKS, ChronoUnit.DAYS,
+        ChronoUnit.HOURS, ChronoUnit.MINUTES, ChronoUnit.SECONDS,
+    )
 
     /** Le JOUR de Paris d'un instant, « 2026-04-10 » — jamais le jour UTC. */
     fun jourIso(valeur: Instant): String = valeur.atZone(PARIS).toLocalDate().toString()
