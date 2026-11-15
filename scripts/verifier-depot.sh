@@ -17,6 +17,7 @@
 #      (client-api) seul — autotest d'abord pour chaque motif.
 #   7 bis. aucun format de date ou de nombre hors de FormatsDuSite ;
 #   7 ter. aucun HTML rendu par une vue web ou le lecteur HTML d'Android : TexteDuSite ;
+#   7 quater. aucune version écrite à la main (elle se déduit de git) ;
 #   8. un seul bouton plein, `BoutonPlein` (commun/Boutons.kt) ;
 #   9. les générateurs du build passent leurs tests (scripts/test_*.py) ;
 #  10. aucun chemin de .claude/worktrees/ suivi.
@@ -153,6 +154,13 @@ HTML_MAIN='WebView|Html\.fromHtml|HtmlCompat|loadData\('
 autotest_motif "HTML hors de TexteDuSite" "$HTML_MAIN" '    Text(HtmlCompat.fromHtml(html, 0).toString())' '    TexteRiche(html = affaire.description)'
 autotest_motif "vue web" "$HTML_MAIN" '    AndroidView(factory = { WebView(it) })' '    Text(TexteDuSite.apercu(html))'
 interdire "$HTML_MAIN" "texte HTML rendu hors de commun/texte (vue web, lecteur HTML d'Android) — passer par TexteDuSite ou TexteRiche"
+
+# La version se DÉDUIT de git (app/build.gradle.kts) : aucune PR ne l'écrit. Un
+# `versionCode`/`versionName` littéral reviendrait au conflit des PR parallèles.
+VERSION_ECRITE='^[[:space:]]*version(Code|Name)[[:space:]]*=[[:space:]]*("|[0-9])'
+autotest_motif "version écrite" "$VERSION_ECRITE" '        versionCode = 9' '        versionCode = versionDeGit.code'
+motif=$(premier_motif "$VERSION_ECRITE" app/build.gradle.kts)
+[ -z "$motif" ] || echec "app/build.gradle.kts : version écrite à la main ($motif) — elle se déduit de git"
 
 # Les générateurs du build (palettes, logo) : leurs tests, dont la génération des
 # fichiers recopiés. Chaque `scripts/test_*.py` versionné est joué.

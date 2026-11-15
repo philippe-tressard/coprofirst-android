@@ -10,6 +10,41 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+/**
+ * La VERSION se déduit au build — jamais écrite dans une PR : plusieurs sessions
+ * travaillent en parallèle, et deux PR posaient la même (0.9.0). Le socle veut la version
+ * posée au tour, pas par chaque lot.
+ * - `versionCode` = le nombre de commits de l'historique : chaque fusion sur `main` l'augmente
+ *   (Google Play exige un code croissant) ;
+ * - `versionName` = `<coprofirst.version.base>.<versionCode>` (« 0.8.13 ») — la base, dans
+ *   gradle.properties, ne change que sur une décision de sortie ; l'étiquette posée à la
+ *   soumission (#4) reprend ce nom.
+ * Un historique incomplet (clone superficiel) ou illisible ARRÊTE le build : une version
+ * fausse n'est jamais posée en silence (la CI clone avec `fetch-depth: 0`).
+ */
+data class VersionDeGit(val code: Int, val nom: String)
+
+val versionDeGit: VersionDeGit = run {
+    fun git(vararg args: String): String? = runCatching {
+        providers.exec { commandLine("git", *args); isIgnoreExitValue = true }
+            .standardOutput.asText.get().trim().takeIf { it.isNotEmpty() }
+    }.getOrNull()
+    if (git("rev-parse", "--is-shallow-repository") != "false") {
+        throw GradleException("❓ Version INCONNUE : historique git incomplet ou illisible (clone superficiel ? fetch-depth: 0)")
+    }
+    val code = git("rev-list", "--count", "HEAD")?.toIntOrNull()
+        ?: throw GradleException("❓ Version INCONNUE : nombre de commits illisible")
+    val base = providers.gradleProperty("coprofirst.version.base").orNull
+        ?.takeIf { Regex("""\d+\.\d+""").matches(it) }
+        ?: throw GradleException("❓ Version INCONNUE : coprofirst.version.base (gradle.properties) absente ou mal formée")
+    VersionDeGit(code, "$base.$code")
+}
+
+tasks.register("afficherVersion") {
+    val v = versionDeGit
+    doLast { println("versionCode=${v.code} versionName=${v.nom}") }
+}
+
 android {
     namespace = "fr.coprofirst.app"
     compileSdk {
@@ -22,8 +57,8 @@ android {
         applicationId = "fr.coprofirst.app"
         minSdk = 26
         targetSdk = 37
-        versionCode = 8
-        versionName = "0.8.0"
+        versionCode = versionDeGit.code
+        versionName = versionDeGit.nom
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

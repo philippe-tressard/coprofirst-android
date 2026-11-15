@@ -33,6 +33,11 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   tranche par le choix que l'iOS a fait ; on en reprend le comportement, jamais le code.
   Une divergence (contrainte d'Android, étape intermédiaire) se **déclare** dans le
   commentaire du code et dans la PR, avec le ticket qui la résorbe.
+- **Version** : elle se DÉDUIT au build (`app/build.gradle.kts`) — code = nombre de
+  commits, nom = `coprofirst.version.base` (gradle.properties) + `.` + code. **Aucune PR
+  ne la touche** (pas de commit « Version x.y.z ») : plusieurs sessions en parallèle se
+  la disputaient. La base ne change que sur une décision de sortie ; `verifier-depot.sh`
+  refuse une version écrite à la main.
 - **Identifiant** `fr.coprofirst.app`, aligné sur l'iOS ; il se fige à la première
   publication. Signature **au poste** seulement, jamais en CI. Aucune publication
   (Play Console, piste de test ouverte) sans demande explicite de Philippe.

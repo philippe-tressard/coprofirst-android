@@ -29,6 +29,11 @@ l'app iOS est la référence fonctionnelle (`CLAUDE.md`).
    date ou de nombre à la main**, **aucun `Button` de Material** : `verifier-depot.sh`
    les refuse.
 4. **Ce que l'iOS laisse au site reste au site**, et l'écran le dit.
+5. **Pas de version dans une PR** : elle se déduit au build (`CLAUDE.md`, « Version »).
+6. **Fusion** : la PR s'arme en fusion automatique dès qu'elle est ouverte —
+   `gh pr merge <n> --auto --squash` ; elle fusionne seule quand les checks requis sont
+   verts (Dépôt, Build, Interface), et sa branche se supprime. Une CI rouge se corrige
+   dans la PR ; on ne désarme pas pour fusionner autrement.
 
 ## Un écran de menu, de bout en bout
 
