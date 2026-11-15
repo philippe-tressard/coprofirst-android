@@ -12,8 +12,8 @@ class InstallationsConnuesTest {
         override fun ecrire(valeur: String) { this.valeur = valeur }
     }
 
-    private val a = Installation("https://a.exemple.fr", "A", "1.27.0")
-    private val b = Installation("https://b.exemple.fr", "B")
+    private val a = Installation("https://a.exemple.test", "A", "1.27.0")
+    private val b = Installation("https://b.exemple.test", "B")
 
     @Test
     fun laPlusRecenteEnTeteUneFoisParAdresse() {
@@ -34,7 +34,7 @@ class InstallationsConnuesTest {
     @Test
     fun stockageIllisibleOuAdresseInvalideIgnores() {
         assertEquals(emptyList<Installation>(), InstallationsConnues(EnMemoire("pas du json")).liste)
-        val melange = """[{"url":"http://clair.exemple.fr","nom":"X"},{"url":"https://a.exemple.fr","nom":"A","inconnu":1}]"""
+        val melange = """[{"url":"http://clair.exemple.test","nom":"X"},{"url":"https://a.exemple.test","nom":"A","inconnu":1}]"""
         assertEquals(listOf("A"), InstallationsConnues(EnMemoire(melange)).liste.map { it.nom })
     }
 }

@@ -14,7 +14,7 @@ import org.junit.Test
 class PreuveHoteTest {
     private val app = PreuveHote.IDENTIFIANT_APP
     private val serveur = MockWebServer().apply { start() }
-    private val adresse = AdresseInstallation.normaliser("residence.exemple.fr")!!
+    private val adresse = AdresseInstallation.normaliser("residence.exemple.test")!!
 
     @After
     fun arreter() = serveur.close()
@@ -38,7 +38,7 @@ class PreuveHoteTest {
         serveur.enqueue(MockResponse.Builder().code(200).body("""{"webcredentials":{"apps":["$app"]}}""").build())
         assertEquals(PreuveHote.Declaree, lire())
         assertEquals("/.well-known/apple-app-site-association", serveur.takeRequest().url.encodedPath)
-        serveur.enqueue(MockResponse.Builder().code(301).addHeader("Location", "https://ailleurs.exemple.org/x").build())
+        serveur.enqueue(MockResponse.Builder().code(301).addHeader("Location", "https://ailleurs.test/x").build())
         assertEquals(PreuveHote.Absente, lire())
         assertEquals(2, serveur.requestCount)
     }

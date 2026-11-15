@@ -11,7 +11,7 @@ import org.junit.Assert.fail
 import org.junit.Test
 
 class InstallationTest {
-    private val adresse = AdresseInstallation.normaliser("residence.exemple.fr")!!
+    private val adresse = AdresseInstallation.normaliser("residence.exemple.test")!!
     private val plancher = VersionContrat.PLANCHER
 
     private fun refus(cles: Map<String, String?>): ErreurService = try {
@@ -35,7 +35,7 @@ class InstallationTest {
             adresse,
             mapOf("site_nom" to "Les Glycines", "version_contrat" to plancher.toString(), "autre" to "x"),
         )
-        assertEquals(Installation("https://residence.exemple.fr", "Les Glycines", plancher.toString()), installation)
+        assertEquals(Installation("https://residence.exemple.test", "Les Glycines", plancher.toString()), installation)
     }
 
     @Test
