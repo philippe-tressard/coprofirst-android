@@ -42,6 +42,7 @@ import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.EtatVide
 import fr.coprofirst.app.commun.MessageErreur
+import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.navigation.ContexteDeMenu
 import java.time.Instant
 
@@ -54,10 +55,8 @@ import java.time.Instant
  * choisir plusieurs alertes et de les supprimer. Le balayage reste un raccourci, et un
  * toucher marque lu. Toute suppression se confirme : elle est définitive.
  *
- * ⚠️ Divergences déclarées, résorbées par la couche commune : l'iOS pose « Tout marquer
- * lu » et « Modifier » dans la barre du haut, et le nombre de non lues sous le titre — la
- * barre est commune ici, et ne prend pas encore d'actions d'un écran (#42) ; ils vont en
- * tête de l'écran. « Notifications lues supprimées » (l'avis éphémère de l'iOS) attend
+ * « Tout marquer lu » et « Modifier » sont dans la barre du haut, comme l'iOS
+ * (`ActionsNotifications`, et sa divergence déclarée). « Notifications lues supprimées » (l'avis éphémère de l'iOS) attend
  * l'avis commun (#15, 15c) ; la liste qui se vide et le retour haptique le disent d'ici
  * là. La cloche (ouverte en feuille, avec « OK ») est commune et vient avec 15c ; l'offre
  * des notifications push, avec #23.
@@ -69,19 +68,19 @@ fun EcranNotifications(contexte: ContexteDeMenu) {
         key = "notifications@${System.identityHashCode(session)}",
         factory = viewModelFactory { initializer { ParcoursNotifications(ServiceNotificationsApi(session)) } },
     )
-    EcranNotifications(parcours)
+    EcranNotifications(parcours, contexte.barre)
 }
 
 @Composable
-fun EcranNotifications(parcours: ParcoursNotifications) {
+fun EcranNotifications(parcours: ParcoursNotifications, barre: BarreDuHaut) {
     Chargement(charger = { parcours.charger() }, squelette = { SqueletteNotifications() }) { _, _ ->
-        ListeNotifications(parcours)
+        ListeNotifications(parcours, barre)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ListeNotifications(parcours: ParcoursNotifications) {
+private fun ListeNotifications(parcours: ParcoursNotifications, barre: BarreDuHaut) {
     val etat by parcours.etat.collectAsStateWithLifecycle()
     var enEdition by rememberSaveable { mutableStateOf(false) }
     var selection by remember { mutableStateOf(emptySet<Int>()) }
@@ -98,18 +97,19 @@ private fun ListeNotifications(parcours: ParcoursNotifications) {
         if (etat.confirmations > 0) haptique.performHapticFeedback(HapticFeedbackType.Confirm)
     }
 
+    ActionsNotifications(
+        barre = barre,
+        etat = etat,
+        enEdition = enEdition,
+        toutesChoisies = etat.liste.isNotEmpty() && selection.size == etat.liste.size,
+        toutMarquerLu = { parcours.lancer { toutMarquerLu() } },
+        toutChoisir = { toutes -> selection = if (toutes) emptySet() else etat.liste.mapTo(HashSet()) { it.id } },
+        basculer = {
+            enEdition = !enEdition
+            selection = emptySet()
+        },
+    )
     Column(Modifier.fillMaxSize()) {
-        BarreDesGestes(
-            etat = etat,
-            enEdition = enEdition,
-            toutesChoisies = etat.liste.isNotEmpty() && selection.size == etat.liste.size,
-            toutMarquerLu = { parcours.lancer { toutMarquerLu() } },
-            toutChoisir = { toutes -> selection = if (toutes) emptySet() else etat.liste.mapTo(HashSet()) { it.id } },
-            basculer = {
-                enEdition = !enEdition
-                selection = emptySet()
-            },
-        )
         PullToRefreshBox(
             isRefreshing = etat.rafraichissement,
             onRefresh = parcours::rafraichir,
@@ -120,6 +120,7 @@ private fun ListeNotifications(parcours: ParcoursNotifications) {
                 contentPadding = PaddingValues(horizontal = Mise.marge, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(Mise.ecart),
             ) {
+                if (etat.nonLues > 0 && !enEdition) item(key = "nonLues") { NombreNonLues(etat.nonLues) }
                 etat.echec?.let { echec ->
                     item(key = "echec") {
                         // L'iOS dit l'interruption et sa raison dans UN message ; `MessageErreur`

@@ -3,6 +3,8 @@
 
 package fr.coprofirst.app.fonctions.notifications
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasScrollAction
@@ -15,6 +17,8 @@ import androidx.compose.ui.test.performScrollToNode
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.api.NOTIFICATIONS_SELECTION_PAR_REQUETE
 import fr.coprofirst.app.ThemeCoproFirst
+import fr.coprofirst.app.navigation.ActionsDeclarees
+import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.delay
 import org.junit.Assert.assertEquals
@@ -89,7 +93,16 @@ class NotificationsInterfaceTest {
 
     private fun ouvrir(boite: BoiteSimulee = BoiteSimulee()): BoiteSimulee {
         val parcours = ParcoursNotifications(boite)
-        ecran.setContent { ThemeCoproFirst { EcranNotifications(parcours) } }
+        val barre = BarreDuHaut()
+        // La barre du haut de la résidence : les actions que l'écran y déclare.
+        ecran.setContent {
+            ThemeCoproFirst {
+                Column {
+                    Row { ActionsDeclarees(barre) }
+                    EcranNotifications(parcours, barre)
+                }
+            }
+        }
         return boite
     }
 
@@ -113,7 +126,7 @@ class NotificationsInterfaceTest {
         return ecran.onNodeWithTag("notification.$id")
     }
 
-    /** « Tout marquer lu » et « Modifier » se voient en haut ; tout se marque lu. */
+    /** « Tout marquer lu » et « Modifier » se voient dans la barre du haut ; tout se marque lu. */
     @Test
     fun toutSeMarqueLu() {
         ouvrir()
