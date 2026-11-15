@@ -40,6 +40,8 @@ data class Prestataire(
     val contacts: List<ContactPrestataire> = emptyList(),
     /** Les numéros SERVIS, découpés et dédoublonnés (`telephones`) : un lien d'appel chacun. */
     val telephones: List<String> = emptyList(),
+    /** Le nombre d'avis du conseil, SERVI (`nb_notations`). */
+    val nbNotations: Int = 0,
 )
 
 /** Un contrat d'entretien (`ContratRead`) ; dates en ISO (`AAAA-MM-JJ`). */
@@ -56,7 +58,33 @@ data class Contrat(
     val frequenceLibelle: String? = null,
     val prochaineVisite: String? = null,
     val notes: String? = null,
+    /** La résiliation et le remplacement servis (contrat ≥ 1.29.0). */
+    val remplacement: RemplacementContrat = RemplacementContrat(),
 )
+
+/** Le contrat à l'autre bout d'un remplacement (`ContratLie`) : de quoi le nommer et le dater. */
+data class ContratLie(
+    val id: Int,
+    val libelle: String,
+    val prestataireNom: String,
+    val dateDebut: String,
+    val resilieLe: String? = null,
+)
+
+/**
+ * La résiliation d'un contrat et son remplacement, tels que le serveur les SERT, comme
+ * l'iOS (`RemplacementContrat`) : la date, « la résiliation est passée » (`resilie`) et les
+ * deux bouts du remplacement — le sens inverse (`remplace`) est déduit par l'API.
+ */
+data class RemplacementContrat(
+    val resilieLe: String? = null,
+    val resilie: Boolean = false,
+    val remplacePar: ContratLie? = null,
+    val remplace: List<ContratLie> = emptyList(),
+) {
+    /** Une résiliation est datée : la carte ne dit plus « Sans échéance ». */
+    val estDatee: Boolean get() = resilieLe != null
+}
 
 /** Un équipement : son code, son libellé et son rang — des données servies, pas une table. */
 data class Equipement(val code: String, val libelle: String, val ordre: Int)
@@ -81,6 +109,7 @@ internal fun PrestataireRead.lu() = Prestataire(
     description = description,
     contacts = contacts.orEmpty().map { it.lu() },
     telephones = telephones,
+    nbNotations = nbNotations ?: 0,
 )
 
 private fun PrestataireContactLu.lu() =
@@ -98,7 +127,16 @@ internal fun ContratRead.lu() = Contrat(
     frequenceLibelle = frequenceLibelle,
     prochaineVisite = prochaineVisite?.toString(),
     notes = notes,
+    remplacement = RemplacementContrat(
+        resilieLe = resilieLe?.toString(),
+        resilie = resilie ?: false,
+        remplacePar = remplacePar?.lu(),
+        remplace = remplace.orEmpty().map { it.lu() },
+    ),
 )
+
+private fun fr.coprofirst.api.modeles.ContratLie.lu() =
+    ContratLie(id, libelle, prestataireNom, dateDebut.toString(), resilieLe?.toString())
 
 internal fun EquipementRead.lu() = Equipement(code, libelle, ordre)
 

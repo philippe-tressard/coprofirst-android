@@ -119,11 +119,31 @@ class EcranPrestatairesInterfaceTest {
         attendre("Le contrat".uppercase())
         attendre("↺ Mensuel")
         attendre("contrat-ascenseurs")
+        // 🔁 Le remplacement servi, sur les deux cartes.
+        attendreRepere(ReperesPrestataires.remplacement(2, 0))
+        attendre("🔁 Remplacé par Protection Incendie Exemple")
+        attendre("🔁 Remplace Contrôles Sécurité Exemple (résilié au 30/11/2026)")
 
         atteindre("onglet.consommations")
         // « 47 047 » : l'espace insécable de `FormatsDuSite.nombre`.
         attendre("Index 47")
         attendre("🔧 Eaux de la Ville")
+    }
+
+    /** Le récapitulatif servi : l'exercice le plus récent ouvert, un badge qui déplie l'avis. */
+    @Test
+    fun lesAvisDUnPrestataireSeDeplient() {
+        atteindre(ReperesPrestataires.prestataire(1))
+        attendreRepere(ReperesAvis.exercice(2026))
+        attendre("Avis du conseil syndical (3)".uppercase())
+        attendre("non notée")
+        atteindre(ReperesAvis.avis(11))
+        attendreRepere(ReperesAvis.detail(11))
+        attendre("délai respecté")
+        // L'exercice 2025 est replié : son avis ne se voit pas.
+        absent(ReperesAvis.avis(9))
+        atteindre(ReperesAvis.exercice(2025))
+        attendreRepere(ReperesAvis.avis(9))
     }
 
     @Test

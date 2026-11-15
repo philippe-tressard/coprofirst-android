@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -43,11 +44,8 @@ import fr.coprofirst.app.session.ErreurService
 
 /**
  * L'onglet « Contrats » (`OngletContrats.svelte`), comme l'iOS : un résumé, les contrats
- * groupés par équipement et rangés par échéance, les archives repliées en bas.
- *
- * ⚠️ Divergence déclarée : la résiliation et le remplacement d'un contrat (« 🔁 Remplacé
- * par… ») sont servis depuis le contrat 1.29.0 ; le plancher de l'app (1.27.0) ne les porte
- * pas encore — ils viendront avec sa montée.
+ * groupés par équipement et rangés par échéance, la résiliation et le remplacement servis,
+ * les archives repliées en bas.
  */
 @Composable
 internal fun OngletContrats(donnees: DonneesPrestataires, service: ServicePrestataires, onglet: ContexteOnglet) {
@@ -131,7 +129,12 @@ private fun CarteContrat(
                     PastilleTeinte(stringResource(R.string.prestataires_sans_intervenant), "badge-orange", compacte = true)
                 }
                 contrat.numeroContrat?.takeIf { it.isNotBlank() }?.let { PastilleTeinte("🔖 $it", "badge-gray", compacte = true) }
-                if (contrat.prochaineVisite == null) {
+                // 🔁 La résiliation et le remplacement servis, sur les DEUX cartes : l'ancien dit
+                // par qui, le nouveau qui il remplace.
+                pastillesRemplacement(contrat.remplacement).forEachIndexed { rang, libelle ->
+                    PastilleTeinte(libelle, "badge-gray", Modifier.testTag(ReperesPrestataires.remplacement(contrat.id, rang)), compacte = true)
+                }
+                if (contrat.prochaineVisite == null && !contrat.remplacement.estDatee) {
                     PastilleTeinte(stringResource(R.string.prestataires_sans_echeance), "badge-gray", compacte = true)
                 }
                 frequence?.let { PastilleTeinte(it, "badge-gray", compacte = true) }
@@ -141,6 +144,33 @@ private fun CarteContrat(
         }
     }
 }
+
+/**
+ * Les pastilles du remplacement, dans l'ordre du site (`CarteContrat.svelte`) : par qui et
+ * dès quand il est remplacé — à défaut, sa résiliation —, puis ceux qu'il remplace.
+ */
+@Composable
+private fun pastillesRemplacement(r: RemplacementContrat): List<String> {
+    val lues = mutableListOf<String>()
+    val par = r.remplacePar
+    val resilieLe = r.resilieLe
+    if (par != null) {
+        lues += stringResource(R.string.prestataires_remplace_par_capsule, par.prestataireNom, FormatsDuSite.dateCourte(par.dateDebut))
+    } else if (resilieLe != null) {
+        val modele = if (r.resilie) R.string.prestataires_resilie_le_capsule else R.string.prestataires_resilie_au_capsule
+        lues += stringResource(modele, FormatsDuSite.dateCourte(resilieLe))
+    }
+    r.remplace.forEach { ancien ->
+        lues += ancien.resilieLe?.let {
+            stringResource(R.string.prestataires_remplace_resilie_capsule, ancien.prestataireNom, FormatsDuSite.dateCourte(it))
+        } ?: stringResource(R.string.prestataires_remplace_capsule, ancien.prestataireNom)
+    }
+    return lues
+}
+
+/** « Contrat — Prestataire ». */
+@Composable
+private fun lie(contrat: ContratLie): String = stringResource(R.string.prestataires_lie, contrat.libelle, contrat.prestataireNom)
 
 @Composable
 private fun DetailContrat(contrat: Contrat, frequence: String?, documents: List<DocumentContrat>, ouverture: Ouverture) {
@@ -154,6 +184,9 @@ private fun DetailContrat(contrat: Contrat, frequence: String?, documents: List<
     contrat.prochaineVisite?.let {
         LigneFiche(stringResource(R.string.prestataires_prochaine_visite), "🗓 ${FormatsDuSite.dateCourte(it)}")
     }
+    contrat.remplacement.resilieLe?.let { LigneFiche(stringResource(R.string.prestataires_resilie_le), FormatsDuSite.dateCourte(it)) }
+    contrat.remplacement.remplacePar?.let { LigneFiche(stringResource(R.string.prestataires_remplace_par), lie(it)) }
+    contrat.remplacement.remplace.forEach { LigneFiche(stringResource(R.string.prestataires_remplace), lie(it)) }
     contrat.notes?.takeIf { it.isNotBlank() }?.let {
         Libelle(stringResource(R.string.prestataires_description), Modifier.padding(top = 4.dp))
         TexteRiche(it, style = MaterialTheme.typography.bodyMedium)
