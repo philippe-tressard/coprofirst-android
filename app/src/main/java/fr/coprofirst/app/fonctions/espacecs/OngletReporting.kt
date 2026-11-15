@@ -44,6 +44,7 @@ import fr.coprofirst.app.commun.Pastille
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.onglets.ContexteOnglet
+import fr.coprofirst.app.navigation.Destination
 
 /** Le mode de la vue Renouvellements, à la suite des modes du site. */
 private const val RENOUVELLEMENTS = "renouvellements"
@@ -54,18 +55,16 @@ private const val RENOUVELLEMENTS = "renouvellements"
  * répartitions croisées et ses affaires, la plus ancienne en tête. Deux modes : les
  * affaires, ou les entretiens périodiques — la relance du syndic se compose sur le site ;
  * puis la vue Renouvellements. Ce que l'app laisse au site se dit sous la liste.
- *
- * ⚠️ Divergence déclarée : une affaire du suivi ne s'ouvre pas encore — le détail est porté
- * par Mes affaires (#16) ; la porte commune pour l'ouvrir d'ici est #81.
+ * Toucher une affaire l'ouvre (`lienAffaire`).
  */
 @Composable
 fun OngletReporting(contexte: ContexteOnglet) {
     val service = remember(contexte.session) { ServiceReportingApi(contexte.session) }
-    OngletReporting(service, contexte.actualisation)
+    OngletReporting(service, contexte.actualisation, contexte.ouvrir)
 }
 
 @Composable
-fun OngletReporting(service: ServiceReporting, actualisation: Int) {
+fun OngletReporting(service: ServiceReporting, actualisation: Int, ouvrir: (Destination) -> Boolean = { false }) {
     val renouvellements = stringResource(R.string.espacecs_renouvellements_titre)
     val modes = TablesEspaceCS.modesSuivi.filter { it.first != "relance" } + (RENOUVELLEMENTS to renouvellements)
     var mode by rememberSaveable { mutableStateOf(modes.first().first) }
@@ -84,8 +83,8 @@ fun OngletReporting(service: ServiceReporting, actualisation: Int) {
             val releve = ReleveSuivi.duMode(mode)
             // Un autre mode, ou « tirer pour actualiser » : le relevé se relit.
             Chargement(charger = { service.suivi(releve) }, cle = "${releve.code}-$actualisation", squelette = {
-                VueSuivi(SQUELETTE_SUIVI, entretien = false)
-            }) { suivi, _ -> VueSuivi(suivi, releve == ReleveSuivi.Entretien) }
+                VueSuivi(SQUELETTE_SUIVI, entretien = false, ouvrir)
+            }) { suivi, _ -> VueSuivi(suivi, releve == ReleveSuivi.Entretien, ouvrir) }
         }
         Text(stringResource(R.string.espacecs_reporting_sur_le_site), style = MaterialTheme.typography.bodySmall, color = c.textMuted)
     }
@@ -93,7 +92,7 @@ fun OngletReporting(service: ServiceReporting, actualisation: Int) {
 
 /** Un relevé : les chiffres, les répartitions, puis les affaires. */
 @Composable
-private fun VueSuivi(suivi: SuiviAffaires, entretien: Boolean) {
+private fun VueSuivi(suivi: SuiviAffaires, entretien: Boolean, ouvrir: (Destination) -> Boolean) {
     Column(verticalArrangement = Arrangement.spacedBy(Mise.ecart)) {
         RangeeDeChiffres { m ->
             val nonFermees = if (entretien) R.plurals.espacecs_reporting_entretiens_non_clos else R.plurals.espacecs_reporting_affaires_non_fermees
@@ -115,7 +114,7 @@ private fun VueSuivi(suivi: SuiviAffaires, entretien: Boolean) {
                 icone = Icons.Outlined.CheckCircle,
             )
         }
-        suivi.affaires.forEach { LigneAffaireSuivie(it, entretien) }
+        suivi.affaires.forEach { LigneAffaireSuivie(it, entretien, lienAffaire(ouvrir, it.id)) }
     }
 }
 
@@ -125,11 +124,11 @@ private fun VueSuivi(suivi: SuiviAffaires, entretien: Boolean) {
  * au plus), son statut et sa catégorie — ou l'état de sa visite, en mode entretien.
  */
 @Composable
-private fun LigneAffaireSuivie(affaire: AffaireSuivie, entretien: Boolean) {
+private fun LigneAffaireSuivie(affaire: AffaireSuivie, entretien: Boolean, ouvrir: (() -> Unit)?) {
     val c = LocalCouleurs.current
     val ageLu = pluralStringResource(R.plurals.espacecs_reporting_age_lu, affaire.ageJours, FormatsDuSite.nombre(affaire.ageJours))
     val statutLu = stringResource(R.string.espacecs_reporting_statut, affaire.libelleStatut)
-    Carte(Modifier.testTag(ReperesEspaceCS.reportingAffaire(affaire.id))) {
+    Carte(Modifier.testTag(ReperesEspaceCS.reportingAffaire(affaire.id)), ouvrir = ouvrir, action = stringResource(R.string.espacecs_ouvrir_affaire)) {
         Column(Modifier.semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(8.dp)) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp), itemVerticalAlignment = Alignment.CenterVertically) {
                 PastilleTeinte(
