@@ -54,6 +54,8 @@ class Tables(unittest.TestCase):
         tables = {
             "attributsStatut": t({"locataire": {"libelle": "Locataire", "abrege": "Loc.", "badge": "badge-purple"}}),
             "attributsRole": t({"admin": {"libelle": "Admin", "badge": "badge-orange"}}),
+            "rolesMisEnAvant": t(["admin"]),
+            "statutsDemandables": t(["locataire"]),
             "libellesHerites": t({"bailleur": "Copropriétaire bailleur"}),
             "optionsTheme": t([{"val": "auto", "label": "Automatique", "desc": "Suit l'appareil"}, {"val": "sombre", "label": "Sombre"}]),
             "themeParDefaut": t("auto"), "cookieTheme": t("theme"),
@@ -63,6 +65,10 @@ class Tables(unittest.TestCase):
         self.assertIn('"admin" to AttributRole("Admin", "badge-orange", null),', texte)
         self.assertIn('OptionTheme("sombre", "Sombre", ""),', texte)
         self.assertIn('const val THEME_PAR_DEFAUT: String = "auto"', texte)
+        self.assertIn('val rolesMisEnAvant: List<String> = listOf("admin")', texte)
+        self.assertIn('val statutsDemandables: List<String> = listOf("locataire")', texte)
+        with self.assertRaises(g.TableInattendue):
+            g.kotlin_commun({**tables, "rolesMisEnAvant": t(["inconnu"])}, "t")
         with self.assertRaises(g.TableInattendue):
             g.kotlin_commun({**tables, "themeParDefaut": t("inconnu")}, "t")
 

@@ -21,6 +21,16 @@ class CommunTest {
         assertEquals("Copro. résident", Roles.statutAbrege("copropriétaire_résident"))
     }
 
+    @Test
+    fun pastillesDuCompteCommeLEnteteDeLAccueil() {
+        assertEquals(
+            listOf("Copropriétaire résident", "Conseil syndical"),
+            Roles.affiches("copropriétaire_résident", listOf("propriétaire", "conseil_syndical")).map { it.libelle },
+        )
+        assertEquals(emptyList<LibelleTeinte>(), Roles.affiches("inconnu", listOf("résident")))
+        assertTrue(Roles.demandables.map { it.first }.contains("locataire"))
+    }
+
     private class EnMemoire(var valeur: String? = null) : StockageApparence {
         override fun lire() = valeur
         override fun ecrire(valeur: String) { this.valeur = valeur }

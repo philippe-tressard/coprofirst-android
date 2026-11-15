@@ -24,6 +24,22 @@ object Roles {
     /** Le libellé court d'un statut (`abrege`), sinon son libellé. */
     fun statutAbrege(valeur: String): String = TablesCommunes.statuts[valeur]?.let { it.abrege ?: it.libelle } ?: statut(valeur).libelle
 
+    /**
+     * Les pastilles d'un compte, comme l'en-tête de l'accueil et le Profil de l'iOS
+     * (`rolesAffiches`) : le statut (s'il est connu), puis les rôles mis en avant qu'il
+     * porte, dans l'ordre de la table, sans doublon.
+     */
+    fun affiches(statut: String?, roles: Collection<String>): List<LibelleTeinte> {
+        val pastilles = mutableListOf<LibelleTeinte>()
+        if (statut != null && statut in TablesCommunes.statuts) pastilles += statut(statut)
+        TablesCommunes.rolesMisEnAvant.filter { it in roles }.forEach { pastilles += role(it) }
+        return pastilles.distinctBy { it.libelle }
+    }
+
+    /** Les statuts qu'un compte peut demander, avec leur libellé (`STATUTS_DEMANDABLES`). */
+    val demandables: List<Pair<String, LibelleTeinte>>
+        get() = TablesCommunes.statutsDemandables.map { it to statut(it) }
+
     private fun teinte(valeur: String, table: Map<String, AttributRole>, autre: Map<String, AttributRole>): LibelleTeinte {
         table[valeur]?.let { return LibelleTeinte(it.libelle, it.badge) }
         TablesCommunes.libellesHerites[valeur]?.let { return LibelleTeinte.brut(it) }
