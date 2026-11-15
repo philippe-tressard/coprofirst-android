@@ -103,7 +103,8 @@ class ServiceSondageApiTest {
         service.voter(VoteSondage(option = 4, reponseLibre = "  Le 20 juin ", commentaire = "   ", charteAcceptee = true), 12)
         val recue = recues.single()
         assertTrue(recue, recue.startsWith("POST /api/sondages/12/voter "))
-        assertEquals(corps("""{"option_id": 4, "commentaire": null, "reponse_libre": "Le 20 juin"}"""), corps(recue.substringAfter("voter ")))
+        // Un commentaire blanc ne part pas : un null ne s'envoie plus (#99), comme l'iOS.
+        assertEquals(corps("""{"option_id": 4, "reponse_libre": "Le 20 juin"}"""), corps(recue.substringAfter("voter ")))
     }
 
     @Test
