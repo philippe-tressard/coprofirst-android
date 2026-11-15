@@ -12,6 +12,10 @@ import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsParHote
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonObject
 import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
 import okhttp3.OkHttpClient
@@ -167,6 +171,18 @@ class ServiceUtilisateursApiTest {
         MockResponse.Builder().code(code).addHeader("Content-Type", "application/json").body(corps).build(),
     )
 
+    /**
+     * Le corps d'une requête, champ → valeur, un champ `null` et un champ absent confondus
+     * (la sérialisation du client en décide, coprofirst-android#99), après sa méthode et son chemin.
+     */
+    private fun corps(attendue: String): Map<String, String?> {
+        val r = serveur.takeRequest()
+        assertEquals(attendue, "${r.method} ${r.url.encodedPath}")
+        return Json.parseToJsonElement(r.body!!.utf8()).jsonObject
+            .mapValues { (_, v) -> (v as? JsonPrimitive)?.takeUnless { it is JsonNull }?.content }
+            .let { lu -> mapOf("action" to lu["action"], "motif_refus" to lu["motif_refus"]) }
+    }
+
     private fun requete() = serveur.takeRequest().let { "${it.method} ${it.url.encodedPath} ${it.body?.utf8().orEmpty()}".trim() }
 
     @Test
@@ -221,13 +237,13 @@ class ServiceUtilisateursApiTest {
 
         repondre(200, """{"statut": "approuvee", "annonce": {"ton": "success", "texte": "Demande approuvée."}}""")
         assertEquals(PhraseAvis("Demande approuvée.", TonAvis.Succes), service.traiterDemandeProfil(41, approuver = true, motif = "ignoré"))
-        assertEquals("""POST /api/admin/demandes-profil/41/traiter {"action":"approuver"}""", requete())
+        assertEquals(mapOf("action" to "approuver", "motif_refus" to null), corps("POST /api/admin/demandes-profil/41/traiter"))
         repondre(200, """{"statut": "rejetee", "annonce": {"ton": "success", "texte": "Demande rejetée."}}""")
         service.traiterDemandeProfil(41, approuver = false, motif = "  Bail non fourni ")
-        assertEquals("""POST /api/admin/demandes-profil/41/traiter {"action":"rejeter","motif_refus":"Bail non fourni"}""", requete())
+        assertEquals(mapOf("action" to "rejeter", "motif_refus" to "Bail non fourni"), corps("POST /api/admin/demandes-profil/41/traiter"))
         repondre(200, """{"statut": "rejetee", "annonce": {"ton": "success", "texte": "Demande rejetée."}}""")
         service.traiterDemandeProfil(41, approuver = false, motif = " ")
-        assertEquals("un motif vide ne s'envoie pas", """POST /api/admin/demandes-profil/41/traiter {"action":"rejeter"}""", requete())
+        assertEquals("un motif vide ne s'envoie pas", mapOf("action" to "rejeter", "motif_refus" to null), corps("POST /api/admin/demandes-profil/41/traiter"))
     }
 
     @Test
