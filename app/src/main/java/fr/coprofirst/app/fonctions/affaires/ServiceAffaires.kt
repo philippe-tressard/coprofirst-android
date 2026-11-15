@@ -8,6 +8,7 @@ import fr.coprofirst.api.modeles.MessageCreate
 import fr.coprofirst.api.modeles.StatutTicket
 import fr.coprofirst.api.modeles.TicketCreate
 import fr.coprofirst.api.modeles.TicketEvolutionCreate
+import fr.coprofirst.api.modeles.TicketEvolutionUpdate
 import fr.coprofirst.api.modeles.TicketUpdate
 import fr.coprofirst.api.routes.LotsApi
 import fr.coprofirst.api.routes.PerimetresApi
@@ -59,6 +60,12 @@ interface ServiceAffaires {
 
     /** PATCH /tickets/{id} : une option de mise en avant, posée ou retirée. */
     suspend fun regler(id: Int, option: OptionAffaire, active: Boolean)
+
+    /** PATCH /tickets/{id}/evolutions/{evol_id} : « Modifier la suite » ; rend ce que l'affaire n'en a pas suivi. */
+    suspend fun corrigerSuite(id: Int, suite: Int, correction: CorrectionSuite): IssueCorrection?
+
+    /** DELETE /tickets/{id}/evolutions/{evol_id} : effacer une entrée de la suite. */
+    suspend fun supprimerSuite(id: Int, suite: Int)
 }
 
 /** Le service par le client généré, sur la session de la résidence — aucune route écrite à la main. */
@@ -115,6 +122,14 @@ class ServiceAffairesApi(private val session: SessionOuverte) : ServiceAffaires 
         val corps = if (option.cle == OptionAffaire.EPINGLE) TicketUpdate(epingle = active) else TicketUpdate(urgente = active)
         tickets { patchTicketsTicketId(id, corps) }
     }
+
+    override suspend fun corrigerSuite(id: Int, suite: Int, correction: CorrectionSuite): IssueCorrection? {
+        val statut = correction.suivi?.statut?.let { StatutTicket.decode(it) ?: throw ErreurService.Inattendue }
+        val corps = TicketEvolutionUpdate(contenu = correction.contenuHtml, nouveauStatut = statut, type = correction.suivi?.type)
+        return IssueCorrection.lue(tickets { patchTicketsTicketIdEvolutionsEvolId(id, suite, corps) })
+    }
+
+    override suspend fun supprimerSuite(id: Int, suite: Int) = tickets { deleteTicketsTicketIdEvolutionsEvolId(id, suite) }
 
     override suspend fun affaire(id: Int): DetailAffaire = coroutineScope {
         val ticket = async { tickets { getTicketsTicketId(id) } }

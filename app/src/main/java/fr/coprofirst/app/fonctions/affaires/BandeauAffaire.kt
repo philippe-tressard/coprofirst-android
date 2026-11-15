@@ -30,7 +30,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,9 +53,6 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.AvisDuGeste
-import fr.coprofirst.app.commun.TonAvis
-import fr.coprofirst.app.commun.phrase
-import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.launch
 
 /** Une feuille ouverte depuis le bandeau. */
@@ -71,8 +67,9 @@ fun repereGeste(geste: GesteAffaire) = "affaire.${geste.name.replaceFirstChar { 
  * ouvre à CE lecteur (`GesteAffaire.offerts`). Un geste réussi se dit dans l'avis, puis
  * l'affaire se relit.
  *
- * ⚠️ « Modifier » l'affaire et les corrections de sa suite arrivent avec la PR suivante de #16 ;
- * les options et « Archiver » (`PATCH /tickets/{id}`) attendent #99 (`GesteAffaire.offerts`).
+ * ⚠️ « Modifier » l'affaire, les options et « Archiver » passent par `PATCH /tickets/{id}` :
+ * ils attendent #99 (`GesteAffaire.offerts`). Les gestes d'une entrée de la suite sont dans
+ * le fil (`GestesHistorique`).
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -91,35 +88,11 @@ internal fun BandeauAffaire(
     val contexte = LocalContext.current
     val portee = rememberCoroutineScope()
     var feuille by remember { mutableStateOf<FeuilleGeste?>(null) }
-    var enCours by remember { mutableStateOf(false) }
     var partage by remember { mutableStateOf(false) }
     var options by remember { mutableStateOf(false) }
-    var echec by remember { mutableStateOf<ErreurService?>(null) }
-    val phraseEchec = echec?.phrase()
-    LaunchedEffect(phraseEchec) {
-        if (phraseEchec != null) {
-            avis.dire(phraseEchec, TonAvis.Erreur)
-            echec = null
-        }
-    }
+    val annonce = rememberGesteAnnonce(avis, recharger)
+    val enCours = annonce.enCours
     val gestes = GesteAffaire.offerts(affaire, conseil).filter { it != GesteAffaire.Lien || lien != null }
-
-    /** Un geste sans feuille : envoyé, annoncé, puis l'affaire relue. */
-    fun geste(phrase: String, envoi: suspend () -> Unit) {
-        if (enCours) return
-        portee.launch {
-            enCours = true
-            try {
-                envoi()
-                avis.dire(phrase)
-                recharger()
-            } catch (e: ErreurService) {
-                echec = e
-            } finally {
-                enCours = false
-            }
-        }
-    }
 
     Row(
         modifier.fillMaxWidth().background(c.surface).navigationBarsPadding().padding(horizontal = Mise.marge, vertical = 4.dp),
@@ -166,7 +139,7 @@ internal fun BandeauAffaire(
                                 onClick = {
                                     options = false
                                     val phrase = if (active) ressources.getString(R.string.geste_option_retiree, option.etat) else option.etat
-                                    geste(phrase) { service.regler(affaire.id, option, !active) }
+                                    annonce.lancer(phrase) { service.regler(affaire.id, option, !active) }
                                 },
                                 modifier = Modifier.testTag("affaire.option.${option.cle}"),
                             )
@@ -174,7 +147,7 @@ internal fun BandeauAffaire(
                     }
                 }
                 GesteAffaire.Archiver -> IconButton(
-                    { geste(ressources.getString(R.string.geste_archivee)) { service.archiver(affaire.id) } },
+                    { annonce.lancer(ressources.getString(R.string.geste_archivee)) { service.archiver(affaire.id) } },
                     Modifier.testTag(repereGeste(g)), enabled = !enCours,
                 ) { Icon(icone(g), contentDescription = libelle, tint = c.primary) }
                 GesteAffaire.Repondre, GesteAffaire.Suite -> IconButton(

@@ -135,6 +135,20 @@ class ServiceAffairesApiTest {
     }
 
     @Test
+    fun corrigerUneSuiteLitCeQueLAffaireNAPasSuivi() = runTest {
+        val nonSuivie = EVOLUTION.replace("\"ancien_statut\"", "\"affaire_suivie\": false, \"affaire_suivie_libelle\": \"L'affaire a avancé depuis.\", \"etat_propose\": \"ouvert\", \"ancien_statut\"")
+        routes(
+            "PATCH /api/tickets/4/evolutions/11" to (200 to nonSuivie),
+            "DELETE /api/tickets/4/evolutions/11" to (204 to ""),
+        )
+        val issue = service.corrigerSuite(4, 11, CorrectionSuite(suivi = CorrectionSuite.Suivi("etat", "en_cours")))
+        assertEquals(IssueCorrection("L'affaire a avancé depuis.", "ouvert", null), issue)
+        assertTrue(recues[0], "\"type\":\"etat\"" in recues[0] && "\"nouveau_statut\":\"en_cours\"" in recues[0] && champ(recues[0], "contenu") == null)
+        service.supprimerSuite(4, 11)
+        assertTrue(recues[1], recues[1].startsWith("DELETE /api/tickets/4/evolutions/11"))
+    }
+
+    @Test
     fun unRefusDuServeurDitSaPhrase() = runTest {
         routes("PATCH /api/tickets/4" to (403 to """{"detail": "Seul le conseil syndical peut archiver."}"""))
         try {

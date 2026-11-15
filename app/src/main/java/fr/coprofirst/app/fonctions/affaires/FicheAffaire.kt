@@ -75,12 +75,14 @@ internal fun FicheAffaire(id: Int, ctx: ContexteFiche, retour: () -> Unit) {
         cle = id,
         squelette = { ContenuAffaire(SQUELETTE, ctx.session, ctx.titrePage, retour) },
     ) { affaire, recharger ->
+        val choix = remember(affaire.id) { ChoixDeSuite() }
         Column(Modifier.fillMaxSize()) {
             PullToRefreshBox(isRefreshing = false, onRefresh = recharger, modifier = Modifier.weight(1f)) {
-                ContenuAffaire(affaire, ctx.session, ctx.titrePage, retour)
+                ContenuAffaire(affaire, ctx.session, ctx.titrePage, retour, choix::choisir)
             }
             BandeauAffaire(affaire, ctx.conseil, ctx.service, ctx.lienSite(affaire.id), ctx.avis, recharger)
         }
+        GestesHistorique(affaire, choix, ctx.service, ctx.avis, recharger)
     }
 }
 
@@ -96,7 +98,13 @@ internal class ContexteFiche(
 )
 
 @Composable
-private fun ContenuAffaire(affaire: DetailAffaire, session: SessionOuverte, titrePage: String, retour: () -> Unit) {
+private fun ContenuAffaire(
+    affaire: DetailAffaire,
+    session: SessionOuverte,
+    titrePage: String,
+    retour: () -> Unit,
+    gestesSuite: ((GesteSuite, SuiteAffaire) -> Unit)? = null,
+) {
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -108,7 +116,7 @@ private fun ContenuAffaire(affaire: DetailAffaire, session: SessionOuverte, titr
                 Text(stringResource(R.string.affaire_retour, titrePage))
             }
             EnTeteAffaire(affaire)
-            FilAffaire(affaire, session)
+            FilAffaire(affaire, session, gestesSuite)
             // Pas de messages sur une actualité : elle informe, on n'y répond pas.
             if (!affaire.estActualite) FilMessages(affaire.messages, session)
         }

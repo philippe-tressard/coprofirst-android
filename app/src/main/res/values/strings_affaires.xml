@@ -156,4 +156,19 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="suite_commentaire">Commentaire</string>
     <string name="suite_mot_facultatif">Un mot sur ce changement (facultatif)</string>
     <string name="suite_commentaire_indication">Ajoutez un commentaire de suivi…</string>
+
+    <!-- Les gestes d'une entrée de la suite (GestesHistorique, TextesSuite) -->
+    <string name="historique_gestes">Actions sur cette entrée</string>
+    <string name="historique_modifier">Modifier la suite</string>
+    <string name="historique_supprimer">Supprimer cette entrée</string>
+    <string name="historique_confirmer">Supprimer</string>
+    <string name="historique_question">L’entrée du %1$s disparaît du fil. L’état de l’affaire ne change pas.</string>
+    <string name="historique_corrigee">Entrée corrigée</string>
+    <string name="historique_supprimee">Entrée supprimée</string>
+    <string name="historique_titre_correction">Modifier</string>
+    <string name="historique_etat_donne">L\'entrée porte ce changement d\'état, à sa date.</string>
+    <string name="historique_etat_d_avant">L\'état d\'avant l\'entrée : elle reste un commentaire.</string>
+    <string name="historique_laisser">Laisser ainsi</string>
+    <string name="historique_compris">OK</string>
+    <string name="historique_appliquer">Appliquer « %1$s » à l’affaire</string>
 </resources>

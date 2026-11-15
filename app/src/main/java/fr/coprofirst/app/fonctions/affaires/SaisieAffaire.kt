@@ -5,6 +5,8 @@ package fr.coprofirst.app.fonctions.affaires
 
 import fr.coprofirst.api.modeles.CategorieTicket
 import fr.coprofirst.api.modeles.PerimetreRead
+import fr.coprofirst.api.modeles.TicketEvolutionRead
+import fr.coprofirst.app.commun.texte.TexteDuSite
 
 /** Ce que « Nouvelle affaire » envoie, comme l'iOS (`SaisieAffaire`). */
 data class SaisieAffaire(
@@ -119,5 +121,86 @@ data class Perimetre(
         }
 
         fun codeParDefaut(perimetres: List<Perimetre>): String? = perimetres.firstOrNull { it.parDefaut }?.code
+    }
+}
+
+/** Un geste sur UNE entrée de la suite, dans l'ordre du site (`RubriqueHistorique.svelte`) : ✏️ puis 🗑️. */
+enum class GesteSuite {
+    Modifier, Supprimer;
+
+    companion object {
+        /** Ceux que le serveur a servis AVEC l'entrée (`peut_modifier`, `peut_supprimer`), et aucun autre. */
+        fun offerts(suite: SuiteAffaire): List<GesteSuite> = entries.filter { if (it == Modifier) suite.peutModifier else suite.peutSupprimer }
+    }
+}
+
+/**
+ * Ce que « Modifier la suite » envoie (PATCH /tickets/{id}/evolutions/{evol_id}) : les SEULS
+ * champs que la saisie a changés, comme l'iOS (`CorrectionSuite`). `contenuHtml` vide :
+ * l'entrée n'a plus de texte ; `suivi` : ce qu'elle devient (`etat` et l'état donné, ou
+ * `commentaire`).
+ */
+data class CorrectionSuite(val contenuHtml: String? = null, val suivi: Suivi? = null) {
+    data class Suivi(val type: String, val statut: String?)
+
+    val vide: Boolean get() = contenuHtml == null && suivi == null
+}
+
+/** Le texte de l'entrée en texte simple, si le réenregistrer ne perd rien — sinon `null` : il se montre sans se modifier. */
+val SuiteAffaire.contenuSaisi: String? get() = TexteDuSite.saisi(contenu.orEmpty())
+
+/**
+ * La saisie de « Modifier la suite » : le Suivi part de l'état que l'entrée a donné ; l'état
+ * « courant » est celui d'AVANT elle (`ancien_statut`, sinon `statut_avant`), à défaut celui de l'affaire.
+ */
+fun SaisieSuite.Companion.corrigeant(suite: SuiteAffaire, affaire: DetailAffaire): SaisieSuite {
+    val avant = suite.ancienStatut ?: affaire.statut
+    return SaisieSuite(avant, suite.nouveauStatut ?: avant, suite.contenuSaisi.orEmpty())
+}
+
+/** Le Suivi d'une entrée se corrige quand la liste sait montrer l'état d'avant ET celui qu'elle donne. */
+fun SaisieSuite.suiviCorrigeable(etats: List<String>): Boolean = statutActuel in etats && statut in etats
+
+private val SaisieSuite.suiviDeLEntree: CorrectionSuite.Suivi
+    get() = if (changeEtat) CorrectionSuite.Suivi("etat", statut) else CorrectionSuite.Suivi("commentaire", null)
+
+/** Ce qui a changé depuis `suite` — et rien d'autre. Le texte ne part que si la feuille le montrait à modifier. */
+fun SaisieSuite.correction(suite: SuiteAffaire, affaire: DetailAffaire): CorrectionSuite {
+    val origine = SaisieSuite.corrigeant(suite, affaire)
+    val texteChange = suite.contenuSaisi != null && texte != origine.texte
+    return CorrectionSuite(
+        contenuHtml = if (texteChange) (if (texte.isEmpty()) "" else TexteDuSite.html(texte)) else null,
+        suivi = suiviDeLEntree.takeIf { it != origine.suiviDeLEntree },
+    )
+}
+
+/** Prête : ce qu'une Suite exige (un état, ou un texte — celui qu'on montre sans le modifier compte), et un changement. */
+fun SaisieSuite.prete(suite: SuiteAffaire, affaire: DetailAffaire): Boolean =
+    (changeEtat || texte.isNotEmpty() || suite.contenuSaisi == null) && !correction(suite, affaire).vide
+
+/**
+ * Ce que l'AFFAIRE a fait d'une correction qu'elle n'a pas suivie (`affaire_suivie: false`) :
+ * SA phrase, et l'état qu'elle propose d'appliquer — l'app ne décide rien, comme l'iOS
+ * (`IssueCorrection`).
+ */
+data class IssueCorrection(val phrase: String, val etatPropose: String?, val etatProposeLibelle: String?) {
+    /** L'état à proposer : celui servi, si le compte peut changer l'état ; jamais celui où l'affaire est déjà. */
+    fun proposition(affaire: DetailAffaire): SaisieSuite? {
+        val etat = etatPropose ?: return null
+        if (!affaire.droits.changerEtat) return null
+        return SaisieSuite(affaire.statut, etat).takeIf { it.changeEtat }
+    }
+
+    /** Le libellé en clair de l'état proposé. */
+    fun libelleProposition(affaire: DetailAffaire): String? =
+        proposition(affaire)?.let { affaire.referentiels.libelle(it.statut, etatProposeLibelle) }
+
+    companion object {
+        /** `null` quand l'affaire a suivi, ou sans phrase servie : l'app ne compose pas la sienne. */
+        fun lue(lu: TicketEvolutionRead): IssueCorrection? {
+            if (lu.affaireSuivie != false) return null
+            val phrase = lu.affaireSuivieLibelle?.takeIf { it.isNotBlank() } ?: return null
+            return IssueCorrection(phrase, lu.etatPropose?.takeIf { it.isNotBlank() }, lu.etatProposeLibelle.takeIf { it.isNotBlank() })
+        }
     }
 }

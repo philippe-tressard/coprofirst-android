@@ -49,6 +49,7 @@ import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.BoutonsFeuille
 import fr.coprofirst.app.commun.MessageErreur
+import fr.coprofirst.app.commun.texte.TexteDuSite
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.launch
 
@@ -143,15 +144,36 @@ internal fun FeuilleRepondre(affaire: DetailAffaire, service: ServiceAffaires, f
 /**
  * « Ajouter une suite », comme l'iOS (`SuiteFeuille`) : le Suivi d'abord — l'état courant
  * choisi ; le garder fait de l'entrée un commentaire —, puis le commentaire, requis s'il est seul.
+ *
+ * Et sa CORRECTION, « Modifier la suite » (`corrigee`) : la même feuille, partie de l'entrée ;
+ * seul ce qui a changé part (`CorrectionSuite`), et un texte mis en forme sur le site se
+ * montre sans se modifier. `nonSuivie` reçoit ce que l'affaire n'a pas suivi, AVANT `envoyee`.
  */
 @Composable
-internal fun FeuilleSuite(affaire: DetailAffaire, service: ServiceAffaires, fermer: () -> Unit, envoyee: (changeEtat: Boolean) -> Unit) {
-    var saisie by remember(affaire.id) { mutableStateOf(SaisieSuite(affaire.statut)) }
-    val etats = remember(affaire) { SaisieSuite.etats(affaire) }
+internal fun FeuilleSuite(
+    affaire: DetailAffaire,
+    service: ServiceAffaires,
+    fermer: () -> Unit,
+    corrigee: SuiteAffaire? = null,
+    nonSuivie: (IssueCorrection) -> Unit = {},
+    envoyee: (changeEtat: Boolean) -> Unit,
+) {
+    var saisie by remember(affaire.id, corrigee?.id) {
+        mutableStateOf(corrigee?.let { SaisieSuite.corrigeant(it, affaire) } ?: SaisieSuite(affaire.statut))
+    }
+    val proposes = remember(affaire) { SaisieSuite.etats(affaire) }
+    // En correction, le Suivi ne se montre que si la liste sait dire les deux états de l'entrée.
+    val etats = if (corrigee == null || saisie.suiviCorrigeable(proposes.map { it.code })) proposes else emptyList()
+    val prete = corrigee?.let { saisie.prete(it, affaire) } ?: saisie.prete
     FeuilleDeSaisie(
-        R.string.suite_titre, R.string.feuille_enregistrer, ReperesFeuilles.SUITE_ENREGISTRER, saisie.prete, fermer,
+        if (corrigee == null) R.string.suite_titre else R.string.historique_titre_correction,
+        R.string.feuille_enregistrer, ReperesFeuilles.SUITE_ENREGISTRER, prete, fermer,
         envoyer = {
-            service.ajouterSuite(affaire.id, saisie)
+            if (corrigee != null) {
+                service.corrigerSuite(affaire.id, corrigee.id, saisie.correction(corrigee, affaire))?.let(nonSuivie)
+            } else {
+                service.ajouterSuite(affaire.id, saisie)
+            }
             envoyee(saisie.changeEtat)
         },
     ) {
@@ -169,16 +191,26 @@ internal fun FeuilleSuite(affaire: DetailAffaire, service: ServiceAffaires, ferm
                     }
                 }
             }
-            Text(
-                stringResource(if (saisie.changeEtat) R.string.suite_changera else R.string.suite_garder),
-                style = MaterialTheme.typography.bodySmall, color = LocalCouleurs.current.textMuted,
-            )
+            val pied = when {
+                corrigee != null && saisie.changeEtat -> R.string.historique_etat_donne
+                corrigee != null -> R.string.historique_etat_d_avant
+                saisie.changeEtat -> R.string.suite_changera
+                else -> R.string.suite_garder
+            }
+            Text(stringResource(pied), style = MaterialTheme.typography.bodySmall, color = LocalCouleurs.current.textMuted)
         }
         TitreSection(R.string.suite_commentaire)
-        OutlinedTextField(
-            saisie.contenu, { saisie = saisie.copy(contenu = it) }, Modifier.fillMaxWidth().testTag(ReperesFeuilles.SUITE_TEXTE),
-            placeholder = { Text(stringResource(if (saisie.changeEtat) R.string.suite_mot_facultatif else R.string.suite_commentaire_indication)) },
-            minLines = 4,
-        )
+        val fige = corrigee?.contenu?.takeIf { corrigee.contenuSaisi == null }
+        if (fige != null) {
+            // Un texte mis en forme sur le site : le réenregistrer le perdrait.
+            Text(TexteDuSite.riche(fige), style = MaterialTheme.typography.bodyMedium, color = LocalCouleurs.current.textMuted)
+            Text(TexteDuSite.MISE_EN_FORME_AU_SITE, style = MaterialTheme.typography.bodySmall, color = LocalCouleurs.current.textMuted)
+        } else {
+            OutlinedTextField(
+                saisie.contenu, { saisie = saisie.copy(contenu = it) }, Modifier.fillMaxWidth().testTag(ReperesFeuilles.SUITE_TEXTE),
+                placeholder = { Text(stringResource(if (saisie.changeEtat) R.string.suite_mot_facultatif else R.string.suite_commentaire_indication)) },
+                minLines = 4,
+            )
+        }
     }
 }

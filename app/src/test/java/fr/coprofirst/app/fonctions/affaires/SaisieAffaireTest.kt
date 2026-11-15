@@ -89,4 +89,53 @@ class SaisieAffaireTest {
         assertEquals(listOf("epingle", "urgente"), TablesAffaires.options.map { it.cle })
         assertTrue(TablesAffaires.options.first().active(fiche(DroitsServisAffaire()).copy(epingle = true)))
     }
+
+    private val servis = ReferentielsAffaires(
+        emptyList(),
+        listOf(
+            ReferentielsAffaires.Statut("ouvert", "Ouvert", false, "cs", true),
+            ReferentielsAffaires.Statut("en_cours", "Chez le syndic", false, "syndic", true),
+        ),
+        emptyList(),
+    )
+    private val affaire = fiche(DroitsServisAffaire(changerEtat = true)).copy(statut = "en_cours", referentiels = servis)
+
+    @Test
+    fun uneCorrectionNEnvoieQueCeQuiAChange() {
+        val transition = SuiteAffaire(5, "etat", Instant.EPOCH, contenu = "<p>Vu</p>", ancienStatut = "ouvert", nouveauStatut = "en_cours")
+        val depart = SaisieSuite.corrigeant(transition, affaire)
+        assertEquals(SaisieSuite("ouvert", "en_cours", "Vu"), depart)
+        assertTrue(depart.correction(transition, affaire).vide)
+        assertFalse(depart.prete(transition, affaire))
+        // Le texte seul.
+        assertEquals(CorrectionSuite(contenuHtml = "<p>Vu et revu</p>"), depart.copy(contenu = "Vu et revu").correction(transition, affaire))
+        // Revenir à l'état d'avant en refait un commentaire.
+        assertEquals(CorrectionSuite(suivi = CorrectionSuite.Suivi("commentaire", null)), depart.copy(statut = "ouvert").correction(transition, affaire))
+        // Le Suivi se corrige quand la liste montre les deux états.
+        assertTrue(depart.suiviCorrigeable(listOf("ouvert", "en_cours")))
+        assertFalse(depart.suiviCorrigeable(listOf("en_cours")))
+    }
+
+    @Test
+    fun unTexteMisEnFormeSurLeSiteNeSeReecritPas() {
+        val riche = SuiteAffaire(6, "commentaire", Instant.EPOCH, contenu = "<p><b>Important</b></p>")
+        val depart = SaisieSuite.corrigeant(riche, affaire)
+        assertEquals(null, riche.contenuSaisi)
+        assertNull(depart.copy(contenu = "autre").correction(riche, affaire).contenuHtml)
+    }
+
+    @Test
+    fun uneIssueProposeLEtatServiSiLeCompteLePeut() {
+        val issue = IssueCorrection("L'affaire reste chez le syndic.", "ouvert", "")
+        assertEquals("ouvert", issue.proposition(affaire)?.statut)
+        assertEquals("Ouvert", issue.libelleProposition(affaire))
+        assertNull(issue.proposition(affaire.copy(droits = DroitsServisAffaire())))
+        assertNull(IssueCorrection("x", "en_cours", null).proposition(affaire))
+    }
+
+    @Test
+    fun lesGestesDUneEntreeSontServis() {
+        assertEquals(listOf(GesteSuite.Supprimer), GesteSuite.offerts(SuiteAffaire(1, "etat", Instant.EPOCH, peutSupprimer = true)))
+        assertEquals(emptyList<GesteSuite>(), GesteSuite.offerts(SuiteAffaire(1, "etat", Instant.EPOCH)))
+    }
 }

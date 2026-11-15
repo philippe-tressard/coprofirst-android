@@ -67,6 +67,10 @@ object ReperesAffaires {
     fun etape(cle: EtapeFil.Cle) = "fil.etape.${cle.repere}"
     fun element(id: String) = "fil.element.$id"
     fun message(id: Int) = "affaire.message.$id"
+    fun gestesSuite(id: Int) = "historique.gestes.$id"
+    fun gesteSuite(geste: GesteSuite) = "historique.geste.${geste.name.lowercase()}"
+    const val CONFIRMER_SUPPRESSION = "historique.confirmerSuppression"
+    const val APPLIQUER = "historique.appliquer"
 }
 
 /** Les onglets de la page et le geste d'ouvrir une affaire, que chaque onglet reçoit. */
