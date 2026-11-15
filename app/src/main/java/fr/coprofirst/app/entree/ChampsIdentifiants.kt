@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentType
 import androidx.compose.ui.semantics.semantics
@@ -62,7 +63,7 @@ fun ChampsIdentifiants(etat: EtatEntree, parcours: ActionsEntree) {
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Next,
             ),
-            modifier = Modifier.fillMaxWidth().semantics { contentType = ContentType.Username },
+            modifier = Modifier.fillMaxWidth().semantics { contentType = ContentType.Username }.testTag(Reperes.EMAIL),
         )
         OutlinedTextField(
             value = etat.motDePasse,
@@ -88,7 +89,7 @@ fun ChampsIdentifiants(etat: EtatEntree, parcours: ActionsEntree) {
                 imeAction = ImeAction.Go,
             ),
             keyboardActions = KeyboardActions(onGo = { parcours.seConnecter() }),
-            modifier = Modifier.fillMaxWidth().semantics { contentType = ContentType.Password },
+            modifier = Modifier.fillMaxWidth().semantics { contentType = ContentType.Password }.testTag(Reperes.MOT_DE_PASSE),
         )
         TextButton(
             onClick = { racine?.let { site.openUri("$it/auth/mot-de-passe-oublie") } },
@@ -99,7 +100,7 @@ fun ChampsIdentifiants(etat: EtatEntree, parcours: ActionsEntree) {
         Button(
             onClick = parcours::seConnecter,
             enabled = etat.connexionPossible,
-            modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
+            modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp).testTag(Reperes.VALIDER),
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 if (etat.connexionEnCours) CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)

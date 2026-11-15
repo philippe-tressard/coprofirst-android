@@ -72,4 +72,7 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   syntaxe, LICENSE, couleurs et requêtes écrites à la main) et `reuse lint`, rejoués par le hook
   pre-commit (armé par `git config core.hooksPath .githooks`) et par la CI ;
   `./gradlew :app:assembleDebug :app:assembleRelease :app:lintDebug :app:testDebugUnitTest :client-api:test`
-  (lint en erreurs).
+  (lint en erreurs) ; tests d'interface (`app/src/androidTest`, serveur local en HTTPS,
+  repères = identifiants d'accessibilité de l'iOS) en CI, job « Interface », et au poste
+  par `bash scripts/tests-interface.sh` — une seule tâche lourde au poste à la fois
+  (pas d'émulateur pendant une suite xcodebuild), émulateur arrêté à la fin.
