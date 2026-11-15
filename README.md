@@ -71,11 +71,21 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
 - **Mes affaires** : Liste, Kanban (au conseil et aux copropriétaires) et Archives. La
   liste cherche au serveur (et propose les archives trouvées), se filtre par suivi, par
   nature et par « ce qui me concerne » ; un appui long copie le numéro ou partage le
-  lien (archiver attend un correctif du client d'API, #99). Au Kanban, « Déplacer vers… » change l'état — clore
-  prévient quand des affaires liées pourraient être fusionnées, ce qui se fait sur le
-  site. Les Archives se rangent par année. La fiche montre le fil de l'affaire (la
+  lien (archiver attend un correctif du client d'API, #99). Au Kanban, « Déplacer
+  vers… » change l'état — clore prévient quand des affaires liées pourraient être
+  fusionnées, ce qui se fait sur le site. Les Archives se rangent par année. La fiche montre le fil de l'affaire (la
   demande, la suite, les comptes rendus, la synthèse) et ses messages, en lecture ; la
   saisie et les gestes de la fiche suivent (#16).
+- **Ma résidence** : la Fiche (photo, immatriculation, lots, assurance et syndic — qui
+  ouvre l'annuaire du syndic —, composition par bâtiment ; règles, plans, règlement,
+  comptes-rendus d'AG et diagnostics, chacun s'ouvrant dans l'app de l'appareil) ; aux
+  propriétaires et au conseil, le Carnet d'entretien (par équipement, visites en retard
+  en tête, filtre par périmètre) et le Règlement (poser une question à l'assistant, lire
+  son avis, ses fondements et les extraits qu'il cite). Le bilan de l'exercice se lit
+  encore sur le site.
+- **Annuaire** : le conseil syndical (par bâtiment, président et gestionnaire mis en
+  avant, groupe WhatsApp) et le syndic (espace client, contacts) — un toucher appelle ou
+  écrit.
 
 Pas encore : les écrans des pages, le courriel retenu et la
 biométrie, les personnages de la démo, le QR code, les liens d'application (tickets
