@@ -13,8 +13,10 @@
   attributs admis (`balisesAdmises`, `attributsAdmis`), schémas d'un lien touchable —
   comme l'iOS (`scripts/generateurs/charte.py`, `balises`) ;
 - `TablesCommunes` (paquet `commun`) : le libellé et la pastille de chaque statut et de
-  chaque rôle (`attributsStatut`, `attributsRole`, `libellesHerites`), les options du
-  thème de l'appareil (`optionsTheme`, `themeParDefaut`, `cookieTheme`).
+  chaque rôle (`attributsStatut`, `attributsRole`, `libellesHerites`), les rôles mis en
+  avant (`rolesMisEnAvant`), les statuts qu'un compte peut demander
+  (`statutsDemandables`), les options du thème de l'appareil (`optionsTheme`,
+  `themeParDefaut`, `cookieTheme`).
 
 Une table qui change de forme, une réserve inconnue : la génération s'arrête — l'app
 doit l'apprendre, pas la deviner.
@@ -163,6 +165,18 @@ def attributs(tables: dict, table: str) -> dict:
     return valeur
 
 
+def cles_connues(tables: dict, table: str, connues: dict) -> list[str]:
+    """Une liste publiée de clés, chacune connue de sa table de libellés."""
+    valeur = tables.get(table, {}).get("valeur")
+    if not isinstance(valeur, list) or not valeur or not all(isinstance(v, str) and v in connues for v in valeur):
+        raise TableInattendue(f"{table} n'est pas une liste de clés connues")
+    return valeur
+
+
+def liste_kotlin(valeurs: list[str]) -> str:
+    return "listOf(" + ", ".join(chaine(v) for v in valeurs) + ")"
+
+
 def kotlin_commun(tables: dict, source: str) -> str:
     statuts, roles = attributs(tables, "attributsStatut"), attributs(tables, "attributsRole")
     herites = tables.get("libellesHerites", {}).get("valeur")
@@ -184,10 +198,14 @@ def kotlin_commun(tables: dict, source: str) -> str:
         return lignes + ["    )"]
 
     l = ["// GÉNÉRÉ par scripts/generer_tables.py — NE PAS MODIFIER À LA MAIN.",
-         f"// Source : {source} (attributsStatut, attributsRole, libellesHerites, optionsTheme, themeParDefaut, cookieTheme).",
+         f"// Source : {source} (attributsStatut, attributsRole, rolesMisEnAvant, statutsDemandables, libellesHerites, optionsTheme, themeParDefaut, cookieTheme).",
          "package fr.coprofirst.app.commun", "",
          "/** Les tables du site que lisent plusieurs écrans : statuts, rôles, thème de l'appareil. */",
          "object TablesCommunes {", *table("statuts", statuts), *table("roles", roles),
+         "    /** Les rôles que l'en-tête ajoute au statut, dans cet ordre (`ROLES_MIS_EN_AVANT`). */",
+         f"    val rolesMisEnAvant: List<String> = {liste_kotlin(cles_connues(tables, 'rolesMisEnAvant', roles))}",
+         "    /** Les statuts qu'un compte peut demander (`STATUTS_DEMANDABLES`). */",
+         f"    val statutsDemandables: List<String> = {liste_kotlin(cles_connues(tables, 'statutsDemandables', statuts))}",
          "    val libellesHerites: Map<String, String> = mapOf(",
          *[f"        {chaine(k)} to {chaine(v)}," for k, v in herites.items()], "    )", "",
          "    val optionsTheme: List<OptionTheme> = listOf(",
