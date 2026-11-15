@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+
+Les textes de la Communauté, écrits une fois — ceux du site et de l'iOS
+(`Fonctions/Communaute`).
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="fr">
+    <string name="communaute_reserve">La Communauté n\'est pas ouverte à votre profil.</string>
+    <string name="communaute_ferme">⛔ %1$s</string>
+    <string name="communaute_archives">📁 Archives (%1$d)</string>
+    <string name="communaute_plus_actions">Plus d\'actions</string>
+    <string name="communaute_fermer">Fermer</string>
+    <string name="communaute_vote_enregistre">Vote enregistré</string>
+    <string name="communaute_statut_mis_a_jour">Statut mis à jour</string>
+
+    <!-- Sondages -->
+    <string name="sondages_vide">Aucun sondage</string>
+    <string name="sondages_vide_detail">Les sondages du conseil syndical apparaîtront ici.</string>
+    <string name="sondages_en_cours_vide">Aucun sondage en cours</string>
+    <string name="sondages_en_cours_vide_detail">Les sondages clos sont rangés dans les Archives, ci-dessous.</string>
+    <string name="sondages_creation_sur_le_site">Créer, modifier ou stopper un sondage se fait sur le site.</string>
+    <string name="sondages_ouvert">Ouvert</string>
+    <string name="sondages_cloture">🔒 Clôturé</string>
+    <string name="sondages_cloture_le">Clôture le %1$s</string>
+    <plurals name="sondages_votants">
+        <item quantity="one">%1$d votant</item>
+        <item quantity="many">%1$d votants</item>
+        <item quantity="other">%1$d votants</item>
+    </plurals>
+    <string name="sondages_ouvrir_sur_le_site">Voter ou voir les résultats sur le site</string>
+
+    <!-- Idées -->
+    <string name="idees_vide">Aucune idée pour l\'instant</string>
+    <string name="idees_vide_detail">Soyez le premier à proposer une idée !</string>
+    <string name="idees_en_cours_vide">Aucune idée en cours</string>
+    <string name="idees_en_cours_vide_detail">Les idées décidées sont rangées dans les Archives, ci-dessous.</string>
+    <string name="idees_toutes">Toutes</string>
+    <string name="idees_voter">Voter pour cette idée</string>
+    <string name="idees_retirer_vote">Retirer mon vote</string>
+    <plurals name="idees_votes">
+        <item quantity="one">%1$d vote</item>
+        <item quantity="many">%1$d votes</item>
+        <item quantity="other">%1$d votes</item>
+    </plurals>
+    <plurals name="communaute_reponses">
+        <item quantity="one">%1$d réponse</item>
+        <item quantity="many">%1$d réponses</item>
+        <item quantity="other">%1$d réponses</item>
+    </plurals>
+    <string name="idees_titre_detail">Idée</string>
+    <string name="idees_introuvable">Idée introuvable</string>
+    <string name="idees_nouvelle">Nouvelle idée</string>
+    <string name="idees_soumise">Idée soumise !</string>
+    <string name="idees_titre_indication">Ex. Vélos électriques en libre-service</string>
+    <string name="idees_description_indication">Décrivez votre idée…</string>
+
+    <!-- Annonces -->
+    <string name="annonces_vide">Aucune annonce</string>
+    <string name="annonces_vide_detail">Déposez la première annonce en touchant « + ».</string>
+    <string name="annonces_en_cours_vide">Aucune annonce en cours</string>
+    <string name="annonces_en_cours_vide_detail">Les annonces conclues sont rangées dans les Archives, ci-dessous.</string>
+    <string name="annonces_tous">Tous</string>
+    <string name="annonces_toutes_categories">Toutes catégories</string>
+    <string name="annonces_categorie">Catégorie</string>
+    <string name="annonces_negociable">Négociable</string>
+    <string name="annonces_titre_detail">Annonce</string>
+    <string name="annonces_introuvable">Annonce introuvable</string>
+    <string name="annonces_ou_en_est">Où en est cette annonce ?</string>
+    <string name="annonces_supprimer">Supprimer</string>
+    <string name="annonces_supprimer_titre">Supprimer définitivement</string>
+    <string name="annonces_supprimer_message">L\'annonce « %1$s »\n\nCette action est irréversible.</string>
+    <string name="annonces_supprimee">Annonce supprimée</string>
+    <string name="annonces_deposer">Déposer une annonce</string>
+    <string name="annonces_publiee">Annonce publiée !</string>
+    <string name="annonces_titre_indication">Ex. Lave-linge presque neuf</string>
+    <string name="annonces_objet">L\'objet</string>
+    <string name="annonces_prix">Prix (€)</string>
+    <string name="annonces_prix_negociable">Prix négociable</string>
+    <string name="annonces_description_indication">Décrivez l\'objet, son état, conditions de remise…</string>
+    <string name="annonces_coordonnees">Afficher mes coordonnées aux autres résidents</string>
+    <string name="annonces_photos_sur_le_site">Les photos s\'ajoutent ensuite, depuis l\'annonce sur le site.</string>
+    <string name="annonces_contacter">Écrire à %1$s</string>
+
+    <!-- Avis -->
+    <string name="avis_vide">Aucun avis pour l\'instant</string>
+    <string name="avis_vide_detail">Dites-nous ce que l\'application vous apporte : votre avis nous aide à l\'améliorer.</string>
+    <string name="avis_en_cours_vide">Aucun avis en cours</string>
+    <string name="avis_en_cours_vide_detail">Les avis retirés sont rangés dans les Archives, ci-dessous.</string>
+    <string name="avis_pas_un_bogue">Un problème, un bogue ? Les avis ne sont pas faits pour ça : ouvrez une affaire, elle sera suivie jusqu\'à sa résolution.</string>
+    <string name="avis_reponse_sur_le_site">Répondre aux avis et retenir ceux de coprofirst.fr se fait sur le site.</string>
+    <string name="avis_toutes">Toutes</string>
+    <string name="avis_filtre_note">%1$d ★</string>
+    <string name="avis_auteur_et_conseil">Auteur et conseil seulement</string>
+    <string name="avis_retenu">Retenu pour coprofirst.fr</string>
+    <string name="avis_ce_qui_a_manque">Ce qui a manqué — </string>
+    <string name="avis_reponse_equipe">Réponse de l\'équipe</string>
+    <string name="avis_reponse_equipe_le">Réponse de l\'équipe · %1$s</string>
+    <plurals name="avis_etoiles">
+        <item quantity="one">%1$d étoile sur 5</item>
+        <item quantity="many">%1$d étoiles sur 5</item>
+        <item quantity="other">%1$d étoiles sur 5</item>
+    </plurals>
+    <string name="avis_modifier">Modifier</string>
+    <string name="avis_archiver">Archiver</string>
+    <string name="avis_restaurer">Restaurer</string>
+    <string name="avis_archive">Archivé</string>
+    <string name="avis_restaure">Restauré</string>
+    <string name="avis_donner">Donner mon avis</string>
+    <string name="avis_modifier_titre">Modifier l\'avis</string>
+    <string name="avis_mis_a_jour">Avis mis à jour</string>
+    <string name="avis_merci">Merci pour votre avis : il nous aide à améliorer CoproFirst.</string>
+    <string name="avis_merci_temoignage">Merci ! Votre témoignage nous aide à faire connaître CoproFirst. Il sera relu avant de paraître sur coprofirst.fr.</string>
+    <string name="avis_titre_indication">Ex. Enfin une résidence où l\'on sait ce qui se passe</string>
+    <string name="avis_note">Note</string>
+    <string name="avis_note_aucune">Aucune</string>
+    <string name="avis_note_valeur">%1$d sur 5</string>
+    <string name="avis_note_explication">Votre avis se lit de vous et du conseil syndical. À partir de %1$d étoiles, vous pourrez accepter qu\'il se lise de tous.</string>
+    <string name="avis_ce_qui_vous_a_manque">Ce qui vous a manqué</string>
+    <string name="avis_remarque_indication">Dites-nous ce qui ne va pas : c\'est ce qui fait progresser le site.</string>
+    <string name="avis_description_indication">Votre avis…</string>
+    <string name="avis_diffusion">Diffusion sur coprofirst.fr</string>
+    <string name="avis_diffusion_question">Acceptez-vous que cet avis soit lu de tous et publié sur coprofirst.fr ?</string>
+    <string name="avis_oui">Oui</string>
+    <string name="avis_non">Non</string>
+
+    <!-- Formulaires -->
+    <string name="communaute_titre">Titre</string>
+    <string name="communaute_description">Description</string>
+    <string name="communaute_reponses_sur_le_site">Répondre ou signaler se fait sur le site, pour l\'instant.</string>
+</resources>

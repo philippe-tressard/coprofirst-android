@@ -52,4 +52,31 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="prestataires_releve_sans_index">Relevé sans index</string>
     <string name="prestataires_photo_releve">Relevé de compteur</string>
     <string name="prestataires_aucun_fournisseur">Aucun fournisseur</string>
+
+    <!-- Résiliation et remplacement (CarteContrat.svelte, contrat 1.29.0) -->
+    <string name="prestataires_remplace_par_capsule">🔁 Remplacé par %1$s · dès le %2$s</string>
+    <string name="prestataires_resilie_le_capsule">Résilié le %1$s</string>
+    <string name="prestataires_resilie_au_capsule">Résilié au %1$s</string>
+    <string name="prestataires_remplace_capsule">🔁 Remplace %1$s</string>
+    <string name="prestataires_remplace_resilie_capsule">🔁 Remplace %1$s (résilié au %2$s)</string>
+    <string name="prestataires_resilie_le">Résilié le</string>
+    <string name="prestataires_remplace_par">Remplacé par</string>
+    <string name="prestataires_remplace">Remplace</string>
+    <string name="prestataires_lie">%1$s — %2$s</string>
+
+    <!-- Avis du conseil syndical (NotationsPrestataire.svelte, #207 de l'iOS) -->
+    <string name="prestataires_avis_du_conseil">Avis du conseil syndical (%1$s)</string>
+    <string name="prestataires_avis_sans_affaire">Avis sans affaire</string>
+    <string name="prestataires_non_notee">non notée</string>
+    <string name="prestataires_exercice">Exercice %1$s</string>
+    <string name="prestataires_interventions_une">%1$s intervention</string>
+    <string name="prestataires_interventions">%1$s interventions</string>
+    <string name="prestataires_notees_une">%1$s notée</string>
+    <string name="prestataires_notees">%1$s notées</string>
+    <string name="prestataires_compte_etat">%1$s %2$s</string>
+    <string name="prestataires_avis_badge">Avis %1$s</string>
+    <string name="prestataires_deplier_avis">Déplie l\'avis</string>
+    <string name="prestataires_replier_avis">Replie l\'avis</string>
+    <string name="prestataires_deplier_exercice">Déplie l\'exercice</string>
+    <string name="prestataires_replier_exercice">Replie l\'exercice</string>
 </resources>

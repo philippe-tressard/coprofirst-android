@@ -5,7 +5,7 @@ package fr.coprofirst.app.fonctions.espacecs
 
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -45,6 +45,13 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidJUnit4::class)
 class EspaceCSInterfaceTest {
+    /**
+     * La règle v2 : ses effets tournent sur un `StandardTestDispatcher`, au fil principal.
+     * La v1 (dépréciée) les menait sur un `UnconfinedTestDispatcher` : un chargement
+     * (`Chargement`, revenu du fil d'E/S) ou une animation (les barres du Reporting)
+     * reprenait sur un autre fil, et Compose y observait des lectures — « Detected
+     * multithreaded access to SnapshotStateObserver », par intermittence (CI de #80).
+     */
     @get:Rule
     val ecran = createComposeRule()
     private val residence = ResidenceSimuleeCS()

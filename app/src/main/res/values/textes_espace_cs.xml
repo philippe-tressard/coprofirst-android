@@ -13,6 +13,7 @@ Les textes de l'Espace conseil syndical (#24), écrits une fois — ceux du site
     <string name="espacecs_approuver">Approuver</string>
     <string name="espacecs_rejeter">Rejeter</string>
     <string name="espacecs_annuler">Annuler</string>
+    <string name="espacecs_ouvrir_affaire">Ouvre l\'affaire</string>
 
     <!-- Comptes & accès -->
     <string name="espacecs_comptes_a_valider">Compte(s) à valider</string>
