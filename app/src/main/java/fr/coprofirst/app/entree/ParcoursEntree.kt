@@ -9,10 +9,13 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import fr.coprofirst.app.session.AdresseInstallation
+import fr.coprofirst.app.session.Connexion
 import fr.coprofirst.app.session.Decouverte
 import fr.coprofirst.app.session.ErreurEntree
-import fr.coprofirst.app.session.Installation
+import fr.coprofirst.app.session.GardeHote
 import fr.coprofirst.app.session.InstallationsConnues
+import fr.coprofirst.app.session.OrigineAdresse
+import fr.coprofirst.app.session.PreuveHote
 import fr.coprofirst.app.session.StockagePreferences
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -22,34 +25,22 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/** Les écrans de l'entrée, dans leur ordre — ceux de l'app iOS (Accueil, Connexion). */
-enum class EcranEntree { Accueil, Connexion }
-
-/** Ce que montrent les écrans de l'entrée. */
-data class EtatEntree(
-    val ecran: EcranEntree = EcranEntree.Accueil,
-    /** L'adresse saisie dans « Votre résidence ». */
-    val saisie: String = "",
-    /** La reconnaissance court. */
-    val enCours: Boolean = false,
-    /** La résidence reconnue à cette adresse — `null` tant qu'aucune ne l'est. */
-    val reconnue: Installation? = null,
-    /** Pourquoi la dernière reconnaissance n'a pas abouti. */
-    val erreur: ErreurEntree? = null,
-)
-
 /**
- * Le parcours d'entrée, sur les choix de l'app iOS (`ConnexionView`) : la résidence se
- * RECONNAÎT pendant la saisie, après une pause de frappe, sans bouton ; à l'ouverture,
- * l'adresse est pré-remplie avec la dernière résidence ouverte. Pas d'annuaire.
+ * Le parcours d'entrée, sur les choix de l'app iOS (`ConnexionView`, `GardeHote`) : la
+ * résidence se RECONNAÎT pendant la saisie, après une pause de frappe ; « Se connecter »
+ * passe par la garde de l'hôte ; la résidence n'est retenue qu'une fois une connexion
+ * réussie, et pré-remplit alors l'écran suivant. Pas d'annuaire.
  */
 class ParcoursEntree(
     private val decouverte: Decouverte,
+    private val connexion: Connexion,
     private val connues: InstallationsConnues,
+    private val lirePreuve: suspend (AdresseInstallation) -> PreuveHote = { PreuveHote.lire(it) },
 ) : ViewModel(), ActionsEntree {
     private val _etat = MutableStateFlow(EtatEntree())
     val etat: StateFlow<EtatEntree> = _etat.asStateFlow()
-    private var tache: Job? = null
+    private val garde = GardeHote { connues.liste }
+    private var reconnaissance: Job? = null
 
     override fun entrer() {
         val derniere = connues.liste.firstOrNull()?.adresse?.enSaisie
@@ -57,7 +48,7 @@ class ParcoursEntree(
         if (_etat.value.saisie.isEmpty() && derniere != null) saisir(derniere, pause = false)
     }
 
-    /** La démonstration : l'écran de connexion, à son adresse (les personnages : #5). */
+    /** La démonstration : l'écran de connexion, à son adresse (les personnages : #10). */
     override fun entrerDemo() {
         _etat.update { it.copy(ecran = EcranEntree.Connexion) }
         saisir(AdresseInstallation.DEMO.enSaisie, pause = false)
@@ -65,9 +56,61 @@ class ParcoursEntree(
 
     override fun saisir(texte: String) = saisir(texte, pause = true)
 
+    override fun saisirEmail(texte: String) = _etat.update { it.copy(email = texte, erreurConnexion = null) }
+
+    override fun saisirMotDePasse(texte: String) = _etat.update { it.copy(motDePasse = texte, erreurConnexion = null) }
+
+    override fun basculerVoirMotDePasse() = _etat.update { it.copy(voirMotDePasse = !it.voirMotDePasse) }
+
     override fun retour() {
-        tache?.cancel()
-        _etat.update { it.copy(ecran = EcranEntree.Accueil, enCours = false) }
+        reconnaissance?.cancel()
+        _etat.update { it.copy(ecran = EcranEntree.Accueil, enCours = false, confirmation = null) }
+    }
+
+    /** Le seul chemin du mot de passe : un hôte à confirmer ouvre la confirmation, RIEN ne part. */
+    override fun seConnecter() {
+        val etat = _etat.value
+        val installation = etat.reconnue ?: return
+        val adresse = installation.adresse ?: return
+        if (!etat.connexionPossible) return
+        if (garde.exigeConfirmation(adresse, OrigineAdresse.Saisie)) {
+            _etat.update { it.copy(confirmation = ConfirmationHote(installation)) }
+            viewModelScope.launch {
+                val preuve = lirePreuve(adresse)
+                _etat.update { e -> e.copy(confirmation = e.confirmation?.takeIf { it.installation == installation }?.copy(preuve = preuve)) }
+            }
+            return
+        }
+        _etat.update { it.copy(connexionEnCours = true, erreurConnexion = null) }
+        viewModelScope.launch {
+            try {
+                connexion.connecter(installation, etat.email, etat.motDePasse)
+                connues.retenir(installation)
+                _etat.update { it.copy(connexionEnCours = false, motDePasse = "", ouverte = installation, ecran = EcranEntree.Espace) }
+            } catch (erreur: ErreurEntree) {
+                _etat.update { it.copy(connexionEnCours = false, erreurConnexion = erreur) }
+            }
+        }
+    }
+
+    override fun basculerSecondAccord() = _etat.update { e ->
+        e.copy(confirmation = e.confirmation?.let { it.copy(secondAccord = !it.secondAccord) })
+    }
+
+    override fun confirmerHote() {
+        val confirmation = _etat.value.confirmation ?: return
+        val adresse = confirmation.installation.adresse ?: return
+        if (!garde.confirmer(adresse, confirmation.preuve, confirmation.secondAccord)) return
+        _etat.update { it.copy(confirmation = null) }
+        seConnecter()
+    }
+
+    override fun renoncerHote() = _etat.update { it.copy(confirmation = null) }
+
+    override fun deconnecter() {
+        val ouverte = _etat.value.ouverte ?: return
+        _etat.update { it.copy(ouverte = null, ecran = EcranEntree.Connexion) }
+        viewModelScope.launch { connexion.deconnecter(ouverte) }
     }
 
     private fun saisir(texte: String, pause: Boolean) {
@@ -75,16 +118,15 @@ class ParcoursEntree(
         val deja = _etat.value.reconnue?.adresse
         _etat.update { it.copy(saisie = texte) }
         if (adresse != null && adresse == deja) return
-        tache?.cancel()
-        _etat.update { it.copy(reconnue = null, erreur = null, enCours = false) }
+        reconnaissance?.cancel()
+        _etat.update { it.copy(reconnue = null, erreur = null, enCours = false, erreurConnexion = null) }
         // Une saisie qui n'est pas (encore) une adresse ne dit rien : on attend la suite.
         if (adresse == null) return
-        tache = viewModelScope.launch {
+        reconnaissance = viewModelScope.launch {
             if (pause) delay(PAUSE_DE_FRAPPE_MS)
             _etat.update { it.copy(enCours = true) }
             try {
                 val installation = decouverte.decouvrir(adresse)
-                connues.retenir(installation)
                 _etat.update { it.copy(reconnue = installation, enCours = false) }
             } catch (erreur: ErreurEntree) {
                 _etat.update { it.copy(erreur = erreur, enCours = false) }
@@ -98,7 +140,8 @@ class ParcoursEntree(
 
         val Fabrique = viewModelFactory {
             initializer {
-                ParcoursEntree(Decouverte(), InstallationsConnues(StockagePreferences(this[APPLICATION_KEY]!!)))
+                val stockage = StockagePreferences(this[APPLICATION_KEY]!!)
+                ParcoursEntree(Decouverte(), Connexion(), InstallationsConnues(stockage))
             }
         }
     }

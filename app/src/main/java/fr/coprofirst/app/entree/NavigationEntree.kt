@@ -35,6 +35,14 @@ interface ActionsEntree {
     fun entrer()
     fun entrerDemo()
     fun saisir(texte: String)
+    fun saisirEmail(texte: String)
+    fun saisirMotDePasse(texte: String)
+    fun basculerVoirMotDePasse()
+    fun seConnecter()
+    fun basculerSecondAccord()
+    fun confirmerHote()
+    fun renoncerHote()
+    fun deconnecter()
     fun retour()
 
     /** Pour les aperçus : aucun geste ne fait rien. */
@@ -42,6 +50,14 @@ interface ActionsEntree {
         override fun entrer() = Unit
         override fun entrerDemo() = Unit
         override fun saisir(texte: String) = Unit
+        override fun saisirEmail(texte: String) = Unit
+        override fun saisirMotDePasse(texte: String) = Unit
+        override fun basculerVoirMotDePasse() = Unit
+        override fun seConnecter() = Unit
+        override fun basculerSecondAccord() = Unit
+        override fun confirmerHote() = Unit
+        override fun renoncerHote() = Unit
+        override fun deconnecter() = Unit
         override fun retour() = Unit
     }
 }
@@ -57,7 +73,9 @@ private const val DUREE_MS = 220
 @Composable
 fun NavigationEntree(parcours: ParcoursEntree = viewModel(factory = ParcoursEntree.Fabrique)) {
     val etat by parcours.etat.collectAsStateWithLifecycle()
-    BackHandler(enabled = etat.ecran != EcranEntree.Accueil) { parcours.retour() }
+    // L'espace d'une résidence ouverte ne se quitte que par « Se déconnecter » ; le retour
+    // système y ferme l'app, comme sur un écran racine.
+    BackHandler(enabled = etat.ecran == EcranEntree.Connexion) { parcours.retour() }
     Surface(modifier = Modifier.fillMaxSize()) {
         AnimatedContent(
             targetState = etat.ecran,
@@ -72,22 +90,25 @@ fun NavigationEntree(parcours: ParcoursEntree = viewModel(factory = ParcoursEntr
             when (ecran) {
                 EcranEntree.Accueil -> EcranAccueil(parcours)
                 EcranEntree.Connexion -> EcranConnexion(etat, parcours)
+                EcranEntree.Espace -> EcranEspace(etat.ouverte, parcours)
             }
         }
     }
 }
 
-/** Le cadre d'un écran de l'entrée : le retour à l'accueil ; le titre est dans la page. */
+/** Le cadre d'un écran de l'entrée : le retour, s'il y en a un ; le titre est dans la page. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CadreEcran(retour: () -> Unit, contenu: @Composable (PaddingValues) -> Unit) {
+fun CadreEcran(retour: (() -> Unit)?, contenu: @Composable (PaddingValues) -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {},
                 navigationIcon = {
-                    IconButton(onClick = retour) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.retour))
+                    if (retour != null) {
+                        IconButton(onClick = retour) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.retour))
+                        }
                     }
                 },
             )

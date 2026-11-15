@@ -16,11 +16,38 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="adresse_exemple">residence.exemple.fr</string>
     <string name="connexion_reconnue">Résidence reconnue : %1$s</string>
     <string name="connexion_coche">Reconnue</string>
-    <string name="connexion_bientot">La connexion à votre compte arrivera dans une prochaine version de l\'app.</string>
+    <string name="connexion_email">Adresse électronique</string>
+    <string name="connexion_email_exemple">vous@exemple.fr</string>
+    <string name="connexion_mot_de_passe">Mot de passe</string>
+    <string name="connexion_mot_de_passe_exemple">Votre mot de passe</string>
+    <string name="connexion_voir_mot_de_passe">Afficher le mot de passe</string>
+    <string name="connexion_cacher_mot_de_passe">Masquer le mot de passe</string>
+    <string name="connexion_oublie">Mot de passe oublié ?</string>
+    <string name="connexion_valider">Se connecter</string>
+    <string name="connexion_pas_de_compte">Pas encore de compte ?</string>
+    <string name="connexion_demander_acces">Demander l\'accès</string>
+
+    <string name="hote_titre">Vérifiez l\'adresse</string>
+    <string name="hote_annonce">Votre mot de passe va être envoyé à :</string>
+    <string name="hote_nom_servi">Ce serveur se présente comme « %1$s ».</string>
+    <string name="hote_conseil">Comparez-la lettre à lettre avec celle de votre fiche d\'arrivée : une adresse qui lui ressemble peut imiter votre résidence.</string>
+    <string name="hote_verification">Vérification de l\'adresse…</string>
+    <string name="hote_reconnue">Adresse reconnue comme une installation CoproFirst.</string>
+    <string name="hote_avertissement">Cette adresse n\'est pas reconnue comme une installation CoproFirst.</string>
+    <string name="hote_detail_avertissement">Si vous n\'êtes pas certain de l\'adresse, ne vous connectez pas : demandez-la au conseil syndical ou au gestionnaire de votre résidence.</string>
+    <string name="hote_second_accord">Je connais cette adresse et je veux m\'y connecter quand même</string>
+    <string name="hote_confirmer">Me connecter à cette adresse</string>
+    <string name="hote_annuler">Annuler</string>
+
+    <string name="espace_connecte">Vous êtes connecté à %1$s.</string>
+    <string name="espace_bientot">Les écrans de votre résidence arrivent dans les prochaines versions de l\'app.</string>
+    <string name="espace_deconnecter">Se déconnecter</string>
 
     <string name="erreur_hote_inconnu">Cette adresse répond, mais aucune résidence n\'y est installée. Vérifiez-la sur votre fiche d\'arrivée.</string>
     <string name="erreur_injoignable">Impossible de joindre cette adresse. Vérifiez-la, ou réessayez dans un instant.</string>
     <string name="erreur_pas_coprofirst">Cette adresse ne mène pas à une résidence CoproFirst.</string>
     <string name="erreur_residence_a_mettre_a_jour">Cette résidence doit être mise à jour pour s\'ouvrir dans l\'app. Prévenez son administrateur.</string>
+    <string name="erreur_identifiants_refuses">Adresse électronique ou mot de passe incorrect.</string>
+    <string name="erreur_trop_d_essais">Trop d\'essais. Patientez quelques minutes avant de réessayer.</string>
     <string name="erreur_inattendue">La résidence n\'a pas pu répondre. Réessayez dans un instant.</string>
 </resources>

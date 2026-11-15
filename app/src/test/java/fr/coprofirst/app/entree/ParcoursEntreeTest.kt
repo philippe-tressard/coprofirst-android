@@ -3,10 +3,13 @@
 
 package fr.coprofirst.app.entree
 
+import fr.coprofirst.app.session.Connexion
 import fr.coprofirst.app.session.Decouverte
 import fr.coprofirst.app.session.ErreurEntree
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.InstallationsConnues
+import fr.coprofirst.app.session.PreuveHote
+import fr.coprofirst.app.session.SessionsParHote
 import fr.coprofirst.app.session.StockageResidences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -38,6 +41,7 @@ class ParcoursEntreeTest {
         override fun ecrire(valeur: String) { this.valeur = valeur }
     }
     private val connues = InstallationsConnues(stockage)
+    private var preuve = PreuveHote.Declaree
     private lateinit var parcours: ParcoursEntree
 
     @Before
@@ -45,8 +49,10 @@ class ParcoursEntreeTest {
         Dispatchers.setMain(ordonnanceur)
         serveur.start()
         // Toute adresse mène au serveur local : seule la base de l'API change.
-        val decouverte = Decouverte(OkHttpClient(), Dispatchers.Unconfined) { serveur.url("/api").toString() }
-        parcours = ParcoursEntree(decouverte, connues)
+        val base = { _: Any -> serveur.url("/api").toString() }
+        val decouverte = Decouverte(OkHttpClient(), Dispatchers.Unconfined, base)
+        val connexion = Connexion(SessionsParHote(OkHttpClient()), Dispatchers.Unconfined, base)
+        parcours = ParcoursEntree(decouverte, connexion, connues) { preuve }
     }
 
     @After
@@ -59,6 +65,20 @@ class ParcoursEntreeTest {
         MockResponse.Builder().code(200).addHeader("Content-Type", "application/json")
             .body("""{"site_nom": "$nom"}""").build(),
     )
+
+    private fun ok() = serveur.enqueue(
+        MockResponse.Builder().code(200).addHeader("Content-Type", "application/json").body("{}").build(),
+    )
+
+    /** Reconnaît la résidence et remplit les identifiants. */
+    private fun TestScope.pret(hote: String) {
+        residence("Les Glycines")
+        parcours.entrer()
+        parcours.saisir(hote)
+        advanceUntilIdle()
+        parcours.saisirEmail("a@exemple.fr")
+        parcours.saisirMotDePasse("secret")
+    }
 
     private fun test(corps: suspend TestScope.() -> Unit) = runTest(ordonnanceur) { corps() }
 
@@ -83,7 +103,8 @@ class ParcoursEntreeTest {
         advanceUntilIdle()
         assertEquals(1, serveur.requestCount)
         assertEquals("Les Glycines", parcours.etat.value.reconnue?.nom)
-        assertEquals("https://residence.exemple.fr", connues.liste.single().url)
+        // Comme l'iOS : une résidence n'est retenue qu'après une connexion réussie.
+        assertEquals(emptyList<Installation>(), connues.liste)
     }
 
     @Test
@@ -117,5 +138,63 @@ class ParcoursEntreeTest {
         assertNull(parcours.etat.value.erreur)
         parcours.retour()
         assertEquals(EcranEntree.Accueil, parcours.etat.value.ecran)
+    }
+
+    @Test
+    fun unHoteJamaisVuSeConfirmeAvantToutMotDePasse() = test {
+        pret("jamais-vu.exemple.fr")
+        parcours.seConnecter()
+        advanceUntilIdle()
+        // Seul GET /config est parti : le mot de passe attend la confirmation.
+        assertEquals(1, serveur.requestCount)
+        assertEquals(PreuveHote.Declaree, parcours.etat.value.confirmation?.preuve)
+        ok()
+        parcours.confirmerHote()
+        advanceUntilIdle()
+        serveur.takeRequest()
+        assertEquals("/api/auth/login", serveur.takeRequest().url.encodedPath)
+        assertEquals(EcranEntree.Espace, parcours.etat.value.ecran)
+        assertEquals("", parcours.etat.value.motDePasse)
+        assertEquals("https://jamais-vu.exemple.fr", connues.liste.single().url)
+    }
+
+    @Test
+    fun sansPreuveIlFautLeSecondAccord() = test {
+        preuve = PreuveHote.Absente
+        pret("imitation.exemple.fr")
+        parcours.seConnecter()
+        advanceUntilIdle()
+        parcours.confirmerHote()
+        assertEquals(1, serveur.requestCount)
+        parcours.basculerSecondAccord()
+        ok()
+        parcours.confirmerHote()
+        advanceUntilIdle()
+        assertEquals(2, serveur.requestCount)
+        assertEquals(EcranEntree.Espace, parcours.etat.value.ecran)
+    }
+
+    @Test
+    fun laDemoEtUneResidenceConnueNeSeConfirmentPas() = test {
+        connues.retenir(Installation("https://connue.exemple.fr", "Connue"))
+        pret("connue.exemple.fr")
+        ok()
+        parcours.seConnecter()
+        advanceUntilIdle()
+        assertNull(parcours.etat.value.confirmation)
+        assertEquals(EcranEntree.Espace, parcours.etat.value.ecran)
+    }
+
+    @Test
+    fun identifiantsRefusesSansQuitterLEcran() = test {
+        connues.retenir(Installation("https://connue.exemple.fr", "Connue"))
+        pret("connue.exemple.fr")
+        serveur.enqueue(MockResponse.Builder().code(422).build())
+        parcours.seConnecter()
+        advanceUntilIdle()
+        assertSame(ErreurEntree.IdentifiantsRefuses, parcours.etat.value.erreurConnexion)
+        assertEquals(EcranEntree.Connexion, parcours.etat.value.ecran)
+        parcours.saisirMotDePasse("autre")
+        assertNull(parcours.etat.value.erreurConnexion)
     }
 }
