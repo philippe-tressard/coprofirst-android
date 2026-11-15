@@ -33,6 +33,7 @@ import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.PastilleTeinte
+import fr.coprofirst.app.commun.annuaire.Coordonnees
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.launch
 
@@ -91,7 +92,7 @@ private fun CarteGroupe(groupe: GroupeAcces, recuperer: () -> Unit) {
     Carte {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(groupe.nom, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold), color = couleurs.text)
-            Coordonnees(groupe.email, null)
+            Coordonnees(groupe.email, emptyList())
             if (groupe.objets.isEmpty()) {
                 PastilleTeinte(stringResource(R.string.monlot_aucun_acces_confie_badge), "badge-gray", compacte = true)
                 return@Column

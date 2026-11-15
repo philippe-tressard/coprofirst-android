@@ -375,6 +375,22 @@ une fois.
 ⚠️ Divergence déclarée : l'iOS ne fait pas partir la demande hors ligne ni en consultation ;
 l'Android n'a pas encore ces états — la demande part, échoue, et se tait.
 
+## Personnes de l'annuaire — `fr.coprofirst.app.commun.annuaire`
+
+Une même personne a un même rendu (standards/11 §14) : l'Annuaire des résidents et
+l'« Annuaire CS & Syndic » de l'Espace CS.
+
+| API | Pendant iOS | Usage |
+|---|---|---|
+| `Annuaire` (`ConseilSyndical`, `Syndic`, `Membre` : `nomComplet`, `initiales`, `telephones`…), `AnnuaireLu.lu()` | `Annuaire` | L'annuaire servi (GET /admin/annuaire), lu du type généré ; `groupesCS` : les membres par bâtiment. |
+| `CarteContact(personne, medaillons, session, principal = false) { détail }` | `CarteContact` | La carte d'une personne : avatar (photo protégée ou initiales), nom servi, médaillons, liseré d'accent pour le principal, puis le détail de la section. |
+| `medaillonsDuConseil(membre, site)`, `medaillonsDuSyndic(membre)`, `Medaille` | idem | Les rôles mis en avant : gestionnaire du site, président ; interlocuteur principal. |
+| `Coordonnees(personne)`, `Coordonnees(email, telephones, titre?)` | `Coordonnees` | Courriel et numéros touchables (`mailto:`, `tel:`), repères `ReperesContact.COURRIEL`, `.APPELER` — aussi les baux de « Mes lots & accès ». |
+
+L'aperçu servi a aussi `NomDeLaSaisie(prenom, nom, service, repere, connu?)` : la ligne
+« Nom affiché » d'une feuille d'édition, rendue par le serveur (POST /noms/affiche,
+`ServiceNoms` / `ServiceNomsApi(session)`), jamais composée ici — `NomDeLaSaisie` de l'iOS.
+
 ## Fil des réponses — `fr.coprofirst.app.commun.reponses`
 
 Les réponses d'une idée, d'une annonce, les commentaires d'un sondage (`ReponseCommunauteRead`,

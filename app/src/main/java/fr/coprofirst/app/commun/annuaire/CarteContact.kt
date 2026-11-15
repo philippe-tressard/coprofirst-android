@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Philippe TRESSARD
 // SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 
-package fr.coprofirst.app.fonctions.annuaire
+package fr.coprofirst.app.commun.annuaire
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -49,7 +49,7 @@ data class Medaille(val titre: String, val icone: ImageVector)
 
 /**
  * Les rôles d'un membre du conseil, mis en avant sur sa carte : gestionnaire du site,
- * président — l'Annuaire des résidents et, demain, celui de l'Espace CS (#24).
+ * président — l'Annuaire des résidents et celui de l'Espace CS (#24, #97).
  */
 @Composable
 fun medaillonsDuConseil(membre: Annuaire.Membre, site: String): List<Medaille> = buildList {
@@ -114,23 +114,38 @@ private fun Avatar(personne: Annuaire.Membre, session: SessionOuverte?) {
     }
 }
 
-/** Le courriel et les numéros d'un contact : chacun s'ouvre d'un toucher. */
+/** Le courriel et les numéros d'une personne de l'annuaire : chacun s'ouvre d'un toucher. */
 @Composable
-fun Coordonnees(personne: Annuaire.Membre) {
+fun Coordonnees(personne: Annuaire.Membre) = Coordonnees(personne.email, personne.telephones)
+
+/**
+ * Un courriel et des numéros, touchables (`mailto:`, `tel:`), sous un titre facultatif —
+ * l'annuaire, et les baux de « Mes lots & accès » (bailleur, locataire). Écrit une fois (#97).
+ */
+@Composable
+fun Coordonnees(email: String?, telephones: List<String>, titre: String? = null) {
+    val couleurs = LocalCouleurs.current
     val liens = LocalUriHandler.current
-    Column {
-        personne.email?.let { email ->
-            Action(email, Icons.Outlined.Email, stringResource(R.string.annuaire_ecrire), ReperesAnnuaire.COURRIEL) {
-                liens.openUri("mailto:$email")
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        if (titre != null) Text(titre, style = MaterialTheme.typography.titleSmall, color = couleurs.text)
+        email?.takeIf { it.isNotBlank() }?.let { courriel ->
+            Action(courriel, Icons.Outlined.Email, stringResource(R.string.annuaire_ecrire), ReperesContact.COURRIEL) {
+                liens.openUri("mailto:$courriel")
             }
         }
-        personne.telephones.forEach { numero ->
+        telephones.filter { it.isNotBlank() }.forEach { numero ->
             val chiffres = numero.filter { it.isDigit() || it == '+' }
-            Action(numero, Icons.Outlined.Phone, stringResource(R.string.annuaire_appeler), ReperesAnnuaire.APPELER) {
+            Action(numero, Icons.Outlined.Phone, stringResource(R.string.annuaire_appeler), ReperesContact.APPELER) {
                 liens.openUri("tel:$chiffres")
             }
         }
     }
+}
+
+/** Les repères des coordonnées, ceux de l'iOS. */
+object ReperesContact {
+    const val APPELER = "annuaire.appeler"
+    const val COURRIEL = "annuaire.courriel"
 }
 
 @Composable
