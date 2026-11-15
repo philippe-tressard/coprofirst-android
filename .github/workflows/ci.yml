@@ -12,9 +12,13 @@ on:
   pull_request:
 permissions:
   contents: read
+# Une PR : sa nouvelle poussée annule l'exécution précédente (seule la dernière tête
+# compte). main : CHAQUE fusion est jugée — c'est le filet de « main sans à jour »
+# (standards/09 §8 bis). Un groupe par commit, car GitHub ne garde qu'UNE exécution en
+# attente par groupe : un groupe commun évincerait les fusions rapprochées.
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   depot:
     name: Dépôt (500 lignes, encodage, modes, LICENSE, REUSE, contrat)
