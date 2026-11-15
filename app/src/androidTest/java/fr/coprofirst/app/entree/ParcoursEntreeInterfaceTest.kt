@@ -72,8 +72,8 @@ class ParcoursEntreeInterfaceTest {
         serveur.repondre(200) // POST /auth/login
         serveur.repondre(404) // GET /auth/me : sans profil, la barre reste celle de tous
         ecran.onNodeWithText("Me connecter à cette adresse").performClick()
-        // La résidence ouverte : la barre, la première page (pas encore portée : « Bientôt »).
-        attendre("Bientôt")
+        // La résidence ouverte : la barre, la première page — le fil, vide (`ServeurDeTest.flux`).
+        attendre("Rien de neuf")
         ecran.onNodeWithText("Plus").performClick()
         // « Se déconnecter » est au bas du Profil, comme sur l'iOS (#21) — là quel que soit
         // l'état du compte (chargé, en erreur, en chargement) — et se confirme.

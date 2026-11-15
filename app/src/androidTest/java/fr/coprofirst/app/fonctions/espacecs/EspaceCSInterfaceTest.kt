@@ -190,6 +190,22 @@ class EspaceCSInterfaceTest {
         assertTrue(residence.recues.any { it.startsWith("PATCH /api/annonces-hall/5") })
     }
 
+    @Test
+    fun leReportingEtSesModes() {
+        atteindre(ReperesOnglets.onglet("reporting"))
+        attendreRepere(ReperesEspaceCS.REPORTING_TOTAL)
+        attendre("affaires non fermées")
+        attendreRepere(ReperesEspaceCS.reportingAffaire(12))
+        attendre("Nouveau message depuis le dernier résumé")
+        atteindre(ReperesEspaceCS.reportingMode("entretien"))
+        attendre("À venir")
+        assertTrue(residence.recues.any { it.startsWith("GET /api/suivi-affaires?mode=entretien") })
+        atteindre(ReperesEspaceCS.reportingMode("renouvellements"))
+        attendreRepere(ReperesEspaceCS.RENOUVELLEMENTS_PREAVIS)
+        attendre("Préavis en cours")
+        attendreRepere(ReperesEspaceCS.renouvellementDiagnostic(1))
+    }
+
     private companion object {
         const val DELAI_MS = 10_000L
     }
