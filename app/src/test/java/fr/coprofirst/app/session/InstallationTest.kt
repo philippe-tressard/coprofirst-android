@@ -53,8 +53,12 @@ class InstallationTest {
 
     @Test
     fun contratSousLePlancherRefuse() {
-        val dessous = VersionContrat(plancher.majeure, plancher.mineure, plancher.correctif - 1)
-            .takeIf { plancher.correctif > 0 } ?: VersionContrat(plancher.majeure, plancher.mineure - 1, 99)
+        // La version juste sous le plancher, quel qu'il soit (2.0.0 → 1.99.99).
+        val dessous = when {
+            plancher.correctif > 0 -> VersionContrat(plancher.majeure, plancher.mineure, plancher.correctif - 1)
+            plancher.mineure > 0 -> VersionContrat(plancher.majeure, plancher.mineure - 1, 99)
+            else -> VersionContrat(plancher.majeure - 1, 99, 99)
+        }
         assertSame(
             ErreurService.ResidenceAMettreAJour,
             refus(mapOf("site_nom" to "Ancienne", "version_contrat" to dessous.toString())),
