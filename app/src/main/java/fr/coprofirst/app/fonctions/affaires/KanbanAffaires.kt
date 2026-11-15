@@ -180,9 +180,9 @@ private fun Sauts(colonnes: List<ColonneKanban>, visible: String?, etat: EtatAff
                     .background(if (visible == colonne.id) c.primaryLight else c.surface)
                     .border(1.dp, c.border, CircleShape)
                     .selectable(visible == colonne.id, role = Role.Tab) { aller(i) }
+                    .testTag(ReperesAffaires.saut(colonne.id))
                     .clearAndSetSemantics { contentDescription = vocal }
-                    .padding(horizontal = 12.dp)
-                    .testTag(ReperesAffaires.saut(colonne.id)),
+                    .padding(horizontal = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {

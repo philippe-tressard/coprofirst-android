@@ -126,13 +126,14 @@ private fun EnTeteAnnee(annee: Int, compte: Int, ouverte: Boolean, basculer: () 
             .fillMaxWidth()
             .heightIn(min = Mise.cible)
             .clickable(onClick = basculer)
+            // Le repère AVANT `clearAndSetSemantics` : posé après, il serait effacé avec le reste.
+            .testTag(ReperesAffaires.annee(annee))
             .clearAndSetSemantics {
                 contentDescription = vocal
                 stateDescription = etatDit
                 heading()
                 onClick(aide) { basculer(); true }
-            }
-            .testTag(ReperesAffaires.annee(annee)),
+            },
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
