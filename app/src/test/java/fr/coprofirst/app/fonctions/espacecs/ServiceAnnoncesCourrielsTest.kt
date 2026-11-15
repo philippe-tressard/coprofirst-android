@@ -66,6 +66,14 @@ class ServiceAnnoncesCourrielsTest {
         assertFalse(SaisieAnnonceHall(titre = "x", message = "  ").complete)
     }
 
+    /** Les lieux retenus partent tels quels, triés. */
+    @Test
+    fun lesLieuxRetenusPartent() = runTest {
+        annonces.creer(SaisieAnnonceHall(titre = "Toit", message = "Accès fermé.", perimetres = setOf("bat_a_toit", "bat_a")))
+        val corps = banc.residence.recues.single { it.startsWith("POST /api/annonces-hall ") }
+        assertTrue(corps, corps.contains("\"perimetre_cible\":[\"bat_a\",\"bat_a_toit\"]"))
+    }
+
     @Test
     fun unRefusDitLaPhraseDuServeur() = runTest {
         try {

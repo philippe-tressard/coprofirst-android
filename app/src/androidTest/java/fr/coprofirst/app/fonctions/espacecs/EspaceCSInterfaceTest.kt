@@ -177,10 +177,16 @@ class EspaceCSInterfaceTest {
         toucher(ReperesEspaceCS.NOUVELLE_TITRE)
         ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_TITRE).performTextInput("Ascenseur à l'arrêt")
         ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_MESSAGE).performTextInput("Lundi matin.")
+        // Le périmètre : l'arbre servi, le défaut d'abord ; le bâtiment A retenu.
+        atteindre("${ReperesEspaceCS.NOUVELLE_PERIMETRE}.bat_a")
         atteindre(ReperesEspaceCS.nouvelleFormat("a5"))
         atteindre(ReperesEspaceCS.NOUVELLE_CREER)
         attendre("Annonce A5 créée et envoyée à 1 membre du CS")
-        assertTrue(residence.recues.any { it.startsWith("POST /api/annonces-hall ") && it.contains("\"a5\"") })
+        assertTrue(
+            residence.recues.any {
+                it.startsWith("POST /api/annonces-hall ") && it.contains("\"a5\"") && it.contains("\"perimetre_cible\":[\"bat_a\"]")
+            },
+        )
 
         // Les archives : en cours puis archivées ; le menu « … » range une affiche.
         attendreRepere(ReperesEspaceCS.annonce(2))

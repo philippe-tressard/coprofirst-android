@@ -90,6 +90,8 @@ Les textes de l'Espace conseil syndical (#24), écrits une fois — ceux du site
     <string name="espacecs_annonces_titre_exemple">Ex : Coupure d\'eau jeudi matin</string>
     <string name="espacecs_annonces_message">Message</string>
     <string name="espacecs_annonces_message_exemple">Le texte de l\'affiche…</string>
+    <string name="espacecs_annonces_perimetre">Périmètre</string>
+    <string name="espacecs_annonces_perimetre_aide">Imprimé sur l\'affiche : il dit où elle doit être posée.</string>
     <string name="espacecs_annonces_format">Format</string>
     <string name="espacecs_annonces_format_aide">Auto : le serveur choisit le plus grand format où le texte tient.</string>
     <string name="espacecs_annonces_diffusion">Diffusion</string>

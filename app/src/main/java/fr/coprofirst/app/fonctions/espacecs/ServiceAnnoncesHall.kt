@@ -44,6 +44,8 @@ class ServiceAnnoncesHallApi(private val session: SessionOuverte) : ServiceAnnon
             titre = saisie.titre.trim(),
             message = TexteDuSite.html(saisi = saisie.message),
             formatDemande = saisie.format,
+            // Aucun lieu retenu : le serveur pose le défaut (coprofirst#2514).
+            perimetreCible = saisie.perimetres.sorted().ifEmpty { null },
             images = emptyList(),
             envoyerCs = saisie.envoyerCS,
             envoyerSyndic = saisie.envoyerSyndic,
@@ -117,6 +119,8 @@ data class SaisieAnnonceHall(
     val envoyerCS: Boolean = false,
     val envoyerSyndic: Boolean = false,
     val envoyerAuteur: Boolean = false,
+    /** Les lieux retenus (`ChoixPerimetres`) ; aucun : le serveur pose le défaut. */
+    val perimetres: Set<String> = emptySet(),
 ) {
     /** La règle de `_valider` côté API : un titre, et un message (sans photo, ici). */
     val complete: Boolean get() = titre.isNotBlank() && message.isNotBlank()

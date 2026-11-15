@@ -17,6 +17,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,20 +38,24 @@ import fr.coprofirst.app.commun.BoutonPlein
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.Pastille
+import fr.coprofirst.app.commun.perimetres.ArbreDesPerimetres
+import fr.coprofirst.app.commun.perimetres.ChoixDePerimetres
+import fr.coprofirst.app.commun.perimetres.ChoixPerimetres
+import fr.coprofirst.app.commun.perimetres.ServicePerimetres
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.launch
 
 /**
  * « Nouvelle annonce » (`FormulaireAnnonceHall.svelte`), comme l'iOS (`NouvelleAnnonceHall`) :
- * le titre, le message, le format et la Diffusion — puis l'affiche est créée (PDF rendu et
- * envois faits par le serveur). Sans photo ni assistant : ceux-là restent au site.
+ * le titre, le message, le périmètre, le format et la Diffusion — puis l'affiche est créée
+ * (PDF rendu et envois faits par le serveur). Sans photo ni assistant : ceux-là restent au site.
  *
- * ⚠️ Divergence déclarée : pas encore de choix du périmètre — le serveur pose le défaut,
- * comme l'iOS quand l'arbre des périmètres n'a pas pu être lu. Le choix attend la couche
- * commune (#83).
+ * Le périmètre se choisit dans l'arbre servi (`ChoixPerimetres`), le défaut du serveur
+ * d'abord ; lu sans bloquer : sans arbre (échec, aucun périmètre), le choix ne paraît pas et
+ * le serveur pose le défaut — comme l'iOS.
  */
 @Composable
-internal fun NouvelleAnnonceHall(service: ServiceAnnoncesHall, creee: (AnnonceHall) -> Unit) {
+internal fun NouvelleAnnonceHall(service: ServiceAnnoncesHall, perimetres: ServicePerimetres?, creee: (AnnonceHall) -> Unit) {
     val portee = rememberCoroutineScope()
     var titre by rememberSaveable { mutableStateOf("") }
     var message by rememberSaveable { mutableStateOf("") }
@@ -60,7 +65,19 @@ internal fun NouvelleAnnonceHall(service: ServiceAnnoncesHall, creee: (AnnonceHa
     var envoyerAuteur by rememberSaveable { mutableStateOf(false) }
     var envoi by remember { mutableStateOf(false) }
     var erreur by remember { mutableStateOf<ErreurService?>(null) }
-    val saisie = SaisieAnnonceHall(titre, message, format, envoyerCS, envoyerSyndic, envoyerAuteur)
+    var arbre by remember { mutableStateOf(ArbreDesPerimetres(emptyList())) }
+    var choix by remember { mutableStateOf(ChoixDePerimetres()) }
+    LaunchedEffect(perimetres) {
+        // Non bloquant : sans périmètres, l'affiche prend celui que le serveur pose.
+        val lu = try {
+            ArbreDesPerimetres(perimetres?.perimetres().orEmpty())
+        } catch (_: ErreurService) {
+            ArbreDesPerimetres(emptyList())
+        }
+        arbre = lu
+        if (choix.codes.isEmpty()) choix = choix.choisirDefaut(lu)
+    }
+    val saisie = SaisieAnnonceHall(titre, message, format, envoyerCS, envoyerSyndic, envoyerAuteur, choix.codes)
 
     Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
         Champ(R.string.espacecs_annonces_titre) {
@@ -81,6 +98,11 @@ internal fun NouvelleAnnonceHall(service: ServiceAnnoncesHall, creee: (AnnonceHa
                 maxLines = 12,
                 modifier = Modifier.fillMaxWidth().testTag(ReperesEspaceCS.NOUVELLE_MESSAGE),
             )
+        }
+        if (arbre.noeuds.isNotEmpty()) {
+            Champ(R.string.espacecs_annonces_perimetre, aide = R.string.espacecs_annonces_perimetre_aide) {
+                ChoixPerimetres(arbre, choix, { choix = it }, repere = ReperesEspaceCS.NOUVELLE_PERIMETRE, service = perimetres)
+            }
         }
         Champ(R.string.espacecs_annonces_format, aide = R.string.espacecs_annonces_format_aide) {
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -114,6 +136,7 @@ internal fun NouvelleAnnonceHall(service: ServiceAnnoncesHall, creee: (AnnonceHa
                     envoyerCS = false
                     envoyerSyndic = false
                     envoyerAuteur = false
+                    choix = ChoixDePerimetres().choisirDefaut(arbre)
                     creee(annonce)
                 } catch (e: ErreurService) {
                     erreur = e

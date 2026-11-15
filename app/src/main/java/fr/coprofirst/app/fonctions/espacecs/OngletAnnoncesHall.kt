@@ -35,6 +35,8 @@ import fr.coprofirst.app.commun.EtatVide
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.Pastille
 import fr.coprofirst.app.commun.onglets.ContexteOnglet
+import fr.coprofirst.app.commun.perimetres.ServicePerimetres
+import fr.coprofirst.app.commun.perimetres.ServicePerimetresApi
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.launch
 
@@ -50,11 +52,12 @@ enum class VueAnnoncesHall { Nouvelle, Archives }
 @Composable
 fun OngletAnnoncesHall(contexte: ContexteOnglet) {
     val service = remember(contexte.session) { ServiceAnnoncesHallApi(contexte.session) }
-    OngletAnnoncesHall(service, contexte.avis, contexte.actualisation)
+    val perimetres = remember(contexte.session) { ServicePerimetresApi(contexte.session) }
+    OngletAnnoncesHall(service, contexte.avis, contexte.actualisation, perimetres)
 }
 
 @Composable
-fun OngletAnnoncesHall(service: ServiceAnnoncesHall, avis: AvisDuGeste, actualisation: Int) {
+fun OngletAnnoncesHall(service: ServiceAnnoncesHall, avis: AvisDuGeste, actualisation: Int, perimetres: ServicePerimetres? = null) {
     var vue by rememberSaveable { mutableStateOf(VueAnnoncesHall.Nouvelle) }
     val ressources = LocalResources.current
     Column(Modifier.animateContentSize(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -67,7 +70,7 @@ fun OngletAnnoncesHall(service: ServiceAnnoncesHall, avis: AvisDuGeste, actualis
             }
         }
         when (vue) {
-            VueAnnoncesHall.Nouvelle -> NouvelleAnnonceHall(service) { annonce ->
+            VueAnnoncesHall.Nouvelle -> NouvelleAnnonceHall(service, perimetres) { annonce ->
                 avis.dire(creee(ressources, annonce))
                 vue = VueAnnoncesHall.Archives
             }
