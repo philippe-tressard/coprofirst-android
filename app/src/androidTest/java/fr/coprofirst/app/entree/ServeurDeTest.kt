@@ -14,6 +14,8 @@ import fr.coprofirst.app.session.SessionsParHote
 import fr.coprofirst.app.session.StockageResidences
 import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
+import mockwebserver3.QueueDispatcher
+import mockwebserver3.RecordedRequest
 import okhttp3.tls.HandshakeCertificates
 import okhttp3.tls.HeldCertificate
 
@@ -21,12 +23,22 @@ import okhttp3.tls.HeldCertificate
  * Un serveur local EN HTTPS (le clair est refusé par le manifeste, comme en vrai) et le
  * parcours d'entrée qui lui parle — le client de l'app, qui fait confiance à son seul
  * certificat. Toute adresse saisie mène à lui.
+ *
+ * GET /flux (le fil, la première page d'une résidence ouverte) se sert HORS de la file, depuis
+ * `flux` : il part en même temps que GET /auth/me, et prendrait sinon la réponse de l'autre.
  */
 class ServeurDeTest : AutoCloseable {
     private val certificat = HeldCertificate.Builder().addSubjectAlternativeName("localhost").build()
     private val serveurTls = HandshakeCertificates.Builder().heldCertificate(certificat).build()
     private val clientTls = HandshakeCertificates.Builder().addTrustedCertificate(certificat.certificate).build()
+    /** Ce que sert GET /flux : un fil vide, sauf si le test en pose un. */
+    @Volatile
+    var flux: String = FIL_VIDE
     val serveur = MockWebServer().apply {
+        dispatcher = object : QueueDispatcher() {
+            override fun dispatch(request: RecordedRequest): MockResponse =
+                if (request.url.encodedPath == "/api/flux") json(200, flux) else super.dispatch(request)
+        }
         useHttps(serveurTls.sslSocketFactory())
         start()
     }
@@ -60,9 +72,14 @@ class ServeurDeTest : AutoCloseable {
 
     fun residence(nom: String) = repondre(200, """{"site_nom": "$nom"}""")
 
-    fun repondre(code: Int, corps: String = "{}") = serveur.enqueue(
-        MockResponse.Builder().code(code).addHeader("Content-Type", "application/json").body(corps).build(),
-    )
+    fun repondre(code: Int, corps: String = "{}") = serveur.enqueue(json(code, corps))
+
+    private fun json(code: Int, corps: String) =
+        MockResponse.Builder().code(code).addHeader("Content-Type", "application/json").body(corps).build()
 
     override fun close() = serveur.close()
+
+    companion object {
+        const val FIL_VIDE = """{"delai_recent_jours": 7, "items": []}"""
+    }
 }

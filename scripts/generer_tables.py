@@ -23,7 +23,14 @@
   `themeParDefaut`, `cookieTheme`) ;
 - `FichiersDuSite` (paquet `commun.pieces`) : ce qu'est une photo parmi les pièces
   jointes, le préfixe retiré du nom montré, la famille de chaque extension — comme l'iOS
-  (`scripts/generateurs/fichiers.py`), depuis les constantes `FICHIERS_*` ci-dessous.
+  (`scripts/generateurs/fichiers.py`), depuis les constantes `FICHIERS_*` ci-dessous ;
+- `NaturesDuFil` et `NaturesAffaire` (paquet `charte`) : ce que le fil montre de chaque
+  type d'élément (`naturesDuFil` : libellé, teinte, pictogramme) et les natures d'une
+  affaire (`naturesAffaire`, teinte `teinteNature`), comme l'iOS
+  (`scripts/generateurs/charte.py`, `natures_du_fil` ; `affaires.py`, `natures`). Une
+  teinte `var(--…)` devient le jeton de `Couleurs` qui la porte (`Couleurs::filRouge`),
+  jamais une couleur : le nom de la propriété et la liste des jetons portés se lisent
+  dans `generer_charte.py`, écrits une fois.
 
 Une table qui change de forme, une réserve inconnue : la génération s'arrête — l'app
 doit l'apprendre, pas la deviner.
@@ -33,6 +40,7 @@ Usage : generer_tables.py <tables-clients.json> <dossier de sortie>
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import pathlib
 import re
@@ -41,6 +49,12 @@ import sys
 PAQUET = "fr.coprofirst.app.navigation"
 PAQUET_TEXTE = "fr.coprofirst.app.commun.texte"
 PAQUET_PIECES = "fr.coprofirst.app.commun.pieces"
+PAQUET_CHARTE = "fr.coprofirst.app.charte"
+JETON = re.compile(r"^var\(--([a-z][a-z0-9-]*)\)$")
+# La couleur d'état d'une nature (`--nature-fort: var(--color-…)`) → la classe `badge-*` qui la
+# porte (`teintes` de PastilleTeinte.kt) — la table de l'iOS (`BADGE_PAR_COULEUR`, affaires.py).
+BADGE_PAR_COULEUR = {"info": "badge-blue", "violet": "badge-purple", "orange": "badge-orange",
+                     "success": "badge-green", "danger": "badge-red"}
 # Les schémas d'un lien touchable : SCHEMAS_URL de coprofirst (api/app/utils/html_sur.py),
 # non publiés dans tables-clients.json — à générer quand coprofirst#2757 les publiera.
 SCHEMAS_DE_LIEN = ("http", "https", "mailto")
@@ -313,6 +327,78 @@ def kotlin_commun(tables: dict, source: str) -> str:
     return "\n".join(l)
 
 
+def _charte():
+    """`generer_charte.py`, voisin : chargé par son chemin (`python3 -I` ne met pas le dossier
+    du script dans `sys.path`), pour ne réécrire ni `propriete` ni la liste des jetons portés."""
+    spec = importlib.util.spec_from_file_location("generer_charte", pathlib.Path(__file__).with_name("generer_charte.py"))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def jetons_portes(tables: dict) -> tuple[set[str], object]:
+    """Les jetons que `Couleurs` porte (ceux que `generer_charte.py` garde), et ce module."""
+    gc = _charte()
+    try:
+        palettes = gc.cascade(tables)
+    except (KeyError, TypeError, AttributeError) as e:
+        raise TableInattendue(f"jetons de la charte illisibles ({e})") from e
+    gardes, _ = gc.portables(palettes[gc.CHARTE][0], palettes)
+    return set(gardes), gc
+
+
+def kotlin_natures(tables: dict, source: str) -> str:
+    """`NaturesDuFil` et `NaturesAffaire` : libellés, jetons de teinte, pictogrammes, pastilles."""
+    portes, gc = jetons_portes(tables)
+
+    def jeton(valeur, ou: str) -> str:
+        m = JETON.match(str(valeur or ""))
+        if not m or m.group(1) not in portes:
+            raise TableInattendue(f"{ou} : la teinte {valeur!r} n'est pas un jeton de Couleurs")
+        return f"Couleurs::{gc.propriete(m.group(1))}"
+
+    rubriques = tables.get("naturesDuFil", {}).get("valeur")
+    if not isinstance(rubriques, dict) or not rubriques:
+        raise TableInattendue("naturesDuFil n'est pas une table non vide")
+    lignes = []
+    for type_, n in rubriques.items():
+        if not isinstance(n, dict) or not all(isinstance(n.get(c), str) and n[c].strip() for c in ("libelle", "icone")):
+            raise TableInattendue(f"naturesDuFil.{type_} : libelle ou icone manquant")
+        ou = f"naturesDuFil.{type_}"
+        lignes.append(f"        {chaine(type_)} to NatureDuFil({chaine(n['libelle'])}, {jeton(n.get('couleur'), ou)}, "
+                      f"{jeton(n.get('fond'), ou)}, {chaine(n['icone'])}),")
+
+    natures = tables.get("naturesAffaire", {}).get("valeur")
+    teintes = tables.get("teinteNature", {}).get("valeur")
+    if not isinstance(natures, list) or not natures or not isinstance(teintes, dict):
+        raise TableInattendue("naturesAffaire ou teinteNature n'a pas la forme attendue")
+    affaires = []
+    for n in natures:
+        if not isinstance(n, dict) or not all(isinstance(n.get(c), str) and n[c].strip() for c in ("val", "libelle", "icone")):
+            raise TableInattendue(f"naturesAffaire : {n!r} n'a pas la forme attendue")
+        teinte = teintes.get(n["val"])
+        fort = JETON.match(str(teinte.get("--nature-fort", ""))) if isinstance(teinte, dict) else None
+        couleur = fort.group(1).removeprefix("color-") if fort else None
+        if couleur not in BADGE_PAR_COULEUR:
+            raise TableInattendue(f"teinteNature.{n['val']} : pas de classe badge-* connue — l'app doit l'apprendre")
+        affaires.append(f"        NatureAffaire({chaine(n['val'])}, {chaine(n['libelle'])}, {chaine(n['icone'])}, "
+                        f"{chaine(BADGE_PAR_COULEUR[couleur])}),")
+    return "\n".join([
+        "// GÉNÉRÉ par scripts/generer_tables.py — NE PAS MODIFIER À LA MAIN.",
+        f"// Source : {source} (naturesDuFil, naturesAffaire, teinteNature) ; jetons : generer_charte.py.",
+        f"package {PAQUET_CHARTE}",
+        "",
+        "/** Ce que le fil montre de chaque type d'élément (`NATURES_DU_FIL` du site) : libellé, teinte, pictogramme. */",
+        "object NaturesDuFil {",
+        "    val parType: Map<String, NatureDuFil> = mapOf(", *lignes, "    )", "}",
+        "",
+        "/** Les natures d'une affaire, dans l'ordre du site (`NATURES`), et la pastille de leur teinte (`[data-nature]`). */",
+        "object NaturesAffaire {",
+        "    val toutes: List<NatureAffaire> = listOf(", *affaires, "    )", "}",
+        "",
+    ])
+
+
 def main(argv: list[str]) -> int:
     if len(argv) != 3:
         print(__doc__.strip().splitlines()[-1], file=sys.stderr)
@@ -326,6 +412,7 @@ def main(argv: list[str]) -> int:
             ("fr.coprofirst.app.commun", "AvisDuSite.kt"): kotlin_avis(tables, entree.name),
             (PAQUET_TEXTE, "BalisesDuSite.kt"): kotlin_balises(tables, entree.name),
             (PAQUET_PIECES, "FichiersDuSite.kt"): kotlin_fichiers(),
+            (PAQUET_CHARTE, "NaturesDuFil.kt"): kotlin_natures(tables, entree.name),
         }
     except TableInattendue as e:
         print(f"❌ {entree.name} : {e}", file=sys.stderr)

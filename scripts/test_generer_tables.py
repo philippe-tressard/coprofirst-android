@@ -146,6 +146,56 @@ class Balises(unittest.TestCase):
                 g.kotlin_balises(mauvaise, "t")
 
 
+class Natures(unittest.TestCase):
+    # Une charte minimale : deux jetons portés, un écarté (color-mix), comme generer_charte les trie.
+    CHARTE = {"jetonsCharte": t({"--fil-rouge": "#aa0000", "--fil-rouge-fond": "var(--fil-rouge)",
+                                 "--color-primary": "#0000aa", "--color-mix": "color-mix(x)"}),
+              "jetonsCharteSombre": t({}), "palettesClaires": t({}), "palettesSombres": t({})}
+
+    def tables(self, rubriques=None, natures=None, teintes=None):
+        return {**self.CHARTE,
+                "naturesDuFil": t({"ticket_ouvert": {"libelle": "Affaire", "couleur": "var(--fil-rouge)",
+                                                     "fond": "var(--fil-rouge-fond)", "icone": "wrench"}}
+                                  if rubriques is None else rubriques),
+                "naturesAffaire": t([{"val": "calendrier", "libelle": "Calendrier", "icone": "calendar-days"}]
+                                    if natures is None else natures),
+                "teinteNature": t({"calendrier": {"--nature-fort": "var(--color-violet)"}} if teintes is None else teintes)}
+
+    def test_les_teintes_sont_des_jetons_de_couleurs(self):
+        texte = g.kotlin_natures(self.tables(), "test.json")
+        self.assertIn("package fr.coprofirst.app.charte", texte)
+        self.assertIn('"ticket_ouvert" to NatureDuFil("Affaire", Couleurs::filRouge, Couleurs::filRougeFond, "wrench"),', texte)
+        self.assertIn('NatureAffaire("calendrier", "Calendrier", "calendar-days", "badge-purple"),', texte)
+        self.assertNotIn("Color(", texte)
+
+    def test_une_forme_inattendue_arrete(self):
+        rubrique = {"libelle": "Affaire", "couleur": "var(--fil-rouge)", "fond": "var(--fil-rouge-fond)", "icone": "wrench"}
+        mauvaises = [
+            self.tables(rubriques={}),
+            self.tables(rubriques={"x": {**rubrique, "couleur": "#aa0000"}}),       # une couleur, pas un jeton
+            self.tables(rubriques={"x": {**rubrique, "fond": "var(--fil-absent)"}}),  # un jeton que Couleurs n'a pas
+            self.tables(rubriques={"x": {**rubrique, "couleur": "var(--color-mix)"}}),  # écarté par la charte
+            self.tables(rubriques={"x": {**rubrique, "icone": ""}}),
+            self.tables(rubriques={"x": "Affaire"}),
+            self.tables(natures=[]),
+            self.tables(natures=[{"val": "calendrier", "libelle": "Calendrier"}]),
+            self.tables(teintes={}),
+            self.tables(teintes={"calendrier": {"--nature-fort": "var(--color-rose)"}}),  # sans classe badge-*
+            {k: v for k, v in self.tables().items() if k != "jetonsCharte"},
+        ]
+        for mauvaise in mauvaises:
+            with self.assertRaises(g.TableInattendue, msg=repr(mauvaise)[:200]):
+                g.kotlin_natures(mauvaise, "t")
+
+    def test_le_plancher_se_genere(self):
+        tables = json.loads((RACINE / "contrat" / "tables-clients.json").read_text(encoding="utf-8"))["tables"]
+        texte = g.kotlin_natures(tables, "tables-clients.json")
+        self.assertIn('"publication" to NatureDuFil("Actualité", Couleurs::primary, Couleurs::primaryLight, "newspaper"),', texte)
+        self.assertIn('"annonce" to NatureDuFil("Petite annonce", Couleurs::orange, Couleurs::orangeFond, "heart-handshake"),', texte)
+        for nature in ("actualite", "calendrier", "activite"):
+            self.assertIn(f'NatureAffaire("{nature}"', texte)
+
+
 class Fichiers(unittest.TestCase):
     def test_les_valeurs_de_l_ios(self):
         texte = g.kotlin_fichiers()
