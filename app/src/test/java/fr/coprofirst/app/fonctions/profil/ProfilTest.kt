@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.fonctions.profil
 
+import fr.coprofirst.app.commun.Roles
 import fr.coprofirst.app.session.AdresseInstallation
 import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.Installation
@@ -53,8 +54,11 @@ class ProfilTest {
         repondre(200, FixturesProfil.MOI)
         val moi = service.moi()
         assertEquals("Camille EXEMPLE", moi.nomAffiche)
-        assertEquals(listOf("Copropriétaire résident"), pastillesDuProfil(moi.statut.value).map { it.libelle })
-        assertEquals("un statut inconnu ne fait pas de pastille", emptyList<String>(), pastillesDuProfil("statut_inconnu").map { it.libelle })
+        assertEquals(
+            "le statut, puis les rôles mis en avant",
+            listOf("Copropriétaire résident", "Conseil syndical"),
+            Roles.affiches(moi.statut.value, moi.roles.orEmpty() + moi.role.value).map { it.libelle },
+        )
     }
 
     @Test

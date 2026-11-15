@@ -78,7 +78,7 @@ fun FeuilleDemandeModification(service: ServiceProfil, fermer: () -> Unit) {
 
 @Composable
 private fun FormulaireDemande(service: ServiceProfil, batiments: List<BatimentPublic>, envoyee: () -> Unit) {
-    val statut: String? = null
+    var statut by remember { mutableStateOf<String?>(null) }
     var batiment by remember { mutableStateOf<Int?>(null) }
     var motif by remember { mutableStateOf("") }
     var envoi by remember { mutableStateOf(false) }
@@ -87,9 +87,12 @@ private fun FormulaireDemande(service: ServiceProfil, batiments: List<BatimentPu
     val portee = rememberCoroutineScope()
     val couleurs = LocalCouleurs.current
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        // ⚠️ Divergence déclarée : l'iOS propose aussi un nouveau profil d'utilisateur
-        // (`STATUTS_DEMANDABLES`), que la couche commune ne génère pas encore — demandé,
-        // branché dès qu'il l'est (#47). D'ici là, seul le bâtiment se demande ici.
+        Choix(
+            libelle = stringResource(R.string.profil_nouveau_profil),
+            choix = listOf(null to stringResource(R.string.profil_inchange)) + Roles.demandables.map { (v, l) -> v to l.libelle },
+            choisi = statut,
+            repere = "profil.demande.statut",
+        ) { statut = it }
         Choix(
             libelle = stringResource(R.string.profil_batiment_souhaite),
             choix = listOf(null to stringResource(R.string.profil_inchange_tirets)) +

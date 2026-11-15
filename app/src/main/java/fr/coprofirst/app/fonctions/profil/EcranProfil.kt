@@ -129,7 +129,8 @@ private fun SectionResidence(installation: Installation, compte: UserRead, deman
                     Text(logement, style = MaterialTheme.typography.bodyMedium, color = couleurs.textMuted)
                 }
             }
-            val roles = pastillesDuProfil(compte.statut.value)
+            // Le statut, puis les rôles mis en avant, comme l'iOS (`rolesAffiches`).
+            val roles = Roles.affiches(compte.statut.value, compte.roles.orEmpty() + compte.role.value)
             if (roles.isNotEmpty()) {
                 val annonce = stringResource(R.string.profil_roles, roles.joinToString(", ") { it.libelle })
                 FlowRow(

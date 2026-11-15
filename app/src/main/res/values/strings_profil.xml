@@ -61,6 +61,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <!-- Demande de modification -->
     <string name="profil_titre_demande_modification">Demande de modification</string>
     <string name="profil_demande_en_attente">Demande en attente</string>
+    <string name="profil_nouveau_profil">Nouveau profil d\'utilisateur</string>
+    <string name="profil_inchange">Inchangé</string>
     <string name="profil_inchange_tirets">— Inchangé —</string>
     <string name="profil_batiment_souhaite">Bâtiment souhaité</string>
     <string name="profil_batiment_numero">Bât. %1$s</string>

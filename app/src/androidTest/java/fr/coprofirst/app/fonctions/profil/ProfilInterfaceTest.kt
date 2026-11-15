@@ -122,6 +122,7 @@ class ProfilInterfaceTest {
     fun leProfilDitLaResidenceEtLeStatutServis() {
         attendre("Bât. A, T3, 2ème")
         attendre("Copropriétaire résident")
+        attendre("Conseil syndical")
     }
 
     /** Le thème de l'appareil se choisit au Profil ; la sortie y est, et se confirme. */

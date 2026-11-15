@@ -8,9 +8,6 @@ import fr.coprofirst.api.modeles.EtatDemandeSuppression
 import fr.coprofirst.api.modeles.MeUpdate
 import fr.coprofirst.api.modeles.StatutDemandeSuppression
 import fr.coprofirst.api.modeles.UserRead
-import fr.coprofirst.app.commun.LibelleTeinte
-import fr.coprofirst.app.commun.Roles
-import fr.coprofirst.app.commun.TablesCommunes
 import java.time.Instant
 
 /** Une saisie vide part à `null` — le site fait de même. */
@@ -96,12 +93,3 @@ data class EtatSuppressionCompte(
         private fun demande(lu: DemandeSuppressionRead) = DemandeSuppressionCompte(lu.creeLe.toInstant(), lu.delaiAnnonceJours)
     }
 }
-
-/**
- * Les pastilles du Profil, comme l'iOS (`ProfilResidence.rolesAffiches`) : le statut
- * servi, dans sa teinte (`Roles.statut`, couche commune). ⚠️ Divergence déclarée : l'iOS
- * y ajoute les rôles mis en avant (`ROLES_MIS_EN_AVANT`), que la couche commune ne
- * génère pas encore — demandé à la session commune, branché dès qu'il l'est.
- */
-fun pastillesDuProfil(statut: String): List<LibelleTeinte> =
-    listOf(Roles.statut(statut)).filter { statut in TablesCommunes.statuts }
