@@ -151,7 +151,6 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="repondre_votre_reponse">Votre réponse</string>
     <string name="suite_titre">Suite</string>
     <string name="suite_suivi">Suivi</string>
-    <string name="suite_etat">État</string>
     <string name="suite_changera">L\'affaire changera d\'état.</string>
     <string name="suite_garder">Garder l\'état : un commentaire seul.</string>
     <string name="suite_commentaire">Commentaire</string>

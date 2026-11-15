@@ -215,12 +215,12 @@ private fun ChoixCategorie(categories: List<ReferentielsAffaires.Categorie>, cho
                     .background(if (retenue) c.primaryLight else c.surface)
                     .border(if (retenue || categorie.carnet) 1.5.dp else 1.dp, if (retenue) c.primary else if (categorie.carnet) c.accent else c.border, forme)
                     .selectable(retenue, role = Role.RadioButton) { choisir(categorie.code) }
+                    .testTag(ReperesNouvelle.categorie(categorie.code))
                     .clearAndSetSemantics {
                         contentDescription = "${categorie.libelle} — ${categorie.description}"
                         selected = retenue
                     }
-                    .padding(12.dp)
-                    .testTag(ReperesNouvelle.categorie(categorie.code)),
+                    .padding(12.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -242,7 +242,7 @@ private fun DepuisLeSite(poseLesReservees: Boolean) {
     val texte = stringResource(R.string.nouvelle_pieces_au_site) + " " +
         stringResource(if (poseLesReservees) R.string.nouvelle_reserve_au_site else R.string.nouvelle_conseil_au_site)
     Row(
-        Modifier.fillMaxWidth().clearAndSetSemantics { contentDescription = texte }.testTag(ReperesNouvelle.DEPUIS_LE_SITE),
+        Modifier.fillMaxWidth().testTag(ReperesNouvelle.DEPUIS_LE_SITE).clearAndSetSemantics { contentDescription = texte },
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Icon(Icons.Outlined.Language, contentDescription = null, tint = c.textMuted, modifier = Modifier.size(18.dp))

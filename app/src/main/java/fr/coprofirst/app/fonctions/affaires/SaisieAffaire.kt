@@ -67,16 +67,19 @@ enum class GesteAffaire {
          * Les gestes offerts à CE lecteur. Chaque droit est servi avec l'affaire ; l'app n'en
          * ajoute aucun, elle en retire : 💬 jamais au conseil syndical (il suit par 🔄), ni sur
          * une actualité ou une affaire fusionnée ; 📦 tant que l'affaire n'est pas aux Archives.
+         * `parPatch` : les gestes par `PATCH /tickets/{id}`, retenus jusqu'à #99.
          */
-        fun offerts(affaire: DetailAffaire, conseil: Boolean): List<GesteAffaire> = entries.filter { geste ->
-            when (geste) {
-                Lien -> true
-                Repondre -> affaire.droits.repondre && !conseil && !affaire.estActualite && !affaire.fusionnee
-                Suite -> affaire.droits.changerEtat
-                Options -> affaire.droits.corriger
-                Archiver -> affaire.droits.archiver && !affaire.archivee
+        fun offerts(affaire: DetailAffaire, conseil: Boolean, parPatch: Boolean = ReglesAffaires.GESTES_PAR_PATCH): List<GesteAffaire> =
+            entries.filter { geste ->
+                when (geste) {
+                    Lien -> true
+                    Repondre -> affaire.droits.repondre && !conseil && !affaire.estActualite && !affaire.fusionnee
+                    Suite -> affaire.droits.changerEtat
+                    // Options et Archiver passent par PATCH /tickets/{id} : retenus jusqu'à #99.
+                    Options -> parPatch && affaire.droits.corriger
+                    Archiver -> parPatch && affaire.droits.archiver && !affaire.archivee
+                }
             }
-        }
     }
 }
 

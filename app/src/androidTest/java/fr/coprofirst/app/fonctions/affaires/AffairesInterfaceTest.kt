@@ -75,7 +75,10 @@ private class AffairesSimulees : ServiceAffaires {
             ReferentielsAffaires.Statut("résolu", "Résolu", true, "termine", true),
             ReferentielsAffaires.Statut("publie", "Publiée", false, null, false),
         ),
-        emptyList(),
+        listOf(
+            ReferentielsAffaires.Categorie("panne", "Panne", "🛠️", "Ascenseur, chauffage, éclairage", carnet = true, permise = true),
+            ReferentielsAffaires.Categorie("question", "Question", "❓", "Une question au conseil", permise = true),
+        ),
     )
     override suspend fun rechercher(terme: String) = affaires.filter { terme.lowercase() in it.titre.lowercase() }.map { it.id }
     override suspend fun offrirMeConcerne() = true
@@ -83,10 +86,27 @@ private class AffairesSimulees : ServiceAffaires {
     override suspend fun deplacer(id: Int, statut: String) {
         deplacements += id to statut
     }
-    override suspend fun archiver(affaire: Affaire): Affaire {
-        archivees += affaire.id
-        return affaire.copy(archivee = true)
+    override suspend fun archiver(id: Int): Affaire {
+        archivees += id
+        return affaires.first { it.id == id }.copy(archivee = true)
     }
+    val creees = mutableListOf<SaisieAffaire>()
+    val reponses = mutableListOf<Pair<Int, String>>()
+    val suites = mutableListOf<Pair<Int, SaisieSuite>>()
+    override suspend fun perimetres() = listOf(
+        Perimetre("copro", "Toute la copropriété", parDefaut = true), Perimetre("bat-b", "Bâtiment B", 1, parent = "copro"),
+    )
+    override suspend fun creer(saisie: SaisieAffaire): Affaire {
+        creees += saisie
+        return affaires.first().copy(id = 9, numero = "A-0009", titre = saisie.titre.trim(), urgente = false, colonne = null, suiviKanban = false)
+    }
+    override suspend fun repondre(id: Int, texte: String) {
+        reponses += id to texte
+    }
+    override suspend fun ajouterSuite(id: Int, suite: SaisieSuite) {
+        suites += id to suite
+    }
+    override suspend fun regler(id: Int, option: OptionAffaire, active: Boolean) = Unit
     override suspend fun affaire(id: Int): DetailAffaire {
         val a = affaires.firstOrNull { it.id == id } ?: throw ErreurService.Introuvable
         return DetailAffaire(
@@ -95,6 +115,7 @@ private class AffairesSimulees : ServiceAffaires {
             suites = listOf(SuiteAffaire(31, "etat", a.creeLe.plusSeconds(3600), "Le syndic", "<p>Le syndic est prévenu.</p>", "ouvert", "en_cours")),
             messages = listOf(MessageAffaire(41, "<p>Merci pour le suivi.</p>", a.creeLe.plusSeconds(7200), true, null, null, false)),
             referentiels = referentielsLus,
+            droits = DroitsServisAffaire(repondre = true, changerEtat = true),
         )
     }
 }
@@ -225,6 +246,58 @@ class AffairesInterfaceTest {
         attendreTexte("Le syndic est prévenu.")
         el(ReperesAffaires.RETOUR).performClick()
         attendre(ReperesAffaires.carte("A-0001"))
+    }
+
+    /** « Nouvelle affaire » : catégorie, titre, description, puis Envoyer — l'affaire paraît en tête. */
+    @Test
+    fun uneNouvelleAffaireSEnvoie() {
+        val service = ouvrir()
+        attendre(ReperesNouvelle.NOUVELLE)
+        el(ReperesNouvelle.NOUVELLE).performClick()
+        attendre(ReperesNouvelle.categorie("panne"))
+        el(ReperesNouvelle.DEPUIS_LE_SITE).assertExists()
+        el(ReperesNouvelle.categorie("panne")).performClick()
+        el(ReperesNouvelle.TITRE).performTextInput("Interphone muet")
+        el(ReperesNouvelle.DESCRIPTION).performTextInput("Le bouton du 3e ne sonne plus.")
+        el(ReperesNouvelle.ENVOYER).performClick()
+        attendre(ReperesAffaires.carte("A-0009"))
+        assertEquals("copro", service.creees.single().perimetre)
+        assertEquals("panne", service.creees.single().categorie)
+    }
+
+    /** Une saisie entamée ne se perd pas : « Annuler » demande d'abord. */
+    @Test
+    fun uneSaisieEntameeDemandeAvantDAbandonner() {
+        ouvrir()
+        attendre(ReperesNouvelle.NOUVELLE)
+        el(ReperesNouvelle.NOUVELLE).performClick()
+        attendre(ReperesNouvelle.TITRE)
+        el(ReperesNouvelle.TITRE).performTextInput("Brouillon")
+        ecran.onNode(hasText("Annuler"), useUnmergedTree = true).performClick()
+        attendre(ReperesNouvelle.ABANDONNER)
+        el(ReperesNouvelle.ABANDONNER).performClick()
+        disparait(ReperesNouvelle.TITRE)
+    }
+
+    /** Au bandeau de la fiche : une Suite qui change l'état, puis — hors conseil — Répondre. */
+    @Test
+    fun laFicheAjouteUneSuiteEtRepond() {
+        val service = ouvrir(DroitsOnglet(proprioOuCS = true))
+        attendre(ReperesAffaires.carte("A-0001"))
+        el(ReperesAffaires.carte("A-0001")).performClick()
+        attendre(repereGeste(GesteAffaire.Suite))
+        el(repereGeste(GesteAffaire.Suite)).performClick()
+        attendre(ReperesFeuilles.suiteEtat("en_cours"))
+        el(ReperesFeuilles.suiteEtat("en_cours")).performClick()
+        el(ReperesFeuilles.SUITE_ENREGISTRER).performClick()
+        attendreTexte("Statut mis à jour")
+        assertEquals("en_cours", service.suites.single().second.statut)
+        el(repereGeste(GesteAffaire.Repondre)).performClick()
+        attendre(ReperesFeuilles.REPONDRE_TEXTE)
+        el(ReperesFeuilles.REPONDRE_TEXTE).performTextInput("Merci !")
+        el(ReperesFeuilles.REPONDRE_ENVOYER).performClick()
+        attendreTexte("Réponse envoyée")
+        assertEquals(listOf(1 to "Merci !"), service.reponses)
     }
 
     private companion object {

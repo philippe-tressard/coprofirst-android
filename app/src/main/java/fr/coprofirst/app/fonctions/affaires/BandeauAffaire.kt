@@ -71,7 +71,8 @@ fun repereGeste(geste: GesteAffaire) = "affaire.${geste.name.replaceFirstChar { 
  * ouvre à CE lecteur (`GesteAffaire.offerts`). Un geste réussi se dit dans l'avis, puis
  * l'affaire se relit.
  *
- * ⚠️ « Modifier » l'affaire et les corrections de sa suite arrivent avec la PR suivante de #16.
+ * ⚠️ « Modifier » l'affaire et les corrections de sa suite arrivent avec la PR suivante de #16 ;
+ * les options et « Archiver » (`PATCH /tickets/{id}`) attendent #99 (`GesteAffaire.offerts`).
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

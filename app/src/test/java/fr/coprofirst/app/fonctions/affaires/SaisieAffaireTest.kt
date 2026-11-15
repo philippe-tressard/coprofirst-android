@@ -48,13 +48,15 @@ class SaisieAffaireTest {
     @Test
     fun lesGestesSuiventLesDroitsServis() {
         val tout = DroitsServisAffaire(repondre = true, changerEtat = true, archiver = true, corriger = true)
-        assertEquals(GesteAffaire.entries, GesteAffaire.offerts(fiche(tout), conseil = false))
+        assertEquals(GesteAffaire.entries, GesteAffaire.offerts(fiche(tout), conseil = false, parPatch = true))
+        // Retenus jusqu'à #99 : les gestes par PATCH.
+        assertEquals(listOf(GesteAffaire.Lien, GesteAffaire.Repondre, GesteAffaire.Suite), GesteAffaire.offerts(fiche(tout), conseil = false, parPatch = false))
         // Le conseil suit par la Suite, il ne répond pas.
         assertFalse(GesteAffaire.Repondre in GesteAffaire.offerts(fiche(tout), conseil = true))
         // Ni réponse sur une actualité ni sur une affaire fusionnée ; pas d'archivage d'une archivée.
         assertFalse(GesteAffaire.Repondre in GesteAffaire.offerts(fiche(tout, categorie = "actualite"), conseil = false))
         assertFalse(GesteAffaire.Repondre in GesteAffaire.offerts(fiche(tout, fusionnee = true), conseil = false))
-        assertFalse(GesteAffaire.Archiver in GesteAffaire.offerts(fiche(tout, archivee = true), conseil = false))
+        assertFalse(GesteAffaire.Archiver in GesteAffaire.offerts(fiche(tout, archivee = true), conseil = false, parPatch = true))
         assertEquals(listOf(GesteAffaire.Lien), GesteAffaire.offerts(fiche(DroitsServisAffaire()), conseil = false))
     }
 

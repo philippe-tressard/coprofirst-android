@@ -9,6 +9,10 @@ import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsParHote
 import kotlinx.coroutines.Dispatchers
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.coroutines.test.runTest
 import mockwebserver3.Dispatcher
 import mockwebserver3.MockResponse
@@ -124,8 +128,8 @@ class ServiceAffairesApiTest {
         service.regler(4, TablesAffaires.options.first { it.cle == "urgente" }, false)
         assertEquals(emptyList<Perimetre>(), service.perimetres())
         assertTrue(recues[0], recues[0].startsWith("POST /api/tickets/4/messages") && "\"contenu\":\"<p>Merci</p>\"" in recues[0])
-        assertTrue(recues[1], "\"type\":\"commentaire\"" in recues[1] && "nouveau_statut" !in recues[1])
-        assertTrue(recues[2], "\"type\":\"etat\"" in recues[2] && "\"nouveau_statut\":\"en_cours\"" in recues[2] && "\"contenu\"" !in recues[2])
+        assertTrue(recues[1], "\"type\":\"commentaire\"" in recues[1] && champ(recues[1], "nouveau_statut") == null)
+        assertTrue(recues[2], "\"type\":\"etat\"" in recues[2] && "\"nouveau_statut\":\"en_cours\"" in recues[2] && champ(recues[2], "contenu") == null)
         assertTrue(recues[3], "\"epingle\":true" in recues[3])
         assertTrue(recues[4], "\"urgente\":false" in recues[4])
     }
@@ -172,6 +176,11 @@ class ServiceAffairesApiTest {
         assertTrue(fiche.estActualite)
         assertTrue(recues.none { it.contains("/messages") })
     }
+
+    /** Un champ du corps JSON d'une requête reçue : `null` s'il est absent OU envoyé à `null` (#99). */
+    private fun champ(recue: String, cle: String): String? =
+        Json.parseToJsonElement(recue.substringAfter(' ').substringAfter(' ')).jsonObject[cle]
+            ?.takeUnless { it is JsonNull }?.jsonPrimitive?.content
 
     private companion object {
         fun ticket(
