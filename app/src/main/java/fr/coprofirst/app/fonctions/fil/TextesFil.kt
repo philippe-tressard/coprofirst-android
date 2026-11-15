@@ -66,6 +66,7 @@ object TextesFil {
     fun action(destination: DestinationDuFil): String = when (destination) {
         DestinationDuFil.Resume -> stringResource(R.string.fil_voir_resume)
         is DestinationDuFil.Document -> stringResource(R.string.pieces_ouvrir_document)
-        is DestinationDuFil.Sondage -> stringResource(R.string.fil_voir_sondage)
+        is DestinationDuFil.Element ->
+            stringResource(if (destination.nature == DestinationDuFil.SONDAGE) R.string.fil_voir_sondage else R.string.fil_voir_affaire)
     }
 }

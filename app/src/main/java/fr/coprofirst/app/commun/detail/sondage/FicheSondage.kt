@@ -72,8 +72,8 @@ object ReperesSondage {
  * signaler au conseil syndical. Chaque geste dit sa phrase par `avis` (celle du serveur s'il
  * refuse), puis la fiche se relit : elle montre ce que le serveur a retenu.
  *
- * Elle défile seule : l'écran qui l'ouvre la pose dans une page ou une feuille
- * (`FeuilleSondage`) — avec un `AvisEphemere(avis)` autour.
+ * Elle défile seule : l'écran qui l'ouvre la pose dans une page (`PageSondage`, ouverte par
+ * la porte) ou une feuille — avec un `AvisEphemere(avis)` autour.
  */
 @Composable
 fun FicheSondage(

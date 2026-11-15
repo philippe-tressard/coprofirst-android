@@ -10,12 +10,12 @@ import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import fr.coprofirst.app.commun.detail.sondage.REPERE_FEUILLE_SONDAGE_OK
 import fr.coprofirst.app.commun.detail.sondage.ReperesSondage
 import fr.coprofirst.app.entree.NavigationEntree
 import fr.coprofirst.app.entree.Reperes
@@ -93,7 +93,7 @@ class FilInterfaceTest {
         attendreTexte("Voir sur le site")
     }
 
-    /** Une carte sondage ouvre la fiche du sondage, en feuille (l'iOS la pousse : `SondageView`). */
+    /** Une carte sondage pousse la fiche du sondage, comme l'iOS (`SondageView`) ; le retour la ferme. */
     @Test
     fun leSondageSOuvreSurSaFiche() {
         attendre("fil.sondage_ouvert:3")
@@ -102,7 +102,8 @@ class FilInterfaceTest {
         ecran.onNodeWithTag("fil.sondage_ouvert:3").assertHasClickAction().performClick()
         attendre(ReperesSondage.QUESTION)
         attendreTexte("Samedi 6 juin")
-        ecran.onNodeWithTag(REPERE_FEUILLE_SONDAGE_OK).performClick()
+        attendreTexte("Sondage") // le titre de la barre du haut
+        ecran.onNodeWithContentDescription("Retour").performClick()
         ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(ReperesSondage.QUESTION)).fetchSemanticsNodes().isEmpty() }
     }
 

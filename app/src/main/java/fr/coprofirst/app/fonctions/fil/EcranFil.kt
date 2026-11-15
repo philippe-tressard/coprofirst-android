@@ -39,10 +39,11 @@ import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.EtatVide
 import fr.coprofirst.app.commun.MessageErreur
-import fr.coprofirst.app.commun.detail.sondage.FeuilleSondage
 import fr.coprofirst.app.commun.pieces.AvisOuverture
 import fr.coprofirst.app.commun.pieces.rememberOuverture
 import fr.coprofirst.app.navigation.ContexteDeMenu
+import fr.coprofirst.app.navigation.Destination
+import fr.coprofirst.app.navigation.RegistreDesMenus
 import fr.coprofirst.app.session.SessionOuverte
 import java.time.Instant
 
@@ -51,10 +52,10 @@ import java.time.Instant
  * connexion —, comme l'iOS (`FilView`) : les éléments du plus récent au plus ancien, sous
  * l'en-tête de leur jour qui reste en haut tant que sa journée défile ; « tirer pour
  * actualiser » ; un fil vide et une erreur dits. Un toucher ouvre le résumé, le document ou
- * la fiche d'un sondage (`DestinationDuFil`).
+ * la fiche d'un sondage ou d'une affaire, poussée par la porte (`DestinationDuFil`).
  *
- * ⚠️ Divergences déclarées : l'affaire ne s'ouvre pas encore, le sondage s'ouvre en feuille
- * (`DestinationDuFil`) ;
+ * ⚠️ Divergences déclarées : l'affaire ne s'ouvre pas tant que Mes affaires n'a pas déclaré
+ * sa fiche (`DestinationDuFil`) ;
  * ni le logement de l'utilisateur dans la barre (`PastilleLogement` de l'iOS, qui ouvre
  * « Mes lots & accès ») ni la pastille de la résidence (`PastilleOuSuisJe`, #15) ; pas de
  * bandeau hors ligne ; une notification touchée n'ouvre pas encore son élément (#23).
@@ -66,22 +67,22 @@ fun EcranFil(contexte: ContexteDeMenu) {
         key = "fil@${System.identityHashCode(session)}",
         factory = viewModelFactory { initializer { ParcoursFil(ServiceFilApi(session)) } },
     )
-    EcranFil(parcours, session)
+    EcranFil(parcours, session, contexte.ouvrir)
 }
 
+/** @param ouvrir la porte (`ContexteDeMenu.ouvrir`) : l'affaire et le sondage s'ouvrent par elle. */
 @Composable
-fun EcranFil(parcours: ParcoursFil, session: SessionOuverte) {
-    Chargement(charger = { parcours.charger() }, squelette = { SqueletteFil() }) { _, _ -> ListeFil(parcours, session) }
+fun EcranFil(parcours: ParcoursFil, session: SessionOuverte, ouvrir: (Destination) -> Boolean) {
+    Chargement(charger = { parcours.charger() }, squelette = { SqueletteFil() }) { _, _ -> ListeFil(parcours, session, ouvrir) }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ListeFil(parcours: ParcoursFil, session: SessionOuverte) {
+private fun ListeFil(parcours: ParcoursFil, session: SessionOuverte, ouvrir: (Destination) -> Boolean) {
     val etat by parcours.etat.collectAsStateWithLifecycle()
     val jours = remember(etat.elements) { etat.jours }
     val maintenant = remember(etat.elements) { Instant.now() }
     var resume by rememberSaveable { mutableStateOf<String?>(null) }
-    var sondage by rememberSaveable { mutableStateOf<Int?>(null) }
     val ouverture = rememberOuverture(session)
     PullToRefreshBox(isRefreshing = etat.rafraichissement, onRefresh = parcours::rafraichir, modifier = Modifier.fillMaxSize()) {
         LazyColumn(
@@ -105,7 +106,7 @@ private fun ListeFil(parcours: ParcoursFil, session: SessionOuverte) {
             jours.forEach { jour ->
                 stickyHeader(key = "jour-${jour.jour}") { EnTeteJour(TextesFil.entete(jour, maintenant)) }
                 items(jour.elements, key = { it.id }) { element ->
-                    val destination = DestinationDuFil.pour(element.cible)
+                    val destination = DestinationDuFil.pour(element.cible, RegistreDesMenus.fiches.keys)
                     CarteDuFil(
                         element,
                         session,
@@ -116,7 +117,7 @@ private fun ListeFil(parcours: ParcoursFil, session: SessionOuverte) {
                             null -> null
                             DestinationDuFil.Resume -> ({ resume = element.id })
                             is DestinationDuFil.Document -> ({ ouverture.document(destination.id, destination.nom) })
-                            is DestinationDuFil.Sondage -> ({ sondage = destination.id })
+                            is DestinationDuFil.Element -> ({ ouvrir(Destination.Element(destination.nature, destination.id.toString())) })
                         },
                     )
                 }
@@ -124,7 +125,6 @@ private fun ListeFil(parcours: ParcoursFil, session: SessionOuverte) {
         }
     }
     etat.elements.firstOrNull { it.id == resume }?.let { element -> FeuilleResume(element, session) { resume = null } }
-    sondage?.let { id -> FeuilleSondage(id, session, fermer = { sondage = null }) }
 }
 
 /** L'en-tête d'un jour, collé en haut tant que sa journée défile (déjà en capitales). */

@@ -134,11 +134,14 @@ class ElementDuFilTest {
     }
 
     @Test
-    fun lAffaireSeuleNeSOuvrePasEncore() {
-        assertEquals(DestinationDuFil.Resume, DestinationDuFil.pour(CibleDuFil.Resume(null)))
-        assertEquals(DestinationDuFil.Document(7, "pv.pdf"), DestinationDuFil.pour(CibleDuFil.Document(7, "pv.pdf")))
-        assertEquals(DestinationDuFil.Sondage(3), DestinationDuFil.pour(CibleDuFil.Sondage(3)))
-        assertNull(DestinationDuFil.pour(CibleDuFil.Affaire(41)))
+    fun uneFicheNeSOuvreQueDeclaree() {
+        val sondage = setOf(DestinationDuFil.SONDAGE)
+        assertEquals(DestinationDuFil.Resume, DestinationDuFil.pour(CibleDuFil.Resume(null), sondage))
+        assertEquals(DestinationDuFil.Document(7, "pv.pdf"), DestinationDuFil.pour(CibleDuFil.Document(7, "pv.pdf"), sondage))
+        assertEquals(DestinationDuFil.Element("sondage", 3), DestinationDuFil.pour(CibleDuFil.Sondage(3), sondage))
+        // L'affaire attend la fiche de Mes affaires (#16) ; déclarée, elle s'ouvre comme le sondage.
+        assertNull(DestinationDuFil.pour(CibleDuFil.Affaire(41), sondage))
+        assertEquals(DestinationDuFil.Element("affaire", 41), DestinationDuFil.pour(CibleDuFil.Affaire(41), setOf("affaire")))
     }
 
     @Test

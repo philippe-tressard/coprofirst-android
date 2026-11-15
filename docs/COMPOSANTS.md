@@ -76,7 +76,7 @@ qu'il sait ouvrir dans `RegistreDesMenus.fiches`, par nature (celles du fil : `a
 `sondage`), sur SA ligne réservée :
 
 ```kotlin
-        "affaire" to FicheDeMenu("Affaire") { contexte, id -> DetailAffaire(contexte, id) },
+        "affaire" to FicheDeMenu(R.string.affaire_titre) { contexte, id -> DetailAffaire(contexte, id) },
 ```
 
 ## Navigation — `fr.coprofirst.app.navigation` (à la couche commune)
@@ -368,13 +368,11 @@ SignalementAuConseil(signale, envoyer = { r, motif ->
 | API | Pendant iOS | Usage |
 |---|---|---|
 | `FicheSondage(id, session, avis, modifier?, service?)` | `SondageView` | La fiche, qui défile seule : l'en-tête (état, clôture, question `sondage.question`, description, total `sondage.total`), puis le vote s'il est ouvert (`sondage.option.<id>`, `sondage.precision`, `sondage.commentaire`, `sondage.charte`, `sondage.voter`, ce qui manque `sondage.manque`) ou les résultats (`sondage.resultat.<id>` ; masqués : `sondage.resultatsMasques`), puis les commentaires (`FilReponses`, signalement compris). Chaque geste dit sa phrase par `avis` (celle du serveur s'il refuse) et la fiche se relit. L'écran pose `AvisEphemere(avis)` autour. `service` : `ServiceSondageApi(session)` par défaut. |
-| `FeuilleSondage(id, session, fermer, service?)` | `NavigationLink → SondageView` | La fiche en feuille pleine hauteur, titre « Sondage », « OK » (`sondage.ok`), avec son avis — ce qu'ouvre le fil. |
+| `PageSondage(id, session, service?)` | `NavigationLink → SondageView` | La fiche en page poussée, avec son avis : la fiche « sondage » du registre (`RegistreDesMenus.fiches`) — s'ouvre de partout par `contexte.ouvrir(Destination.Element("sondage", id))`. |
 | `ServiceSondage` (`: ServiceSignalements`), `ServiceSondageApi(session)` | `ServiceSondage` | `sondage(id)` (GET /sondages/{id} et /auth/me ensemble ; un compte illisible n'empêche pas la fiche), `voter(vote, sondage)`, `commenter(texte, sondage)`, `supprimerCommentaire(id, sondage)`. |
 | `DetailSondage`, `OptionSondage`, `VoteSondage`, `CalculsSondage.pourcentage` | `DetailSondage`, `VoteSondage`… | Le modèle : `peutVoter`, `totalVotes` ; `VoteSondage.choisir(id)` (vide la précision), `manque(champLibre)` (`@StringRes`, l'ordre du site), `corps()` (les textes vides ne partent pas). |
 | `SondageSimule`, `FixturesSondage` (source `debug`) | `ServiceSimule`, `FixturesSondage` | Le serveur simulé et les fiches de l'iOS, pour les tests et les aperçus. |
 
-⚠️ Divergence déclarée : depuis le fil, la fiche s'ouvre en feuille (`FeuilleSondage`) ; l'iOS
-la pousse — la navigation commune n'a pas de pile par page (#11).
 
 ## Feuille pleine — `fr.coprofirst.app.commun`
 
@@ -403,5 +401,5 @@ pour l'heure, à monter ici dès qu'un deuxième les emploie : `ChampSaisie` (Es
 `FlowEtiquettes` (Communauté) ; et la pastille « où suis-je » (`PastilleOuSuisJe` : logo et
 nom de la résidence dans la barre du haut, changer de résidence). Demandés par le fil
 (#11) : un geste de `ContexteDeMenu` qui ouvre une autre page de la barre — et un élément
-précis (une affaire ; le sondage s'ouvre en feuille, `FeuilleSondage`) — depuis un écran ; le jour et le mois en toutes lettres
+précis — depuis un écran (fait : la porte, #85) ; le jour et le mois en toutes lettres
 dans `FormatsDuSite` (l'en-tête d'un jour du fil). Le suivi : #15, #11.
