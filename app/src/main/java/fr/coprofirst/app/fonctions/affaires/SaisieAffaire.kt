@@ -27,7 +27,57 @@ data class SaisieAffaire(
 
     /** Ce qui part : le lieu d'un bogue ne part pas. */
     val aEnvoyer: SaisieAffaire get() = if (estBogue) copy(perimetre = null, urgente = false) else this
+
+    /** Ce qui a changé depuis `affaire` — et rien d'autre ; d'un contenu figé, l'urgence seule. */
+    fun edition(affaire: DetailAffaire): EditionAffaire {
+        val origine = modifiant(affaire)
+        val urgence = urgente.takeIf { it != origine.urgente }
+        if (affaire.contenuFige) return EditionAffaire(urgente = urgence)
+        val lieu = if (estBogue) null else perimetre
+        return EditionAffaire(
+            titre = titre.trim().takeIf { it != origine.titre.trim() },
+            descriptionHtml = if (affaire.descriptionSaisie != null && description != origine.description) TexteDuSite.html(description) else null,
+            categorie = categorie.takeIf { it != origine.categorie },
+            urgente = urgence,
+            perimetres = if (affaire.lieuModifiable && lieu != origine.perimetre) listOfNotNull(lieu) else null,
+        )
+    }
+
+    /** Prête : un titre, une description si la feuille la porte, et un changement. */
+    fun prete(affaire: DetailAffaire): Boolean =
+        titre.isNotBlank() && (affaire.descriptionSaisie == null || description.isNotBlank()) && !edition(affaire).vide
+
+    companion object {
+        /** La saisie de « Modifier l'affaire » : l'affaire telle que le serveur la sert. */
+        fun modifiant(affaire: DetailAffaire) = SaisieAffaire(
+            affaire.categorie, affaire.titre, affaire.descriptionSaisie.orEmpty(), affaire.urgente, affaire.perimetres.firstOrNull(),
+        )
+    }
 }
+
+/**
+ * Ce que « Modifier l'affaire » envoie (PATCH /tickets/{id}) : les SEULS champs changés — un
+ * champ `null` ne part pas (#99), donc n'est pas réécrit. `perimetres` vide : plus aucun lieu
+ * désigné, le serveur pose son défaut.
+ */
+data class EditionAffaire(
+    val titre: String? = null,
+    val descriptionHtml: String? = null,
+    val categorie: String? = null,
+    val urgente: Boolean? = null,
+    val perimetres: List<String>? = null,
+) {
+    val vide: Boolean get() = this == EditionAffaire()
+}
+
+/** La description en texte simple, si la réenregistrer ne perd rien — sinon `null` : elle se modifie depuis le site. */
+val DetailAffaire.descriptionSaisie: String? get() = TexteDuSite.saisi(description)
+
+/** Le crayon servi (`peut_corriger`) sans le droit sur le contenu (`peut_modifier`) : l'urgence seule se règle. */
+val DetailAffaire.contenuFige: Boolean get() = !droits.modifier
+
+/** Un lieu au plus : le choix le porte. Plusieurs se corrigent depuis le site. */
+val DetailAffaire.lieuModifiable: Boolean get() = perimetres.size <= 1
 
 /** Une option de mise en avant (`OPTIONS_TICKET`, mots d'`OPTIONS_PUBLICATION`), générée dans `TablesAffaires`. */
 data class OptionAffaire(val cle: String, val action: String, val etat: String, val aide: String) {
@@ -59,10 +109,10 @@ data class SaisieSuite(val statutActuel: String, val statut: String = statutActu
 
 /**
  * Une icône du bandeau d'une affaire, dans l'ordre de la rangée du site
- * (`ActionsTicket.svelte`) : 🔗 · 💬 · 🔄 · options · 📦, comme l'iOS (`GesteAffaire`).
+ * (`ActionsTicket.svelte`) : 🔗 · 💬 · 🔄 · ✏️ · options · 📦, comme l'iOS (`GesteAffaire`).
  */
 enum class GesteAffaire {
-    Lien, Repondre, Suite, Options, Archiver;
+    Lien, Repondre, Suite, Modifier, Options, Archiver;
 
     companion object {
         /**
@@ -75,7 +125,7 @@ enum class GesteAffaire {
                 Lien -> true
                 Repondre -> affaire.droits.repondre && !conseil && !affaire.estActualite && !affaire.fusionnee
                 Suite -> affaire.droits.changerEtat
-                Options -> affaire.droits.corriger
+                Modifier, Options -> affaire.droits.corriger
                 Archiver -> affaire.droits.archiver && !affaire.archivee
             }
         }

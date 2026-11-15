@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.outlined.Archive
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Sync
@@ -56,7 +57,7 @@ import fr.coprofirst.app.commun.AvisDuGeste
 import kotlinx.coroutines.launch
 
 /** Une feuille ouverte depuis le bandeau. */
-private enum class FeuilleGeste { Repondre, Suite }
+private enum class FeuilleGeste { Repondre, Suite, Modifier }
 
 /** Le repère d'une icône du bandeau, celui de l'iOS (`affaire.<geste>`). */
 fun repereGeste(geste: GesteAffaire) = "affaire.${geste.name.replaceFirstChar { it.lowercase() }}"
@@ -67,8 +68,7 @@ fun repereGeste(geste: GesteAffaire) = "affaire.${geste.name.replaceFirstChar { 
  * ouvre à CE lecteur (`GesteAffaire.offerts`). Un geste réussi se dit dans l'avis, puis
  * l'affaire se relit.
  *
- * ⚠️ « Modifier » l'affaire arrive avec la PR suivante de #16. Les gestes d'une entrée de la
- * suite sont dans le fil (`GestesHistorique`).
+ * Les gestes d'une entrée de la suite sont dans le fil (`GestesHistorique`).
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -149,8 +149,14 @@ internal fun BandeauAffaire(
                     { annonce.lancer(ressources.getString(R.string.geste_archivee)) { service.archiver(affaire.id) } },
                     Modifier.testTag(repereGeste(g)), enabled = !enCours,
                 ) { Icon(icone(g), contentDescription = libelle, tint = c.primary) }
-                GesteAffaire.Repondre, GesteAffaire.Suite -> IconButton(
-                    { feuille = if (g == GesteAffaire.Repondre) FeuilleGeste.Repondre else FeuilleGeste.Suite },
+                GesteAffaire.Repondre, GesteAffaire.Suite, GesteAffaire.Modifier -> IconButton(
+                    {
+                        feuille = when (g) {
+                            GesteAffaire.Repondre -> FeuilleGeste.Repondre
+                            GesteAffaire.Suite -> FeuilleGeste.Suite
+                            else -> FeuilleGeste.Modifier
+                        }
+                    },
                     Modifier.testTag(repereGeste(g)),
                 ) { Icon(icone(g), contentDescription = libelle, tint = c.primary) }
             }
@@ -172,6 +178,10 @@ internal fun BandeauAffaire(
             avis.direApresFermeture(ressources.getString(if (changeEtat) R.string.geste_statut_mis_a_jour else R.string.geste_commentaire_ajoute))
             recharger()
         }
+        FeuilleGeste.Modifier -> FeuilleModifierAffaire(affaire, service, fermer) {
+            avis.direApresFermeture(ressources.getString(if (affaire.estActualite) R.string.modifier_actualite_modifiee else R.string.modifier_affaire_modifiee))
+            recharger()
+        }
         null -> Unit
     }
 }
@@ -180,6 +190,7 @@ private fun libelleGeste(g: GesteAffaire) = when (g) {
     GesteAffaire.Lien -> R.string.geste_lien
     GesteAffaire.Repondre -> R.string.geste_repondre
     GesteAffaire.Suite -> R.string.geste_suite
+    GesteAffaire.Modifier -> R.string.geste_modifier
     GesteAffaire.Options -> R.string.geste_options
     GesteAffaire.Archiver -> R.string.geste_archiver
 }
@@ -189,6 +200,7 @@ private fun icone(g: GesteAffaire): ImageVector = when (g) {
     GesteAffaire.Lien -> Icons.Outlined.Link
     GesteAffaire.Repondre -> Icons.AutoMirrored.Outlined.Chat
     GesteAffaire.Suite -> Icons.Outlined.Sync
+    GesteAffaire.Modifier -> Icons.Outlined.Edit
     GesteAffaire.Options -> Icons.Outlined.MoreHoriz
     GesteAffaire.Archiver -> Icons.Outlined.Archive
 }

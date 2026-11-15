@@ -170,4 +170,11 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="historique_laisser">Laisser ainsi</string>
     <string name="historique_compris">OK</string>
     <string name="historique_appliquer">Appliquer « %1$s » à l’affaire</string>
+
+    <!-- Modifier l'affaire (ModifierAffaireFeuille, ChampsAffaire) -->
+    <string name="geste_modifier">Modifier</string>
+    <string name="modifier_contenu_fige">L\'affaire n\'est plus ouverte : son contenu ne se modifie plus. Son urgence, si.</string>
+    <string name="modifier_plusieurs_lieux">Plusieurs lieux sont désignés : ils se modifient depuis le site.</string>
+    <string name="modifier_affaire_modifiee">Affaire modifiée</string>
+    <string name="modifier_actualite_modifiee">Actualité modifiée</string>
 </resources>

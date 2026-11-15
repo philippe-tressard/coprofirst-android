@@ -38,6 +38,7 @@ class EtatAffairesTest {
         override suspend fun repondre(id: Int, texte: String) = Unit
         override suspend fun ajouterSuite(id: Int, suite: SaisieSuite) = Unit
         override suspend fun regler(id: Int, option: OptionAffaire, active: Boolean) = Unit
+        override suspend fun enregistrer(id: Int, edition: EditionAffaire) = Unit
         override suspend fun corrigerSuite(id: Int, suite: Int, correction: CorrectionSuite): IssueCorrection? = null
         override suspend fun supprimerSuite(id: Int, suite: Int) = Unit
     }

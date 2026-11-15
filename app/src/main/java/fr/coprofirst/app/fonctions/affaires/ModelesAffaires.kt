@@ -111,6 +111,12 @@ data class ReferentielsAffaires(
     /** Les catégories que CE compte peut poser, dans l'ordre servi, celles « en tête » d'abord. */
     val permises: List<Categorie> get() = categories.filter { it.permise }.let { p -> p.filter { it.enTete } + p.filterNot { it.enTete } }
 
+    /**
+     * Les catégories que « Modifier » propose : les permises, si celle de l'affaire en est —
+     * une catégorie que ce compte ne pourrait pas reposer ne se propose pas.
+     */
+    fun permises(enModifiant: String): List<Categorie> = permises.let { p -> if (p.any { it.code == enModifiant }) p else emptyList() }
+
     /** Ce compte pose-t-il ce que le serveur réserve au conseil ? Lu des catégories servies. */
     val poseLesReservees: Boolean get() = categories.any { it.reservee && it.permise }
 

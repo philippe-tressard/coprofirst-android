@@ -150,6 +150,13 @@ class ServiceAffairesApiTest {
     }
 
     @Test
+    fun enregistrerNEnvoieQueLesChampsChanges() = runTest {
+        routes("PATCH /api/tickets/4" to (200 to ticket(4)))
+        service.enregistrer(4, EditionAffaire(titre = "Fuite d'eau", perimetres = emptyList()))
+        assertEquals("PATCH /api/tickets/4 {\"titre\":\"Fuite d'eau\",\"perimetre_cible\":[]}", recues.single())
+    }
+
+    @Test
     fun unRefusDuServeurDitSaPhrase() = runTest {
         routes("PATCH /api/tickets/4" to (403 to """{"detail": "Seul le conseil syndical peut archiver."}"""))
         try {

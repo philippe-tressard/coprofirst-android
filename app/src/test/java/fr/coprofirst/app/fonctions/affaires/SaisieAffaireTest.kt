@@ -136,4 +136,45 @@ class SaisieAffaireTest {
         assertEquals(listOf(GesteSuite.Supprimer), GesteSuite.offerts(SuiteAffaire(1, "etat", Instant.EPOCH, peutSupprimer = true)))
         assertEquals(emptyList<GesteSuite>(), GesteSuite.offerts(SuiteAffaire(1, "etat", Instant.EPOCH)))
     }
+
+    @Test
+    fun uneEditionNEnvoieQueCeQuiAChange() {
+        val droits = DroitsServisAffaire(modifier = true, corriger = true)
+        val f = fiche(droits).copy(titre = "Fuite", description = "<p>Au local</p>", perimetres = listOf("bat-a"))
+        val depart = SaisieAffaire.modifiant(f)
+        assertEquals(SaisieAffaire("panne", "Fuite", "Au local", false, "bat-a"), depart)
+        assertTrue(depart.edition(f).vide)
+        assertFalse(depart.prete(f))
+        assertEquals(EditionAffaire(titre = "Fuite d'eau"), depart.copy(titre = " Fuite d'eau ").edition(f))
+        assertEquals(EditionAffaire(descriptionHtml = "<p>Au local vélos</p>"), depart.copy(description = "Au local vélos").edition(f))
+        // Retirer le lieu : une liste vide, le serveur pose son défaut.
+        assertEquals(EditionAffaire(perimetres = emptyList()), depart.copy(perimetre = null).edition(f))
+    }
+
+    @Test
+    fun unContenuFigeNeLaissePartirQueLUrgence() {
+        val f = fiche(DroitsServisAffaire(corriger = true)).copy(titre = "Fuite", description = "<p>x</p>")
+        assertTrue(f.contenuFige)
+        assertEquals(EditionAffaire(urgente = true), SaisieAffaire.modifiant(f).copy(titre = "Autre", urgente = true).edition(f))
+    }
+
+    @Test
+    fun uneDescriptionMiseEnFormeEtPlusieursLieuxSeGardent() {
+        val f = fiche(DroitsServisAffaire(modifier = true)).copy(description = "<p><b>Gras</b></p>", perimetres = listOf("a", "b"))
+        assertNull(f.descriptionSaisie)
+        assertFalse(f.lieuModifiable)
+        val e = SaisieAffaire.modifiant(f).copy(description = "x", perimetre = "c").edition(f)
+        assertNull(e.descriptionHtml)
+        assertNull(e.perimetres)
+    }
+
+    @Test
+    fun modifierNeProposeQueDesCategoriesPermises() {
+        val r = ReferentielsAffaires(
+            emptyList(), emptyList(),
+            listOf(ReferentielsAffaires.Categorie("panne", "Panne", "🛠️", permise = true), ReferentielsAffaires.Categorie("actualite", "Actualité", "📰")),
+        )
+        assertEquals(listOf("panne"), r.permises(enModifiant = "panne").map { it.code })
+        assertEquals(emptyList<String>(), r.permises(enModifiant = "actualite").map { it.code })
+    }
 }

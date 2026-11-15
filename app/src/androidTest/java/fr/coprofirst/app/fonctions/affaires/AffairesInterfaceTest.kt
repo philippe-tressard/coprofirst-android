@@ -109,6 +109,10 @@ private class AffairesSimulees : ServiceAffaires {
         suites += id to suite
     }
     override suspend fun regler(id: Int, option: OptionAffaire, active: Boolean) = Unit
+    val editions = mutableListOf<EditionAffaire>()
+    override suspend fun enregistrer(id: Int, edition: EditionAffaire) {
+        editions += edition
+    }
     val corrections = mutableListOf<CorrectionSuite>()
     val supprimees = mutableListOf<Int>()
     override suspend fun corrigerSuite(id: Int, suite: Int, correction: CorrectionSuite): IssueCorrection? {
@@ -131,7 +135,8 @@ private class AffairesSimulees : ServiceAffaires {
             ),
             messages = listOf(MessageAffaire(41, "<p>Merci pour le suivi.</p>", a.creeLe.plusSeconds(7200), true, null, null, false)),
             referentiels = referentielsLus,
-            droits = DroitsServisAffaire(repondre = true, changerEtat = true),
+            droits = DroitsServisAffaire(repondre = true, changerEtat = true, modifier = true, corriger = true),
+            perimetres = listOf("copro"),
         )
     }
 }
@@ -287,11 +292,11 @@ class AffairesInterfaceTest {
         val service = ouvrir()
         attendre(ReperesNouvelle.NOUVELLE)
         el(ReperesNouvelle.NOUVELLE).performClick()
-        attendre(ReperesNouvelle.categorie("panne"))
+        attendre(ReperesChamps.NOUVELLE.categorie("panne"))
         el(ReperesNouvelle.DEPUIS_LE_SITE).assertExists()
-        el(ReperesNouvelle.categorie("panne")).performClick()
-        el(ReperesNouvelle.TITRE).performTextInput("Interphone muet")
-        el(ReperesNouvelle.DESCRIPTION).performTextInput("Le bouton du 3e ne sonne plus.")
+        el(ReperesChamps.NOUVELLE.categorie("panne")).performClick()
+        el(ReperesChamps.NOUVELLE.titre).performTextInput("Interphone muet")
+        el(ReperesChamps.NOUVELLE.description).performTextInput("Le bouton du 3e ne sonne plus.")
         el(ReperesNouvelle.ENVOYER).performClick()
         attendre(ReperesAffaires.carte("A-0009"))
         assertEquals("copro", service.creees.single().perimetre)
@@ -304,12 +309,12 @@ class AffairesInterfaceTest {
         ouvrir()
         attendre(ReperesNouvelle.NOUVELLE)
         el(ReperesNouvelle.NOUVELLE).performClick()
-        attendre(ReperesNouvelle.TITRE)
-        el(ReperesNouvelle.TITRE).performTextInput("Brouillon")
+        attendre(ReperesChamps.NOUVELLE.titre)
+        el(ReperesChamps.NOUVELLE.titre).performTextInput("Brouillon")
         ecran.onNode(hasText("Annuler"), useUnmergedTree = true).performClick()
         attendre(ReperesNouvelle.ABANDONNER)
         el(ReperesNouvelle.ABANDONNER).performClick()
-        disparait(ReperesNouvelle.TITRE)
+        disparait(ReperesChamps.NOUVELLE.titre)
     }
 
     /** Au bandeau de la fiche : une Suite qui change l'état, puis — hors conseil — Répondre. */
@@ -353,6 +358,19 @@ class AffairesInterfaceTest {
         attendre(ReperesAffaires.CONFIRMER_SUPPRESSION)
         el(ReperesAffaires.CONFIRMER_SUPPRESSION).performClick()
         ecran.waitUntil(DELAI_MS) { service.supprimees == listOf(31) }
+    }
+
+    /** ✏️ « Modifier » : seul le titre changé part. */
+    @Test
+    fun uneAffaireSeModifie() {
+        val service = ouvrirFiche(1)
+        attendre(repereGeste(GesteAffaire.Modifier))
+        el(repereGeste(GesteAffaire.Modifier)).performClick()
+        attendre(ReperesChamps.MODIFIER.titre)
+        el(ReperesChamps.MODIFIER.titre).performTextInput(" (local vélos)")
+        el(ReperesNouvelle.MODIFIER_ENREGISTRER).performClick()
+        attendreTexte("Affaire modifiée")
+        assertEquals(listOf(EditionAffaire(titre = "Fuite dans le local vélos (local vélos)")), service.editions)
     }
 
     private companion object {

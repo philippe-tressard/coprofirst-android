@@ -61,6 +61,9 @@ interface ServiceAffaires {
     /** PATCH /tickets/{id} : une option de mise en avant, posée ou retirée. */
     suspend fun regler(id: Int, option: OptionAffaire, active: Boolean)
 
+    /** PATCH /tickets/{id} : « Modifier l'affaire » — les seuls champs changés. */
+    suspend fun enregistrer(id: Int, edition: EditionAffaire)
+
     /** PATCH /tickets/{id}/evolutions/{evol_id} : « Modifier la suite » ; rend ce que l'affaire n'en a pas suivi. */
     suspend fun corrigerSuite(id: Int, suite: Int, correction: CorrectionSuite): IssueCorrection?
 
@@ -120,6 +123,14 @@ class ServiceAffairesApi(private val session: SessionOuverte) : ServiceAffaires 
 
     override suspend fun regler(id: Int, option: OptionAffaire, active: Boolean) {
         val corps = if (option.cle == OptionAffaire.EPINGLE) TicketUpdate(epingle = active) else TicketUpdate(urgente = active)
+        tickets { patchTicketsTicketId(id, corps) }
+    }
+
+    override suspend fun enregistrer(id: Int, edition: EditionAffaire) {
+        val corps = TicketUpdate(
+            titre = edition.titre, description = edition.descriptionHtml, categorie = edition.categorie,
+            urgente = edition.urgente, perimetreCible = edition.perimetres,
+        )
         tickets { patchTicketsTicketId(id, corps) }
     }
 
