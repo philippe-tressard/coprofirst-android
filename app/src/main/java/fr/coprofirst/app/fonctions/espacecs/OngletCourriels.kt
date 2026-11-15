@@ -10,10 +10,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Inbox
 import androidx.compose.material3.HorizontalDivider
@@ -44,30 +46,29 @@ import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.onglets.ContexteOnglet
+import fr.coprofirst.app.navigation.Destination
 
 /**
  * « Courriels affaires » (onglet `courriels`, `OngletCourriels.svelte`), comme l'iOS
  * (`OngletCourriels`) : ce que la relève a fait de chaque message reçu à l'adresse des
  * affaires, et pourquoi — une pliure par message, du plus récent au plus ancien.
- *
- * ⚠️ Divergence déclarée : « Affaire #… » n'ouvre pas encore l'affaire — le détail est
- * porté par Mes affaires (#16) ; la porte commune pour l'ouvrir d'ici est #81.
+ * « Affaire #… » ouvre l'affaire rejointe (`lienAffaire`).
  */
 @Composable
 fun OngletCourriels(contexte: ContexteOnglet) {
     val service = remember(contexte.session) { ServiceCourrielsApi(contexte.session) }
-    OngletCourriels(service, contexte.actualisation)
+    OngletCourriels(service, contexte.actualisation, contexte.ouvrir)
 }
 
 @Composable
-fun OngletCourriels(service: ServiceCourriels, actualisation: Int) {
-    Chargement(charger = { service.journal() }, cle = actualisation, squelette = { Journal(SQUELETTE) {} }) { journal, recharger ->
-        Journal(journal, recharger)
+fun OngletCourriels(service: ServiceCourriels, actualisation: Int, ouvrir: (Destination) -> Boolean = { false }) {
+    Chargement(charger = { service.journal() }, cle = actualisation, squelette = { Journal(SQUELETTE, ouvrir) {} }) { journal, recharger ->
+        Journal(journal, ouvrir, recharger)
     }
 }
 
 @Composable
-private fun Journal(journal: JournalDeReleve, recharger: () -> Unit) {
+private fun Journal(journal: JournalDeReleve, ouvrir: (Destination) -> Boolean, recharger: () -> Unit) {
     val c = LocalCouleurs.current
     Column(verticalArrangement = Arrangement.spacedBy(Mise.ecart)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -87,7 +88,7 @@ private fun Journal(journal: JournalDeReleve, recharger: () -> Unit) {
             Carte {
                 journal.messages.forEachIndexed { i, message ->
                     if (i > 0) HorizontalDivider(color = c.border)
-                    LigneCourriel(message)
+                    LigneCourriel(message, ouvrir)
                 }
             }
         }
@@ -96,7 +97,7 @@ private fun Journal(journal: JournalDeReleve, recharger: () -> Unit) {
 
 /** Un message : son objet, son verdict et sa date ; dépliée, l'expéditeur, le motif et l'affaire rejointe. */
 @Composable
-private fun LigneCourriel(message: CourrielReleve) {
+private fun LigneCourriel(message: CourrielReleve, ouvrir: (Destination) -> Boolean) {
     val c = LocalCouleurs.current
     var ouvert by rememberSaveable(message.id) { mutableStateOf(false) }
     val angle by animateFloatAsState(if (ouvert) 90f else 0f, label = "pliure")
@@ -132,14 +133,25 @@ private fun LigneCourriel(message: CourrielReleve) {
                 } ?: message.expediteur
                 Text(sousTitre, style = MaterialTheme.typography.bodySmall, color = c.textMuted)
                 if (message.motif.isNotEmpty()) Text(message.motif, style = MaterialTheme.typography.bodyMedium, color = c.text)
-                if (message.ticketId != null) {
-                    Text(
-                        stringResource(R.string.espacecs_courriels_affaire, message.affaire.orEmpty()),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = c.text,
-                        modifier = Modifier.testTag(ReperesEspaceCS.courrielAffaire(message.id)),
-                    )
+                message.ticketId?.let { ticket ->
+                    val lien = lienAffaire(ouvrir, ticket)
+                    val action = stringResource(R.string.espacecs_ouvrir_affaire)
+                    Row(
+                        Modifier
+                            .heightIn(min = Mise.cible)
+                            .then(if (lien != null) Modifier.cliquable(action, lien) else Modifier)
+                            .testTag(ReperesEspaceCS.courrielAffaire(message.id)),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        if (lien != null) Icon(Icons.AutoMirrored.Outlined.OpenInNew, contentDescription = null, tint = c.primary, modifier = Modifier.size(18.dp))
+                        Text(
+                            stringResource(R.string.espacecs_courriels_affaire, message.affaire.orEmpty()),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = if (lien != null) c.primary else c.text,
+                        )
+                    }
                 }
             }
         }
