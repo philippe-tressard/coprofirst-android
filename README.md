@@ -59,6 +59,8 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   motif, date de fin facultative). Une délégation est en lecture seule : l'aidant consulte,
   sans agir au nom de la personne aidée.
 - **Paramétrage** (administration et opérateur de la plateforme), en partie :
+  **À traiter** (la file des comptes et des commandes d'accès, celle de l'Espace CS, puis
+  les demandes de changement de profil : approuver, ou rejeter avec un motif facultatif),
   **Utilisateurs** (recherche, type, état du compte, compteurs ; la fiche d'un compte,
   ses rattachements, et les gestes que le serveur offre : interdire ou réautoriser la
   communauté, ajouter ou retirer un rôle, rejouer l'auto-match des lots, supprimer —

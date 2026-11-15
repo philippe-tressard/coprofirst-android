@@ -142,4 +142,14 @@ GÉNÉRÉS (`TablesAdmin`).
     <string name="admin_annonce_supprime">%1$s supprimé.</string>
     <string name="admin_annonce_role_ajoute">Rôle %1$s ajouté à %2$s.</string>
     <string name="admin_annonce_role_retire">Rôle %1$s retiré de %2$s.</string>
+
+    <!-- À traiter (`OngletATraiter.svelte`) -->
+    <string name="admin_demandes_titre">Demandes de profil</string>
+    <string name="admin_demandes_aucune">Aucune demande en attente.</string>
+    <string name="admin_demandes_type">Type</string>
+    <string name="admin_demandes_batiment">Bât.</string>
+    <string name="admin_demandes_souhait">%1$s : %2$s</string>
+    <string name="admin_demandes_rejeter">Rejeter la demande de %1$s ?</string>
+    <string name="admin_demandes_motif">Motif du refus (facultatif)</string>
+    <string name="admin_demandes_motif_indication">Motif…</string>
 </resources>

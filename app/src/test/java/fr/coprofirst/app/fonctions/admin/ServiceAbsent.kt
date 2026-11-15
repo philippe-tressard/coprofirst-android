@@ -16,4 +16,6 @@ object ServiceAbsent : ServiceAdmin {
     override suspend fun bannirCommunaute(id: Int, interdit: Boolean) = absent()
     override suspend fun relancerRapprochement(id: Int) = absent()
     override suspend fun supprimerUtilisateur(id: Int) = absent()
+    override suspend fun demandesProfil() = absent()
+    override suspend fun traiterDemandeProfil(id: Int, approuver: Boolean, motif: String?) = absent()
 }

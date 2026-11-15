@@ -4,6 +4,7 @@
 package fr.coprofirst.app.fonctions.admin
 
 import fr.coprofirst.api.modeles.BanCommunauteBody
+import fr.coprofirst.api.modeles.DemandeProfilAction
 import fr.coprofirst.api.modeles.RoleAction
 import fr.coprofirst.api.routes.AdminApi
 import fr.coprofirst.api.routes.AuthApi
@@ -54,6 +55,12 @@ interface ServiceAdmin {
 
     /** DELETE /admin/utilisateurs/{id} (administration) — définitif. */
     suspend fun supprimerUtilisateur(id: Int)
+
+    /** GET /admin/demandes-profil (conseil et administration) : les changements de statut ou de bâtiment demandés. */
+    suspend fun demandesProfil(): List<DemandeProfil>
+
+    /** POST /admin/demandes-profil/{id}/traiter — approuver, ou rejeter avec un motif ; rend l'annonce SERVIE. */
+    suspend fun traiterDemandeProfil(id: Int, approuver: Boolean, motif: String?): PhraseAvis
 }
 
 /** Le compte qui lit la liste, et si l'instance est commune (#94 de l'iOS). */
@@ -106,6 +113,16 @@ class ServiceAdminApi(private val session: SessionOuverte) : ServiceAdmin {
 
     override suspend fun supprimerUtilisateur(id: Int) {
         session.appeler { b, c -> AdminApi(b, c).deleteAdminUtilisateursUserId(id) }
+    }
+
+    override suspend fun demandesProfil() = session.appeler { b, c -> AdminApi(b, c).getAdminDemandesProfil().map { it.lu() } }
+
+    override suspend fun traiterDemandeProfil(id: Int, approuver: Boolean, motif: String?) = session.appeler { b, c ->
+        val action = DemandeProfilAction(
+            action = if (approuver) "approuver" else "rejeter",
+            motifRefus = motif?.trim()?.ifEmpty { null }.takeUnless { approuver },
+        )
+        AdminApi(b, c).postAdminDemandesProfilDemandeIdTraiter(id, action).annonce.let { PhraseAvis(it.texte, TonAvis.depuis(it.ton.value)) }
     }
 
     private companion object {

@@ -141,6 +141,20 @@ class AdminInterfaceTest {
         ecran.waitUntil(5_000) { service.lectures.contains("role-11-conseil_syndical") }
     }
 
+    @Test
+    fun lesDemandesDeProfilSeTraitent() {
+        ouvrir(administrateur)
+        ecran.onNodeWithTag(ReperesOnglets.onglet("a_traiter")).assertIsSelected()
+        ecran.waitUntil(5_000) { service.lectures.contains("demandes") }
+        ecran.onNodeWithTag(ReperesAdmin.demande(41)).performScrollTo().assertIsDisplayed()
+        ecran.onNodeWithTag("${ReperesAdmin.demande(41)}.approuver").performScrollTo().performClick()
+        ecran.waitUntil(5_000) { ecran.onAllNodesWithTag(ReperesAdmin.demande(41)).fetchSemanticsNodes().isEmpty() }
+        ecran.onNodeWithTag("${ReperesAdmin.demande(42)}.rejeter").performScrollTo().performClick()
+        ecran.onNodeWithTag(ReperesAdmin.DEMANDE_MOTIF).performTextInput("Bail non fourni")
+        ecran.onNodeWithTag(ReperesAdmin.DEMANDE_REJETER).performClick()
+        ecran.waitUntil(5_000) { service.lectures.contains("rejeter-42-Bail non fourni") }
+    }
+
     /** La résidence simulée : des réponses inventées, aucun nom ni machine réels. */
     private class ServiceSimule : ServiceAdmin {
         val lectures = mutableListOf<String>()
@@ -207,6 +221,22 @@ class AdminInterfaceTest {
 
         override suspend fun supprimerUtilisateur(id: Int) {
             lectures += "supprimer-$id"
+        }
+
+        private var demandes = listOf(
+            DemandeProfil(41, "Sacha EXEMPLE", "sacha@exemple.test", "copropriétaire_résident", "Bâtiment A", statutSouhaite = "copropriétaire_bailleur"),
+            DemandeProfil(42, "Morgan FICTIF", batimentNomSouhaite = "Bâtiment B", creeLe = Instant.parse("2026-11-08T17:10:00Z")),
+        )
+
+        override suspend fun demandesProfil(): List<DemandeProfil> {
+            lectures += "demandes"
+            return demandes
+        }
+
+        override suspend fun traiterDemandeProfil(id: Int, approuver: Boolean, motif: String?): PhraseAvis {
+            lectures += if (approuver) "approuver-$id" else "rejeter-$id-$motif"
+            demandes = demandes.filterNot { it.id == id }
+            return PhraseAvis(if (approuver) "Demande approuvée." else "Demande rejetée.")
         }
     }
 }

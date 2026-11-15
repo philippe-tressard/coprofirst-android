@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.fonctions.admin
 
+import fr.coprofirst.api.modeles.DemandeProfilEnAttente
 import fr.coprofirst.api.modeles.GestesRoles
 import fr.coprofirst.api.modeles.UserRead
 import fr.coprofirst.api.modeles.UtilisateurAdminRead
@@ -172,3 +173,28 @@ internal fun GestesRoles.servis(): List<GesteDeRole> = listOfNotNull(
         else -> null
     }
 }
+
+/** Une demande de modification de profil en attente, et ce que la liste y ajoute (le demandeur, son statut et son bâtiment actuels). */
+data class DemandeProfil(
+    val id: Int,
+    val utilisateurNom: String,
+    val utilisateurEmail: String? = null,
+    val statutActuel: String? = null,
+    val batimentActuel: String? = null,
+    val statutSouhaite: String? = null,
+    val batimentNomSouhaite: String? = null,
+    val motif: String? = null,
+    val creeLe: Instant? = null,
+)
+
+internal fun DemandeProfilEnAttente.lu() = DemandeProfil(
+    id = id,
+    utilisateurNom = utilisateurNom,
+    utilisateurEmail = utilisateurEmail,
+    statutActuel = statutActuel,
+    batimentActuel = batimentActuel,
+    statutSouhaite = statutSouhaite,
+    batimentNomSouhaite = batimentNomSouhaite,
+    motif = motif,
+    creeLe = creeLe.toInstant(),
+)

@@ -45,10 +45,7 @@ import fr.coprofirst.app.navigation.OngletsDuSite
  * l'opérateur qui n'est pas administrateur n'y ouvre que l'Exploitation
  * (`OngletsDuSite.ouverts`), donc ici la seule Maintenance. Le serveur refuse chaque
  * route à qui n'a pas le rôle.
- *
- * ⚠️ Étape intermédiaire déclarée (#26) : « À traiter » n'est pas encore inscrit ici — il
- * paraît dans « Sur le site », avec son lien, jusqu'à ce que la file des comptes de l'Espace
- * CS (#24), qu'il réemploie, soit sur main.
+
  */
 @Composable
 fun EcranAdmin(contexte: ContexteDeMenu) {
@@ -69,6 +66,8 @@ object OngletsAdmin {
     fun page(service: ServiceAdmin) = PageAOnglets(
         PAGE,
         mapOf(
+            "a_traiter" to { contexte -> OngletATraiter(contexte, service) },
+
             "utilisateurs" to { contexte -> OngletUtilisateurs(contexte, service) },
 
             "telemetry" to { contexte -> OngletTelemetrie(contexte, service) },
@@ -105,6 +104,9 @@ object ReperesAdmin {
     const val FICHE_CONFIRMER = "admin.fiche.confirmer"
     const val FICHE_EXPLOITANT = "admin.fiche.operateur-exploitant"
     fun role(role: String) = "admin.fiche.role.$role"
+    fun demande(id: Int) = "admin.demande.$id"
+    const val DEMANDE_MOTIF = "admin.demande.motif"
+    const val DEMANDE_REJETER = "admin.demande.rejeter"
 }
 
 /**

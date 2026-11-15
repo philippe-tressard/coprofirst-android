@@ -99,6 +99,26 @@ class UtilisateursAdminTest {
         assertEquals("un refus ne retire rien", 1, etat.comptes!!.size)
     }
 
+    @Test
+    fun uneDemandeTraiteeQuitteLaFile() = runTest {
+        val service = object : ServiceAdmin by ServiceAbsent {
+            var refus: ErreurService? = null
+            override suspend fun demandesProfil() = listOf(DemandeProfil(41, "Sacha EXEMPLE"), DemandeProfil(42, "Morgan FICTIF"))
+            override suspend fun traiterDemandeProfil(id: Int, approuver: Boolean, motif: String?): PhraseAvis {
+                refus?.let { throw it }
+                return PhraseAvis(if (approuver) "Demande approuvée." else "Demande rejetée.")
+            }
+        }
+        val etat = EtatDemandesProfil(service)
+        etat.charger()
+        assertEquals(PhraseAvis("Demande approuvée."), etat.traiter(etat.demandes!!.first(), approuver = true))
+        assertEquals(listOf(42), etat.demandes!!.map { it.id })
+        service.refus = ErreurService.Refus("Cette demande a déjà été traitée.", 409)
+        assertEquals(service.refus, runCatching { etat.traiter(etat.demandes!!.first(), approuver = false, motif = "x") }.exceptionOrNull())
+        assertEquals("un refus ne retire rien", listOf(42), etat.demandes!!.map { it.id })
+        assertNull(etat.enCours)
+    }
+
     private class ServiceSimule : ServiceAdmin by ServiceAbsent {
         var lectures = 0
         val roles = mutableListOf<Pair<Int, GesteDeRole>>()
@@ -183,6 +203,31 @@ class ServiceUtilisateursApiTest {
         repondre(204, "")
         service.supprimerUtilisateur(11)
         assertEquals("DELETE /api/admin/utilisateurs/11", requete())
+    }
+
+    @Test
+    fun lesDemandesDeProfilSeTraitentParLeurRoute() = runTest {
+        repondre(
+            200,
+            """[{"id": 41, "utilisateur_id": 31, "statut_demande": "en_attente", "statut_souhaite": "copropriétaire_bailleur",
+               "motif": "Je mets mon appartement en location.", "cree_le": "2026-11-05T09:30:00Z",
+               "utilisateur_nom": "Sacha EXEMPLE", "utilisateur_email": "sacha@exemple.test",
+               "statut_actuel": "copropriétaire_résident", "batiment_actuel": "Bâtiment A"}]""",
+        )
+        val demande = service.demandesProfil().single()
+        assertEquals("GET /api/admin/demandes-profil", requete())
+        assertEquals("copropriétaire_bailleur", demande.statutSouhaite)
+        assertEquals("Bâtiment A", demande.batimentActuel)
+
+        repondre(200, """{"statut": "approuvee", "annonce": {"ton": "success", "texte": "Demande approuvée."}}""")
+        assertEquals(PhraseAvis("Demande approuvée.", TonAvis.Succes), service.traiterDemandeProfil(41, approuver = true, motif = "ignoré"))
+        assertEquals("""POST /api/admin/demandes-profil/41/traiter {"action":"approuver"}""", requete())
+        repondre(200, """{"statut": "rejetee", "annonce": {"ton": "success", "texte": "Demande rejetée."}}""")
+        service.traiterDemandeProfil(41, approuver = false, motif = "  Bail non fourni ")
+        assertEquals("""POST /api/admin/demandes-profil/41/traiter {"action":"rejeter","motif_refus":"Bail non fourni"}""", requete())
+        repondre(200, """{"statut": "rejetee", "annonce": {"ton": "success", "texte": "Demande rejetée."}}""")
+        service.traiterDemandeProfil(41, approuver = false, motif = " ")
+        assertEquals("un motif vide ne s'envoie pas", """POST /api/admin/demandes-profil/41/traiter {"action":"rejeter"}""", requete())
     }
 
     @Test
