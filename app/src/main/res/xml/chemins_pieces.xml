@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+-->
+<!-- Ce que le FileProvider des pièces peut confier à une autre app : le dossier des copies
+     ouvertes (PiecesLocales.DOSSIER, sous le cache), et rien d'autre. -->
+<paths>
+    <cache-path name="pieces" path="pieces/" />
+</paths>

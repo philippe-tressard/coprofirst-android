@@ -154,18 +154,60 @@ TexteRiche(affaire.description, style = MaterialTheme.typography.bodyMedium)
 val texte = TexteDuSite.saisi(affaire.description) // null : montrer, ne pas proposer de champ
 ```
 
+## Pièces jointes — `fr.coprofirst.app.commun.pieces`
+
+Les photos et documents joints à un élément (affaire, suite, message, carte du fil,
+annonce) se rangent, se nomment et s'ouvrent ici, et nulle part ailleurs. **Pas d'ajout
+de pièce** dans l'app, comme l'iOS : l'écran dit qu'elles s'ajoutent depuis le site.
+
+| API | Pendant iOS | Usage |
+|---|---|---|
+| `PiecesJointes(urls)` | `PiecesJointes(urls:)` | Toutes les URL servies ensemble (`photosUrls + fichiersUrls`) → `photos`, `documents` (l'extension décide), dans l'ordre servi, sans doublon ; `vide`, `nombre`, `enClair` (« 2 photos, 1 pièce jointe », pour le lecteur d'écran d'une carte). |
+| `Fichiers.estImage`, `.nomAffiche`, `.typeAffiche`, `.nomSansExtension`, `.nomSur` | `Fichiers` | Les règles du site (`fichiers.ts`) : nom montré sans le préfixe de téléversement, type « PDF », « WORD »…, nom sûr pour le disque. |
+| `FichiersDuSite` | `FichiersDuSite` | **Générée** (`scripts/generer_tables.py`) : `extensionsImage`, `LONGUEUR_PREFIXE`, `familles` — pas encore publiées par coprofirst : tenues par le générateur, aux valeurs de l'iOS. |
+| `PiecesJointesVue(pieces, session, format = Grand\|Compact)` | `PiecesJointesView` | Un élément OUVERT : intitulé « Pièces jointes · N » (`Grand`), mosaïque des photos, puis lignes des documents ; un toucher ouvre la pièce. `Compact` : sous une suite ou un message, sans intitulé. Rien sans pièce. |
+| `VignettePieces(pieces, session)` | `VignettePieces` | Une carte FERMÉE : la première photo et « +N », ou un trombone et le nombre de documents. Décorative : la carte dit `pieces.enClair`. |
+| `PhotoProtegee(chemin, session, remplir?)` | `PhotoProtegee` | Une photo de `/uploads/` (avatar, photo de fiche…) : lue par la session, décodée à la taille du cadre, gardée en mémoire seulement. |
+| `MosaiquePhotos(chemins, session, hauteur, enCours, ouvrir)` | `MosaiquePhotos` | La mosaïque seule (1, 2, ou 1 grande + 2 petites et « +N »). |
+| `LigneDocument(nom, enCours, taille?, ouvrir)` | `LigneDocument` | Un document : type, nom sans extension, taille (`FormatsDuSite.octets`) si connue. `nom` : le chemin servi ou `fichier_nom`. |
+| `rememberOuverture(session)` → `Ouverture` ; `AvisOuverture(ouverture)` | `quickLookPreview`, `DocumentView` | Ouvrir en grand : `piece(chemin)` (une pièce jointe) ou `document(id, nom)` (un document du fil, par le client généré) — copie dans le cache de l'app, puis l'app de l'appareil qui sait la montrer ; `enCours`, `echec` (session expirée, aucune app pour ce type…), dit par `AvisOuverture`. |
+| `SessionOuverte.fichierProtege(chemin)` | `fichierProtege` | LA porte des fichiers de `/uploads/` (hors contrat) : l'hôte de la session et lui seul, sans redirection, erreurs en `ErreurService`. Dispensée nommément par `verifier-depot.sh`. |
+| `PiecesLocales.fichierServi(session, sous, cle, nom, defaut) { base, client -> … }` | `fichierServi` | Un fichier servi par une ROUTE (rapport…) que le client généré télécharge, rangé dans le cache sous un nom sûr. |
+| `PiecesLocales.effacer(contexte)` | `Fichiers.effacerLesCopies` | Copies et photos en mémoire effacées : au lancement, à la déconnexion, à « Oublier toutes les résidences » (déjà branché). |
+
+⚠️ Divergences déclarées : Android n'a pas d'aperçu intégré comme Coup d'œil — la pièce
+s'ouvre dans l'app de l'appareil (`ACTION_VIEW`, droit de lecture sur CE fichier) ; une
+photo touchée s'ouvre seule (l'iOS feuillette toutes celles de l'élément) ; sous Android 8,
+une photo n'est pas redressée selon son orientation EXIF.
+
+Exemple :
+
+```kotlin
+val pieces = remember(affaire) { PiecesJointes(affaire.photosUrls.orEmpty() + affaire.fichiersUrls) }
+PiecesJointesVue(pieces, contexte.session)                                   // l'affaire ouverte
+PiecesJointesVue(PiecesJointes(message.fichiersUrls), contexte.session, format = FormatPieces.Compact)
+Carte(Modifier.semantics { pieces.enClair?.let { stateDescription = it } }, ouvrir = ouvrir) {
+    Row { Text(titre, Modifier.weight(1f)); VignettePieces(pieces, contexte.session) }   // une carte fermée
+}
+
+val ouverture = rememberOuverture(contexte.session)                          // un document du fil
+LigneDocument(document.fichierNom, ouverture.enCours == "document-${document.id}", taille = document.tailleOctets) {
+    ouverture.document(document.id, document.fichierNom)
+}
+AvisOuverture(ouverture)
+```
+
 ## Charte — `fr.coprofirst.app.charte`, `ThemeCoproFirst`
 
 | API | Rôle |
 |---|---|
 | `LocalCouleurs.current` | Les couleurs de la palette en cours (clair ou sombre) : `primary`, `text`, `textMuted`, `surface`, `border`, `danger`, `successFond`… — un jeton de la charte chacune, générées depuis coprofirst. |
 | `MaterialTheme.colorScheme` | Les rôles de Material, tirés des mêmes jetons (`ThemeCoproFirst`). |
-| `Mise.rayon`, `Mise.marge`, `Mise.cible`, `Mise.ecart` | Les mesures communes (`Mise`). Cible tactile : 48 dp (règle d'Android). |
+| `Mise.rayon`, `Mise.marge`, `Mise.cible`, `Mise.ecart`, `Mise.mosaique`, `Mise.mosaiqueCompacte`, `Mise.vignette` | Les mesures communes (`Mise`). Cible tactile : 48 dp (règle d'Android). |
 | `Typo.titre()`, `Typo.libelle()` | Titre en serif (`Font.titre`), libellé de section (`.styleLibelle()`). |
 
 ## À venir dans la couche commune
 
 Tables de libellés — 15b ; cadre à onglets, droits par onglet, avis éphémère, champ de
-recherche — 15c ; pièces jointes, photo protégée,
-document — 15d ; le fil d'activité (page `tableau-de-bord`) et la cloche — #11, #22.
+recherche — 15c ; le fil d'activité (page `tableau-de-bord`) et la cloche — #11, #22.
 Le suivi : #15, #11.

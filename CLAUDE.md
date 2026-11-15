@@ -70,8 +70,9 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
 - **Réseau** : un seul client HTTP, `session/ClientHttp.kt` (aucune redirection
   suivie, clair refusé par le manifeste), décliné par hôte avec ses cookies en mémoire
   (`SessionsParHote`) ; aucune requête ni route écrite à la main — `verifier-depot.sh`
-  le refuse, sauf dans `PreuveHote.kt` (dispense nommée : le fichier d'association
-  n'est pas une route de l'API).
+  le refuse, sauf dans `PreuveHote.kt` (le fichier d'association n'est pas une route de
+  l'API) et `commun/pieces/FichierProtege.kt` (les fichiers de `/uploads/`, servis
+  derrière la session hors du contrat ; l'hôte de la session seul) — dispenses nommées.
 - **Mot de passe** : un seul chemin, la garde de l'hôte (`GardeHote`, comme l'iOS) —
   un hôte jamais vu se confirme avant tout envoi. Le plancher du contrat (`VERSION_CONTRAT_PLANCHER`)
   est généré depuis `contrat/openapi.json` ; une installation qui sert un contrat plus
