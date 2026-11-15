@@ -40,7 +40,8 @@ import fr.coprofirst.app.session.SessionOuverte
 
 /**
  * La résidence ouverte, comme `OngletsView` de l'iOS : la barre du bas (les 4 premières
- * pages de l'ordre servi, puis « Plus »), et la page choisie, ouverte par le registre.
+ * pages de l'ordre servi, puis « Plus »), et la page choisie, ouverte par le registre ; en
+ * haut, la cloche, qui ouvre les notifications en feuille (`Cloche`).
  */
 @Composable
 fun EcranResidence(session: SessionOuverte, sortie: GestesDeSortie, apparence: Apparence) {
@@ -56,6 +57,8 @@ fun EcranResidence(session: SessionOuverte, sortie: GestesDeSortie, apparence: A
     val onglet = etat.onglet.takeIf { it == EtatResidence.PLUS || barre.any { p -> p.id == it } } ?: barre.firstOrNull()?.id
     var pageDePlus by rememberSaveable(onglet) { mutableStateOf<String?>(null) }
     val barreDuHaut = remember { BarreDuHaut() }
+    var clocheOuverte by rememberSaveable { mutableStateOf(false) }
+    val notifications = Cloche.page
 
     val ouverte: PageDeNavigation? = when {
         onglet != EtatResidence.PLUS -> barre.firstOrNull { it.id == onglet }
@@ -66,6 +69,7 @@ fun EcranResidence(session: SessionOuverte, sortie: GestesDeSortie, apparence: A
         titre = ouverte?.titre ?: stringResource(R.string.plus),
         retour = if (pageDePlus != null) ({ pageDePlus = null }) else null,
         barreDuHaut = barreDuHaut,
+        cloche = { if (notifications != null) BoutonCloche(notifications) { clocheOuverte = true } },
         barre = {
             NavigationBar {
                 barre.forEach { page ->
@@ -91,6 +95,13 @@ fun EcranResidence(session: SessionOuverte, sortie: GestesDeSortie, apparence: A
             ListeDePlus(plus, ouvrir = { pageDePlus = it }, deconnecter = sortie::deconnecter)
         }
     }
+    if (clocheOuverte && notifications != null) {
+        FeuilleNotifications(
+            notifications,
+            contexte = { barre -> ContexteDeMenu(notifications, session, etat.droits, sortie, apparence, barre) },
+            fermer = { clocheOuverte = false },
+        )
+    }
 }
 
 /** Les entrées fixes de « Plus », comme l'iOS : Profil et À propos (leurs écrans : #21, #27). */
@@ -107,6 +118,7 @@ private fun CadreResidence(
     titre: String,
     retour: (() -> Unit)?,
     barreDuHaut: BarreDuHaut,
+    cloche: @Composable () -> Unit,
     barre: @Composable () -> Unit,
     contenu: @Composable () -> Unit,
 ) {
@@ -121,7 +133,10 @@ private fun CadreResidence(
                         }
                     }
                 },
-                actions = { ActionsDeclarees(barreDuHaut) },
+                actions = {
+                    ActionsDeclarees(barreDuHaut)
+                    cloche()
+                },
             )
         },
         bottomBar = barre,

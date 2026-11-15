@@ -6,9 +6,13 @@
 (`scripts/generateurs/onglets.py`) :
 
 - `PagesParDefaut` : les pages de navigation (`pages`, celles qui ont un `href`), dans
-  l'ordre par défaut, et le titre du fil (`titreFil`) ;
-- `OngletsDuSite` : les onglets de chaque page et leur réserve, les pages réservées à
-  l'administration, qui porte chaque droit (`rolesDuDroit`, `statutsDuProfil`) ;
+  l'ordre par défaut, et le titre du fil (`titreFil`) ; celles qui n'ont pas d'entrée de
+  menu (`horsMenu` : la page des notifications, que la cloche ouvre) ;
+- `OngletsDuSite` : les onglets de chaque page et leur réserve, leur descriptif et leur
+  adresse sur le site (« Sur le site »), les pages réservées à l'administration, qui
+  porte chaque droit (`rolesDuDroit`, `statutsDuProfil`) ;
+- `AvisDuSite` (paquet `commun`) : le temps que reste à l'écran l'avis qui suit un geste
+  (`dureeToastMs`), comme l'iOS (`scripts/generateurs/avis.py`) ;
 - `BalisesDuSite` (paquet `commun.texte`) : la liste blanche du texte riche — balises et
   attributs admis (`balisesAdmises`, `attributsAdmis`), schémas d'un lien touchable —
   comme l'iOS (`scripts/generateurs/charte.py`, `balises`) ;
@@ -98,19 +102,26 @@ def kotlin(tables: dict, source: str) -> str:
         "object PagesParDefaut {",
         "    val toutes: List<PageDeNavigation> = listOf(",
     ]
+    hors_menu = []
     for p in pages:
-        if p.get("href") is None:
-            continue  # sans entrée de navigation : ni ordonnée, ni dans la barre
-        for cle in ("id", "href", "navLabel", "titre", "icone"):
+        for cle in ("id", "navLabel", "titre", "icone"):
             if not isinstance(p.get(cle), str):
                 raise TableInattendue(f"page {p.get('id')} : {cle} manquant")
-        l.append(f"        PageDeNavigation({chaine(p['id'])}, {chaine(p['href'])}, {chaine(p['navLabel'])}, "
-                 f"{chaine(p['titre'])}, {chaine(p['icone'])}),")
-    l += ["    )", "", "    /** Le titre de la section du fil d'activité (`.titre-fil`). */",
+        if p.get("href") is None:
+            hors_menu.append(p)  # sans entrée de navigation : ni ordonnée, ni dans la barre
+            continue
+        if not isinstance(p["href"], str):
+            raise TableInattendue(f"page {p['id']} : href inattendu")
+        l.append(f"        {page_kotlin(p, p['href'])},")
+    l += ["    )", "",
+          "    /** Les pages sans entrée de menu (`href` nul, route vide) : leur écran s'ouvre d'ailleurs (la cloche). */",
+          "    val horsMenu: List<PageDeNavigation> = listOf(",
+          *[f"        {page_kotlin(p, '')}," for p in hors_menu], "    )", "",
+          "    /** Le titre de la section du fil d'activité (`.titre-fil`). */",
           f"    const val TITRE_DU_FIL: String = {chaine(titre.strip())}", "}", "",
           "/** Les onglets de chaque page du site, dans leur ordre, avec leur réserve ; qui porte chaque droit. */",
           "object OngletsDuSite {", "    val parPage: Map<String, List<OngletDuSite>> = mapOf("]
-    reservees = []
+    reservees, descriptifs, routes = [], [], []
     for p in pages:
         if p.get("reserveeAdmin"):
             reservees.append(p["id"])
@@ -118,7 +129,15 @@ def kotlin(tables: dict, source: str) -> str:
         if not onglets:
             continue
         l.append(f"        {chaine(p['id'])} to listOf(")
+        descriptifs.append(f"        {chaine(p['id'])} to mapOf(")
+        routes.append(f"        {chaine(p['id'])} to mapOf(")
         for o in onglets:
+            for cle, lignes in (("descriptif", descriptifs), ("route", routes)):
+                valeur = o.get(cle)
+                if valeur is not None and not isinstance(valeur, str):
+                    raise TableInattendue(f"onglet {p['id']}/{o.get('id')} : {cle} inattendu")
+                if valeur:
+                    lignes.append(f"            {chaine(o['id'])} to {chaine(valeur)},")
             r = o.get("reserve")
             if r is not None and r not in RESERVES:
                 raise TableInattendue(f"réserve inconnue « {r} » ({p['id']}/{o.get('id')}) — l'app doit l'apprendre")
@@ -126,7 +145,13 @@ def kotlin(tables: dict, source: str) -> str:
             l.append(f"            OngletDuSite({chaine(o['id'])}, {chaine(sans_picto(o.get('label')))}, {reserve}, "
                      f"{'true' if o.get('ouvertOperateur') else 'false'}),")
         l.append("        ),")
+        descriptifs.append("        ),")
+        routes.append("        ),")
     l += ["    )", "",
+          "    /** Le descriptif de chaque onglet (page → onglet → texte du site, à passer par `TexteDuSite.apercu`). */",
+          "    val descriptifs: Map<String, Map<String, String>> = mapOf(", *descriptifs, "    )", "",
+          "    /** L'adresse de chaque onglet sur le site (page → onglet → `/admin?onglet=…`), sous celle de la résidence. */",
+          "    val routes: Map<String, Map<String, String>> = mapOf(", *routes, "    )", "",
           f"    val pagesReserveesAdmin: Set<String> = {ensemble(reservees)}",
           f"    val rolesAdministrateur: Set<String> = {ensemble(liste(tables, 'rolesDuDroit', 'admin'))}",
           f"    val rolesOperateur: Set<String> = {ensemble(liste(tables, 'rolesDuDroit', 'operateur'))}",
@@ -231,6 +256,25 @@ def liste_kotlin(valeurs: list[str]) -> str:
     return "listOf(" + ", ".join(chaine(v) for v in valeurs) + ")"
 
 
+def page_kotlin(p: dict, route: str) -> str:
+    return (f"PageDeNavigation({chaine(p['id'])}, {chaine(route)}, {chaine(p['navLabel'])}, "
+            f"{chaine(p['titre'])}, {chaine(p['icone'])})")
+
+
+def kotlin_avis(tables: dict, source: str) -> str:
+    millisecondes = tables.get("dureeToastMs", {}).get("valeur")
+    if isinstance(millisecondes, bool) or not isinstance(millisecondes, int) or millisecondes <= 0:
+        raise TableInattendue(f"dureeToastMs n'est pas une durée en millisecondes : {millisecondes!r}")
+    return "\n".join([
+        "// GÉNÉRÉ par scripts/generer_tables.py — NE PAS MODIFIER À LA MAIN.",
+        f"// Source : {source} (dureeToastMs : `DUREE_TOAST_MS` de front/src/lib/toast.ts).",
+        "package fr.coprofirst.app.commun", "",
+        "/** L'avis qui suit un geste, comme le site le montre. */",
+        "object AvisDuSite {",
+        "    /** Le temps qu'il reste à l'écran (`DUREE_TOAST_MS` du site), en millisecondes. */",
+        f"    const val DUREE_MS: Long = {millisecondes}L", "}", ""])
+
+
 def kotlin_commun(tables: dict, source: str) -> str:
     statuts, roles = attributs(tables, "attributsStatut"), attributs(tables, "attributsRole")
     herites = tables.get("libellesHerites", {}).get("valeur")
@@ -279,6 +323,7 @@ def main(argv: list[str]) -> int:
         fichiers = {
             (PAQUET, "TablesDuSite.kt"): kotlin(tables, entree.name),
             ("fr.coprofirst.app.commun", "TablesCommunes.kt"): kotlin_commun(tables, entree.name),
+            ("fr.coprofirst.app.commun", "AvisDuSite.kt"): kotlin_avis(tables, entree.name),
             (PAQUET_TEXTE, "BalisesDuSite.kt"): kotlin_balises(tables, entree.name),
             (PAQUET_PIECES, "FichiersDuSite.kt"): kotlin_fichiers(),
         }
