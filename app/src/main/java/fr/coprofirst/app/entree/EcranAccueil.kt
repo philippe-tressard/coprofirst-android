@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.entree
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -19,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -30,7 +33,7 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.ThemeCoproFirst
 
 /**
- * L'accueil, comme celui de l'iOS (`AccueilView`) : le nom, la devise, deux portes —
+ * L'accueil, comme celui de l'iOS (`AccueilView`) : le logo, le nom, la devise, deux portes —
  * ma résidence, la démonstration. Quand le texte grandit, l'écran défile.
  */
 @Composable
@@ -44,6 +47,9 @@ fun EcranAccueil(parcours: ActionsEntree) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(Modifier.weight(1f))
+        // Le médaillon de l'iOS : le logo de CoproFirst, décoratif (le nom suit).
+        Image(painterResource(R.drawable.logo), contentDescription = null, modifier = Modifier.size(112.dp))
+        Spacer(Modifier.height(20.dp))
         Text(
             stringResource(R.string.nom_app),
             style = MaterialTheme.typography.displaySmall,

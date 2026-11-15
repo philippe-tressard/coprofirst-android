@@ -44,20 +44,17 @@ android {
         abortOnError = true
         // Une version plus récente publiée n'est pas un défaut du dépôt : Dependabot la propose.
         disable += setOf("GradleDependency", "NewerVersionAvailable", "AndroidGradlePluginVersion")
-        // L'icône sera le logo de CoproFirst, dont la licence ne couvre pas encore l'app
-        // Android (élargissement à demander côté coprofirst) : pas d'icône d'ici là.
-        // À retirer avec l'icône — une dispense sans objet ne reste pas.
-        disable += "MissingApplicationIcon"
     }
 }
 
 /**
- * Les palettes de la charte, GÉNÉRÉES au build depuis contrat/tables-clients.json (la
- * pièce jointe de la release de coprofirst au plancher) par scripts/generer_charte.py.
+ * Ce qui se GÉNÈRE au build par un script Python du dépôt, depuis un fichier recopié à
+ * l'octet : les palettes (contrat/tables-clients.json → scripts/generer_charte.py) et
+ * le logo au format d'Android (app/src/main/logo/logo.svg → scripts/generer_logo.py).
  * Rien de généré n'est versionné ; aucune couleur ne s'écrit à la main.
  */
-abstract class GenererCharte : DefaultTask() {
-    @get:InputFile abstract val tables: RegularFileProperty
+abstract class GenererDepuisPython : DefaultTask() {
+    @get:InputFile abstract val entree: RegularFileProperty
     @get:InputFile abstract val generateur: RegularFileProperty
     @get:OutputDirectory abstract val sortie: DirectoryProperty
     @get:Inject abstract val processus: ExecOperations
@@ -66,20 +63,24 @@ abstract class GenererCharte : DefaultTask() {
     fun generer() {
         sortie.get().asFile.deleteRecursively()
         processus.exec {
-            commandLine("python3", "-I", generateur.get().asFile.path, tables.get().asFile.path, sortie.get().asFile.path)
+            commandLine("python3", "-I", generateur.get().asFile.path, entree.get().asFile.path, sortie.get().asFile.path)
         }
     }
 }
 
-val genererCharte = tasks.register<GenererCharte>("genererCharte") {
-    tables.set(rootProject.layout.projectDirectory.file("contrat/tables-clients.json"))
-    generateur.set(rootProject.layout.projectDirectory.file("scripts/generer_charte.py"))
-    sortie.set(layout.buildDirectory.dir("generated/charte"))
+fun generation(nom: String, entree: String, generateur: String) = tasks.register<GenererDepuisPython>(nom) {
+    this.entree.set(rootProject.layout.projectDirectory.file(entree))
+    this.generateur.set(rootProject.layout.projectDirectory.file(generateur))
+    sortie.set(layout.buildDirectory.dir("generated/$nom"))
 }
+
+val genererCharte = generation("genererCharte", "contrat/tables-clients.json", "scripts/generer_charte.py")
+val genererLogo = generation("genererLogo", "app/src/main/logo/logo.svg", "scripts/generer_logo.py")
 
 androidComponents {
     onVariants { variante ->
-        variante.sources.kotlin?.addGeneratedSourceDirectory(genererCharte, GenererCharte::sortie)
+        variante.sources.kotlin?.addGeneratedSourceDirectory(genererCharte, GenererDepuisPython::sortie)
+        variante.sources.res?.addGeneratedSourceDirectory(genererLogo, GenererDepuisPython::sortie)
     }
 }
 
