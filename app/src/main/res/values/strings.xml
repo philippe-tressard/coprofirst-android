@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+-->
+<resources>
+    <string name="nom_app">CoproFirst</string>
+    <string name="accueil_sous_titre">Gestion de copropriété, logiciel libre</string>
+    <string name="accueil_amorce">Application Android en amorce.</string>
+</resources>

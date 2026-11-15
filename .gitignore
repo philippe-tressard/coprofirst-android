@@ -1,0 +1,56 @@
+# SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+# SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+#
+# LISTE BLANCHE (standards/03 §2, standards/14 §0) : tout est exclu à la racine, ce
+# qui se versionne se ré-inclut ici, nommément. Un fichier neuf à la racine reste
+# hors du dépôt tant qu'on ne l'a pas décidé — keystore, google-services, export.
+# ⚠️ Après avoir ajouté une ligne : `git status` (standards/14 §6.2).
+
+# 1. Tout est exclu à la racine
+/*
+
+# 2. Ré-inclusions explicites
+!/.gitignore
+!/.github/
+!/.githooks/
+!/.claude/
+!/CLAUDE.md
+!/README.md
+!/LICENSE
+!/LICENSES/
+!/REUSE.toml
+!/contrat/
+!/scripts/
+!/gradle/
+!/gradlew
+!/gradle.properties
+!/settings.gradle.kts
+!/build.gradle.kts
+!/app/
+!/client-api/
+
+# 3. Exclus PARTOUT, même dans un dossier ré-inclus
+# Produits de build, caches de Gradle et réglages de l'IDE
+build/
+.gradle/
+.kotlin/
+.idea/
+*.iml
+local.properties
+captures/
+# Signature et secrets : clés de téléversement, comptes de service Play, Firebase
+*.jks
+*.keystore
+*.p12
+*.pem
+google-services.json
+service-account*.json
+.env
+.env.*
+*secret*
+*token*
+# Réglages locaux de Claude Code (permissions du poste) et worktrees des sessions
+.claude/settings.local.json
+.claude/worktrees/
+# Bruit du système
+.DS_Store
