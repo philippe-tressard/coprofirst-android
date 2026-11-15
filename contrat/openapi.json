@@ -3,7 +3,7 @@
  "info": {
   "title": "CoproFirst API",
   "description": "API de gestion de copropriétés",
-  "version": "1.27.0"
+  "version": "2.0.0"
  },
  "paths": {
   "/auth/batiments": {
@@ -2926,6 +2926,143 @@
         }
        }
       }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/tickets/{ticket_id}/messages/{msg_id}": {
+   "patch": {
+    "tags": [
+     "tickets",
+     "tickets"
+    ],
+    "summary": "Update Message",
+    "operationId": "patch_tickets_ticket_id_messages_msg_id",
+    "parameters": [
+     {
+      "name": "ticket_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Ticket Id"
+      }
+     },
+     {
+      "name": "msg_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Msg Id"
+      }
+     },
+     {
+      "name": "access_token",
+      "in": "cookie",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Access Token"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/MessageUpdate"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/app__routers__tickets__messages_schemas__MessageRead"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "tickets",
+     "tickets"
+    ],
+    "summary": "Delete Message",
+    "operationId": "delete_tickets_ticket_id_messages_msg_id",
+    "parameters": [
+     {
+      "name": "ticket_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Ticket Id"
+      }
+     },
+     {
+      "name": "msg_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Msg Id"
+      }
+     },
+     {
+      "name": "access_token",
+      "in": "cookie",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Access Token"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
      },
      "422": {
       "description": "Validation Error",
@@ -12061,9 +12198,67 @@
     }
    }
   },
+  "/prestataires/synthese/{p_id}": {
+   "get": {
+    "tags": [
+     "prestataires"
+    ],
+    "summary": "Get Prestataire Synthese",
+    "description": "Synthèse complète d'un prestataire pour le reporting CS.",
+    "operationId": "get_prestataires_synthese_p_id",
+    "parameters": [
+     {
+      "name": "p_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "P Id"
+      }
+     },
+     {
+      "name": "access_token",
+      "in": "cookie",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Access Token"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/prestataires/notations": {
    "get": {
     "tags": [
+     "prestataires",
      "prestataires"
     ],
     "summary": "List Notations",
@@ -12131,6 +12326,7 @@
    },
    "post": {
     "tags": [
+     "prestataires",
      "prestataires"
     ],
     "summary": "Create Notation",
@@ -12188,8 +12384,77 @@
    }
   },
   "/prestataires/notations/{n_id}": {
+   "patch": {
+    "tags": [
+     "prestataires",
+     "prestataires"
+    ],
+    "summary": "Update Notation",
+    "description": "L'auteur corrige son avis — l'état, le commentaire, l'affaire (15/11/2026).\n\nSeul l'auteur : un autre membre ne réécrit pas l'avis d'un collègue (il peut le retirer).",
+    "operationId": "patch_prestataires_notations_n_id",
+    "parameters": [
+     {
+      "name": "n_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "N Id"
+      }
+     },
+     {
+      "name": "access_token",
+      "in": "cookie",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Access Token"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/NotationUpdate"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/NotationRead"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
    "delete": {
     "tags": [
+     "prestataires",
      "prestataires"
     ],
     "summary": "Delete Notation",
@@ -12238,14 +12503,79 @@
     }
    }
   },
-  "/prestataires/synthese/{p_id}": {
+  "/prestataires/affaires-a-noter": {
    "get": {
     "tags": [
+     "prestataires",
      "prestataires"
     ],
-    "summary": "Get Prestataire Synthese",
-    "description": "Synthèse complète d'un prestataire pour le reporting CS.",
-    "operationId": "get_prestataires_synthese_p_id",
+    "summary": "Lire Affaires A Noter",
+    "description": "Toutes les affaires de la copropriété : d'abord celles où le prestataire intervient,\npuis les autres, chaque groupe de la plus récente à la plus ancienne (15/11/2026).\n\nPour noter le couple prestataire / affaire, même quand il n'y figure pas encore : ce\nchoix-là exige la confirmation de l'ajout. La recherche détaillée (suivi, messages,\npièces) est celle de la page Affaires, `GET /tickets/recherche` : elle n'est pas\nrefaite ici, et l'écran la croise avec cette liste.",
+    "operationId": "get_prestataires_affaires_a_noter",
+    "parameters": [
+     {
+      "name": "prestataire_id",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Prestataire Id"
+      }
+     },
+     {
+      "name": "access_token",
+      "in": "cookie",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Access Token"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/AffaireAvis"
+         },
+         "title": "Response Get Prestataires Affaires A Noter"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/prestataires/{p_id}/interventions": {
+   "get": {
+    "tags": [
+     "prestataires",
+     "prestataires"
+    ],
+    "summary": "Lire Interventions",
+    "description": "Les interventions du prestataire rangées par exercice, le plus récent d'abord (R3d).\n\nUne intervention est une affaire où il est intervenant désigné — ou qu'un avis juge :\nretiré de l'affaire ensuite, il garde l'avis qu'on y a porté. Elle se range dans\nl'exercice de son OUVERTURE ; un avis sans affaire, dans celui de sa date. La règle de\nl'exercice est celle des métriques (`exercice_de`) : l'écran ne la recopie pas.",
+    "operationId": "get_prestataires_p_id_interventions",
     "parameters": [
      {
       "name": "p_id",
@@ -12278,7 +12608,13 @@
       "description": "Successful Response",
       "content": {
        "application/json": {
-        "schema": {}
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/ExerciceInterventions"
+         },
+         "title": "Response Get Prestataires P Id Interventions"
+        }
        }
       }
      },
@@ -25536,6 +25872,45 @@
     "title": "Adoption",
     "description": "`global` est un mot réservé de Python : le champ s'appelle `ensemble`, et\nsort sous son nom servi par l'alias."
    },
+   "AffaireAvis": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "numero": {
+      "type": "string",
+      "title": "Numero"
+     },
+     "titre": {
+      "type": "string",
+      "title": "Titre"
+     },
+     "statut": {
+      "type": "string",
+      "title": "Statut"
+     },
+     "intervient": {
+      "type": "boolean",
+      "title": "Intervient"
+     },
+     "intervenants": {
+      "type": "string",
+      "title": "Intervenants"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "numero",
+     "titre",
+     "statut",
+     "intervient",
+     "intervenants"
+    ],
+    "title": "AffaireAvis",
+    "description": "Une affaire qu'on peut juger — `intervient` dit si le prestataire y figure déjà."
+   },
    "AffaireCiteeRead": {
     "properties": {
      "id": {
@@ -25558,6 +25933,41 @@
      "titre"
     ],
     "title": "AffaireCiteeRead"
+   },
+   "AffaireExercice": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "titre": {
+      "type": "string",
+      "title": "Titre"
+     },
+     "cloture": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Cloture"
+     },
+     "issue": {
+      "type": "string",
+      "title": "Issue"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "titre",
+     "issue"
+    ],
+    "title": "AffaireExercice",
+    "description": "Une affaire close d'un exercice, listée sous lui (R3d)."
    },
    "AffaireLieeLue": {
     "properties": {
@@ -30750,6 +31160,52 @@
       ],
       "title": "Document Id"
      },
+     "resilie_le": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Resilie Le"
+     },
+     "remplace_par_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Remplace Par Id"
+     },
+     "resilie": {
+      "type": "boolean",
+      "title": "Resilie",
+      "default": false
+     },
+     "remplace_par": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/ContratLie"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "remplace": {
+      "items": {
+       "$ref": "#/components/schemas/ContratLie"
+      },
+      "type": "array",
+      "title": "Remplace",
+      "default": []
+     },
      "date_fin": {
       "anyOf": [
        {
@@ -31066,6 +31522,29 @@
        }
       ],
       "title": "Document Id"
+     },
+     "resilie_le": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Resilie Le"
+     },
+     "remplace_par_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Remplace Par Id"
      }
     },
     "type": "object",
@@ -31139,6 +31618,53 @@
     ],
     "title": "ContratDeLAffaire",
     "description": "Le contrat sous lequel intervient le prestataire d'une affaire (#1445).\n\nDÉRIVÉ à la lecture (`routers/tickets/commun.contrat_de_l_affaire`). Le\nrythme se lit par tous — il était déjà affiché sur l'affaire ; le libellé et\nle numéro par le conseil seul, comme la liste des contrats\n(`GET /prestataires/contrats`, réservée au conseil)."
+   },
+   "ContratLie": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "libelle": {
+      "type": "string",
+      "title": "Libelle"
+     },
+     "prestataire_id": {
+      "type": "integer",
+      "title": "Prestataire Id"
+     },
+     "prestataire_nom": {
+      "type": "string",
+      "title": "Prestataire Nom"
+     },
+     "date_debut": {
+      "type": "string",
+      "format": "date",
+      "title": "Date Debut"
+     },
+     "resilie_le": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Resilie Le"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "libelle",
+     "prestataire_id",
+     "prestataire_nom",
+     "date_debut"
+    ],
+    "title": "ContratLie",
+    "description": "Le contrat à l'autre bout d'un remplacement — ce que la pastille a besoin de dire.\n\n« Remplacé par Sécurité Alpha · dès le 18/11/2026 », « Remplace Sécurité Beta (résilié\nau 17/11/2026) » : un nom, une date, et de quoi ouvrir la fiche (12/11/2026)."
    },
    "ContratRead": {
     "properties": {
@@ -31289,6 +31815,52 @@
        }
       ],
       "title": "Document Id"
+     },
+     "resilie_le": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Resilie Le"
+     },
+     "remplace_par_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Remplace Par Id"
+     },
+     "resilie": {
+      "type": "boolean",
+      "title": "Resilie",
+      "default": false
+     },
+     "remplace_par": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/ContratLie"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "remplace": {
+      "items": {
+       "$ref": "#/components/schemas/ContratLie"
+      },
+      "type": "array",
+      "title": "Remplace",
+      "default": []
      },
      "date_fin": {
       "anyOf": [
@@ -34742,6 +35314,59 @@
     "title": "ExerciceBorne",
     "description": "L'exercice affiché, avec son premier et son DERNIER jour (inclus)."
    },
+   "ExerciceInterventions": {
+    "properties": {
+     "annee": {
+      "type": "integer",
+      "title": "Annee"
+     },
+     "libelle": {
+      "type": "string",
+      "title": "Libelle"
+     },
+     "nb_interventions": {
+      "type": "integer",
+      "title": "Nb Interventions",
+      "default": 0
+     },
+     "nb_notees": {
+      "type": "integer",
+      "title": "Nb Notees",
+      "default": 0
+     },
+     "compte": {
+      "additionalProperties": {
+       "type": "integer"
+      },
+      "type": "object",
+      "title": "Compte",
+      "default": {}
+     },
+     "interventions": {
+      "items": {
+       "$ref": "#/components/schemas/Intervention"
+      },
+      "type": "array",
+      "title": "Interventions",
+      "default": []
+     },
+     "avis_generaux": {
+      "items": {
+       "$ref": "#/components/schemas/NotationRead"
+      },
+      "type": "array",
+      "title": "Avis Generaux",
+      "default": []
+     }
+    },
+    "type": "object",
+    "required": [
+     "annee",
+     "libelle"
+    ],
+    "title": "ExerciceInterventions",
+    "description": "Un exercice comptable : ses interventions, ses avis sans affaire, le compte des états."
+   },
    "ExerciceLu": {
     "properties": {
      "annee": {
@@ -36356,6 +36981,44 @@
     "title": "InfoSyndicAdmin",
     "description": "`GET /admin/annuaire/syndic` : le nom vient du CONTRAT quand il y en a un (#535)."
    },
+   "Intervention": {
+    "properties": {
+     "ticket_id": {
+      "type": "integer",
+      "title": "Ticket Id"
+     },
+     "numero": {
+      "type": "string",
+      "title": "Numero"
+     },
+     "titre": {
+      "type": "string",
+      "title": "Titre"
+     },
+     "date": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Date"
+     },
+     "avis": {
+      "items": {
+       "$ref": "#/components/schemas/NotationRead"
+      },
+      "type": "array",
+      "title": "Avis",
+      "default": []
+     }
+    },
+    "type": "object",
+    "required": [
+     "ticket_id",
+     "numero",
+     "titre",
+     "date"
+    ],
+    "title": "Intervention",
+    "description": "Une affaire du prestataire, et les avis portés sur ce couple (aucun : « non notée »)."
+   },
    "JournalCourriels": {
     "properties": {
      "limite": {
@@ -36911,6 +37574,16 @@
       "type": "array",
       "maxItems": 20,
       "title": "Events"
+     },
+     "canal": {
+      "type": "string",
+      "enum": [
+       "site",
+       "ios",
+       "android"
+      ],
+      "title": "Canal",
+      "default": "site"
      }
     },
     "type": "object",
@@ -38160,6 +38833,34 @@
     ],
     "title": "MessageCreate"
    },
+   "MessageUpdate": {
+    "properties": {
+     "contenu": {
+      "type": "string",
+      "title": "Contenu"
+     },
+     "fichiers_urls": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Fichiers Urls"
+     }
+    },
+    "type": "object",
+    "required": [
+     "contenu"
+    ],
+    "title": "MessageUpdate",
+    "description": "Corriger son message (#2722) : le texte, et les pièces si on les renvoie."
+   },
    "MetriquesPrestataire": {
     "properties": {
      "prestataire_id": {
@@ -38277,8 +38978,31 @@
       "type": "integer",
       "title": "Prestataire Id"
      },
+     "etat": {
+      "anyOf": [
+       {
+        "type": "string",
+        "enum": [
+         "mauvais",
+         "neutre",
+         "excellent"
+        ]
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Etat"
+     },
      "note": {
-      "type": "integer",
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
       "title": "Note"
      },
      "commentaire": {
@@ -38302,12 +39026,27 @@
        }
       ],
       "title": "Contrat Id"
+     },
+     "ticket_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ticket Id"
+     },
+     "confirmer_ajout": {
+      "type": "boolean",
+      "title": "Confirmer Ajout",
+      "default": false
      }
     },
     "type": "object",
     "required": [
-     "prestataire_id",
-     "note"
+     "prestataire_id"
     ],
     "title": "NotationCreate"
    },
@@ -38324,6 +39063,60 @@
      "note": {
       "type": "integer",
       "title": "Note"
+     },
+     "etat": {
+      "type": "string",
+      "title": "Etat",
+      "default": ""
+     },
+     "exercice_annee": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Exercice Annee"
+     },
+     "exercice_libelle": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Exercice Libelle"
+     },
+     "ticket_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ticket Id"
+     },
+     "ticket_titre": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ticket Titre"
+     },
+     "peut_modifier": {
+      "type": "boolean",
+      "title": "Peut Modifier",
+      "default": false
      },
      "commentaire": {
       "anyOf": [
@@ -38383,6 +39176,55 @@
      "cree_le"
     ],
     "title": "NotationRead"
+   },
+   "NotationUpdate": {
+    "properties": {
+     "etat": {
+      "anyOf": [
+       {
+        "type": "string",
+        "enum": [
+         "mauvais",
+         "neutre",
+         "excellent"
+        ]
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Etat"
+     },
+     "commentaire": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Commentaire"
+     },
+     "ticket_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ticket Id"
+     },
+     "confirmer_ajout": {
+      "type": "boolean",
+      "title": "Confirmer Ajout",
+      "default": false
+     }
+    },
+    "type": "object",
+    "title": "NotationUpdate"
    },
    "NotificationRead": {
     "properties": {
@@ -38858,6 +39700,14 @@
      "uniques": {
       "type": "integer",
       "title": "Uniques"
+     },
+     "canaux": {
+      "items": {
+       "$ref": "#/components/schemas/VuesCanal"
+      },
+      "type": "array",
+      "title": "Canaux",
+      "default": []
      }
     },
     "type": "object",
@@ -38900,6 +39750,46 @@
      "fond"
     ],
     "title": "PaletteRead"
+   },
+   "PartCanal": {
+    "properties": {
+     "canal": {
+      "type": "string",
+      "title": "Canal"
+     },
+     "libelle": {
+      "type": "string",
+      "title": "Libelle"
+     },
+     "vues": {
+      "type": "integer",
+      "title": "Vues"
+     },
+     "part": {
+      "type": "integer",
+      "title": "Part"
+     },
+     "visiteurs": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Visiteurs"
+     }
+    },
+    "type": "object",
+    "required": [
+     "canal",
+     "libelle",
+     "vues",
+     "part"
+    ],
+    "title": "PartCanal",
+    "description": "Un canal d'accès dans la répartition de la portée (`utils/telemetrie_canaux`).\n\n`part` : en pour cent des vues, calculée par le serveur. `visiteurs` : les comptes\nvenus par ce canal — ne s'additionnent pas d'un canal à l'autre ; `null` au-delà\ndes 30 jours d'évènements (Année, Total)."
    },
    "PartDuLot": {
     "properties": {
@@ -40612,6 +41502,25 @@
      "specialite"
     ],
     "title": "PrestataireCreate"
+   },
+   "PrestataireDeLAffaire": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "nom": {
+      "type": "string",
+      "title": "Nom"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "nom"
+    ],
+    "title": "PrestataireDeLAffaire",
+    "description": "Un prestataire de l'affaire, tel qu'on le lit (#2704) — dans l'ordre de saisie."
    },
    "PrestataireLent": {
     "properties": {
@@ -42760,6 +43669,14 @@
        }
       ],
       "title": "Suites"
+     },
+     "affaires": {
+      "items": {
+       "$ref": "#/components/schemas/AffaireExercice"
+      },
+      "type": "array",
+      "title": "Affaires",
+      "default": []
      }
     },
     "type": "object",
@@ -42772,7 +43689,7 @@
      "reactions"
     ],
     "title": "ResumeExercice",
-    "description": "Les moyennes d'un exercice comptable."
+    "description": "Les moyennes d'un exercice comptable, et ses affaires (la plus récente d'abord)."
    },
    "ResumeInstallation": {
     "properties": {
@@ -44558,6 +45475,14 @@
      },
      "filtre_gestionnaire": {
       "$ref": "#/components/schemas/FiltreGestionnaire"
+     },
+     "canaux": {
+      "items": {
+       "$ref": "#/components/schemas/PartCanal"
+      },
+      "type": "array",
+      "title": "Canaux",
+      "default": []
      }
     },
     "type": "object",
@@ -44678,6 +45603,20 @@
        }
       ],
       "title": "Equipement"
+     },
+     "prestataire_ids": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "integer"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Prestataire Ids"
      },
      "assiste_ia": {
       "type": "boolean",
@@ -45015,6 +45954,20 @@
        }
       ],
       "title": "Equipement"
+     },
+     "prestataire_ids": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "integer"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Prestataire Ids"
      },
      "affaires_liees": {
       "anyOf": [
@@ -45392,6 +46345,39 @@
       "title": "Peut Supprimer",
       "default": false
      },
+     "affaire_suivie": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Affaire Suivie"
+     },
+     "affaire_suivie_libelle": {
+      "type": "string",
+      "title": "Affaire Suivie Libelle",
+      "default": ""
+     },
+     "etat_propose": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Etat Propose"
+     },
+     "etat_propose_libelle": {
+      "type": "string",
+      "title": "Etat Propose Libelle",
+      "description": "L'état proposé à l'affaire, en clair — vide sans proposition (#2715).",
+      "readOnly": true
+     },
      "nouveau_statut_libelle": {
       "type": "string",
       "title": "Nouveau Statut Libelle",
@@ -45411,6 +46397,7 @@
      "type",
      "cree_le",
      "ticket_id",
+     "etat_propose_libelle",
      "nouveau_statut_libelle",
      "perimetre_precise_libelle"
     ],
@@ -45472,6 +46459,20 @@
        }
       ],
       "title": "Equipement"
+     },
+     "prestataire_ids": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "integer"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Prestataire Ids"
      },
      "affaires_liees": {
       "anyOf": [
@@ -45706,6 +46707,11 @@
      "peut_corriger": {
       "type": "boolean",
       "title": "Peut Corriger",
+      "default": false
+     },
+     "peut_changer_prestataires": {
+      "type": "boolean",
+      "title": "Peut Changer Prestataires",
       "default": false
      },
      "prestataire_id": {
@@ -46131,6 +47137,14 @@
       ],
       "title": "Prestataire Nom"
      },
+     "prestataires": {
+      "items": {
+       "$ref": "#/components/schemas/PrestataireDeLAffaire"
+      },
+      "type": "array",
+      "title": "Prestataires",
+      "default": []
+     },
      "contrat": {
       "anyOf": [
        {
@@ -46298,6 +47312,20 @@
        }
       ],
       "title": "Equipement"
+     },
+     "prestataire_ids": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "integer"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Prestataire Ids"
      },
      "assiste_ia": {
       "anyOf": [
@@ -48090,6 +49118,20 @@
       ],
       "title": "Prestataire Id"
      },
+     "prestataire_ids": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "integer"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Prestataire Ids"
+     },
      "contrat_id": {
       "anyOf": [
        {
@@ -48425,6 +49467,30 @@
      "registre_url"
     ],
     "title": "VueInscription"
+   },
+   "VuesCanal": {
+    "properties": {
+     "canal": {
+      "type": "string",
+      "title": "Canal"
+     },
+     "libelle": {
+      "type": "string",
+      "title": "Libelle"
+     },
+     "vues": {
+      "type": "integer",
+      "title": "Vues"
+     }
+    },
+    "type": "object",
+    "required": [
+     "canal",
+     "libelle",
+     "vues"
+    ],
+    "title": "VuesCanal",
+    "description": "Les vues d'une page par un canal d'accès (`utils/canaux_audience`)."
    },
    "WhatsAppScheduledUpdate": {
     "properties": {
