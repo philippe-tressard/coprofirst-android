@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+
+Les textes de « Mes lots & accès » (#18), écrits une fois — ceux du site
+(routes/(app)/mon-lot/, OngletAcces, LotsLocataire, LotsBailleur, CaracteristiquesLot,
+OngletGestionLocative, InventaireBail), repris de l'iOS (TextesAcces).
+-->
+<resources>
+    <!-- Mes lots -->
+    <string name="monlot_aucun_lot">Aucun lot associé</string>
+    <string name="monlot_aucun_lot_detail">Votre compte n\'est pas encore lié à un lot.\n\nSi votre compte vient d\'être validé, la liaison se fait automatiquement. Si aucun lot n\'apparaît, contactez le gestionnaire du site ou faites une nouvelle demande.</string>
+    <string name="monlot_erreur_lots">Impossible d’afficher vos lots</string>
+    <string name="monlot_lot_affiche">Lot affiché</string>
+    <string name="monlot_caracteristiques">Caractéristiques</string>
+    <string name="monlot_lot_loue">🏠 Lot loué</string>
+    <string name="monlot_lots_loues">🏠 Lots loués (%1$d)</string>
+    <string name="monlot_lots_en_propriete">🏢 Lots en propriété (%1$d)</string>
+    <string name="monlot_lots_possedes">🏢 Lots possédés (%1$d)</string>
+    <string name="monlot_locataires">👥 Locataires (%1$d)</string>
+    <string name="monlot_lots_vacants">🔓 Lots vacants (%1$d)</string>
+    <string name="monlot_lots_vacants_aide">Ces lots n\'ont pas de bail actif. Créez un bail depuis la fiche du lot ou l\'onglet Gestion locative.</string>
+    <string name="monlot_occupe">Occupé</string>
+    <string name="monlot_vacant">Vacant</string>
+    <string name="monlot_aucun_bail_actif">Aucun bail actif</string>
+    <string name="monlot_aucun_bail_actif_aide">Votre propriétaire doit vous rattacher depuis la section Gestion locative de son espace.\n\nLes questions sur votre location se répondent sur le site de la résidence.</string>
+    <string name="monlot_proprietaire">🏢 Propriétaire : %1$s</string>
+    <string name="monlot_charges">Mes charges selon le règlement</string>
+    <string name="monlot_charges_sur_le_site">Le tableau de vos charges, clé par clé, se consulte sur le site de la résidence : l\'app ne recalcule pas ce que le règlement répartit.</string>
+    <string name="monlot_lot">Lot</string>
+    <string name="monlot_batiment">Bâtiment</string>
+    <string name="monlot_type">Type</string>
+    <string name="monlot_etage">Étage</string>
+    <string name="monlot_superficie">Superficie</string>
+    <string name="monlot_superficie_valeur">%1$s m²</string>
+    <string name="monlot_porte_ou_place">Porte ou place</string>
+    <string name="monlot_situe_dans">Situé dans</string>
+    <string name="monlot_desservi_par">Desservi par</string>
+    <string name="monlot_entree">Entrée</string>
+    <string name="monlot_sortie_prevue">Sortie prévue</string>
+    <string name="monlot_depuis">Depuis le %1$s</string>
+    <string name="monlot_depuis_sortie">Depuis le %1$s · Sortie prévue %2$s</string>
+
+    <!-- Badges et télécommandes -->
+    <string name="monlot_gestes">Nouvel accès ou déclaration</string>
+    <string name="monlot_nouvel_acces">Nouvel accès</string>
+    <string name="monlot_declarer_un_acces">Déclarer un accès</string>
+    <string name="monlot_badges_vigik">Badges d\'accès (Vigik)</string>
+    <string name="monlot_telecommandes">Télécommandes de parking</string>
+    <string name="monlot_aucun_badge">Aucun badge enregistré.</string>
+    <string name="monlot_aucune_telecommande">Aucune télécommande enregistrée.</string>
+    <string name="monlot_signaler_perdu">Signaler perdu</string>
+    <string name="monlot_signaler_perdu_question">Signaler cet accès comme perdu ?</string>
+    <string name="monlot_signalement_enregistre">Signalement enregistré</string>
+    <string name="monlot_acces_confies">🏠 Accès confiés par votre bailleur</string>
+    <string name="monlot_acces_confies_intro">Ces accès vous ont été confiés par votre propriétaire pour la durée de votre bail.</string>
+    <string name="monlot_aucun_acces_confie">Aucun accès ne vous a encore été confié par votre propriétaire.</string>
+    <string name="monlot_vue_par_locataire">👥 Vue par locataire</string>
+    <string name="monlot_vue_par_locataire_intro">Résumé des accès (Vigik / télécommandes) confiés à vos locataires.</string>
+    <string name="monlot_aucun_bail_actif_point">Aucun bail actif.</string>
+    <string name="monlot_aucun_acces_confie_badge">Aucun accès confié</string>
+    <string name="monlot_tout_recuperer">↩ Tout récupérer</string>
+    <string name="monlot_tout_recuperer_question">Récupérer tous les accès confiés à ce locataire ?</string>
+    <string name="monlot_acces_recuperes">Accès récupérés</string>
+    <plurals name="monlot_acces_confies_compte">
+        <item quantity="one">%1$d accès confié</item>
+        <item quantity="many">%1$d accès confiés</item>
+        <item quantity="other">%1$d accès confiés</item>
+    </plurals>
+
+    <!-- Formulaires -->
+    <string name="monlot_nouvelle_demande">Nouvelle demande d\'accès</string>
+    <string name="monlot_type_d_acces">Type d\'accès</string>
+    <string name="monlot_lot_concerne">Lot concerné</string>
+    <string name="monlot_lot_numero">Lot %1$s</string>
+    <string name="monlot_quantite">Quantité</string>
+    <string name="monlot_moins">Un de moins</string>
+    <string name="monlot_plus">Un de plus</string>
+    <string name="monlot_motif">Motif</string>
+    <string name="monlot_motif_indication">Raison de la demande…</string>
+    <string name="monlot_choisir_un_lot">Sélectionnez un lot</string>
+    <string name="monlot_demande_envoyee">Demande envoyée au conseil syndical</string>
+    <string name="monlot_declarer_existant">Déclarer un accès existant</string>
+    <string name="monlot_code_reference">Code / référence</string>
+    <string name="monlot_code_indication">Ex : 1234567890</string>
+    <string name="monlot_code_aide">Si ce code figure dans nos imports, l\'entrée sera automatiquement liée à votre compte.</string>
+    <string name="monlot_saisir_un_code">Saisissez un code</string>
+    <string name="monlot_acces_enregistre">Accès enregistré</string>
+    <string name="monlot_acces_enregistre_import">Accès enregistré (import mis à jour)</string>
+    <string name="monlot_enregistrer">Enregistrer</string>
+    <string name="monlot_annuler">Annuler</string>
+
+    <!-- Gestion locative -->
+    <string name="monlot_baux_actifs">Baux actifs (%1$d)</string>
+    <string name="monlot_archives">📁 Archives (%1$d)</string>
+    <string name="monlot_aucun_bail_termine">Aucun bail terminé.</string>
+    <string name="monlot_entree_le">Entrée :</string>
+    <string name="monlot_sortie_prevue_le">Sortie prévue :</string>
+    <string name="monlot_sortie_reelle_le">Sortie réelle :</string>
+    <!-- ⚠️ La règle du français d'Android : « 0 objet » (l'iOS écrit « 0 objets »). -->
+    <plurals name="monlot_inventaire">
+        <item quantity="one">Inventaire (%1$d objet)</item>
+        <item quantity="many">Inventaire (%1$d objets)</item>
+        <item quantity="other">Inventaire (%1$d objets)</item>
+    </plurals>
+    <string name="monlot_aucun_objet">Aucun objet enregistré.</string>
+    <string name="monlot_objet_quantite">Qté %1$s</string>
+    <string name="monlot_objet_remis">Remis le %1$s</string>
+    <string name="monlot_objet_rendu">Rendu le %1$s</string>
+    <string name="monlot_gestes_location_sur_le_site">Créer ou terminer un bail, corriger un locataire, tenir l\'inventaire : ces gestes se font sur le site de la résidence.</string>
+</resources>

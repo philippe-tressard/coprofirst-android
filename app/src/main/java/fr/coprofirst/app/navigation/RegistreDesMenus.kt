@@ -45,7 +45,7 @@ object RegistreDesMenus {
 
         // "annuaire" — #17
 
-        // "mon-lot" — #18
+        "mon-lot" to { contexte -> fr.coprofirst.app.fonctions.monlot.EcranMonLot(contexte) },
 
         // "prestataires" — #19
 
@@ -53,7 +53,7 @@ object RegistreDesMenus {
 
         // "faq" — #20
 
-        // "profil" — #21
+        "profil" to { contexte -> fr.coprofirst.app.fonctions.profil.EcranProfil(contexte) },
 
         "notifications" to { contexte -> fr.coprofirst.app.fonctions.notifications.EcranNotifications(contexte) },
 
