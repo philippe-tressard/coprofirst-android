@@ -131,7 +131,7 @@ class ServiceProfilApi(private val session: SessionOuverte) : ServiceProfil {
 | `Pastille(libelle, retenue, compte?, role?) { … }` | `Pastille` | Une pastille de filtre (ou d'onglet, `role = Role.Tab`) : retenue, fond plein (`primaryPlein`) ; sinon surface et filet. Le `compte` ne paraît que sur la retenue. Dite « sélectionnée » au lecteur d'écran. |
 | `ChampRecherche(texte, changer, indication, repere)` | `ChampRecherche` | Le champ de recherche d'une liste, DANS la page (pas dans la barre) : loupe, indication, croix « Effacer la recherche ». Le filtre : `Recherche.contientTousLesMots`. |
 | `BoutonsFeuille(envoi, repere, annuler, libelle?, actif?) { envoyer }` | `BoutonsFeuille` | Le pied d'une feuille de saisie : « Enregistrer » (ou `libelle`) en `BoutonPlein`, « Enregistrement… » pendant l'envoi, puis « Annuler ». |
-| `FlowCapsules { … }` | `FlowCapsules` | Des `PastilleTeinte(…, compacte = true)` côte à côte, qui passent à la ligne au bord. |
+| `FlowCapsules(espace?) { … }` | `FlowCapsules`, `FlowEtiquettes` | Des `PastilleTeinte(…, compacte = true)` côte à côte, qui passent à la ligne au bord (6 dp) ; `espace = 8.dp` pour des `Pastille` touchables. |
 
 ⚠️ Divergence déclarée : `BoutonsFeuille` est au pied de la feuille, sous le pouce — l'iOS
 les pose dans la barre de la feuille ; une feuille d'Android n'en a pas.
@@ -315,6 +315,49 @@ LigneDocument(document.fichierNom, ouverture.enCours == "document-${document.id}
 AvisOuverture(ouverture)
 ```
 
+## Périmètres — `fr.coprofirst.app.commun.perimetres`
+
+Le lieu d'un contenu (annonce du hall, affaire, actualité) se choisit dans l'arbre servi
+(GET /perimetres), ici et nulle part ailleurs : un écran garde le `ChoixDePerimetres`,
+`ChoixPerimetres` le dessine, la règle est pure et testée sur la JVM. Le périmètre par
+défaut est celui que le serveur désigne (`par_defaut`) ; le nom d'une sélection est
+celui du serveur (POST /perimetres/libelle), jamais composé par l'app.
+
+| API | Pendant iOS | Usage |
+|---|---|---|
+| `Perimetre(code, libelle, profondeur, selectionnable, parDefaut, parent, libelleCourt, description, niveauxLibres)` | `Perimetre` | LE modèle d'un périmètre. `Perimetre.lu(PerimetreRead)`, `Perimetre.lus(liste)` (actifs seulement), `Perimetre.aSaisir(perimetres, garder?)` (ce qu'un sélecteur propose : `niveaux_libres` servi ; `garder` : le lieu déjà enregistré d'un contenu qu'on modifie), `Perimetre.codeParDefaut(perimetres)`. |
+| `ServicePerimetres` : `perimetres()`, `lieu(codes)` ; `ServicePerimetresApi(session)` | `ServicePerimetres`, `ServiceApercus.lieu` | L'arbre (GET /perimetres) et le nom d'une sélection (POST /perimetres/libelle), par le client généré. Un service de menu peut le réaliser par délégation. |
+| `ArbreDesPerimetres(noeuds)` | `ArbreDesPerimetres` | `defaut`, `tetes` (racines ciblables et enfants d'un regroupement, hors défaut), `espaces(tete)`, `tete(code)`, `noeud(code)`. |
+| `ChoixDePerimetres(codes, touchee)` | `ChoixDePerimetres` | Immuable : chaque geste rend le nouvel état. `basculer(code, arbre)` (la table en cinq lignes du site), `choisirDefaut(arbre)`, `estDefaut`, `ouverte` (la tête dont la rangée se montre), `espacesRetenus`, `teteRetenue`, `libelleDeTete` (« Bâtiment A › Hall · Toit »), `aide` (la `description` du seul code retenu). |
+| `ChoixPerimetres(arbre, choix, changer, repere, service?)` | `ChoixPerimetres` | Les pastilles des têtes (défaut d'abord), « Préciser dans <tête> — facultatif » et ses espaces dans une surface bordée (fondu et léger glissement, 220 ms ; fondu seul sous « Supprimer les animations »), l'aide, puis le lieu servi si `service`. Retour haptique de sélection. Repères : `"$repere.<code>"` par pastille, `"$repere.lieu"`. |
+| `LieuDeLaSaisie(codes, service, repere)`, `EtiquetteLieu(lieu)` | `LieuDeLaSaisie`, `EtiquetteLieu` | Le lieu d'une sélection, nommé par le serveur, l'épingle devant (« Lieu : … » au lecteur d'écran) ; sa ligne réservée, invisible, avant la première réponse. |
+
+```kotlin
+val service = remember(contexte.session) { ServicePerimetresApi(contexte.session) }
+Chargement(charger = { ArbreDesPerimetres(service.perimetres()) }, squelette = { … }) { arbre, _ ->
+    var choix by remember(arbre) { mutableStateOf(ChoixDePerimetres().choisirDefaut(arbre)) }
+    ChoixPerimetres(arbre, choix, { choix = it }, repere = "nouvelle-annonce-hall.perimetre", service = service)
+    // à l'envoi : perimetreCible = choix.codes.toList()
+}
+```
+
+⚠️ Divergence déclarée : l'iOS range `lieu` dans `ServiceApercus` (avec « qui la lira » et
+« Nom affiché », pas encore portés) ; ici, il vit dans `ServicePerimetres`.
+
+## Aperçu servi — `fr.coprofirst.app.commun.apercu`
+
+Un formulaire ne compose pas une règle d'affichage sur ce qu'on saisit : il la DEMANDE au
+serveur (le lieu choisi, demain « qui la lira », « Nom affiché »). Le mécanisme est écrit
+une fois.
+
+| API | Pendant iOS | Usage |
+|---|---|---|
+| `ApercuServi(entree, demander, connue?) { valeur -> … }` | `ApercuServi` | `valeur` : celle que le serveur a rendue pour `entree`, ou la dernière tant qu'il n'a pas répondu ; `null` avant la première. Fondu court (aucun sous « Supprimer les animations »). Le contenu réserve sa place. |
+| `EtatApercu(connue?, pause?)` : `saisie(entree, portee, demander)`, `valeur`, `abandonner()` | `EtatApercu` | Délai de 150 ms (`DELAI_MS`, une rafale = une demande), réponse périmée ignorée, valeur déjà servie jamais redemandée, échec tu. |
+
+⚠️ Divergence déclarée : l'iOS ne fait pas partir la demande hors ligne ni en consultation ;
+l'Android n'a pas encore ces états — la demande part, échoue, et se tait.
+
 ## Charte — `fr.coprofirst.app.charte`, `ThemeCoproFirst`
 
 | API | Rôle |
@@ -323,6 +366,7 @@ AvisOuverture(ouverture)
 | `MaterialTheme.colorScheme` | Les rôles de Material, tirés des mêmes jetons (`ThemeCoproFirst`). |
 | `Mise.rayon`, `Mise.marge`, `Mise.cible`, `Mise.ecart`, `Mise.mosaique`, `Mise.mosaiqueCompacte`, `Mise.vignette` | Les mesures communes (`Mise`). Cible tactile : 48 dp (règle d'Android). |
 | `Typo.titre()`, `Typo.libelle()` | Titre en serif (`Font.titre`), libellé de section (`.styleLibelle()`). |
+| `Mouvement.sortie` | La courbe d'entrée (ease-out marquée) : passage d'un écran, apparition d'une rangée, fondu d'un aperçu. |
 
 ## À venir dans la couche commune
 

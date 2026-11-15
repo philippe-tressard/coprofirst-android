@@ -135,9 +135,12 @@ private fun retour(ton: TonAvis): HapticFeedbackType = when (ton) {
     TonAvis.Info -> HapticFeedbackType.ContextClick
 }
 
-/** Les animations coupées par l'appareil (« Supprimer les animations ») : le mouvement réduit d'Android. */
+/**
+ * Les animations coupées par l'appareil (« Supprimer les animations ») : le mouvement réduit
+ * d'Android — écrit ici une fois, lu aussi par `ChoixPerimetres` et `ApercuServi`.
+ */
 @Composable
-private fun animationsCoupees(): Boolean {
+internal fun animationsCoupees(): Boolean {
     val contexte = LocalContext.current
     return remember(contexte) {
         Settings.Global.getFloat(contexte.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
