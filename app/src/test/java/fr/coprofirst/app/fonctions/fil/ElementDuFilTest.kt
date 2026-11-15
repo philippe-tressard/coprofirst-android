@@ -134,11 +134,11 @@ class ElementDuFilTest {
     }
 
     @Test
-    fun seulsLeResumeEtLeDocumentSOuvrentPourLInstant() {
+    fun lAffaireSeuleNeSOuvrePasEncore() {
         assertEquals(DestinationDuFil.Resume, DestinationDuFil.pour(CibleDuFil.Resume(null)))
         assertEquals(DestinationDuFil.Document(7, "pv.pdf"), DestinationDuFil.pour(CibleDuFil.Document(7, "pv.pdf")))
+        assertEquals(DestinationDuFil.Sondage(3), DestinationDuFil.pour(CibleDuFil.Sondage(3)))
         assertNull(DestinationDuFil.pour(CibleDuFil.Affaire(41)))
-        assertNull(DestinationDuFil.pour(CibleDuFil.Sondage(3)))
     }
 
     @Test

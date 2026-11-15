@@ -1,0 +1,93 @@
+// SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+// SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+
+package fr.coprofirst.app.commun.detail.sondage
+
+import fr.coprofirst.app.R
+import fr.coprofirst.app.commun.CibleSignalement
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+/** Les règles de la fiche d'un sondage, celles du site et de l'iOS (`SondageTests`), sur les fiches de l'iOS. */
+class ModeleSondageTest {
+    private val fiches = FixturesSondage.detaillees().associateBy { it.id }
+
+    @Test
+    fun lesFichesSeLisentDuTypeGenere() {
+        val fete = fiches.getValue(12)
+        assertEquals(29, fete.totalVotes)
+        assertTrue(fete.peutVoter)
+        assertTrue(fete.options.last().champLibre)
+        assertEquals(listOf("Le samedi 20 juin, après la brocante", "Plutôt un vendredi soir"), fete.options.last().reponsesLibres)
+        assertEquals(listOf(31, 32, 33), fete.commentaires.map { it.id })
+        assertEquals(FixturesSondage.MOI, fete.moi)
+    }
+
+    @Test
+    fun desResultatsMasquesNeSontPasDesZeros() {
+        val velos = fiches.getValue(11)
+        assertFalse(velos.resultatsVisibles)
+        assertTrue(velos.options.all { it.nbVotes == null })
+        assertEquals(0, velos.totalVotes)
+    }
+
+    @Test
+    fun unSondageClotureOuDejaVoteNeSeVotePlus() {
+        val horaires = fiches.getValue(9)
+        assertTrue(horaires.cloture)
+        assertFalse(horaires.peutVoter)
+        assertFalse(fiches.getValue(12).copy(monVote = 2).peutVoter)
+    }
+
+    @Test
+    fun ceQuiManqueSeDitDansLOrdreDuSite() {
+        assertEquals(R.string.sondage_choisir, VoteSondage().manque(champLibre = false))
+        val choisi = VoteSondage().choisir(4)
+        assertEquals(R.string.sondage_preciser_manque, choisi.manque(champLibre = true))
+        assertEquals(R.string.sondage_charte_manque, choisi.manque(champLibre = false))
+        val precise = choisi.copy(reponseLibre = "  Le 20 juin ")
+        assertEquals(R.string.sondage_charte_manque, precise.manque(champLibre = true))
+        assertNull(precise.copy(charteAcceptee = true).manque(champLibre = true))
+    }
+
+    @Test
+    fun changerDeReponseVideLaPrecision() {
+        val vote = VoteSondage(option = 4, reponseLibre = "Le 20 juin", commentaire = "Avec plaisir")
+        assertEquals(vote, vote.choisir(4))
+        assertEquals(VoteSondage(option = 1, commentaire = "Avec plaisir"), vote.choisir(1))
+    }
+
+    @Test
+    fun leCorpsNEnvoiePasDeTexteVide() {
+        assertNull(VoteSondage().corps())
+        val corps = VoteSondage(option = 4, reponseLibre = " Le 20 juin ", commentaire = "  ").corps()!!
+        assertEquals(4, corps.optionId)
+        assertEquals("Le 20 juin", corps.reponseLibre)
+        assertNull(corps.commentaire)
+    }
+
+    @Test
+    fun lePourcentageEstCeluiDuSite() {
+        assertEquals(0, CalculsSondage.pourcentage(0, 0))
+        assertEquals(48, CalculsSondage.pourcentage(14, 29))
+        assertEquals(7, CalculsSondage.pourcentage(2, 29))
+        assertEquals(100, CalculsSondage.pourcentage(3, 3))
+    }
+
+    @Test
+    fun leServeurSimuleCompteLeVoteEtSesTextes() = runTest {
+        val serveur = SondageSimule(attente = 0)
+        serveur.voter(VoteSondage(option = 4, reponseLibre = "Le 20 juin", commentaire = "Avec plaisir", charteAcceptee = true), 12)
+        val apres = serveur.sondage(12)
+        assertEquals(4, apres.monVote)
+        assertEquals(30, apres.totalVotes)
+        assertEquals("Le 20 juin", apres.options.last().reponsesLibres.last())
+        assertEquals("Avec plaisir", apres.commentaires.last().contenu)
+        serveur.signalerAuConseil(CibleSignalement.commentaire(32), "Hors sujet")
+        assertEquals(listOf(CibleSignalement("commentaire", 32) to "Hors sujet"), serveur.signalements)
+    }
+}

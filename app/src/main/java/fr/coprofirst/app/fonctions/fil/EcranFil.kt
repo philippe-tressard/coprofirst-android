@@ -39,6 +39,7 @@ import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.EtatVide
 import fr.coprofirst.app.commun.MessageErreur
+import fr.coprofirst.app.commun.detail.sondage.FeuilleSondage
 import fr.coprofirst.app.commun.pieces.AvisOuverture
 import fr.coprofirst.app.commun.pieces.rememberOuverture
 import fr.coprofirst.app.navigation.ContexteDeMenu
@@ -49,10 +50,11 @@ import java.time.Instant
  * Le fil de la résidence, jour par jour — la page `tableau-de-bord`, la première après la
  * connexion —, comme l'iOS (`FilView`) : les éléments du plus récent au plus ancien, sous
  * l'en-tête de leur jour qui reste en haut tant que sa journée défile ; « tirer pour
- * actualiser » ; un fil vide et une erreur dits. Un toucher ouvre le résumé ou le document
- * (`DestinationDuFil`).
+ * actualiser » ; un fil vide et une erreur dits. Un toucher ouvre le résumé, le document ou
+ * la fiche d'un sondage (`DestinationDuFil`).
  *
- * ⚠️ Divergences déclarées : l'affaire et le sondage ne s'ouvrent pas encore (`DestinationDuFil`) ;
+ * ⚠️ Divergences déclarées : l'affaire ne s'ouvre pas encore, le sondage s'ouvre en feuille
+ * (`DestinationDuFil`) ;
  * ni le logement de l'utilisateur dans la barre (`PastilleLogement` de l'iOS, qui ouvre
  * « Mes lots & accès ») ni la pastille de la résidence (`PastilleOuSuisJe`, #15) ; pas de
  * bandeau hors ligne ; une notification touchée n'ouvre pas encore son élément (#23).
@@ -79,6 +81,7 @@ private fun ListeFil(parcours: ParcoursFil, session: SessionOuverte) {
     val jours = remember(etat.elements) { etat.jours }
     val maintenant = remember(etat.elements) { Instant.now() }
     var resume by rememberSaveable { mutableStateOf<String?>(null) }
+    var sondage by rememberSaveable { mutableStateOf<Int?>(null) }
     val ouverture = rememberOuverture(session)
     PullToRefreshBox(isRefreshing = etat.rafraichissement, onRefresh = parcours::rafraichir, modifier = Modifier.fillMaxSize()) {
         LazyColumn(
@@ -113,6 +116,7 @@ private fun ListeFil(parcours: ParcoursFil, session: SessionOuverte) {
                             null -> null
                             DestinationDuFil.Resume -> ({ resume = element.id })
                             is DestinationDuFil.Document -> ({ ouverture.document(destination.id, destination.nom) })
+                            is DestinationDuFil.Sondage -> ({ sondage = destination.id })
                         },
                     )
                 }
@@ -120,6 +124,7 @@ private fun ListeFil(parcours: ParcoursFil, session: SessionOuverte) {
         }
     }
     etat.elements.firstOrNull { it.id == resume }?.let { element -> FeuilleResume(element, session) { resume = null } }
+    sondage?.let { id -> FeuilleSondage(id, session, fermer = { sondage = null }) }
 }
 
 /** L'en-tête d'un jour, collé en haut tant que sa journée défile (déjà en capitales). */

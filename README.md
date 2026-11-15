@@ -35,8 +35,12 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   dit sa rubrique dans sa teinte, l'heure, la nature d'une affaire, le délai et les dates
   d'une affaire datée, le titre et le début du texte, qui la lit et son lieu, ses pièces
   jointes ; une urgence porte un liseré rouge. Un toucher ouvre le résumé (avec « Voir
-  sur le site » quand le site a une page) ou le document ; l'affaire et le sondage ne
-  s'ouvrent pas encore dans l'app. Tirer la liste la relit ; un fil vide le dit.
+  sur le site » quand le site a une page), le document, ou la fiche d'un sondage : voter
+  (une réponse, sa précision si elle en demande une, un commentaire, sous la charte de
+  respect), les résultats quand le serveur les montre, puis les commentaires — en publier,
+  supprimer les siens (confirmé), signaler ceux des autres au conseil syndical (motif
+  obligatoire). L'affaire ne s'ouvre pas encore dans l'app. Tirer la liste la relit ; un
+  fil vide le dit.
 - **Profil** (Plus › Profil) : la résidence, le statut et les rôles du compte ; les
   informations personnelles (une nouvelle adresse demande le mot de passe et ne vaut
   qu'une fois confirmée) ; le mot de passe ; une demande de changement de profil ou de
