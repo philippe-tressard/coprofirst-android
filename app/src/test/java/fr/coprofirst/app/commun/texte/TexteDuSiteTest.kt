@@ -75,11 +75,11 @@ class TexteDuSiteTest {
     @Test
     fun unLienWebOuCourrielEstTouchable() {
         val riche = TexteDuSite.riche(
-            "<p>Voir <a href=\"https://exemple.fr/a?b=1&amp;c=2\">ici</a> ou <a href=\"mailto:cs@exemple.fr\">écrire</a></p>",
+            "<p>Voir <a href=\"https://exemple.test/a?b=1&amp;c=2\">ici</a> ou <a href=\"mailto:cs@exemple.test\">écrire</a></p>",
         )
-        assertEquals(listOf("https://exemple.fr/a?b=1&c=2", "mailto:cs@exemple.fr"), liens(riche))
+        assertEquals(listOf("https://exemple.test/a?b=1&c=2", "mailto:cs@exemple.test"), liens(riche))
         assertEquals("Voir ici ou écrire", riche.text)
-        assertEquals("https://exemple.fr", TexteDuSite.lienSur("  https://exemple.fr  "))
+        assertEquals("https://exemple.test", TexteDuSite.lienSur("  https://exemple.test  "))
         assertEquals(null, TexteDuSite.lienSur("https://"))
     }
 

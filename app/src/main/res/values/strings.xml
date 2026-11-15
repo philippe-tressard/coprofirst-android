@@ -15,11 +15,11 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 
     <string name="connexion_titre">Connectez-vous à votre espace</string>
     <string name="connexion_residence">Votre résidence</string>
-    <string name="adresse_exemple">residence.exemple.fr</string>
+    <string name="adresse_exemple">residence.example.com</string>
     <string name="connexion_reconnue">Résidence reconnue : %1$s</string>
     <string name="connexion_coche">Reconnue</string>
     <string name="connexion_email">Adresse électronique</string>
-    <string name="connexion_email_exemple">vous@exemple.fr</string>
+    <string name="connexion_email_exemple">vous@example.com</string>
     <string name="connexion_mot_de_passe">Mot de passe</string>
     <string name="connexion_mot_de_passe_exemple">Votre mot de passe</string>
     <string name="connexion_voir_mot_de_passe">Afficher le mot de passe</string>
@@ -51,6 +51,15 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="sortie_oublier_bouton">Oublier toutes les résidences</string>
     <string name="bientot_titre">Bientôt</string>
     <string name="bientot_explication">« %1$s » arrive dans une prochaine version de l\'app.</string>
+
+    <string name="pieces_titre">Pièces jointes · %1$d</string>
+    <string name="pieces_photo">Photo %1$d sur %2$d</string>
+    <string name="pieces_photo_reste">Photo %1$d sur %2$d, et %3$d de plus</string>
+    <string name="pieces_ouvrir_photo">Ouvrir la photo en grand</string>
+    <string name="pieces_ouvrir_document">Ouvrir le document</string>
+    <string name="pieces_photo_indisponible">Photo indisponible</string>
+    <string name="pieces_echec">La pièce jointe n\'a pas pu s\'ouvrir.</string>
+    <string name="pieces_aucune_app">Aucune app de cet appareil ne sait ouvrir ce fichier.</string>
 
     <string name="erreur_hote_inconnu">Cette adresse répond, mais aucune résidence n\'y est installée. Vérifiez-la sur votre fiche d\'arrivée.</string>
     <string name="erreur_injoignable">Impossible de joindre cette adresse. Vérifiez-la, ou réessayez dans un instant.</string>

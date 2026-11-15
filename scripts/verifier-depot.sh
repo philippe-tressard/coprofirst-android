@@ -18,6 +18,7 @@
 #   7 bis. aucun format de date ou de nombre hors de FormatsDuSite ;
 #   7 ter. aucun HTML rendu par une vue web ou le lecteur HTML d'Android : TexteDuSite ;
 #   7 quater. aucune version écrite à la main (elle se déduit de git) ;
+#   7 quinquies. aucun hôte fictif sur un vrai domaine (exemple.fr…), libellés compris ;
 #   8. un seul bouton plein, `BoutonPlein` (commun/Boutons.kt) ;
 #   9. les générateurs du build passent leurs tests (scripts/test_*.py) ;
 #  10. aucun chemin de .claude/worktrees/ suivi.
@@ -127,10 +128,14 @@ interdire "$COULEURS_MAIN" "couleur écrite à la main — à générer depuis c
 REQUETE_MAIN='Request\.Builder|HttpURLConnection|openConnection\(|\.newCall\(|"/api/|/api/[a-z]'
 autotest_motif "requêtes à la main" "$REQUETE_MAIN" 'val r = Request.Builder().url(u).build()' 'ConfigApi(base, client).getConfig()'
 autotest_motif "routes en dur" "$REQUETE_MAIN" 'val u = "https://" + hote + "/api/config"' 'val base = "https://$hote/api"'
-# Seule exception : la preuve qu'un hôte est une installation de CoproFirst se lit dans
-# un fichier qui n'est pas une route de l'API (/.well-known/…, hors contrat) — comme
-# l'iOS (PreuveAASA.swift), dans ce fichier et lui seul.
-DISPENSES_REQUETE='^app/src/main/java/fr/coprofirst/app/session/PreuveHote\.kt$'
+# Deux exceptions, nommées, chacune dans SON fichier et lui seul :
+# - la preuve qu'un hôte est une installation de CoproFirst se lit dans un fichier qui
+#   n'est pas une route de l'API (/.well-known/…, hors contrat) — comme l'iOS
+#   (PreuveAASA.swift) ;
+# - les fichiers protégés (photos, pièces jointes de /uploads/) sont servis derrière la
+#   session, hors du contrat — comme l'iOS (fichierProtege) : la porte n'accepte que
+#   l'hôte de la session (commun/pieces/FichierProtege.kt).
+DISPENSES_REQUETE='^app/src/main/java/fr/coprofirst/app/(session/PreuveHote|commun/pieces/FichierProtege)\.kt$'
 interdire "$REQUETE_MAIN" "requête ou route écrite à la main — passer par le client généré (client-api)" "$DISPENSES_REQUETE"
 
 # Le bouton plein (fond `primaryPlein`, texte `surPlein`, comme le `.plein` de l'iOS)
@@ -161,6 +166,19 @@ VERSION_ECRITE='^[[:space:]]*version(Code|Name)[[:space:]]*=[[:space:]]*("|[0-9]
 autotest_motif "version écrite" "$VERSION_ECRITE" '        versionCode = 9' '        versionCode = versionDeGit.code'
 motif=$(premier_motif "$VERSION_ECRITE" app/build.gradle.kts)
 [ -z "$motif" ] || echec "app/build.gradle.kts : version écrite à la main ($motif) — elle se déduit de git"
+
+# Les hôtes FICTIFS sont des noms réservés (RFC 2606/6761 : `.test`, `.invalid`,
+# `example.com`), jamais `exemple.fr` ni `exemple.org`, qui sont de VRAIS domaines : un
+# test qui partirait vers eux enverrait des cookies de test à un tiers (constaté, #57),
+# et un libellé d'aide AFFICHÉ se recopie (standards/03 §8 quater) : aucune dispense.
+HOTE_REEL='[Ee][Xx][Ee][Mm][Pp][Ll][Ee]\.([Ff][Rr]|[Oo][Rr][Gg]|[Cc][Oo][Mm])\b'
+autotest_motif "hôtes fictifs" "$HOTE_REEL" 'val a = "residence.exemple.fr"' 'val a = "residence.exemple.test"'
+autotest_motif "hôtes fictifs (casse)" "$HOTE_REEL" 'url("  Residence.Exemple.FR ")' 'url("  Residence.Exemple.TEST ")'
+while IFS= read -r f; do
+  [ -f "$f" ] || continue
+  motif=$(premier_motif "$HOTE_REEL" "$f")
+  [ -z "$motif" ] || echec "$f : hôte fictif sur un VRAI domaine ($motif) — un nom réservé (.test, .invalid)"
+done < <(grep -E '^(app/src/(main|test|androidTest)|client-api/src/test)/.*\.(kt|xml)$' <<< "$FICHIERS")
 
 # Les générateurs du build (palettes, logo) : leurs tests, dont la génération des
 # fichiers recopiés. Chaque `scripts/test_*.py` versionné est joué.

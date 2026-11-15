@@ -13,7 +13,7 @@ package fr.coprofirst.app.fonctions.profil
 object FixturesProfil {
     /** GET /auth/me. */
     const val MOI = """{
-      "id": 7, "nom": "Exemple", "prenom": "Camille", "email": "camille@exemple.fr",
+      "id": 7, "nom": "Exemple", "prenom": "Camille", "email": "camille@exemple.test",
       "statut": "copropriétaire_résident", "role": "conseil_syndical", "roles": ["propriétaire", "conseil_syndical"],
       "actif": true, "onboarding_complete": true, "onboarding_etape": 0, "preferences_notifications": "{}",
       "cree_le": "2026-03-02T10:00:00", "nom_affiche": "Camille EXEMPLE", "nom_aide_affiche": "",

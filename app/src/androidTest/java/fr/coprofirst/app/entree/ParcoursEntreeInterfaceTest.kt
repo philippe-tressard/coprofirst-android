@@ -47,12 +47,12 @@ class ParcoursEntreeInterfaceTest {
     fun apresUnEchecLaSaisieReprendDansLeChamp() {
         serveur.repondre(421)
         val champ = ecran.onNodeWithTag(Reperes.RESIDENCE)
-        champ.performTextInput("inconnue.exemple.fr")
+        champ.performTextInput("inconnue.exemple.test")
         attendre("aucune résidence n'y est installée")
         champ.assertIsFocused()
         serveur.residence("Les Glycines")
         champ.performTextClearance()
-        champ.performTextInput("residence.exemple.fr")
+        champ.performTextInput("residence.exemple.test")
         attendre("Les Glycines")
         champ.assertIsFocused()
     }
@@ -61,9 +61,9 @@ class ParcoursEntreeInterfaceTest {
     @Test
     fun hoteJamaisVuConfirmeAvantLeMotDePasse() {
         serveur.residence("Les Glycines")
-        ecran.onNodeWithTag(Reperes.RESIDENCE).performTextInput("jamais-vu.exemple.fr")
+        ecran.onNodeWithTag(Reperes.RESIDENCE).performTextInput("jamais-vu.exemple.test")
         attendre("Les Glycines")
-        ecran.onNodeWithTag(Reperes.EMAIL).performTextInput("a@exemple.fr")
+        ecran.onNodeWithTag(Reperes.EMAIL).performTextInput("a@exemple.test")
         ecran.onNodeWithTag(Reperes.MOT_DE_PASSE).performTextInput("secret")
         ecran.onNodeWithTag(Reperes.VALIDER).assertIsEnabled().performClick()
         attendre("Vérifiez l'adresse")

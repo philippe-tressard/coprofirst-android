@@ -28,7 +28,7 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
 - **La résidence ouverte** : la barre du bas, dans l'ordre et avec les libellés réglés
   par l'administration de la résidence, filtrée selon le compte (Espace CS, Prestataires,
   Délégations, Paramétrage ne paraissent qu'à ceux qui y ont droit) ; « Plus » pour les
-  autres pages, Profil, À propos et « Se déconnecter ». Les écrans des pages arrivent
+  autres pages, Profil et À propos. Les écrans des pages arrivent
   menu par menu : en attendant, chaque page dit « Bientôt ».
 - **Profil** (Plus › Profil) : la résidence, le statut et les rôles du compte ; les
   informations personnelles (une nouvelle adresse demande le mot de passe et ne vaut
@@ -37,8 +37,15 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   export et effacement des statistiques de navigation) ; **la demande de suppression du
   compte** — ce qui sera effacé est dit d'abord, le mot de passe la confirme,
   l'administration de la résidence la traite, et elle se retire tant qu'elle n'est pas
-  traitée. La saisie d'une affaire, les préférences de notification et le thème se
-  règlent encore sur le site (#47).
+  traitée. Le thème de l'appareil (Automatique, Clair, Sombre) ; « Se déconnecter » et « Oublier
+  toutes les résidences », au bas du Profil. La saisie d'une affaire et les préférences
+  de notification se règlent encore sur le site (#47).
+- **Notifications** : les alertes du compte, « Aujourd'hui » (les 24 dernières heures)
+  puis « Plus anciennes ». Un toucher marque lu ; « Tout marquer lu » en haut, avec le
+  nombre de non lues ; « Supprimer les lues » en tête de la liste ; « Modifier » pour en
+  choisir plusieurs et les supprimer — toute suppression se confirme, elle est
+  définitive. Balayer vers la droite marque lu, vers la gauche supprime. Tirer la liste
+  la relit. La cloche de chaque écran et les notifications push viendront ensuite.
 
 Pas encore : les écrans des pages, le courriel retenu et la
 biométrie, les personnages de la démo, le QR code, les liens d'application (tickets

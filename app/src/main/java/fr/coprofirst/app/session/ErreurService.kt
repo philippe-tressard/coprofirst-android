@@ -60,14 +60,21 @@ sealed class ErreurService(@param:StringRes val phraseRes: Int) : Exception() {
          */
         fun depuis(erreur: Throwable): ErreurService = when (erreur) {
             is ErreurService -> erreur
-            is ClientException -> refus(erreur) ?: when (erreur.statusCode) {
-                401 -> SessionExpiree
-                403, 404 -> Introuvable
-                429 -> TropDEssais
-                else -> Inattendue
-            }
+            is ClientException -> refus(erreur) ?: depuisStatut(erreur.statusCode)
             is ServerException -> Inattendue
             is IOException -> Injoignable
+            else -> Inattendue
+        }
+
+        /**
+         * Le statut d'une LECTURE sans phrase servie (un fichier protégé, comme l'iOS
+         * `depuisLecture`) : 401, une session expirée ; 403 et 404, un élément qu'on ne
+         * peut pas ouvrir ; 429, trop d'essais ; tout autre, inattendu.
+         */
+        fun depuisStatut(statut: Int): ErreurService = when (statut) {
+            401 -> SessionExpiree
+            403, 404 -> Introuvable
+            429 -> TropDEssais
             else -> Inattendue
         }
 

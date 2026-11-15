@@ -31,7 +31,7 @@ class ProfilTest {
     private val serveur = MockWebServer().apply { start() }
     private val base = { _: AdresseInstallation -> serveur.url("/api").toString() }
     private val session = SessionOuverte(
-        Installation("https://residence.exemple.fr", "Les Glycines"), SessionsParHote(OkHttpClient()), Dispatchers.Unconfined, base,
+        Installation("https://residence.exemple.test", "Les Glycines"), SessionsParHote(OkHttpClient()), Dispatchers.Unconfined, base,
     )
     private val service = ServiceProfilApi(session)
 
@@ -63,24 +63,24 @@ class ProfilTest {
 
     @Test
     fun uneNouvelleAdresseDemandeLeMotDePasseEtSeuleElleLEnvoie() = runTest {
-        val compte = SaisieIdentite(prenom = "Camille", nom = "Exemple", email = "camille@exemple.fr")
-        assertTrue(compte.complete("camille@exemple.fr"))
-        assertFalse(compte.copy(prenom = " ").complete("camille@exemple.fr"))
-        val nouvelle = compte.copy(email = "  Autre@Exemple.fr ")
-        assertTrue(nouvelle.changeAdresse("camille@exemple.fr"))
-        assertFalse(compte.copy(email = " CAMILLE@exemple.fr").changeAdresse("camille@exemple.fr"))
-        assertFalse("sans mot de passe", nouvelle.complete("camille@exemple.fr"))
+        val compte = SaisieIdentite(prenom = "Camille", nom = "Exemple", email = "camille@exemple.test")
+        assertTrue(compte.complete("camille@exemple.test"))
+        assertFalse(compte.copy(prenom = " ").complete("camille@exemple.test"))
+        val nouvelle = compte.copy(email = "  Autre@Exemple.test ")
+        assertTrue(nouvelle.changeAdresse("camille@exemple.test"))
+        assertFalse(compte.copy(email = " CAMILLE@exemple.test").changeAdresse("camille@exemple.test"))
+        assertFalse("sans mot de passe", nouvelle.complete("camille@exemple.test"))
 
         repondre(200, FixturesProfil.MOI)
-        assertFalse(service.modifierIdentite(compte.copy(telephone = "  "), "camille@exemple.fr"))
+        assertFalse(service.modifierIdentite(compte.copy(telephone = "  "), "camille@exemple.test"))
         val sans = corps()
         assertTrue(nul(sans, "email"))
         assertTrue("une saisie vide part à null", nul(sans, "telephone"))
 
         repondre(200, FixturesProfil.MOI)
-        assertTrue(service.modifierIdentite(nouvelle.copy(motDePasseActuel = "secret"), "camille@exemple.fr"))
+        assertTrue(service.modifierIdentite(nouvelle.copy(motDePasseActuel = "secret"), "camille@exemple.test"))
         val avec = corps()
-        assertEquals("Autre@Exemple.fr", avec["email"]!!.jsonPrimitive.content)
+        assertEquals("Autre@Exemple.test", avec["email"]!!.jsonPrimitive.content)
         assertEquals("secret", avec["mot_de_passe_actuel"]!!.jsonPrimitive.content)
     }
 

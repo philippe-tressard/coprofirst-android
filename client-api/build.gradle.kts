@@ -60,17 +60,23 @@ val genererVersionContrat by tasks.registering {
     inputs.file(source)
     outputs.dir(sortie)
     doLast {
-        @Suppress("UNCHECKED_CAST")
-        val info = (groovy.json.JsonSlurper().parse(source) as Map<String, Any>)["info"] as Map<String, Any>
-        val version = info["version"] as String
+        val racine = groovy.json.JsonSlurper().parse(source)
+        fun lire(vararg chemin: String): Any? = chemin.fold(racine) { noeud, cle -> (noeud as? Map<*, *>)?.get(cle) }
+        val version = lire("info", "version") as String
         require(Regex("""\d+\.\d+\.\d+""").matches(version)) { "info.version illisible : $version" }
+        // Ce que le contrat BORNE et que le client généré n'expose pas (comme l'iOS,
+        // `LimitesNotifications`) : au-delà, le serveur répond 422.
+        val selection = lire("components", "schemas", "SuppressionNotifications", "properties", "ids", "maxItems")
+        require(selection is Int && selection > 0) { "SuppressionNotifications.ids.maxItems illisible : $selection" }
         val fichier = sortie.get().file("fr/coprofirst/api/Contrat.kt").asFile
         fichier.parentFile.mkdirs()
         fichier.writeText(
             "// GÉNÉRÉ par client-api/build.gradle.kts depuis contrat/openapi.json — NE PAS MODIFIER.\n" +
                 "package fr.coprofirst.api\n\n" +
                 "/** La version du contrat d'API sur laquelle ce client est généré : le plancher. */\n" +
-                "const val VERSION_CONTRAT_PLANCHER = \"$version\"\n",
+                "const val VERSION_CONTRAT_PLANCHER = \"$version\"\n\n" +
+                "/** Les identifiants qu'accepte UNE requête POST /notifications/supprimer-selection (`maxItems`). */\n" +
+                "const val NOTIFICATIONS_SELECTION_PAR_REQUETE = $selection\n",
         )
     }
 }

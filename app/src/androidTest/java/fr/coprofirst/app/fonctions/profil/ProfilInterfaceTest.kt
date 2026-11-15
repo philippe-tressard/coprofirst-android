@@ -87,9 +87,9 @@ class ProfilInterfaceTest {
         val parcours = serveur.parcours()
         ecran.setContent { NavigationEntree(serveur.apparence(), parcours) }
         ecran.onNodeWithText("Entrer dans ma résidence").performClick()
-        ecran.onNodeWithTag(Reperes.RESIDENCE).performTextInput("residence.exemple.fr")
+        ecran.onNodeWithTag(Reperes.RESIDENCE).performTextInput("residence.exemple.test")
         attendre("Les Glycines")
-        ecran.onNodeWithTag(Reperes.EMAIL).performTextInput("camille@exemple.fr")
+        ecran.onNodeWithTag(Reperes.EMAIL).performTextInput("camille@exemple.test")
         ecran.onNodeWithTag(Reperes.MOT_DE_PASSE).performTextInput("secret")
         ecran.onNodeWithTag(Reperes.VALIDER).performClick()
         attendre("Me connecter à cette adresse")

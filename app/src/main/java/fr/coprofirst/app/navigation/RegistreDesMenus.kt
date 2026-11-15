@@ -55,7 +55,7 @@ object RegistreDesMenus {
 
         "profil" to { contexte -> fr.coprofirst.app.fonctions.profil.EcranProfil(contexte) },
 
-        // "notifications" — #22
+        "notifications" to { contexte -> fr.coprofirst.app.fonctions.notifications.EcranNotifications(contexte) },
 
         // "espace-cs" — #24
 

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+
+Les textes de l'écran des notifications, écrits une fois — ceux du site
+(`notifications/+page.svelte`) et de l'iOS (`TextesNotifications`).
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="fr">
+    <string name="notifications_aujourdhui">Aujourd\'hui</string>
+    <string name="notifications_anciennes">Plus anciennes</string>
+    <string name="notifications_tout_marquer_lu">Tout marquer lu</string>
+    <string name="notifications_marquer_lu">Marquer lu</string>
+    <string name="notifications_non_lue">Non lue</string>
+    <string name="notifications_urgent">Urgent</string>
+    <string name="notifications_vide">Aucune notification</string>
+    <string name="notifications_vide_detail">Vous êtes à jour !</string>
+    <string name="notifications_confirmer_titre">Supprimer définitivement</string>
+    <string name="notifications_irreversible">Cette action est irréversible.</string>
+    <string name="notifications_annuler">Annuler</string>
+    <string name="notifications_supprimer">Supprimer</string>
+    <string name="notifications_supprimer_nombre">Supprimer (%1$d)</string>
+    <string name="notifications_supprimer_lues">Supprimer les lues</string>
+    <string name="notifications_modifier">Modifier</string>
+    <string name="notifications_terminer">OK</string>
+    <string name="notifications_tout_selectionner">Tout sélectionner</string>
+    <string name="notifications_tout_deselectionner">Tout désélectionner</string>
+    <string name="notifications_selectionner">Sélectionner</string>
+    <string name="notifications_deselectionner">Désélectionner</string>
+    <string name="notifications_squelette_titre">Une alerte de la résidence</string>
+    <string name="notifications_squelette_corps">Son texte se charge, sur deux lignes.</string>
+
+    <!-- Ce qu'une suppression retire : « Cette notification », « Ces 3 notifications »… -->
+    <string name="notifications_quoi_une">Cette notification</string>
+    <string name="notifications_quoi_selection">Ces %1$d notifications</string>
+    <string name="notifications_quoi_une_lue">La notification lue</string>
+    <string name="notifications_quoi_lues">Les %1$d notifications lues</string>
+
+    <plurals name="notifications_non_lues">
+        <item quantity="one">%1$d non lue</item>
+        <item quantity="many">%1$d non lues</item>
+        <item quantity="other">%1$d non lues</item>
+    </plurals>
+
+    <!-- Une sélection interrompue en route : ce qui est parti, ce qui demeure. -->
+    <plurals name="notifications_interrompue_fait">
+        <item quantity="one">%1$d notification sur %2$d a été supprimée</item>
+        <item quantity="many">%1$d notifications sur %2$d ont été supprimées</item>
+        <item quantity="other">%1$d notifications sur %2$d ont été supprimées</item>
+    </plurals>
+    <string name="notifications_interrompue_reste_un">la dernière est toujours là</string>
+    <string name="notifications_interrompue_reste">les %1$d autres sont toujours là</string>
+    <string name="notifications_interrompue">%1$s ; %2$s.</string>
+</resources>

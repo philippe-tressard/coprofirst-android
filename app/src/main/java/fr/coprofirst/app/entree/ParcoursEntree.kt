@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import fr.coprofirst.app.commun.GestesDeSortie
+import fr.coprofirst.app.commun.pieces.PiecesLocales
 import fr.coprofirst.app.session.AdresseInstallation
 import fr.coprofirst.app.session.Connexion
 import fr.coprofirst.app.session.Decouverte
@@ -39,6 +40,10 @@ class ParcoursEntree(
     private val sessions: SessionsParHote,
     private val connexion: Connexion = Connexion(sessions),
     private val connues: InstallationsConnues,
+    /** Efface ce que les pièces ouvertes laissent sur l'appareil (`PiecesLocales.effacer`). */
+    private val effacerLesPieces: () -> Unit = {},
+    /** La racine de l'API d'une adresse, pour la session ouverte ; les tests la remplacent par un serveur local. */
+    private val baseApi: (AdresseInstallation) -> String = { it.baseApi },
     private val lirePreuve: suspend (AdresseInstallation) -> PreuveHote = { PreuveHote.lire(it) },
 ) : ViewModel(), ActionsEntree, GestesDeSortie {
     private val _etat = MutableStateFlow(EtatEntree())
@@ -112,11 +117,12 @@ class ParcoursEntree(
     override fun renoncerHote() = _etat.update { it.copy(confirmation = null) }
 
     /** La session de la résidence ouverte, pour les écrans de ses menus — `null` hors session. */
-    fun sessionOuverte(): SessionOuverte? = _etat.value.ouverte?.let { SessionOuverte(it, sessions) }
+    fun sessionOuverte(): SessionOuverte? = _etat.value.ouverte?.let { SessionOuverte(it, sessions, baseApi = baseApi) }
 
     override fun deconnecter() {
         val ouverte = _etat.value.ouverte ?: return
         _etat.update { it.copy(ouverte = null, ecran = EcranEntree.Connexion) }
+        effacerLesPieces()
         viewModelScope.launch { connexion.deconnecter(ouverte) }
     }
 
@@ -126,6 +132,7 @@ class ParcoursEntree(
         reconnaissance?.cancel()
         _etat.value = EtatEntree()
         connues.vider()
+        effacerLesPieces()
         viewModelScope.launch {
             if (ouverte != null) connexion.deconnecter(ouverte)
             sessions.oublierTout()
@@ -159,11 +166,15 @@ class ParcoursEntree(
 
         val Fabrique = viewModelFactory {
             initializer {
-                val stockage = StockagePreferences(this[APPLICATION_KEY]!!)
+                val application = this[APPLICATION_KEY]!!
+                val stockage = StockagePreferences(application)
                 // UNE session HTTP par hôte pour toute l'app : la connexion y pose ses
                 // cookies, les écrans des menus les y relisent.
                 val sessions = SessionsParHote()
-                ParcoursEntree(Decouverte(), sessions, Connexion(sessions), InstallationsConnues(stockage))
+                ParcoursEntree(
+                    Decouverte(), sessions, Connexion(sessions), InstallationsConnues(stockage),
+                    effacerLesPieces = { PiecesLocales.effacer(application) },
+                )
             }
         }
     }
