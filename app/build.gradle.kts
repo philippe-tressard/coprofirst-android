@@ -88,7 +88,8 @@ android {
  * tables de navigation, la liste blanche du texte riche et les règles des pièces jointes
  * (→ scripts/generer_tables.py), celles de « Mes lots & accès » (→ scripts/generer_tables_mon_lot.py),
  * celles des « Délégations aidant » (→ scripts/generer_tables_delegations.py),
- * celles de la Communauté (→ scripts/generer_tables_communaute.py)
+ * celles de la Communauté (→ scripts/generer_tables_communaute.py),
+ * celles de l'Espace CS (→ scripts/generer_tables_espace_cs.py)
  * et le logo au format d'Android
  * (app/src/main/logo/logo.svg → scripts/generer_logo.py).
  * Rien de généré n'est versionné ; aucune couleur ne s'écrit à la main.
@@ -122,6 +123,7 @@ val genererTablesDelegations =
     generation("genererTablesDelegations", "contrat/tables-clients.json", "scripts/generer_tables_delegations.py")
 val genererTablesCommunaute =
     generation("genererTablesCommunaute", "contrat/tables-clients.json", "scripts/generer_tables_communaute.py")
+val genererTablesEspaceCS = generation("genererTablesEspaceCS", "contrat/tables-clients.json", "scripts/generer_tables_espace_cs.py")
 
 androidComponents {
     onVariants { variante ->
@@ -130,6 +132,7 @@ androidComponents {
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererTablesMonLot, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererTablesDelegations, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererTablesCommunaute, GenererDepuisPython::sortie)
+        variante.sources.kotlin?.addGeneratedSourceDirectory(genererTablesEspaceCS, GenererDepuisPython::sortie)
         variante.sources.res?.addGeneratedSourceDirectory(genererLogo, GenererDepuisPython::sortie)
     }
 }

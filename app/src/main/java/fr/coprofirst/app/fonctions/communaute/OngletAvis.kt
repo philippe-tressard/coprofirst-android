@@ -43,7 +43,6 @@ import fr.coprofirst.api.modeles.AvisRead
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
-import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.FlowCapsules
@@ -176,8 +175,8 @@ private fun CarteAvis(avis: AvisRead, gestes: GestesAvis?) {
                 ) {
                     val le = avis.reponseLe?.let { FormatsDuSite.dateCourte(it.toInstant()) }
                     Text(
-                        (if (le != null) stringResource(R.string.avis_reponse_equipe_le, le) else stringResource(R.string.avis_reponse_equipe)).uppercase(),
-                        style = Typo.libelle(),
+                        if (le != null) stringResource(R.string.avis_reponse_equipe_le, le) else stringResource(R.string.avis_reponse_equipe),
+                        style = MaterialTheme.typography.labelLarge,
                         color = couleurs.textMuted,
                     )
                     Text(reponse, style = MaterialTheme.typography.bodyMedium, color = couleurs.text)

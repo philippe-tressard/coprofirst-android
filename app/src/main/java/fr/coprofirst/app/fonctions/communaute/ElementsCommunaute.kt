@@ -34,6 +34,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -41,7 +42,6 @@ import fr.coprofirst.api.modeles.ReponseCommunauteRead
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
-import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.EtatVide
 import fr.coprofirst.app.commun.cliquable
@@ -155,10 +155,18 @@ fun Etoiles(note: Int) {
 /** Le nombre d'étoiles montrées : celui du site. */
 const val NOTE_AFFICHEE = 5
 
-/** Un libellé de section (`.styleLibelle()` de l'iOS). */
+/**
+ * L'intertitre d'une section, dit comme tel au lecteur d'écran. ⚠️ Provisoire : il passe au
+ * libellé commun `Libelle` (#84, `.styleLibelle()` de l'iOS) dès sa fusion.
+ */
 @Composable
 fun LibelleSection(@StringRes texte: Int, modifier: Modifier = Modifier) {
-    Text(stringResource(texte).uppercase(), style = Typo.libelle(), color = LocalCouleurs.current.textMuted, modifier = modifier)
+    Text(
+        stringResource(texte),
+        style = MaterialTheme.typography.titleSmall,
+        color = LocalCouleurs.current.textMuted,
+        modifier = modifier.semantics { heading() },
+    )
 }
 
 /**
