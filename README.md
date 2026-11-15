@@ -8,8 +8,19 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 Application Android native de [CoproFirst](https://github.com/philippe-tressard/coprofirst),
 le logiciel libre de gestion de copropriété — Kotlin et Jetpack Compose.
 
-**État : amorce.** L'écran d'accueil seul ; le client de l'API est généré et testé.
-Les écrans suivront ceux de l'[app iOS](https://github.com/philippe-tressard/coprofirst-ios).
+## Ce que fait l'app
+
+- **Entrer dans une résidence** par son adresse (celle de la fiche d'arrivée), ou
+  **découvrir la démonstration**. L'app vérifie que l'adresse sert bien une résidence
+  CoproFirst, et que sa version est assez récente pour s'y ouvrir ; sinon, elle dit
+  pourquoi en une phrase.
+- **Vos résidences** : celles déjà ouvertes se retrouvent sur l'accueil, sur
+  l'appareil seul (jamais sauvegardées ailleurs) ; « Oublier cette résidence » la
+  retire.
+
+Pas encore : la connexion à un compte, le QR code de la fiche d'arrivée, les liens
+d'application (tickets ouverts). Les écrans suivent ceux de
+l'[app iOS](https://github.com/philippe-tressard/coprofirst-ios).
 
 ## Construire
 
@@ -22,7 +33,7 @@ sdkmanager "platform-tools" "platforms;android-37.2"
 ```
 
 ```bash
-./gradlew :app:assembleDebug :app:lintDebug :client-api:test
+./gradlew :app:assembleDebug :app:lintDebug :app:testDebugUnitTest :client-api:test
 ```
 
 `JAVA_HOME` et `ANDROID_HOME` (ou `local.properties`, `sdk.dir=…`) doivent désigner

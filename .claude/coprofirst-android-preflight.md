@@ -5,8 +5,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 ── PRÉ-FLIGHT CoproFirst-Android — avant CETTE action → charger CECI ──────
   • un écran Compose, un parcours, un libellé  → standards/11 ; l'écran iOS
     correspondant (coprofirst-ios) est la référence de parcours, pas du code à recopier
-  • un appel à l'API                            → le client GÉNÉRÉ (client-api/) ;
-    une route absente = un ticket dans coprofirst, jamais une requête écrite à la main
+  • un appel à l'API                            → le client GÉNÉRÉ (client-api/) avec
+    session/ClientHttp.kt ; une route absente = un ticket dans coprofirst
   • une couleur, une taille, un format          → généré depuis coprofirst, jamais recopié
   • une dépendance, une image, une police       → REUSE.toml, licence compatible (standards/14 §6)
   • le logo de CoproFirst                       → sa licence ne couvre pas encore l'app
