@@ -17,6 +17,8 @@ val genere = layout.buildDirectory.dir("generated/openapi")
 
 openApiGenerate {
     generatorName.set("kotlin")
+    // Nos gabarits, là où celui du générateur ne convient pas (lecture des dates, #44).
+    templateDir.set(layout.projectDirectory.dir("gabarits").asFile.path)
     library.set("jvm-okhttp4")
     inputSpec.set(rootProject.file("contrat/openapi.json").path)
     outputDir.set(genere)
