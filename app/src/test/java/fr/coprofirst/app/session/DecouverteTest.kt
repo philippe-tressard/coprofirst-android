@@ -17,7 +17,7 @@ import org.junit.Test
 /** La découverte contre un serveur local : ce que l'écran dira pour chaque réponse. */
 class DecouverteTest {
     private val serveur = MockWebServer()
-    private val adresse = AdresseInstallation.normaliser("residence.exemple.fr")!!
+    private val adresse = AdresseInstallation.normaliser("residence.exemple.test")!!
     private lateinit var decouverte: Decouverte
 
     @Before
@@ -65,7 +65,7 @@ class DecouverteTest {
 
     @Test
     fun redirectionNonSuivie() = runTest {
-        repondre(302, entetes = mapOf("Location" to "https://ailleurs.exemple.org/api/config"))
+        repondre(302, entetes = mapOf("Location" to "https://ailleurs.test/api/config"))
         assertSame(ErreurService.PasCoproFirst, echec())
         assertEquals(1, serveur.requestCount)
     }

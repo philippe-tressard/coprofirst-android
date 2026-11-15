@@ -12,28 +12,28 @@ class AdresseInstallationTest {
 
     @Test
     fun saisieRameneeAHttpsEtALHote() {
-        assertEquals("https://residence.exemple.fr", url("  Residence.Exemple.FR "))
-        assertEquals("https://residence.exemple.fr", url("https://residence.exemple.fr/connexion?x=1"))
-        assertEquals("https://residence.exemple.fr:8443", url("residence.exemple.fr:8443"))
+        assertEquals("https://residence.exemple.test", url("  Residence.Exemple.TEST "))
+        assertEquals("https://residence.exemple.test", url("https://residence.exemple.test/connexion?x=1"))
+        assertEquals("https://residence.exemple.test:8443", url("residence.exemple.test:8443"))
     }
 
     @Test
     fun jamaisEnClair() {
-        assertEquals("https://residence.exemple.fr", url("http://residence.exemple.fr"))
+        assertEquals("https://residence.exemple.test", url("http://residence.exemple.test"))
     }
 
     @Test
     fun ceQuiNEstPasUneAdresseEstRefuse() {
-        listOf("", "   ", "residence exemple.fr", "localhost", ".exemple.fr", "exemple.", "moi@residence.exemple.fr")
+        listOf("", "   ", "residence exemple.test", "localhost", ".exemple.test", "exemple.", "moi@residence.exemple.test")
             .forEach { assertNull("« $it » accepté", url(it)) }
     }
 
     @Test
     fun enSaisieEtRelecture() {
-        val adresse = AdresseInstallation.normaliser("residence.exemple.fr:8443")!!
-        assertEquals("residence.exemple.fr:8443", adresse.enSaisie)
-        assertEquals("https://residence.exemple.fr:8443/api", adresse.baseApi)
+        val adresse = AdresseInstallation.normaliser("residence.exemple.test:8443")!!
+        assertEquals("residence.exemple.test:8443", adresse.enSaisie)
+        assertEquals("https://residence.exemple.test:8443/api", adresse.baseApi)
         assertEquals(adresse, AdresseInstallation.relire(adresse.url))
-        assertNull(AdresseInstallation.relire("http://residence.exemple.fr"))
+        assertNull(AdresseInstallation.relire("http://residence.exemple.test"))
     }
 }

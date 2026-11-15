@@ -34,7 +34,7 @@ class FichierProtegeTest {
     private val serveur = MockWebServer().apply { start() }
     private val sessions = SessionsParHote(ClientHttp.partage)
     private val base = { _: AdresseInstallation -> serveur.url("/api").toString() }
-    private val residence = Installation("https://residence.exemple.fr", "Les Glycines")
+    private val residence = Installation("https://residence.exemple.test", "Les Glycines")
     private val session = SessionOuverte(residence, sessions, Dispatchers.Unconfined, base)
 
     @After
@@ -56,7 +56,7 @@ class FichierProtegeTest {
     @Test
     fun unFichierSeLitParLaSessionDeLHote() = runTest {
         servir(200, "{}", "Set-Cookie" to "access_token=jeton; Path=/; HttpOnly", "Content-Type" to "application/json")
-        Connexion(sessions, Dispatchers.Unconfined, base).connecter(residence, "a@exemple.fr", "x")
+        Connexion(sessions, Dispatchers.Unconfined, base).connecter(residence, "a@exemple.test", "x")
         serveur.takeRequest()
         servir(200, "JPEG", "Content-Type" to "image/jpeg")
         assertArrayEquals("JPEG".toByteArray(), session.fichierProtege("/uploads/tickets/a.jpg"))
@@ -77,8 +77,8 @@ class FichierProtegeTest {
     fun unAutreHoteEstRefuseSansAucuneRequete() = runTest {
         val port = serveur.port
         for (ailleurs in listOf(
-            "https://ailleurs.exemple.fr/uploads/a.jpg",
-            "//ailleurs.exemple.fr/uploads/a.jpg",
+            "https://ailleurs.test/uploads/a.jpg",
+            "//ailleurs.test/uploads/a.jpg",
             "https://localhost:$port/uploads/a.jpg", // même hôte, autre schéma
             "http://localhost:${port + 1}/uploads/a.jpg", // même hôte, autre port
             "http://moi:secret@localhost:$port/uploads/a.jpg", // des identifiants dans l'adresse
@@ -103,7 +103,7 @@ class FichierProtegeTest {
 
     @Test
     fun uneRedirectionNEstPasSuivie() = runTest {
-        servir(302, "", "Location" to "https://ailleurs.exemple.fr/vol.jpg")
+        servir(302, "", "Location" to "https://ailleurs.test/vol.jpg")
         assertEquals(ErreurService.Inattendue, echec("/uploads/a.jpg"))
         assertEquals(1, serveur.requestCount)
     }

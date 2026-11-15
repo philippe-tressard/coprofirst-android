@@ -18,6 +18,7 @@
 #   7 bis. aucun format de date ou de nombre hors de FormatsDuSite ;
 #   7 ter. aucun HTML rendu par une vue web ou le lecteur HTML d'Android : TexteDuSite ;
 #   7 quater. aucune version écrite à la main (elle se déduit de git) ;
+#   7 quinquies. aucun hôte fictif sur un vrai domaine (exemple.fr…) hors libellés ;
 #   8. un seul bouton plein, `BoutonPlein` (commun/Boutons.kt) ;
 #   9. les générateurs du build passent leurs tests (scripts/test_*.py) ;
 #  10. aucun chemin de .claude/worktrees/ suivi.
@@ -165,6 +166,21 @@ VERSION_ECRITE='^[[:space:]]*version(Code|Name)[[:space:]]*=[[:space:]]*("|[0-9]
 autotest_motif "version écrite" "$VERSION_ECRITE" '        versionCode = 9' '        versionCode = versionDeGit.code'
 motif=$(premier_motif "$VERSION_ECRITE" app/build.gradle.kts)
 [ -z "$motif" ] || echec "app/build.gradle.kts : version écrite à la main ($motif) — elle se déduit de git"
+
+# Les hôtes FICTIFS sont des noms réservés (RFC 2606/6761 : `.test`, `.invalid`,
+# `example.com`), jamais `exemple.fr` ni `exemple.org`, qui sont de VRAIS domaines : un
+# test qui partirait vers eux enverrait des cookies de test à un tiers (constaté, #57).
+# Seule dispense : les libellés d'aide de l'écran (strings.xml), ceux de l'iOS, qui ne
+# sont jamais une adresse appelée.
+HOTE_REEL='[Ee][Xx][Ee][Mm][Pp][Ll][Ee]\.([Ff][Rr]|[Oo][Rr][Gg]|[Cc][Oo][Mm])\b'
+autotest_motif "hôtes fictifs" "$HOTE_REEL" 'val a = "residence.exemple.fr"' 'val a = "residence.exemple.test"'
+autotest_motif "hôtes fictifs (casse)" "$HOTE_REEL" 'url("  Residence.Exemple.FR ")' 'url("  Residence.Exemple.TEST ")'
+while IFS= read -r f; do
+  [ -f "$f" ] || continue
+  [ "$f" = app/src/main/res/values/strings.xml ] && continue
+  motif=$(premier_motif "$HOTE_REEL" "$f")
+  [ -z "$motif" ] || echec "$f : hôte fictif sur un VRAI domaine ($motif) — un nom réservé (.test, .invalid)"
+done < <(grep -E '^(app/src/(main|test|androidTest)|client-api/src/test)/.*\.(kt|xml)$' <<< "$FICHIERS")
 
 # Les générateurs du build (palettes, logo) : leurs tests, dont la génération des
 # fichiers recopiés. Chaque `scripts/test_*.py` versionné est joué.

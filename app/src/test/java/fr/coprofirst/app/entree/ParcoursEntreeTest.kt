@@ -77,7 +77,7 @@ class ParcoursEntreeTest {
         parcours.entrer()
         parcours.saisir(hote)
         advanceUntilIdle()
-        parcours.saisirEmail("a@exemple.fr")
+        parcours.saisirEmail("a@exemple.test")
         parcours.saisirMotDePasse("secret")
     }
 
@@ -98,7 +98,7 @@ class ParcoursEntreeTest {
         parcours.entrer()
         parcours.saisir("residence.exemple.f")
         advanceTimeBy(300)
-        parcours.saisir("residence.exemple.fr")
+        parcours.saisir("residence.exemple.test")
         advanceTimeBy(ParcoursEntree.PAUSE_DE_FRAPPE_MS - 1)
         assertEquals(0, serveur.requestCount)
         advanceUntilIdle()
@@ -110,11 +110,11 @@ class ParcoursEntreeTest {
 
     @Test
     fun laDerniereResidencePreRemplitEtSeReconnait() = test {
-        connues.retenir(Installation("https://5hostachy.exemple.fr", "Ancienne"))
+        connues.retenir(Installation("https://5hostachy.exemple.test", "Ancienne"))
         residence("5Hostachy")
         parcours.entrer()
         advanceUntilIdle()
-        assertEquals("5hostachy.exemple.fr", parcours.etat.value.saisie)
+        assertEquals("5hostachy.exemple.test", parcours.etat.value.saisie)
         assertEquals("5Hostachy", parcours.etat.value.reconnue?.nom)
     }
 
@@ -132,7 +132,7 @@ class ParcoursEntreeTest {
     fun unEchecSEffaceDesQueLaSaisieChange() = test {
         serveur.enqueue(MockResponse.Builder().code(421).build())
         parcours.entrer()
-        parcours.saisir("inconnue.exemple.fr")
+        parcours.saisir("inconnue.exemple.test")
         advanceUntilIdle()
         assertSame(ErreurService.HoteInconnu, parcours.etat.value.erreur)
         parcours.saisir("inconnue.exemple.f")
@@ -143,7 +143,7 @@ class ParcoursEntreeTest {
 
     @Test
     fun unHoteJamaisVuSeConfirmeAvantToutMotDePasse() = test {
-        pret("jamais-vu.exemple.fr")
+        pret("jamais-vu.exemple.test")
         parcours.seConnecter()
         advanceUntilIdle()
         // Seul GET /config est parti : le mot de passe attend la confirmation.
@@ -156,13 +156,13 @@ class ParcoursEntreeTest {
         assertEquals("/api/auth/login", serveur.takeRequest().url.encodedPath)
         assertEquals(EcranEntree.Espace, parcours.etat.value.ecran)
         assertEquals("", parcours.etat.value.motDePasse)
-        assertEquals("https://jamais-vu.exemple.fr", connues.liste.single().url)
+        assertEquals("https://jamais-vu.exemple.test", connues.liste.single().url)
     }
 
     @Test
     fun sansPreuveIlFautLeSecondAccord() = test {
         preuve = PreuveHote.Absente
-        pret("imitation.exemple.fr")
+        pret("imitation.exemple.test")
         parcours.seConnecter()
         advanceUntilIdle()
         parcours.confirmerHote()
@@ -177,8 +177,8 @@ class ParcoursEntreeTest {
 
     @Test
     fun laDemoEtUneResidenceConnueNeSeConfirmentPas() = test {
-        connues.retenir(Installation("https://connue.exemple.fr", "Connue"))
-        pret("connue.exemple.fr")
+        connues.retenir(Installation("https://connue.exemple.test", "Connue"))
+        pret("connue.exemple.test")
         ok()
         parcours.seConnecter()
         advanceUntilIdle()
@@ -188,8 +188,8 @@ class ParcoursEntreeTest {
 
     @Test
     fun identifiantsRefusesSansQuitterLEcran() = test {
-        connues.retenir(Installation("https://connue.exemple.fr", "Connue"))
-        pret("connue.exemple.fr")
+        connues.retenir(Installation("https://connue.exemple.test", "Connue"))
+        pret("connue.exemple.test")
         serveur.enqueue(MockResponse.Builder().code(422).build())
         parcours.seConnecter()
         advanceUntilIdle()
@@ -201,8 +201,8 @@ class ParcoursEntreeTest {
 
     @Test
     fun oublierToutRevientALAccueilCommeNeuve() = test {
-        connues.retenir(Installation("https://connue.exemple.fr", "Connue"))
-        pret("connue.exemple.fr")
+        connues.retenir(Installation("https://connue.exemple.test", "Connue"))
+        pret("connue.exemple.test")
         ok()
         parcours.seConnecter()
         advanceUntilIdle()
@@ -217,8 +217,8 @@ class ParcoursEntreeTest {
     /** #57 : la session ouverte parle à la même API que la connexion (le serveur local ici). */
     @Test
     fun laSessionOuverteParleALaMemeApi() = test {
-        connues.retenir(Installation("https://connue.exemple.fr", "Connue"))
-        pret("connue.exemple.fr")
+        connues.retenir(Installation("https://connue.exemple.test", "Connue"))
+        pret("connue.exemple.test")
         ok()
         parcours.seConnecter()
         advanceUntilIdle()

@@ -55,7 +55,7 @@ class FichiersTest {
         // Un nom qui n'est QUE le préfixe ne devient pas vide.
         assertEquals("0123456789abcdef0123456789abcdef_", Fichiers.nomAffiche("/uploads/0123456789abcdef0123456789abcdef_"))
         // La requête et une barre finale ne font pas le nom ; un « + » reste un « + ».
-        assertEquals("plan.pdf", Fichiers.nomAffiche("https://r.exemple.fr/uploads/plan.pdf?v=2"))
+        assertEquals("plan.pdf", Fichiers.nomAffiche("https://r.exemple.test/uploads/plan.pdf?v=2"))
         assertEquals("a+b.pdf", Fichiers.nomAffiche("/uploads/a+b.pdf"))
         assertEquals("dossier", Fichiers.nomAffiche("/uploads/dossier/"))
     }

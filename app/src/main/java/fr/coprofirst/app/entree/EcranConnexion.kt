@@ -145,8 +145,8 @@ private fun ApercuConnexion() {
         EcranConnexion(
             EtatEntree(
                 ecran = EcranEntree.Connexion,
-                saisie = "residence.exemple.fr",
-                reconnue = Installation("https://residence.exemple.fr", "Résidence d'exemple"),
+                saisie = "residence.exemple.test",
+                reconnue = Installation("https://residence.exemple.test", "Résidence d'exemple"),
             ),
             ActionsEntree.Inertes,
         )
