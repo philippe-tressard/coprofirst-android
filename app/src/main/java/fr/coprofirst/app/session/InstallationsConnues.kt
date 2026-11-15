@@ -27,7 +27,7 @@ class StockagePreferences(contexte: Context) : StockageResidences {
 
 /**
  * Les résidences déjà ouvertes sur cet appareil, la plus récente en tête : leur adresse,
- * leur nom, leur contrat. Pas d'annuaire — une résidence n'apparaît ici que si
+ * leur nom, leur contrat. La dernière pré-remplit l'écran de connexion, comme sur iOS. Pas d'annuaire — une résidence n'apparaît ici que si
  * l'utilisateur l'a donnée. Rien n'est envoyé ailleurs.
  */
 class InstallationsConnues(private val stockage: StockageResidences) {
@@ -37,12 +37,6 @@ class InstallationsConnues(private val stockage: StockageResidences) {
     /** Retient une résidence ouverte : en tête, une seule fois par adresse. */
     fun retenir(installation: Installation) {
         liste = listOf(installation) + liste.filterNot { it.url == installation.url }
-        enregistrer()
-    }
-
-    /** Oublie une résidence. */
-    fun oublier(installation: Installation) {
-        liste = liste.filterNot { it.url == installation.url }
         enregistrer()
     }
 

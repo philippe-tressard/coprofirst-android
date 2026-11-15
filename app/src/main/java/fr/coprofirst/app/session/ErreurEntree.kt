@@ -16,9 +16,6 @@ import java.net.UnknownHostException
  * jamais un code brut (le code reste dans l'exception d'origine).
  */
 sealed class ErreurEntree(@param:StringRes val phrase: Int) : Exception() {
-    /** La saisie n'est pas une adresse. */
-    data object AdresseInvalide : ErreurEntree(R.string.erreur_adresse_invalide)
-
     /** 421 : l'adresse répond, mais aucune résidence n'y est installée. */
     data object HoteInconnu : ErreurEntree(R.string.erreur_hote_inconnu)
 

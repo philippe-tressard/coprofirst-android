@@ -27,8 +27,8 @@ class InstallationsConnuesTest {
     @Test
     fun gardeesDUnLancementALAutre() {
         val stockage = EnMemoire()
-        InstallationsConnues(stockage).apply { retenir(a); retenir(b); oublier(a) }
-        assertEquals(listOf(b), InstallationsConnues(stockage).liste)
+        InstallationsConnues(stockage).apply { retenir(a); retenir(b) }
+        assertEquals(listOf(b, a), InstallationsConnues(stockage).liste)
     }
 
     @Test

@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,15 +27,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.R
 import fr.coprofirst.app.ThemeCoproFirst
-import fr.coprofirst.app.session.AdresseInstallation
-import fr.coprofirst.app.session.Installation
 
 /**
- * L'accueil : le nom, la devise, deux portes — ma résidence, la démonstration — et les
- * résidences déjà ouvertes sur l'appareil. Quand le texte grandit, l'écran défile.
+ * L'accueil, comme celui de l'iOS (`AccueilView`) : le nom, la devise, deux portes —
+ * ma résidence, la démonstration. Quand le texte grandit, l'écran défile.
  */
 @Composable
-fun EcranAccueil(etat: EtatEntree, parcours: ActionsEntree) {
+fun EcranAccueil(parcours: ActionsEntree) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -64,33 +61,8 @@ fun EcranAccueil(etat: EtatEntree, parcours: ActionsEntree) {
             modifier = Modifier.widthIn(max = 480.dp).fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            BoutonPlein(R.string.accueil_entrer, onClick = parcours::ouvrirAdresse)
-            BoutonContour(
-                R.string.accueil_demo,
-                enCours = etat.enCours == AdresseInstallation.DEMO,
-                onClick = parcours::entrerDemo,
-            )
-            etat.erreur?.let { MessageErreur(it) }
-            if (etat.connues.isNotEmpty()) ResidencesConnues(etat.connues, parcours::rouvrir)
-        }
-    }
-}
-
-@Composable
-private fun ResidencesConnues(connues: List<Installation>, rouvrir: (Installation) -> Unit) {
-    Column(modifier = Modifier.padding(top = 20.dp)) {
-        Text(
-            stringResource(R.string.accueil_connues),
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.semantics { heading() },
-        )
-        connues.forEach { installation ->
-            ListItem(
-                headlineContent = { Text(installation.nom) },
-                supportingContent = { Text(installation.adresse?.enSaisie.orEmpty()) },
-                modifier = Modifier.cliquable(stringResource(R.string.accueil_rouvrir)) { rouvrir(installation) },
-            )
+            BoutonPlein(R.string.accueil_entrer, onClick = parcours::entrer)
+            BoutonContour(R.string.accueil_demo, onClick = parcours::entrerDemo)
         }
     }
 }
@@ -98,10 +70,5 @@ private fun ResidencesConnues(connues: List<Installation>, rouvrir: (Installatio
 @Preview(showBackground = true)
 @Composable
 private fun ApercuAccueil() {
-    ThemeCoproFirst {
-        EcranAccueil(
-            EtatEntree(connues = listOf(Installation("https://residence.exemple.fr", "Résidence d'exemple"))),
-            ActionsEntree.Inertes,
-        )
-    }
+    ThemeCoproFirst { EcranAccueil(ActionsEntree.Inertes) }
 }

@@ -10,17 +10,18 @@ le logiciel libre de gestion de copropriété — Kotlin et Jetpack Compose.
 
 ## Ce que fait l'app
 
-- **Entrer dans une résidence** par son adresse (celle de la fiche d'arrivée), ou
-  **découvrir la démonstration**. L'app vérifie que l'adresse sert bien une résidence
-  CoproFirst, et que sa version est assez récente pour s'y ouvrir ; sinon, elle dit
-  pourquoi en une phrase.
-- **Vos résidences** : celles déjà ouvertes se retrouvent sur l'accueil, sur
-  l'appareil seul (jamais sauvegardées ailleurs) ; « Oublier cette résidence » la
-  retire.
+L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-tressard/coprofirst-ios).
 
-Pas encore : la connexion à un compte, le QR code de la fiche d'arrivée, les liens
-d'application (tickets ouverts). Les écrans suivent ceux de
-l'[app iOS](https://github.com/philippe-tressard/coprofirst-ios).
+- **Accueil** : « Entrer dans ma résidence » ou « Découvrir la démo ».
+- **Connectez-vous à votre espace** : l'adresse de la résidence (celle de la fiche
+  d'arrivée) se reconnaît pendant la saisie ; une coche paraît dans le champ et le nom
+  de la résidence dessous. Sinon, une phrase dit pourquoi (adresse injoignable, pas une
+  résidence CoproFirst, résidence à mettre à jour). La dernière résidence ouverte est
+  pré-remplie ; elle reste sur l'appareil seul. La démonstration ouvre cet écran à son
+  adresse.
+
+Pas encore : la connexion au compte et les personnages de la démo, le QR code de la
+fiche d'arrivée, les liens d'application (tickets ouverts).
 
 ## Construire
 

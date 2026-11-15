@@ -26,8 +26,13 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   recopiée à l'octet par `bash scripts/importer-contrat.sh` ; la CI rejoue
   `--verifier`. Rien de généré n'est versionné. Les chemins s'entendent sous `/api`.
 - **État** : il se lit dans `README.md` (« Ce que fait l'app ») et les issues
-  ouvertes. Le parcours de référence est l'app iOS (`philippe-tressard/coprofirst-ios`,
-  `Parite/PARITE.md`) : on en reprend les parcours, jamais le code.
+  ouvertes.
+- **L'app iOS est la référence fonctionnelle** (consigne de Philippe, 15/11/2026) :
+  l'Android tend vers elle — mêmes écrans, mêmes parcours, mêmes libellés, mêmes choix
+  (`philippe-tressard/coprofirst-ios`, `Parite/PARITE.md`). Une question technique se
+  tranche par le choix que l'iOS a fait ; on en reprend le comportement, jamais le code.
+  Une divergence (contrainte d'Android, étape intermédiaire) se **déclare** dans le
+  commentaire du code et dans la PR, avec le ticket qui la résorbe.
 - **Identifiant** `fr.coprofirst.app`, aligné sur l'iOS ; il se fige à la première
   publication. Signature **au poste** seulement, jamais en CI. Aucune publication
   (Play Console, piste de test ouverte) sans demande explicite de Philippe.
