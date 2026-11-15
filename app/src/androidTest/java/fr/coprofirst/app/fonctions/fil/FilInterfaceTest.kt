@@ -4,7 +4,6 @@
 package fr.coprofirst.app.fonctions.fil
 
 import androidx.compose.ui.test.assertHasClickAction
-import androidx.compose.ui.test.assertHasNoClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
@@ -71,11 +70,11 @@ class FilInterfaceTest {
         ecran.onAllNodes(hasTestTag(tag)).fetchSemanticsNodes().isNotEmpty()
     }
 
-    /** Les cartes du jour, sous leur en-tête ; l'affaire ne s'ouvre pas encore, le résumé si. */
+    /** Les cartes du jour, sous leur en-tête ; l'affaire s'ouvre par la porte (sa fiche, #16), le résumé aussi. */
     @Test
     fun leFilMontreSesCartes() {
         attendre("fil.ticket_ouvert:41")
-        ecran.onNodeWithTag("fil.ticket_ouvert:41").assertIsDisplayed().assertHasNoClickAction()
+        ecran.onNodeWithTag("fil.ticket_ouvert:41").assertIsDisplayed().assertHasClickAction()
         attendreTexte("AUJOURD'HUI")
         attendreCarte("Urgent, Fuite d'eau au plafond du parking")
         attendreCarte("Lieu : Parking")
