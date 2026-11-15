@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+
+Les textes de la FAQ, écrits une fois — ceux du site (`faq/+page.svelte`) et de l'iOS
+(`TextesFAQ`).
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="fr">
+    <string name="faq_vide">Aucune question pour l\'instant</string>
+    <string name="faq_general">Général</string>
+    <string name="faq_pas_trouve">Vous ne trouvez pas la réponse ?</string>
+    <string name="faq_pas_trouve_texte">Créez une affaire via la rubrique Affaires et le conseil syndical vous répondra dans les meilleurs délais.</string>
+    <string name="faq_ouvrir_manuel">Ouvrir le Manuel utilisateur</string>
+    <string name="faq_partager_lien">Partager le lien</string>
+    <string name="faq_redaction_au_site">Rédiger, masquer ou réorganiser les questions se fait sur le site.</string>
+    <string name="faq_ouvrir_site">Ouvrir la FAQ sur le site</string>
+    <string name="faq_deplier">Lire la réponse</string>
+    <string name="faq_replier">Replier la réponse</string>
+</resources>
