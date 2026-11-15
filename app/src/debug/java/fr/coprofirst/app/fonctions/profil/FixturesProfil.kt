@@ -5,7 +5,8 @@ package fr.coprofirst.app.fonctions.profil
 
 /**
  * Ce qu'une résidence sert à l'écran Profil, en JSON, à la forme des routes — pour les
- * tests JVM et d'interface (variante de mise au point seulement, jamais livrée). Les
+ * tests JVM et d'interface (variante de mise au point seulement, jamais livrée). Les dates
+ * sont SANS fuseau, comme le serveur les sert (#44). Les
  * conséquences sont celles du serveur (`CONSEQUENCES` de `utils/demande_suppression`,
  * coprofirst v3.89.0), reprises de l'iOS (`FixturesSuppressionCompte`). Identité fictive.
  */
@@ -15,9 +16,9 @@ object FixturesProfil {
       "id": 7, "nom": "Exemple", "prenom": "Camille", "email": "camille@exemple.fr",
       "statut": "copropriétaire_résident", "role": "conseil_syndical", "roles": ["propriétaire", "conseil_syndical"],
       "actif": true, "onboarding_complete": true, "onboarding_etape": 0, "preferences_notifications": "{}",
-      "cree_le": "2026-03-02T10:00:00Z", "nom_affiche": "Camille EXEMPLE", "nom_aide_affiche": "",
+      "cree_le": "2026-03-02T10:00:00", "nom_affiche": "Camille EXEMPLE", "nom_aide_affiche": "",
       "telephone": "+33 6 00 00 00 00", "batiment_nom": "Bât. A", "libelle_logement": "Bât. A, T3, 2ème",
-      "derniere_connexion": "2026-11-14T18:30:00Z", "opt_out_telemetrie": false, "est_moderateur": true
+      "derniere_connexion": "2026-11-14T18:30:00", "opt_out_telemetrie": false, "est_moderateur": true
     }"""
 
     /** GET /auth/demande-suppression, sans demande en cours. */
@@ -32,7 +33,7 @@ object FixturesProfil {
     }"""
 
     /** POST /auth/demande-suppression → la demande ouverte. */
-    const val DEMANDE = """{"id": 1, "statut": "ouverte", "cree_le": "2026-11-12T09:00:00Z", "traitee_le": null, "delai_annonce_jours": 30}"""
+    const val DEMANDE = """{"id": 1, "statut": "ouverte", "cree_le": "2026-11-12T09:00:00", "traitee_le": null, "delai_annonce_jours": 30}"""
 
     /** GET /auth/demande-suppression, la demande en cours. */
     const val ETAT_AVEC_DEMANDE = """{"delai_annonce_jours": 30, "consequences": [], "demande": $DEMANDE}"""
