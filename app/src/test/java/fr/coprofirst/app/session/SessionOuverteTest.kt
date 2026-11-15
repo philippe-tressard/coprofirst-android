@@ -19,7 +19,7 @@ class SessionOuverteTest {
     private val serveur = MockWebServer().apply { start() }
     private val sessions = SessionsParHote(OkHttpClient())
     private val base = { _: AdresseInstallation -> serveur.url("/api").toString() }
-    private val residence = Installation("https://residence.exemple.fr", "Les Glycines")
+    private val residence = Installation("https://residence.exemple.test", "Les Glycines")
     private val session = SessionOuverte(residence, sessions, Dispatchers.Unconfined, base)
 
     @After
@@ -41,7 +41,7 @@ class SessionOuverteTest {
     @Test
     fun lesRequetesPortentLaSessionDeLHote() = runTest {
         repondre(200, "{}", "Set-Cookie" to "access_token=jeton; Path=/; HttpOnly")
-        Connexion(sessions, Dispatchers.Unconfined, base).connecter(residence, "a@exemple.fr", "x")
+        Connexion(sessions, Dispatchers.Unconfined, base).connecter(residence, "a@exemple.test", "x")
         serveur.takeRequest()
         repondre(200, """{"site_nom": "Les Glycines"}""")
         assertEquals("Les Glycines", session.appeler { b, c -> ConfigApi(b, c).getConfig() }["site_nom"])

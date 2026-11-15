@@ -43,7 +43,7 @@ class NavigationTest {
 
     @Test
     fun laConfigServieRegleLaBarre() {
-        val adresse = AdresseInstallation.normaliser("residence.exemple.fr")!!
+        val adresse = AdresseInstallation.normaliser("residence.exemple.test")!!
         val installation = Installation.depuisConfig(
             adresse,
             mapOf("site_nom" to "R", "pages_order" to """["faq"]""", "page_config_faq" to """{"navLabel":"Aide"}"""),

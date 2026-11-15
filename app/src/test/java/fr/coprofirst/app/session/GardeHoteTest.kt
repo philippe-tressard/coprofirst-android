@@ -8,26 +8,26 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class GardeHoteTest {
-    private val connue = Installation("https://connue.exemple.fr", "Connue")
+    private val connue = Installation("https://connue.exemple.test", "Connue")
     private val garde = GardeHote { listOf(connue) }
     private fun adresse(hote: String) = AdresseInstallation.normaliser(hote)!!
 
     @Test
     fun saisieDUnHoteConnuOuDeLaDemoPasseSansConfirmation() {
-        assertFalse(garde.exigeConfirmation(adresse("connue.exemple.fr"), OrigineAdresse.Saisie))
+        assertFalse(garde.exigeConfirmation(adresse("connue.exemple.test"), OrigineAdresse.Saisie))
         assertFalse(garde.exigeConfirmation(AdresseInstallation.DEMO, OrigineAdresse.Saisie))
-        assertTrue(garde.exigeConfirmation(adresse("jamais-vu.exemple.fr"), OrigineAdresse.Saisie))
+        assertTrue(garde.exigeConfirmation(adresse("jamais-vu.exemple.test"), OrigineAdresse.Saisie))
     }
 
     @Test
     fun unQROuUnLienSeConfirmentToujours() {
-        assertTrue(garde.exigeConfirmation(adresse("connue.exemple.fr"), OrigineAdresse.Scan))
+        assertTrue(garde.exigeConfirmation(adresse("connue.exemple.test"), OrigineAdresse.Scan))
         assertTrue(garde.exigeConfirmation(AdresseInstallation.DEMO, OrigineAdresse.Lien))
     }
 
     @Test
     fun confirmerExigeLaPreuveOuLeSecondAccord() {
-        val hote = adresse("jamais-vu.exemple.fr")
+        val hote = adresse("jamais-vu.exemple.test")
         assertFalse(garde.confirmer(hote, preuve = null, secondAccord = true))
         assertFalse(garde.confirmer(hote, PreuveHote.Absente, secondAccord = false))
         assertFalse(garde.confirmer(hote, PreuveHote.SansLApp, secondAccord = false))
