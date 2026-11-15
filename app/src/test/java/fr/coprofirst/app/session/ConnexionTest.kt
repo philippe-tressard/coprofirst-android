@@ -18,7 +18,7 @@ class ConnexionTest {
     private val serveur = MockWebServer().apply { start() }
     private val sessions = SessionsParHote(OkHttpClient())
     private val connexion = Connexion(sessions, Dispatchers.Unconfined) { serveur.url("/api").toString() }
-    private val residence = Installation("https://residence.exemple.fr", "Les Glycines")
+    private val residence = Installation("https://residence.exemple.test", "Les Glycines")
 
     @After
     fun arreter() = serveur.close()
@@ -30,7 +30,7 @@ class ConnexionTest {
     }
 
     private suspend fun echec(): ErreurService = try {
-        connexion.connecter(residence, "a@exemple.fr", "secret")
+        connexion.connecter(residence, "a@exemple.test", "secret")
         error("connexion acceptée")
     } catch (erreur: ErreurService) {
         erreur
@@ -39,13 +39,13 @@ class ConnexionTest {
     @Test
     fun laSessionVitEnCookiesDeLHoteEtSOublieALaDeconnexion() = runTest {
         repondre(200, "Set-Cookie" to "access_token=jeton; Path=/; HttpOnly")
-        connexion.connecter(residence, " a@exemple.fr ", "secret")
+        connexion.connecter(residence, " a@exemple.test ", "secret")
         val envoi = serveur.takeRequest()
         assertEquals("/api/auth/login", envoi.url.encodedPath)
-        assertEquals("""{"email":"a@exemple.fr","password":"secret"}""", envoi.body?.utf8())
+        assertEquals("""{"email":"a@exemple.test","password":"secret"}""", envoi.body?.utf8())
         assertEquals("jeton", sessions.cookie(residence.adresse!!, "access_token"))
         // Une autre résidence n'a pas les cookies de la première.
-        assertNull(sessions.cookie(AdresseInstallation.normaliser("autre.exemple.fr")!!, "access_token"))
+        assertNull(sessions.cookie(AdresseInstallation.normaliser("autre.exemple.test")!!, "access_token"))
         repondre(200)
         connexion.deconnecter(residence)
         assertEquals("access_token=jeton", serveur.takeRequest().headers["Cookie"])
