@@ -9,8 +9,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     session/ClientHttp.kt ; une route absente = un ticket dans coprofirst
   • une couleur, une taille, un format          → généré depuis coprofirst, jamais recopié
   • une dépendance, une image, une police       → REUSE.toml, licence compatible (standards/14 §6)
-  • le logo de CoproFirst                       → sa licence ne couvre pas encore l'app
-    Android : rien d'intégré avant l'élargissement côté coprofirst
+  • le logo de CoproFirst                       → LicenseRef-CoproFirst-Logo : recopié à
+    l'identique (scripts/importer-logo.sh), ni redessiné ni recoloré
   • une notification, un SDK, une collecte, un droit → standards/14 §1 et §3 bis ;
     la section « Sécurité des données » de Google Play suit le code
   • signature, Play Console, fiche du magasin   → rien sans demande explicite de Philippe

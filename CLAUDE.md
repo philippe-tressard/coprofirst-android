@@ -47,9 +47,12 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   pour les magasins Android — `LICENSES/LicenseRef-CoproFirst-Magasins.txt`. Chaque
   fichier se déclare `AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins`.
   `LICENSE` se réassemble par `bash scripts/verifier-depot.sh --ecrire-licence`.
-- **Le logo** de CoproFirst n'est **pas** intégré : sa licence (`LicenseRef-CoproFirst-Logo`)
-  a été élargie à l'app iOS seule (coprofirst#2474). D'ici son élargissement à
-  Android, pas d'icône (dispense de lint `MissingApplicationIcon`, à retirer avec elle).
+- **Le logo** de CoproFirst est intégré (icône adaptative, médaillon de l'accueil)
+  sous sa licence propre `LicenseRef-CoproFirst-Logo`, élargie à l'app Android
+  (usage 5, coprofirst#2743, à partir de `LOGO` de `contrat/plancher.env`). Le dessin
+  et la licence sont recopiés à l'identique (`scripts/importer-logo.sh`, vérifié en
+  CI) ; le format d'Android en est généré au build (`scripts/generer_logo.py`, qui
+  refuse tout élément qu'il ne sait pas rendre) — jamais redessiné ni recoloré.
 - **Ce dépôt et coprofirst ne partagent que ce que coprofirst publie** avec chaque
   release : le contrat (`openapi.json`) et les tables pour les clients
   (`tables-clients.json`), recopiés à l'octet dans `contrat/`. Les **palettes** se
