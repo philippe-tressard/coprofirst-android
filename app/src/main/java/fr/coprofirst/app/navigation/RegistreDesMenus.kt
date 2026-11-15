@@ -51,7 +51,7 @@ object RegistreDesMenus {
 
         // "communaute" — #20
 
-        // "faq" — #20
+        "faq" to { contexte -> fr.coprofirst.app.fonctions.faq.EcranFaq(contexte) },
 
         "profil" to { contexte -> fr.coprofirst.app.fonctions.profil.EcranProfil(contexte) },
 
