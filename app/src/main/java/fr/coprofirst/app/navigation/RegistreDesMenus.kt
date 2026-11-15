@@ -56,7 +56,7 @@ object RegistreDesMenus {
 
         "prestataires" to { contexte -> fr.coprofirst.app.fonctions.prestataires.EcranPrestataires(contexte) },
 
-        // "communaute" — #20
+        "communaute" to { contexte -> fr.coprofirst.app.fonctions.communaute.EcranCommunaute(contexte) },
 
         "faq" to { contexte -> fr.coprofirst.app.fonctions.faq.EcranFaq(contexte) },
 

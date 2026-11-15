@@ -118,6 +118,8 @@ val genererTables = generation("genererTables", "contrat/tables-clients.json", "
 val genererTablesMonLot = generation("genererTablesMonLot", "contrat/tables-clients.json", "scripts/generer_tables_mon_lot.py")
 val genererTablesDelegations =
     generation("genererTablesDelegations", "contrat/tables-clients.json", "scripts/generer_tables_delegations.py")
+val genererTablesCommunaute =
+    generation("genererTablesCommunaute", "contrat/tables-clients.json", "scripts/generer_tables_communaute.py")
 val genererTablesEspaceCS = generation("genererTablesEspaceCS", "contrat/tables-clients.json", "scripts/generer_tables_espace_cs.py")
 val genererTablesPrestataires =
     generation("genererTablesPrestataires", "contrat/tables-clients.json", "scripts/generer_tables_prestataires.py")
@@ -132,6 +134,7 @@ androidComponents {
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererTables, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererTablesMonLot, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererTablesDelegations, GenererDepuisPython::sortie)
+        variante.sources.kotlin?.addGeneratedSourceDirectory(genererTablesCommunaute, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererTablesEspaceCS, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererTablesPrestataires, GenererDepuisPython::sortie)
         variante.sources.res?.addGeneratedSourceDirectory(genererLogo, GenererDepuisPython::sortie)
