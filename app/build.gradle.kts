@@ -85,10 +85,8 @@ android {
 /**
  * Ce qui se GÉNÈRE au build par un script Python du dépôt, depuis un fichier recopié à
  * l'octet : les palettes (contrat/tables-clients.json → scripts/generer_charte.py), les
- * tables de navigation, la liste blanche du texte riche, les règles des pièces jointes et
- * les natures du fil (→ scripts/generer_tables.py), celles de « Mes lots & accès »
- * (→ scripts/generer_tables_mon_lot.py), celles des « Délégations aidant »
- * (→ scripts/generer_tables_delegations.py)
+ * tables des menus — navigation, texte riche, pièces jointes, natures du fil, et celles
+ * de chaque menu (→ scripts/generer_tables*.py, une tâche par script ci-dessous)
  * et le logo au format d'Android
  * (app/src/main/logo/logo.svg → scripts/generer_logo.py).
  * Rien de généré n'est versionné ; aucune couleur ne s'écrit à la main.
@@ -120,6 +118,7 @@ val genererTables = generation("genererTables", "contrat/tables-clients.json", "
 val genererTablesMonLot = generation("genererTablesMonLot", "contrat/tables-clients.json", "scripts/generer_tables_mon_lot.py")
 val genererTablesDelegations =
     generation("genererTablesDelegations", "contrat/tables-clients.json", "scripts/generer_tables_delegations.py")
+val genererTablesEspaceCS = generation("genererTablesEspaceCS", "contrat/tables-clients.json", "scripts/generer_tables_espace_cs.py")
 
 // Les natures du fil nomment leurs teintes par les jetons de `Couleurs` : generer_tables.py
 // les lit dans generer_charte.py (`propriete`, jetons portés), qu'il charge par son chemin.
@@ -131,6 +130,7 @@ androidComponents {
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererTables, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererTablesMonLot, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererTablesDelegations, GenererDepuisPython::sortie)
+        variante.sources.kotlin?.addGeneratedSourceDirectory(genererTablesEspaceCS, GenererDepuisPython::sortie)
         variante.sources.res?.addGeneratedSourceDirectory(genererLogo, GenererDepuisPython::sortie)
     }
 }
