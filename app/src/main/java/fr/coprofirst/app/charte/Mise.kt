@@ -3,6 +3,8 @@
 
 package fr.coprofirst.app.charte
 
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.Easing
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.TextStyle
@@ -36,6 +38,16 @@ object Mise {
 
     /** Le côté de la vignette d'une carte du fil (`VignettePieces`). */
     val vignette = 56.dp
+}
+
+/** Le mouvement commun des écrans. */
+object Mouvement {
+    /**
+     * La courbe d'entrée : ease-out marquée (`cubic-bezier(0.23, 1, 0.32, 1)`) — ce qui
+     * paraît part vite et se pose doucement. Le passage d'un écran, l'apparition d'une
+     * rangée, le fondu d'un aperçu servi.
+     */
+    val sortie: Easing = CubicBezierEasing(0.23f, 1f, 0.32f, 1f)
 }
 
 /** Les styles de texte de la charte, au-delà de ceux de Material. */
