@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+-->
+<!-- Ma résidence (#17) : les libellés de l'iOS (TextesResidence, TextesCarnet, TextesReglement, TextesAvis), mot pour mot. -->
+<resources>
+    <!-- Fiche -->
+    <string name="residence_copropriete">Copropriété</string>
+    <string name="residence_la_residence">La résidence</string>
+    <string name="residence_aucune_photo">Aucune photo</string>
+    <string name="residence_adresse">Adresse</string>
+    <string name="residence_immatriculation">N° immatriculation</string>
+    <string name="residence_lots_principaux">Lots d\'habitation, commerces et bureaux</string>
+    <string name="residence_lots_total">Lots au total</string>
+    <string name="residence_assurance">🛡️ Assurance</string>
+    <string name="residence_syndic">🏢 Syndic</string>
+    <string name="residence_syndic_aide">Ouvre l\'annuaire du syndic</string>
+    <string name="residence_echeance">\u0020— échéance %1$s</string>
+    <string name="residence_reconduit">\u0020(reconduit tacitement)</string>
+    <string name="residence_mandat_jusqu_au">\u0020— mandat jusqu\'au %1$s</string>
+    <string name="residence_mandat_echu">\u0020— mandat échu depuis le %1$s</string>
+    <string name="residence_composition">Composition</string>
+    <string name="residence_batiment">Bâtiment</string>
+    <string name="residence_bat">Bât. %1$s</string>
+    <string name="residence_bat_inconnu">Bât. ?</string>
+    <string name="residence_communs">Communs</string>
+    <string name="residence_total">Total</string>
+    <string name="residence_parkings">Parkings</string>
+    <string name="residence_caves">Caves</string>
+    <string name="residence_appartements">Appartements</string>
+    <string name="residence_commerces">Loc. commerciaux</string>
+    <string name="residence_regles">📋 Règles &amp; Recommandations</string>
+    <string name="residence_regles_vide">Aucune règle ajoutée.</string>
+    <string name="residence_deplier">Déplie la règle</string>
+    <string name="residence_replier">Replie la règle</string>
+    <string name="residence_plans">🗺️ Plans</string>
+    <string name="residence_plans_vide">Aucun plan ajouté.</string>
+    <string name="residence_reglement">📖 Règlement de copropriété</string>
+    <string name="residence_reglement_vide">Aucun règlement ajouté.</string>
+    <string name="residence_comptes_rendus">📋 Comptes-rendus d\'AG</string>
+    <string name="residence_comptes_rendus_vide">Aucun compte-rendu ajouté.</string>
+    <string name="residence_diagnostics">🔍 Diagnostics et Contrôles Réglementaires</string>
+    <string name="residence_diagnostics_vide">Aucun diagnostic réglementaire disponible.</string>
+    <string name="residence_ouvrir_rapport">Ouvre le rapport</string>
+    <string name="residence_synthese">💡 Synthèse</string>
+    <string name="residence_annexes">Annexes</string>
+    <string name="residence_ouvrir_document">Ouvre le document</string>
+
+    <!-- Gouttière : l'abrégé de chaque nature -->
+    <string name="residence_nature_plan">PLAN</string>
+    <string name="residence_nature_reglement">RÈGL.</string>
+    <string name="residence_nature_ag">AG</string>
+    <string name="residence_nature_diagnostic">DIAG.</string>
+    <string name="residence_nature_contrat">CONTRAT</string>
+    <string name="residence_nature_intervention">INTERV.</string>
+    <string name="residence_nature_affaire">AFF.</string>
+
+    <!-- Carnet d'entretien -->
+    <string name="carnet_aide">Ce que la copropriété a fait entretenir, réparer et contrôler. Il est constitué automatiquement à partir des contrats, des entretiens terminés et des affaires résolues du bâti, rangées sous l\'équipement que le conseil syndical désigne — rien n\'y est saisi à la main. Une question ou une nuisance n\'y figure pas.</string>
+    <string name="carnet_sans_equipement">Sans équipement rattaché</string>
+    <string name="carnet_vide">Aucun contrat, aucune intervention terminée ni aucun ticket résolu pour ce périmètre.</string>
+    <string name="carnet_perimetre">Périmètre</string>
+    <string name="carnet_tous">Toute la résidence</string>
+    <string name="carnet_bilan_sur_le_site">Le bilan de l\'exercice, réservé au conseil syndical, se consulte sur le site.</string>
+    <plurals name="carnet_visites_attendues">
+        <item quantity="one">%1$d visite attendue</item>
+        <item quantity="many">%1$d visites attendues</item>
+        <item quantity="other">%1$d visites attendues</item>
+    </plurals>
+    <string name="carnet_echeance_depassee">dont l\'échéance est dépassée :</string>
+    <string name="carnet_voir_affaire">Voir l\'affaire</string>
+    <string name="carnet_ouvrir_sur_le_site">Ouvrir sur le site</string>
+
+    <!-- Règlement -->
+    <string name="reglement_avis_debut">Les réponses sont un\u0020</string>
+    <string name="reglement_avis_gras">avis indicatif</string>
+    <string name="reglement_avis_fin_cs">, rédigé par l\'assistant d\'après le texte de travail joint ici : il ne se substitue pas aux actes authentiques, qui seuls font foi. Relisez-le — et vérifiez les extraits signalés ⚠️ — avant de le relayer.</string>
+    <string name="reglement_avis_fin">\u0020: seuls les actes authentiques font foi. En cas de doute, interrogez un juriste ou le syndic.</string>
+    <string name="reglement_texte">Texte du règlement</string>
+    <string name="reglement_texte_dans_la_fiche">Le règlement de copropriété est disponible sur le site, dans la Fiche.</string>
+    <string name="reglement_voir_dans_la_fiche">Voir le règlement dans la Fiche</string>
+    <string name="reglement_votre_question">Votre question</string>
+    <string name="reglement_exemple">Ex. : Un copropriétaire peut-il installer une climatisation sur son balcon ?</string>
+    <string name="reglement_poser">Poser la question</string>
+    <string name="reglement_lecture">Lecture du règlement…</string>
+    <string name="reglement_patience">L\'assistant lit tout le règlement avant de répondre : comptez jusqu\'à deux minutes.</string>
+    <string name="reglement_indisponible_cs">L\'assistant n\'est pas activé pour cet usage : Admin › Assistant IA › « Question au règlement de copropriété ».</string>
+    <string name="reglement_indisponible">L\'assistant ne répond pas pour le moment : réessayez plus tard.</string>
+    <string name="reglement_sans_texte">Le texte du règlement n\'est pas encore à la disposition de l\'assistant.</string>
+    <string name="reglement_questions_posees">Questions posées</string>
+    <string name="reglement_vos_questions">Vos questions</string>
+    <string name="reglement_aucune">Aucune question posée</string>
+    <string name="reglement_aucune_detail">Les réponses de l\'assistant s\'afficheront ici.</string>
+    <string name="reglement_aucune_detail_prive">Les réponses de l\'assistant s\'afficheront ici. Vous seul et le conseil syndical les lisez.</string>
+    <plurals name="reglement_extraits">
+        <item quantity="one">%1$d/%2$d extrait</item>
+        <item quantity="many">%1$d/%2$d extraits</item>
+        <item quantity="other">%1$d/%2$d extraits</item>
+    </plurals>
+    <plurals name="reglement_verifies">
+        <item quantity="one">\u0020vérifié</item>
+        <item quantity="many">\u0020vérifiés</item>
+        <item quantity="other">\u0020vérifiés</item>
+    </plurals>
+    <string name="reglement_texte_remplace">Texte remplacé depuis</string>
+    <string name="reglement_dans_la_faq">📚 Dans la FAQ</string>
+    <string name="reglement_ouvrir_avis">Ouvre l\'avis</string>
+
+    <!-- L'avis -->
+    <string name="avis_titre">Avis sur le règlement</string>
+    <string name="avis_fermer">OK</string>
+    <string name="avis_posee">Posée le %1$s. Avis indicatif, qui ne se substitue pas aux actes authentiques.</string>
+    <string name="avis_redige_par_d_apres">\u0020Rédigé par %1$s, d\'après %2$s.</string>
+    <string name="avis_redige_par">\u0020Rédigé par %1$s.</string>
+    <string name="avis_redige_d_apres">\u0020Rédigé d\'après %1$s.</string>
+    <string name="avis_selon_reglement">D\'après le règlement</string>
+    <string name="avis_extraits_reglement">Extraits du règlement</string>
+    <string name="avis_selon_ag">D\'après les assemblées générales</string>
+    <string name="avis_extraits_ag">Extraits des décisions d\'AG</string>
+    <string name="avis_synthese">Synthèse</string>
+    <string name="avis_reserves">Réserves</string>
+    <string name="avis_fondements">Ce qui fonde l\'avis</string>
+    <string name="avis_le_reglement">Le règlement de copropriété</string>
+    <string name="avis_les_assemblees">Les assemblées générales</string>
+    <string name="avis_non_retrouve_court">⚠️ Non retrouvé</string>
+    <string name="avis_retrouve">Retrouvé dans le texte</string>
+    <string name="avis_aller_a_l_extrait">Ouvre la section et montre l\'extrait</string>
+    <string name="avis_non_retrouve">⚠️ Non retrouvé mot pour mot dans le texte — à vérifier</string>
+    <string name="avis_reference_donnee">\u0020(référence donnée : %1$s)</string>
+    <plurals name="avis_sans_extrait">
+        <item quantity="one">Renvoi sans extrait — à vérifier : %1$s.</item>
+        <item quantity="many">Renvoi sans extraits — à vérifier : %1$s.</item>
+        <item quantity="other">Renvoi sans extraits — à vérifier : %1$s.</item>
+    </plurals>
+    <string name="avis_deplie">déplié</string>
+    <string name="avis_replie">replié</string>
+    <string name="avis_deplier">Déplie la section</string>
+    <string name="avis_replier">Replie la section</string>
+</resources>

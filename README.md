@@ -68,6 +68,16 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   au compte ; au conseil syndical, « Nouvelle délégation » (personne aidée, proche aidant,
   motif, date de fin facultative). Une délégation est en lecture seule : l'aidant consulte,
   sans agir au nom de la personne aidée.
+- **Ma résidence** : la Fiche (photo, immatriculation, lots, assurance et syndic — qui
+  ouvre l'annuaire du syndic —, composition par bâtiment ; règles, plans, règlement,
+  comptes-rendus d'AG et diagnostics, chacun s'ouvrant dans l'app de l'appareil) ; aux
+  propriétaires et au conseil, le Carnet d'entretien (par équipement, visites en retard
+  en tête, filtre par périmètre) et le Règlement (poser une question à l'assistant, lire
+  son avis, ses fondements et les extraits qu'il cite). Le bilan de l'exercice se lit
+  encore sur le site.
+- **Annuaire** : le conseil syndical (par bâtiment, président et gestionnaire mis en
+  avant, groupe WhatsApp) et le syndic (espace client, contacts) — un toucher appelle ou
+  écrit.
 
 Pas encore : les écrans des pages, le courriel retenu et la
 biométrie, les personnages de la démo, le QR code, les liens d'application (tickets
