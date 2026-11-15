@@ -102,6 +102,7 @@ class ServiceProfilApi(private val session: SessionOuverte) : ServiceProfil {
 | `BoutonPlein(libelle, actif?, enCours?)` | `.plein` | Le bouton principal ; le seul `Button` de l'app. |
 | `BoutonContour(libelle)` | `.contour` | Le bouton secondaire. |
 | `Roles.statut(v)`, `Roles.role(v)`, `Roles.statutAbrege(v)` | `RolesUtilisateur.libelleStatut` | Le libellé et la pastille (`LibelleTeinte`) d'un statut ou d'un rôle servi, depuis les tables générées ; une clé inconnue s'affiche brute. |
+| `Roles.affiches(statut, roles)`, `Roles.demandables` | `ProfilResidence.rolesAffiches` | Les pastilles d'un compte (statut, puis rôles mis en avant) ; les statuts qu'un compte peut demander. |
 | `ConfirmationDeSortie(geste, sortie, fermer)`, `GesteDeSortie` | `confirmationDeSortie` | La confirmation de « Se déconnecter » / « Oublier toutes les résidences » (repère `sortie.confirmer`). |
 | `Apparence` | Profil › Apparence | Le thème de l'appareil : `choix` (`auto`, `clair`, `sombre`), `options` (`OPTIONS_THEME`), `choisir(v)` — appliqué à la racine. |
 
