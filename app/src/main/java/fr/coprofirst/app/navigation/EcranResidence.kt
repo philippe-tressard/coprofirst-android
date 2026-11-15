@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -54,6 +55,7 @@ fun EcranResidence(session: SessionOuverte, sortie: GestesDeSortie, apparence: A
     // Une page que les droits retirent (relus) ne reste pas ouverte.
     val onglet = etat.onglet.takeIf { it == EtatResidence.PLUS || barre.any { p -> p.id == it } } ?: barre.firstOrNull()?.id
     var pageDePlus by rememberSaveable(onglet) { mutableStateOf<String?>(null) }
+    val barreDuHaut = remember { BarreDuHaut() }
 
     val ouverte: PageDeNavigation? = when {
         onglet != EtatResidence.PLUS -> barre.firstOrNull { it.id == onglet }
@@ -63,6 +65,7 @@ fun EcranResidence(session: SessionOuverte, sortie: GestesDeSortie, apparence: A
     CadreResidence(
         titre = ouverte?.titre ?: stringResource(R.string.plus),
         retour = if (pageDePlus != null) ({ pageDePlus = null }) else null,
+        barreDuHaut = barreDuHaut,
         barre = {
             NavigationBar {
                 barre.forEach { page ->
@@ -83,7 +86,7 @@ fun EcranResidence(session: SessionOuverte, sortie: GestesDeSortie, apparence: A
         },
     ) {
         if (ouverte != null) {
-            RegistreDesMenus.Ecran(ContexteDeMenu(ouverte, session, etat.droits, sortie, apparence))
+            RegistreDesMenus.Ecran(ContexteDeMenu(ouverte, session, etat.droits, sortie, apparence, barreDuHaut))
         } else {
             ListeDePlus(plus, ouvrir = { pageDePlus = it })
         }
@@ -103,6 +106,7 @@ object PagesDePlus {
 private fun CadreResidence(
     titre: String,
     retour: (() -> Unit)?,
+    barreDuHaut: BarreDuHaut,
     barre: @Composable () -> Unit,
     contenu: @Composable () -> Unit,
 ) {
@@ -117,6 +121,7 @@ private fun CadreResidence(
                         }
                     }
                 },
+                actions = { ActionsDeclarees(barreDuHaut) },
             )
         },
         bottomBar = barre,

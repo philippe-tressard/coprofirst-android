@@ -10,8 +10,8 @@ import fr.coprofirst.app.session.SessionOuverte
 
 /**
  * Ce qu'un écran de menu reçoit : sa page, la session de la résidence, les droits du
- * compte, les gestes de sortie (à confirmer par `ConfirmationDeSortie`) et le thème de
- * l'appareil.
+ * compte, les gestes de sortie (à confirmer par `ConfirmationDeSortie`), le thème de
+ * l'appareil et la barre du haut (`ActionsDeBarre`).
  */
 data class ContexteDeMenu(
     val page: PageDeNavigation,
@@ -19,6 +19,8 @@ data class ContexteDeMenu(
     val droits: DroitsOnglet,
     val sortie: GestesDeSortie,
     val apparence: Apparence,
+    /** La barre du haut : un écran y pose ses actions par `ActionsDeBarre`. */
+    val barre: BarreDuHaut,
 )
 
 /**
