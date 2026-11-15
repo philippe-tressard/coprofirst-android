@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.navigation
 
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 
 /**
@@ -31,7 +32,7 @@ sealed interface Destination {
  * La fiche d'un élément, déclarée par son menu au registre : son titre (la barre du haut)
  * et son écran, qui reçoit le contexte de la résidence et l'identifiant de l'élément.
  */
-class FicheDeMenu(val titre: String, val ecran: @Composable (ContexteDeMenu, String) -> Unit)
+class FicheDeMenu(@StringRes val titre: Int, val ecran: @Composable (ContexteDeMenu, String) -> Unit)
 
 /** Où la porte pose une destination — `Aiguillage` de l'iOS. */
 sealed interface Aiguillage {
