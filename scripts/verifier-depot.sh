@@ -15,7 +15,8 @@
 #      depuis coprofirst ;
 #   7. aucune requête HTTP ni route écrite à la main dans l'app : le client généré
 #      (client-api) seul — autotest d'abord pour chaque motif.
-#   8. un seul bouton plein, `BoutonPlein` (Composants.kt) ;
+#   7 bis. aucun format de date ou de nombre hors de FormatsDuSite ;
+#   8. un seul bouton plein, `BoutonPlein` (commun/Boutons.kt) ;
 #   9. les générateurs du build passent leurs tests (scripts/test_*.py) ;
 #  10. aucun chemin de .claude/worktrees/ suivi.
 #
@@ -135,7 +136,13 @@ interdire "$REQUETE_MAIN" "requête ou route écrite à la main — passer par l
 # les couleurs par défaut, illisibles au sombre (constaté le 15/11/2026).
 BOUTON_PLEIN='(^|[^A-Za-z])Button\('
 autotest_motif "bouton plein" "$BOUTON_PLEIN" '    Button(onClick = f) { Text("x") }' '    TextButton(onClick = f) { Text("x") }'
-interdire "$BOUTON_PLEIN" "bouton plein écrit à la main — passer par BoutonPlein" '^app/src/main/java/fr/coprofirst/app/entree/Composants\.kt$'
+interdire "$BOUTON_PLEIN" "bouton plein écrit à la main — passer par BoutonPlein" '^app/src/main/java/fr/coprofirst/app/commun/Boutons\.kt$'
+
+# Les dates et les nombres s'écrivent par `FormatsDuSite`, seul, à la règle du site
+# (fr-FR, Paris) : aucun écran ne compose son propre format.
+FORMAT_MAIN='DateTimeFormatter|SimpleDateFormat|NumberFormat|DecimalFormat|String\.format\(|"%[0-9.]*[df]"'
+autotest_motif "formats" "$FORMAT_MAIN" 'val t = DateTimeFormatter.ofPattern("dd/MM")' 'val t = FormatsDuSite.dateCourte(instant)'
+interdire "$FORMAT_MAIN" "format de date ou de nombre écrit à la main — passer par FormatsDuSite" '^app/src/main/java/fr/coprofirst/app/commun/formats/FormatsDuSite\.kt$'
 
 # Les générateurs du build (palettes, logo) : leurs tests, dont la génération des
 # fichiers recopiés. Chaque `scripts/test_*.py` versionné est joué.
