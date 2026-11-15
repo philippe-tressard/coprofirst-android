@@ -10,11 +10,13 @@ import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import fr.coprofirst.app.commun.detail.sondage.ReperesSondage
 import fr.coprofirst.app.entree.NavigationEntree
 import fr.coprofirst.app.entree.Reperes
 import fr.coprofirst.app.entree.ServeurDeTest
@@ -91,8 +93,27 @@ class FilInterfaceTest {
         attendreTexte("Voir sur le site")
     }
 
+    /** Une carte sondage pousse la fiche du sondage, comme l'iOS (`SondageView`) ; le retour la ferme. */
+    @Test
+    fun leSondageSOuvreSurSaFiche() {
+        attendre("fil.sondage_ouvert:3")
+        serveur.fixes["/api/sondages/3"] = SONDAGE
+        serveur.repondre(404) // GET /auth/me, lu avec la fiche : sans compte, « Signaler » partout
+        ecran.onNodeWithTag("fil.sondage_ouvert:3").assertHasClickAction().performClick()
+        attendre(ReperesSondage.QUESTION)
+        attendreTexte("Samedi 6 juin")
+        attendreTexte("Sondage") // le titre de la barre du haut
+        ecran.onNodeWithContentDescription("Retour").performClick()
+        ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(ReperesSondage.QUESTION)).fetchSemanticsNodes().isEmpty() }
+    }
+
     private companion object {
         const val DELAI_MS = 10_000L
+
+        /** GET /sondages/3 à la forme du schéma (`SondageDetail`). */
+        const val SONDAGE = """{"id": 3, "question": "Quel jour pour la fête des voisins ?", "cloture": false,
+            "cree_le": "2026-11-08T09:00:00", "resultats_publics": true, "resultats_visibles": true,
+            "options": [{"id": 1, "libelle": "Samedi 6 juin", "ordre": 0, "nb_votes": 14}], "commentaires": []}"""
 
         /** GET /flux à la forme du schéma (`FluxResponse`), daté de ce matin pour « Aujourd'hui ». */
         fun fil(maintenant: Instant): String {
@@ -103,7 +124,9 @@ class FilInterfaceTest {
                  "detail": "<p>Niveau -1, place 12.</p>", "badges": ["urgent"], "lien": "/tickets/41",
                  "meta": {"ticket_id": 41, "affaire": {"natures": ["activite"], "perimetre_libelle": "Parking"}}},
                 {"type": "point_conseil", "id": "2", "date": "$plusTot", "titre": "Point avec le syndic",
-                 "detail": "<p>Ordre du jour : ascenseur, ravalement.</p>", "lien": "/points-conseil", "meta": {}}
+                 "detail": "<p>Ordre du jour : ascenseur, ravalement.</p>", "lien": "/points-conseil", "meta": {}},
+                {"type": "sondage_ouvert", "id": "3", "date": "$plusTot", "titre": "Quel jour pour la fête des voisins ?",
+                 "lien": "/sondages/3", "meta": {"sondage_id": 3}}
             ]}"""
         }
     }
