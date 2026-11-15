@@ -46,6 +46,9 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   choisir plusieurs et les supprimer — toute suppression se confirme, elle est
   définitive. Balayer vers la droite marque lu, vers la gauche supprime. Tirer la liste
   la relit. La cloche de chaque écran et les notifications push viendront ensuite.
+- **FAQ** : les questions de la résidence par catégorie, une réponse dépliée à la fois ;
+  « Partager le lien » d'une question ; le Manuel utilisateur. La rédaction reste au site,
+  et l'écran ne le dit qu'à qui le serveur l'ouvre.
 - **Mes lots & accès** (onglet « Accès ») : ses lots et leurs caractéristiques (vue du
   locataire, du bailleur, ou de tous les autres) ; ses badges Vigik et télécommandes,
   « Signaler perdu », « Nouvel accès » (pour un de ses lots) et « Déclarer un accès » ;

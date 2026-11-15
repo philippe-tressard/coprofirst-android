@@ -66,6 +66,19 @@ jamais sur ces droits seuls), `sortie` (`GestesDeSortie` : `deconnecter()`,
 l'écran — le `toolbar` de l'iOS ; elles se retirent quand l'écran se quitte). Le titre de la page est posé par la barre : l'écran n'en
 pose pas. Une page sans ligne au registre affiche « Bientôt ».
 
+**La porte** (#85) — `contexte.ouvrir(destination)` mène d'un écran ailleurs, sans toucher à
+la barre ni dépendre du code d'un autre menu : `Destination.Page(id)` (une page de la barre
+ou de « Plus »), `Destination.Element(nature, id)` (la fiche d'un élément, poussée par-dessus
+la page ouverte, avec retour), `Destination.Notifications` (la cloche). Elle rend `false`
+quand rien ne la porte dans l'app (page que le compte ne voit pas, fiche non déclarée) :
+l'écran garde son repli, « Voir sur le site » par exemple. Un menu **déclare** les éléments
+qu'il sait ouvrir dans `RegistreDesMenus.fiches`, par nature (celles du fil : `affaire`,
+`sondage`), sur SA ligne réservée :
+
+```kotlin
+        "affaire" to FicheDeMenu("Affaire") { contexte, id -> DetailAffaire(contexte, id) },
+```
+
 ## Navigation — `fr.coprofirst.app.navigation` (à la couche commune)
 
 | API | Pendant iOS | Rôle |
@@ -77,6 +90,7 @@ pose pas. Une page sans ligne au registre affiche « Bientôt ».
 | `OngletsDuSite.descriptifs[page]`, `OngletsDuSite.routes[page]` | `Tables<Menu>.descriptifs`, `.routes` | Le descriptif et l'adresse sur le site de chaque onglet (générés). |
 | `EcranResidence` | `OngletsView` | La barre (4 pages + « Plus ») ; en haut, la cloche. |
 | `ActionsDeBarre(contexte) { … }` | `.toolbar` | Les actions de la barre du haut, déclarées par l'écran affiché. |
+| `contexte.ouvrir(Destination)`, `RegistreDesMenus.fiches`, `FicheDeMenu` | `parcours.suivre`, `Destination`, `Aiguillage` | La porte : ouvrir une page, la fiche d'un élément ou la cloche depuis un écran. |
 
 ## Session — `fr.coprofirst.app.session`
 
