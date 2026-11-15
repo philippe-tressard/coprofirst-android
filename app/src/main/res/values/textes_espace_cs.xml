@@ -59,4 +59,62 @@ Les textes de l'Espace conseil syndical (#24), écrits une fois — ceux du site
         <item quantity="many">%1$s badges sur %2$s</item>
         <item quantity="other">%1$s badges sur %2$s</item>
     </plurals>
+
+    <!-- Courriels affaires (OngletCourriels.svelte) -->
+    <string name="espacecs_courriels_aucun">Aucun message relevé pour l’instant.</string>
+    <string name="espacecs_courriels_sans_objet">(sans objet)</string>
+    <string name="espacecs_courriels_rafraichir">Rafraîchir la liste des courriels</string>
+    <string name="espacecs_courriels_deplier">Montre l’expéditeur et le motif</string>
+    <string name="espacecs_courriels_replier">Replie le message</string>
+    <string name="espacecs_courriels_aide">Les %1$s derniers messages reçus à l\'adresse des affaires, du plus récent au plus ancien. Un message refusé n\'est pas perdu : corrigez ce que le motif indique (le plus souvent le numéro d\'affaire dans l\'objet), puis transférez-le de nouveau.</string>
+    <string name="espacecs_courriels_envoye">%1$s · envoyé le %2$s</string>
+    <string name="espacecs_courriels_affaire">Affaire #%1$s</string>
+
+    <!-- Annonces Hall (OngletAnnoncesHall, HistoriqueAnnoncesHall, FormulaireAnnonceHall) -->
+    <string name="espacecs_annonces_nouvelle">Nouvelle annonce</string>
+    <string name="espacecs_annonces_archives">Archives</string>
+    <string name="espacecs_annonces_aucune">Aucune annonce</string>
+    <string name="espacecs_annonces_aucune_detail">Créez la première annonce depuis l\'onglet « Nouvelle annonce ».</string>
+    <string name="espacecs_annonces_archivee">Archivée</string>
+    <string name="espacecs_annonces_actualite">Actualité</string>
+    <string name="espacecs_annonces_non_envoyee">Non envoyée</string>
+    <string name="espacecs_annonces_renvoyer">Renvoyer au CS du périmètre</string>
+    <string name="espacecs_annonces_archiver">Archiver</string>
+    <string name="espacecs_annonces_restaurer">Restaurer</string>
+    <string name="espacecs_annonces_supprimer">Supprimer définitivement</string>
+    <string name="espacecs_annonces_gestes">Gestes sur l\'annonce</string>
+    <string name="espacecs_annonces_deplier">Montre le message et ses envois</string>
+    <string name="espacecs_annonces_replier">Replie l\'annonce</string>
+    <string name="espacecs_annonces_assistant">Rédigée avec l\'assistant</string>
+    <string name="espacecs_annonces_titre">Titre</string>
+    <string name="espacecs_annonces_titre_exemple">Ex : Coupure d\'eau jeudi matin</string>
+    <string name="espacecs_annonces_message">Message</string>
+    <string name="espacecs_annonces_message_exemple">Le texte de l\'affiche…</string>
+    <string name="espacecs_annonces_format">Format</string>
+    <string name="espacecs_annonces_format_aide">Auto : le serveur choisit le plus grand format où le texte tient.</string>
+    <string name="espacecs_annonces_diffusion">Diffusion</string>
+    <string name="espacecs_annonces_envoyer_cs">Envoyer aux membres du CS du périmètre</string>
+    <string name="espacecs_annonces_envoyer_syndic">Envoyer au syndic</string>
+    <string name="espacecs_annonces_envoyer_auteur">M\'envoyer une copie</string>
+    <string name="espacecs_annonces_creer">Créer l\'annonce</string>
+    <string name="espacecs_annonces_sur_le_site">Les photos, l’assistant de rédaction, l’aperçu avant envoi, la reprise d’un élément du fil, le partage WhatsApp et le PDF de l’affiche se trouvent sur le site.</string>
+    <string name="espacecs_annonces_envoyee">Envoyée le %1$s à %2$s</string>
+    <plurals name="espacecs_annonces_destinataires">
+        <item quantity="one">%1$s destinataire</item>
+        <item quantity="many">%1$s destinataires</item>
+        <item quantity="other">%1$s destinataires</item>
+    </plurals>
+    <plurals name="espacecs_annonces_creee_envoyee">
+        <item quantity="one">Annonce %1$s créée et envoyée à %2$d membre du CS</item>
+        <item quantity="many">Annonce %1$s créée et envoyée à %2$d membres du CS</item>
+        <item quantity="other">Annonce %1$s créée et envoyée à %2$d membres du CS</item>
+    </plurals>
+    <string name="espacecs_annonces_creee_sans_envoi">Annonce %1$s créée — aucun membre du CS à notifier sur ce périmètre</string>
+    <string name="espacecs_annonces_renvoyee">Annonce renvoyée au CS du périmètre</string>
+    <string name="espacecs_annonces_restauree">Annonce restaurée</string>
+    <string name="espacecs_annonces_archivee_fait">Annonce archivée</string>
+    <string name="espacecs_annonces_supprimee">Annonce supprimée</string>
+    <string name="espacecs_annonces_supprimer_question">Supprimer « %1$s » ?</string>
+    <string name="espacecs_annonces_supprimer_message">Son PDF sera effacé ; les photos qu\'elle reprend restent.</string>
+    <string name="espacecs_annonces_supprimer_deja_envoyee">Elle a déjà été envoyée par courriel : les destinataires la gardent.</string>
 </resources>

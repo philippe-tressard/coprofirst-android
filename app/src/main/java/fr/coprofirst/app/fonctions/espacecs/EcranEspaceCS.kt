@@ -29,6 +29,10 @@ val PageEspaceCS = PageAOnglets(
         "validations" to { onglet -> OngletValidations(onglet) },
 
         "badges" to { onglet -> OngletBadges(onglet) },
+
+        "annonces-hall" to { onglet -> OngletAnnoncesHall(onglet) },
+
+        "courriels" to { onglet -> OngletCourriels(onglet) },
     ),
     reserve = R.string.espacecs_reserve,
 )
@@ -49,4 +53,24 @@ object ReperesEspaceCS {
     const val BADGES_COMPTE = "cs.badges.compte"
     fun badgesType(code: String) = "cs.badges.type.$code"
     fun badge(id: String) = "cs.badge.$id"
+
+    const val COURRIELS_RAFRAICHIR = "courriels.rafraichir"
+    const val COURRIELS_VIDE = "courriels.vide"
+    fun courriel(id: Int) = "courriel.$id"
+    fun courrielAffaire(id: Int) = "courriel.$id.affaire"
+
+    const val ANNONCES_VUE_NOUVELLE = "annonces-hall.vue.nouvelle"
+    const val ANNONCES_VUE_ARCHIVES = "annonces-hall.vue.archives"
+    const val ANNONCES_VIDE = "annonces-hall.vide"
+    fun annonce(id: Int) = "annonce-hall.$id"
+    fun annonceGestes(id: Int) = "annonce-hall.$id.gestes"
+    const val ANNONCE_RENVOYER = "annonces-hall.renvoyer"
+    const val ANNONCE_ARCHIVER = "annonces-hall.archiver"
+    const val ANNONCE_SUPPRIMER = "annonces-hall.supprimer"
+    const val ANNONCE_SUPPRIMER_CONFIRMER = "annonces-hall.supprimer.confirmer"
+    const val NOUVELLE_TITRE = "nouvelle-annonce-hall.titre"
+    const val NOUVELLE_MESSAGE = "nouvelle-annonce-hall.message"
+    fun nouvelleFormat(code: String) = "nouvelle-annonce-hall.format.$code"
+    const val NOUVELLE_ENVOYER_CS = "nouvelle-annonce-hall.envoyer-cs"
+    const val NOUVELLE_CREER = "nouvelle-annonce-hall.creer"
 }
