@@ -92,7 +92,7 @@ fun EcranResidence(session: SessionOuverte, sortie: GestesDeSortie, apparence: A
         if (ouverte != null) {
             RegistreDesMenus.Ecran(ContexteDeMenu(ouverte, session, etat.droits, sortie, apparence, barreDuHaut))
         } else {
-            ListeDePlus(plus, ouvrir = { pageDePlus = it }, deconnecter = sortie::deconnecter)
+            ListeDePlus(plus, ouvrir = { pageDePlus = it })
         }
     }
     if (clocheOuverte && notifications != null) {

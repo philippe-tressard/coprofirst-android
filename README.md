@@ -28,8 +28,18 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
 - **La résidence ouverte** : la barre du bas, dans l'ordre et avec les libellés réglés
   par l'administration de la résidence, filtrée selon le compte (Espace CS, Prestataires,
   Délégations, Paramétrage ne paraissent qu'à ceux qui y ont droit) ; « Plus » pour les
-  autres pages, Profil, À propos et « Se déconnecter ». Les écrans des pages arrivent
+  autres pages, Profil et À propos. Les écrans des pages arrivent
   menu par menu : en attendant, chaque page dit « Bientôt ».
+- **Profil** (Plus › Profil) : la résidence, le statut et les rôles du compte ; les
+  informations personnelles (une nouvelle adresse demande le mot de passe et ne vaut
+  qu'une fois confirmée) ; le mot de passe ; une demande de changement de profil ou de
+  bâtiment au conseil syndical ; vos droits RGPD (politique de confidentialité, refus,
+  export et effacement des statistiques de navigation) ; **la demande de suppression du
+  compte** — ce qui sera effacé est dit d'abord, le mot de passe la confirme,
+  l'administration de la résidence la traite, et elle se retire tant qu'elle n'est pas
+  traitée. Le thème de l'appareil (Automatique, Clair, Sombre) ; « Se déconnecter » et « Oublier
+  toutes les résidences », au bas du Profil. La saisie d'une affaire et les préférences
+  de notification se règlent encore sur le site (#47).
 - **Notifications** : les alertes du compte, « Aujourd'hui » (les 24 dernières heures)
   puis « Plus anciennes ». Un toucher marque lu ; « Tout marquer lu » en haut, avec le
   nombre de non lues ; « Supprimer les lues » en tête de la liste ; « Modifier » pour en
