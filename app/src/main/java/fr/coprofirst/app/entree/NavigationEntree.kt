@@ -31,6 +31,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import fr.coprofirst.app.R
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.charte.Palettes
+import fr.coprofirst.app.navigation.EcranResidence
 
 /** Les gestes des écrans de l'entrée — une interface, pour que les aperçus s'en passent. */
 interface ActionsEntree {
@@ -95,7 +96,7 @@ fun NavigationEntree(parcours: ParcoursEntree = viewModel(factory = ParcoursEntr
                 when (ecran) {
                     EcranEntree.Accueil -> EcranAccueil(parcours)
                     EcranEntree.Connexion -> EcranConnexion(etat, parcours)
-                    EcranEntree.Espace -> EcranEspace(etat.ouverte, parcours)
+                    EcranEntree.Espace -> parcours.sessionOuverte()?.let { EcranResidence(it, parcours::deconnecter) }
                 }
             }
         }
