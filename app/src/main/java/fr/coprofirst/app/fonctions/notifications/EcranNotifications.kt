@@ -21,6 +21,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -39,6 +40,8 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
+import fr.coprofirst.app.commun.AvisDuGeste
+import fr.coprofirst.app.commun.AvisEphemere
 import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.EtatVide
 import fr.coprofirst.app.commun.MessageErreur
@@ -56,10 +59,10 @@ import java.time.Instant
  * toucher marque lu. Toute suppression se confirme : elle est définitive.
  *
  * « Tout marquer lu » et « Modifier » sont dans la barre du haut, comme l'iOS
- * (`ActionsNotifications`, et sa divergence déclarée). « Notifications lues supprimées » (l'avis éphémère de l'iOS) attend
- * l'avis commun (#15, 15c) ; la liste qui se vide et le retour haptique le disent d'ici
- * là. La cloche (ouverte en feuille, avec « OK ») est commune et vient avec 15c ; l'offre
- * des notifications push, avec #23.
+ * (`ActionsNotifications`, et sa divergence déclarée). Les lues supprimées, l'avis du site
+ * le dit (« Notifications lues supprimées », `AvisEphemere`), comme l'iOS. La cloche, qui
+ * ouvre cet écran en feuille avec « OK », est commune (`navigation/Cloche.kt`) ; l'offre
+ * des notifications push vient avec #23.
  */
 @Composable
 fun EcranNotifications(contexte: ContexteDeMenu) {
@@ -86,6 +89,11 @@ private fun ListeNotifications(parcours: ParcoursNotifications, barre: BarreDuHa
     var selection by remember { mutableStateOf(emptySet<Int>()) }
     var aConfirmer by remember { mutableStateOf<SuppressionDemandee?>(null) }
     val haptique = LocalHapticFeedback.current
+    val avis = remember { AvisDuGeste() }
+    val luesSupprimees = stringResource(R.string.notifications_lues_supprimees)
+    // Le dernier « Supprimer les lues » déjà dit : un écran recomposé (rotation, retour
+    // sur la page) ne redit pas un avis passé.
+    var avisDits by rememberSaveable { mutableIntStateOf(etat.luesSupprimees) }
 
     // Une alerte partie ne reste pas choisie ; une liste vide n'a plus rien à modifier.
     LaunchedEffect(etat.liste) {
@@ -95,6 +103,12 @@ private fun ListeNotifications(parcours: ParcoursNotifications, barre: BarreDuHa
     }
     LaunchedEffect(etat.confirmations) {
         if (etat.confirmations > 0) haptique.performHapticFeedback(HapticFeedbackType.Confirm)
+    }
+    LaunchedEffect(etat.luesSupprimees) {
+        if (etat.luesSupprimees > avisDits) {
+            avisDits = etat.luesSupprimees
+            avis.dire(luesSupprimees)
+        }
     }
 
     ActionsNotifications(
@@ -109,63 +123,65 @@ private fun ListeNotifications(parcours: ParcoursNotifications, barre: BarreDuHa
             selection = emptySet()
         },
     )
-    Column(Modifier.fillMaxSize()) {
-        PullToRefreshBox(
-            isRefreshing = etat.rafraichissement,
-            onRefresh = parcours::rafraichir,
-            modifier = Modifier.weight(1f),
-        ) {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = Mise.marge, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(Mise.ecart),
+    AvisEphemere(avis, Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize()) {
+            PullToRefreshBox(
+                isRefreshing = etat.rafraichissement,
+                onRefresh = parcours::rafraichir,
+                modifier = Modifier.weight(1f),
             ) {
-                if (etat.nonLues > 0 && !enEdition) item(key = "nonLues") { NombreNonLues(etat.nonLues) }
-                etat.echec?.let { echec ->
-                    item(key = "echec") {
-                        // L'iOS dit l'interruption et sa raison dans UN message ; `MessageErreur`
-                        // ne prend qu'une `ErreurService` (#42) : la phrase de l'interruption le précède.
-                        Column(Modifier.testTag("notifications.echec")) {
-                            etat.interrompue?.let { Text(TextesNotifications.interrompue(it), color = LocalCouleurs.current.text) }
-                            MessageErreur(echec)
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(horizontal = Mise.marge, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(Mise.ecart),
+                ) {
+                    if (etat.nonLues > 0 && !enEdition) item(key = "nonLues") { NombreNonLues(etat.nonLues) }
+                    etat.echec?.let { echec ->
+                        item(key = "echec") {
+                            // L'iOS dit l'interruption et sa raison dans UN message ; `MessageErreur`
+                            // ne prend qu'une `ErreurService` (#120) : la phrase de l'interruption le précède.
+                            Column(Modifier.testTag("notifications.echec")) {
+                                etat.interrompue?.let { Text(TextesNotifications.interrompue(it), color = LocalCouleurs.current.text) }
+                                MessageErreur(echec)
+                            }
                         }
                     }
-                }
-                if (etat.lues > 0) {
-                    item(key = "lues") {
-                        GesteSurLesLues(actif = !enEdition) { aConfirmer = SuppressionDemandee.Lues(etat.lues) }
+                    if (etat.lues > 0) {
+                        item(key = "lues") {
+                            GesteSurLesLues(actif = !enEdition) { aConfirmer = SuppressionDemandee.Lues(etat.lues) }
+                        }
                     }
-                }
-                if (etat.liste.isEmpty() && etat.echec == null) {
-                    item(key = "vide") {
-                        EtatVide(
-                            titre = stringResource(R.string.notifications_vide),
-                            icone = Icons.Outlined.NotificationsOff,
-                            explication = stringResource(R.string.notifications_vide_detail),
+                    if (etat.liste.isEmpty() && etat.echec == null) {
+                        item(key = "vide") {
+                            EtatVide(
+                                titre = stringResource(R.string.notifications_vide),
+                                icone = Icons.Outlined.NotificationsOff,
+                                explication = stringResource(R.string.notifications_vide_detail),
+                            )
+                        }
+                    }
+                    val (aujourdhui, anciennes) = etat.sections()
+                    val ligne: @Composable (NotificationRecue) -> Unit = { n ->
+                        LigneNotification(
+                            notification = n,
+                            gestes = if (enEdition) null else GestesLigne(
+                                marquerLue = if (n.lue) null else ({ parcours.lancer { marquerLue(n) } }),
+                                supprimer = { aConfirmer = SuppressionDemandee.Une(n) },
+                            ),
+                            choisie = if (enEdition) n.id in selection else null,
+                            choisir = {
+                                selection = if (n.id in selection) selection - n.id else selection + n.id
+                                haptique.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                            },
                         )
                     }
+                    section(R.string.notifications_aujourdhui, aujourdhui, ligne)
+                    section(R.string.notifications_anciennes, anciennes, ligne)
                 }
-                val (aujourdhui, anciennes) = etat.sections()
-                val ligne: @Composable (NotificationRecue) -> Unit = { n ->
-                    LigneNotification(
-                        notification = n,
-                        gestes = if (enEdition) null else GestesLigne(
-                            marquerLue = if (n.lue) null else ({ parcours.lancer { marquerLue(n) } }),
-                            supprimer = { aConfirmer = SuppressionDemandee.Une(n) },
-                        ),
-                        choisie = if (enEdition) n.id in selection else null,
-                        choisir = {
-                            selection = if (n.id in selection) selection - n.id else selection + n.id
-                            haptique.performHapticFeedback(HapticFeedbackType.SegmentTick)
-                        },
-                    )
-                }
-                section(R.string.notifications_aujourdhui, aujourdhui, ligne)
-                section(R.string.notifications_anciennes, anciennes, ligne)
             }
-        }
-        AnimatedVisibility(visible = enEdition) {
-            BarreDeSuppression(selection.size) { aConfirmer = SuppressionDemandee.Selection(selection) }
+            AnimatedVisibility(visible = enEdition) {
+                BarreDeSuppression(selection.size) { aConfirmer = SuppressionDemandee.Selection(selection) }
+            }
         }
     }
 
