@@ -1,0 +1,42 @@
+{{!
+SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+
+Gabarit de REMPLACEMENT de celui d'openapi-generator (kotlin-client, kotlinx.serialization,
+java.time) : le seul écart, la LECTURE d'une date sans fuseau (coprofirst-android#44).
+}}
+package {{packageName}}.infrastructure
+
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
+
+/**
+ * Les horodatages de l'API, comme l'iOS les lit (`TranscodeurDates`) : ISO 8601 avec son
+ * décalage, ou — ce que sert le serveur, ses dates étant en UTC — SANS fuseau, lu comme UTC.
+ * Une date illisible lève : un champ faux ne passe pas pour une autre date.
+ */
+object OffsetDateTimeAdapter : KSerializer<OffsetDateTime> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("OffsetDateTime", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: OffsetDateTime) {
+        encoder.encodeString(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(value))
+    }
+
+    override fun deserialize(decoder: Decoder): OffsetDateTime = lire(decoder.decodeString())
+
+    fun lire(texte: String): OffsetDateTime = try {
+        OffsetDateTime.parse(texte, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+    } catch (_: DateTimeParseException) {
+        // Sans fuseau : UTC.
+        LocalDateTime.parse(texte, DateTimeFormatter.ISO_LOCAL_DATE_TIME).atOffset(ZoneOffset.UTC)
+    }
+}
