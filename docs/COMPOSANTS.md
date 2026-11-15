@@ -15,13 +15,15 @@ l'app iOS est la référence fonctionnelle (`CLAUDE.md`).
 
 ## Règles
 
-1. **Un écran = un paquet + une ligne au registre.** Le paquet
-   `fr.coprofirst.app.fonctions.<menu>` (et ses tests sous le même paquet) ; la ligne,
-   dans `app/src/main/java/fr/coprofirst/app/navigation/RegistreDesMenus.kt`, où chaque
-   menu a **sa ligne réservée d'avance** (un commentaire `// "<id>" — #<ticket>`, entre
-   deux lignes vides). La session du menu remplace SA ligne, et aucune autre — deux
-   sessions parallèles ne touchent jamais la même ligne. Elle ne touche ni `charte/`, ni
-   `commun/`, ni `session/`, ni `entree/`, ni `navigation/` (hors sa ligne).
+1. **Un écran = un paquet, qui s'inscrit lui-même (#109).** Le paquet
+   `fr.coprofirst.app.fonctions.<menu>` (et ses tests sous le même paquet) porte son
+   `Inscription.kt` : un `object Inscription<Menu> : InscriptionDeMenu` qui déclare ses
+   pages (`ecrans`) et ses fiches (`fiches`). `scripts/generer_registre.py` les collecte au
+   build ; ses tables, s'il en a, viennent de `scripts/generer_tables_<menu>.py`, découvert
+   par convention. Un écran ne touche ni `charte/`, ni `commun/`, ni `session/`, ni
+   `entree/`, ni `navigation/`, ni `app/build.gradle.kts` — `verifier-depot.sh` refuse que
+   la navigation ou le build nomment un menu : deux sessions parallèles ne se rencontrent
+   plus sur aucun fichier commun.
 2. **Un service par menu** : une `interface Service<Menu>` (ce dont l'écran a besoin),
    sa réalisation `Service<Menu>Api` par le client généré, à travers
    `SessionOuverte.appeler` — et, pour les tests et les aperçus, une réalisation simulée.
@@ -50,10 +52,14 @@ fun EcranProfil(contexte: ContexteDeMenu) {
 }
 ```
 
-et, dans `RegistreDesMenus.kt`, la ligne réservée `// "profil" — #21` devient :
+et son inscription, `fonctions/profil/Inscription.kt` :
 
 ```kotlin
+object InscriptionProfil : InscriptionDeMenu {
+    override val ecrans: Map<String, EcranDeMenu> = mapOf(
         "profil" to { contexte -> EcranProfil(contexte) },
+    )
+}
 ```
 
 `ContexteDeMenu` donne à l'écran : `page` (sa page : `titre`, `route`…), `session`
@@ -72,18 +78,21 @@ ou de « Plus »), `Destination.Element(nature, id)` (la fiche d'un élément, p
 la page ouverte, avec retour), `Destination.Notifications` (la cloche). Elle rend `false`
 quand rien ne la porte dans l'app (page que le compte ne voit pas, fiche non déclarée) :
 l'écran garde son repli, « Voir sur le site » par exemple. Un menu **déclare** les éléments
-qu'il sait ouvrir dans `RegistreDesMenus.fiches`, par nature (celles du fil : `affaire`,
-`sondage`), sur SA ligne réservée :
+qu'il sait ouvrir, par nature (celles du fil : `affaire`, `sondage`), dans SON
+inscription :
 
 ```kotlin
+    override val fiches: Map<String, FicheDeMenu> = mapOf(
         "affaire" to FicheDeMenu(R.string.affaire_titre) { contexte, id -> DetailAffaire(contexte, id) },
+    )
 ```
 
 ## Navigation — `fr.coprofirst.app.navigation` (à la couche commune)
 
 | API | Pendant iOS | Rôle |
 |---|---|---|
-| `RegistreDesMenus` | `RegistreDesMenus` | id de page → écran ; « Bientôt » sinon. |
+| `RegistreDesMenus` | `RegistreDesMenus` | id de page → écran ; « Bientôt » sinon. COMPOSÉ des inscriptions (`RegistreGenere`, généré) : une page ou une fiche inscrite deux fois arrête l'app — et `RegistreTest` avant elle. |
+| `InscriptionDeMenu`, `EcranDeMenu` | — | Ce qu'un menu inscrit depuis son paquet (`fonctions/<menu>/Inscription.kt`) : `ecrans`, `fiches`. |
 | `ContexteDeMenu` | `ContexteDeMenu` | Ce qu'un écran reçoit. |
 | `DroitsOnglet`, `PagesOuvertes`, `OngletsDuSite.ouverts(page, droits)` | idem | Qui voit quelle page, quel onglet (tables générées). |
 | `PagesParDefaut`, `OrdrePages`, `Installation.pages` | idem | La barre : ordre servi (`pages_order`), libellés (`page_config_*`). `PagesParDefaut.horsMenu` : les pages sans entrée de menu (profil, notifications). |
@@ -202,7 +211,7 @@ pas. L'onglet rend son CONTENU — une `Column`, jamais une `LazyColumn` (le cad
 | `OngletsDeLaPage(page, portes, renvoieAuSite, droits, surLeSite)` | — | La logique de la barre (`barre`, `ailleurs`, `actif(choisi)`), testée sur la JVM. |
 
 ```kotlin
-// fonctions/espacecs/EcranEspaceCS.kt — et SA ligne au registre : "espace-cs" to { EcranEspaceCS(it) }
+// fonctions/espacecs/EcranEspaceCS.kt — inscrit par InscriptionEspaceCS : "espace-cs" to { EcranEspaceCS(it) }
 @Composable
 fun EcranEspaceCS(contexte: ContexteDeMenu) = CadreAOnglets(
     contexte,
