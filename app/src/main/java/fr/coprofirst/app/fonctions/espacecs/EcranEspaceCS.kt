@@ -30,6 +30,8 @@ val PageEspaceCS = PageAOnglets(
 
         "badges" to { onglet -> OngletBadges(onglet) },
 
+        "reporting" to { onglet -> OngletReporting(onglet) },
+
         "annonces-hall" to { onglet -> OngletAnnoncesHall(onglet) },
 
         "courriels" to { onglet -> OngletCourriels(onglet) },
@@ -73,4 +75,12 @@ object ReperesEspaceCS {
     fun nouvelleFormat(code: String) = "nouvelle-annonce-hall.format.$code"
     const val NOUVELLE_ENVOYER_CS = "nouvelle-annonce-hall.envoyer-cs"
     const val NOUVELLE_CREER = "nouvelle-annonce-hall.creer"
+
+    fun reportingMode(code: String) = "reporting.mode.$code"
+    const val REPORTING_TOTAL = "reporting.total"
+    const val REPORTING_VIDE = "reporting.vide"
+    fun reportingAffaire(id: Int) = "reporting.affaire.$id"
+    const val RENOUVELLEMENTS_PREAVIS = "renouvellements.preavis"
+    fun renouvellementContrat(id: Int) = "renouvellements.contrat.$id"
+    fun renouvellementDiagnostic(id: Int) = "renouvellements.diagnostic.$id"
 }

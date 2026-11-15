@@ -97,6 +97,3 @@ private fun Geste(
         Text(stringResource(libelle), Modifier.padding(start = 6.dp))
     }
 }
-
-/** L'échelle du texte au-delà de laquelle les deux gestes s'empilent (les tailles d'accessibilité de l'iOS). */
-private const val GRANDE_ECHELLE = 1.5f

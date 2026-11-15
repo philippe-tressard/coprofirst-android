@@ -117,4 +117,69 @@ Les textes de l'Espace conseil syndical (#24), écrits une fois — ceux du site
     <string name="espacecs_annonces_supprimer_question">Supprimer « %1$s » ?</string>
     <string name="espacecs_annonces_supprimer_message">Son PDF sera effacé ; les photos qu\'elle reprend restent.</string>
     <string name="espacecs_annonces_supprimer_deja_envoyee">Elle a déjà été envoyée par courriel : les destinataires la gardent.</string>
+
+    <!-- Reporting (VueSuiviAffaires, BarresCroisees, TableauAffaires) -->
+    <string name="espacecs_reporting_par_categorie">Par catégorie</string>
+    <string name="espacecs_reporting_par_batiment">Par bâtiment</string>
+    <string name="espacecs_reporting_resume_assistant">Résumé de l’assistant</string>
+    <string name="espacecs_reporting_aucune_affaire">Aucune affaire ouverte.</string>
+    <string name="espacecs_reporting_aucun_entretien">Aucun entretien périodique ouvert.</string>
+    <string name="espacecs_reporting_sur_le_site">La relance du syndic, les points CS / Syndic et leurs comptes rendus, les résumés de l’assistant, la fusion des affaires liées, l’export PDF et la synthèse des prestataires se font sur le site.</string>
+    <plurals name="espacecs_reporting_affaires_non_fermees">
+        <item quantity="one">affaire non fermée</item>
+        <item quantity="many">affaires non fermées</item>
+        <item quantity="other">affaires non fermées</item>
+    </plurals>
+    <plurals name="espacecs_reporting_entretiens_non_clos">
+        <item quantity="one">entretien non clos</item>
+        <item quantity="many">entretiens non clos</item>
+        <item quantity="other">entretiens non clos</item>
+    </plurals>
+    <plurals name="espacecs_reporting_fusionnees">
+        <item quantity="one">affaire fusionnée</item>
+        <item quantity="many">affaires fusionnées</item>
+        <item quantity="other">affaires fusionnées</item>
+    </plurals>
+    <string name="espacecs_reporting_anciennes">de plus de %1$s jours</string>
+    <string name="espacecs_reporting_age">%1$s j</string>
+    <plurals name="espacecs_reporting_age_lu">
+        <item quantity="one">%1$s jour</item>
+        <item quantity="many">%1$s jours</item>
+        <item quantity="other">%1$s jours</item>
+    </plurals>
+    <string name="espacecs_reporting_statut">Statut : %1$s</string>
+
+    <!-- Reporting › Renouvellements (VueRenouvellements*) -->
+    <string name="espacecs_renouvellements_titre">Renouvellements</string>
+    <string name="espacecs_renouvellements_preavis">Contrats en préavis</string>
+    <string name="espacecs_renouvellements_audits_a_planifier">Audits à (re)planifier</string>
+    <string name="espacecs_renouvellements_preavis_en_cours">Préavis en cours</string>
+    <string name="espacecs_renouvellements_actif">Actif</string>
+    <string name="espacecs_renouvellements_reconduit">♻ Reconduit</string>
+    <string name="espacecs_renouvellements_dates_manquantes">Dates manquantes</string>
+    <string name="espacecs_renouvellements_echeances_futures">Échéances futures</string>
+    <string name="espacecs_renouvellements_diagnostics_intro">Échéances issues de Résidence / Diagnostics et Contrôles Réglementaires, calculées depuis le dernier rapport + fréquence légale.</string>
+    <string name="espacecs_renouvellements_aucun_diagnostic">Aucun diagnostic applicable</string>
+    <string name="espacecs_renouvellements_aucun_diagnostic_detail">Tous les diagnostics sont non applicables.</string>
+    <string name="espacecs_renouvellements_depasse">Dépassé</string>
+    <string name="espacecs_renouvellements_permanent">Permanent</string>
+    <string name="espacecs_renouvellements_permanent_intro">Diagnostics à validité permanente (sauf si révision nécessaire).</string>
+    <string name="espacecs_renouvellements_permanent_badge">✓ Permanent</string>
+    <string name="espacecs_renouvellements_echeances_annee">Échéances contrats en %1$s</string>
+    <string name="espacecs_renouvellements_contrats_titre">Contrats prestataires — échéances %1$s</string>
+    <string name="espacecs_renouvellements_contrats_intro">Contrats dont la fin ou le préavis tombe en %1$s. Préavis de %2$s mois.</string>
+    <string name="espacecs_renouvellements_aucune_echeance">Aucune échéance de contrat en %1$s</string>
+    <string name="espacecs_renouvellements_diagnostics_titre">Diagnostics et Contrôles Réglementaires — %1$s–%2$s</string>
+    <string name="espacecs_renouvellements_a_faire_en">À faire en %1$s</string>
+    <plurals name="espacecs_renouvellements_audits">
+        <item quantity="one">%1$d audit</item>
+        <item quantity="many">%1$d audits</item>
+        <item quantity="other">%1$d audits</item>
+    </plurals>
+    <string name="espacecs_renouvellements_groupe">%1$s (%2$d)</string>
+    <string name="espacecs_renouvellements_preavis_des">%1$s · préavis dès %2$s</string>
+    <string name="espacecs_renouvellements_numero">N° %1$s</string>
+    <string name="espacecs_renouvellements_note">★ %1$s (%2$s avis)</string>
+    <string name="espacecs_renouvellements_dernier_rapport">Dernier rapport : %1$s</string>
+    <string name="espacecs_renouvellements_prochaine_echeance">Prochaine échéance : %1$s</string>
 </resources>
