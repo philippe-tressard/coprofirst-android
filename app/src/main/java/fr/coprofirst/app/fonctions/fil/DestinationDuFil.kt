@@ -11,12 +11,10 @@ import java.net.URI
  * `DestinationDuFil` de l'iOS, qui pousse le détail d'une affaire, la fiche d'un sondage, le
  * document, ou ouvre le résumé en feuille.
  *
- * ⚠️ Divergence déclarée (#11) : le détail d'une affaire (menu `mes-demandes`, #16) et la
- * fiche d'un sondage (menu `communaute`, #20) n'ont pas encore d'écran Android, et la
- * navigation commune ne sait pas ouvrir une autre page de la barre — encore moins un élément
- * précis — depuis un écran (`ContexteDeMenu` ne porte aucun geste de navigation). Ces cartes
- * restent donc NON OUVRABLES (ni chevron, ni toucher) jusqu'à ce que ces écrans et ce geste
- * existent ; l'iOS les ouvre toutes.
+ * L'affaire et le sondage s'ouvrent par la porte (`Destination.Element`, #85), poussés comme
+ * sur l'iOS — si leur menu a déclaré sa fiche (`RegistreDesMenus.fiches`). ⚠️ Divergence
+ * déclarée : tant que Mes affaires (#16) n'a pas déclaré la sienne, une carte d'affaire reste
+ * NON OUVRABLE (ni chevron, ni toucher) ; l'iOS l'ouvre.
  */
 sealed interface DestinationDuFil {
     /** Le résumé en feuille, et « Voir sur le site » si le site a une page. */
@@ -25,12 +23,22 @@ sealed interface DestinationDuFil {
     /** Le document, ouvert par l'app de l'appareil (`Ouverture.document`). */
     data class Document(val id: Int, val nom: String?) : DestinationDuFil
 
+    /** La fiche d'un élément, par la porte : sa nature (`affaire`, `sondage`) et son identifiant. */
+    data class Element(val nature: String, val id: Int) : DestinationDuFil
+
     companion object {
-        /** `null` : la carte ne s'ouvre pas encore sur Android (voir plus haut). */
-        fun pour(cible: CibleDuFil): DestinationDuFil? = when (cible) {
+        const val AFFAIRE = "affaire"
+        const val SONDAGE = "sondage"
+
+        /**
+         * @param fiches les natures dont un menu a déclaré la fiche (`RegistreDesMenus.fiches`).
+         * `null` : la carte ne s'ouvre pas sur Android (voir plus haut).
+         */
+        fun pour(cible: CibleDuFil, fiches: Set<String>): DestinationDuFil? = when (cible) {
             is CibleDuFil.Resume -> Resume
             is CibleDuFil.Document -> Document(cible.id, cible.nom)
-            is CibleDuFil.Affaire, is CibleDuFil.Sondage -> null
+            is CibleDuFil.Sondage -> Element(SONDAGE, cible.id).takeIf { SONDAGE in fiches }
+            is CibleDuFil.Affaire -> Element(AFFAIRE, cible.id).takeIf { AFFAIRE in fiches }
         }
 
         /**
