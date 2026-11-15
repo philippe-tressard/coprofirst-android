@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.fonctions.affaires
 
+import fr.coprofirst.app.commun.perimetres.Perimetre
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -34,6 +35,7 @@ class EtatAffairesTest {
         }
         override suspend fun affaire(id: Int) = throw ErreurService.Introuvable
         override suspend fun perimetres() = emptyList<Perimetre>()
+        override suspend fun lieu(codes: List<String>) = ""
         override suspend fun creer(saisie: SaisieAffaire) = throw ErreurService.Inattendue
         override suspend fun repondre(id: Int, texte: String) = Unit
         override suspend fun ajouterSuite(id: Int, suite: SaisieSuite) = Unit

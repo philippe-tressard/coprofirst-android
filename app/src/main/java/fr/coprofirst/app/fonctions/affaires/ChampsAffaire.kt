@@ -56,6 +56,8 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.MessageErreur
+import fr.coprofirst.app.commun.perimetres.LieuDeLaSaisie
+import fr.coprofirst.app.commun.perimetres.Perimetre
 import fr.coprofirst.app.commun.texte.TexteDuSite
 import fr.coprofirst.app.session.ErreurService
 
@@ -64,6 +66,7 @@ class ReperesChamps(prefixe: String) {
     val titre = "$prefixe.titre"
     val description = "$prefixe.description"
     val lieu = "$prefixe.lieu"
+    val lieuServi = "$prefixe.lieuServi"
     val urgente = "$prefixe.urgente"
     val contenuFige = "$prefixe.contenuFige"
     private val categorie = "$prefixe.categorie"
@@ -144,7 +147,11 @@ internal fun ChampsAffaire(
     when {
         saisie.estBogue -> Text(stringResource(R.string.nouvelle_bogue), style = MaterialTheme.typography.bodySmall, color = c.textMuted)
         !lieuModifiable -> Text(stringResource(R.string.modifier_plusieurs_lieux), style = MaterialTheme.typography.bodySmall, color = c.textMuted)
-        perimetres.isNotEmpty() -> ChoixLieu(saisie.perimetre, perimetres, reperes, actif = !contenuFige) { changer(saisie.copy(perimetre = it)) }
+        perimetres.isNotEmpty() -> {
+            ChoixLieu(saisie.perimetre, perimetres, reperes, actif = !contenuFige) { changer(saisie.copy(perimetre = it)) }
+            // Le lieu choisi en clair, nommé par le serveur : le choix ne montre que le nom du nœud.
+            saisie.perimetre?.let { LieuDeLaSaisie(setOf(it), service, reperes.lieuServi) }
+        }
     }
     if (!saisie.estBogue) {
         Row(

@@ -11,17 +11,21 @@ import fr.coprofirst.api.modeles.TicketEvolutionCreate
 import fr.coprofirst.api.modeles.TicketEvolutionUpdate
 import fr.coprofirst.api.modeles.TicketUpdate
 import fr.coprofirst.api.routes.LotsApi
-import fr.coprofirst.api.routes.PerimetresApi
 import fr.coprofirst.api.routes.PointsConseilApi
 import fr.coprofirst.api.routes.TicketsApi
+import fr.coprofirst.app.commun.perimetres.ServicePerimetres
+import fr.coprofirst.app.commun.perimetres.ServicePerimetresApi
 import fr.coprofirst.app.commun.texte.TexteDuSite
 import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.SessionOuverte
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 
-/** Ce que « Mes affaires » demande à la résidence ouverte, comme l'iOS (`ServiceAffaires`). */
-interface ServiceAffaires {
+/**
+ * Ce que « Mes affaires » demande à la résidence ouverte, comme l'iOS (`ServiceAffaires`) —
+ * les lieux compris (`ServicePerimetres`, commun).
+ */
+interface ServiceAffaires : ServicePerimetres {
     /** GET /tickets : les affaires lisibles par le compte. */
     suspend fun affaires(): List<Affaire>
 
@@ -46,9 +50,6 @@ interface ServiceAffaires {
     /** La fiche : GET /tickets/{id}, ses suites, ses messages, ses comptes rendus, sa synthèse. */
     suspend fun affaire(id: Int): DetailAffaire
 
-    /** GET /perimetres : les lieux actifs, dans l'ordre de l'arbre servi. */
-    suspend fun perimetres(): List<Perimetre>
-
     /** POST /tickets : « Nouvelle affaire ». */
     suspend fun creer(saisie: SaisieAffaire): Affaire
 
@@ -72,7 +73,7 @@ interface ServiceAffaires {
 }
 
 /** Le service par le client généré, sur la session de la résidence — aucune route écrite à la main. */
-class ServiceAffairesApi(private val session: SessionOuverte) : ServiceAffaires {
+class ServiceAffairesApi(private val session: SessionOuverte) : ServiceAffaires, ServicePerimetres by ServicePerimetresApi(session) {
     private suspend fun <R> tickets(requete: TicketsApi.() -> R): R =
         session.appeler { base, client -> TicketsApi(base, client).requete() }
 
@@ -97,9 +98,6 @@ class ServiceAffairesApi(private val session: SessionOuverte) : ServiceAffaires 
     }
 
     override suspend fun archiver(id: Int): Affaire = Affaire.depuis(tickets { patchTicketsTicketId(id, TicketUpdate(archiveManuel = true)) })
-
-    override suspend fun perimetres() =
-        session.appeler { base, client -> PerimetresApi(base, client).getPerimetres() }.let(Perimetre::lus)
 
     override suspend fun creer(saisie: SaisieAffaire): Affaire {
         val envoyee = saisie.aEnvoyer

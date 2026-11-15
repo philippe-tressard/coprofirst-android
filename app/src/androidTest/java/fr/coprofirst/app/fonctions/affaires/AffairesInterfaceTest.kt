@@ -19,6 +19,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.commun.AvisEphemere
+import fr.coprofirst.app.commun.perimetres.Perimetre
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.navigation.ActionsDeclarees
 import fr.coprofirst.app.navigation.BarreDuHaut
@@ -98,6 +99,7 @@ private class AffairesSimulees : ServiceAffaires {
     override suspend fun perimetres() = listOf(
         Perimetre("copro", "Toute la copropriété", parDefaut = true), Perimetre("bat-b", "Bâtiment B", 1, parent = "copro"),
     )
+    override suspend fun lieu(codes: List<String>) = if (codes == listOf("bat-b")) "Bâtiment B" else "Toute la copropriété"
     override suspend fun creer(saisie: SaisieAffaire): Affaire {
         creees += saisie
         return affaires.first().copy(id = 9, numero = "A-0009", titre = saisie.titre.trim(), urgente = false, colonne = null, suiviKanban = false)

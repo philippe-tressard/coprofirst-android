@@ -4,7 +4,6 @@
 package fr.coprofirst.app.fonctions.affaires
 
 import fr.coprofirst.api.modeles.CategorieTicket
-import fr.coprofirst.api.modeles.PerimetreRead
 import fr.coprofirst.api.modeles.TicketEvolutionRead
 import fr.coprofirst.app.commun.texte.TexteDuSite
 
@@ -129,45 +128,6 @@ enum class GesteAffaire {
                 Archiver -> affaire.droits.archiver && !affaire.archivee
             }
         }
-    }
-}
-
-/**
- * Un périmètre de la copropriété (`PerimetreRead`, GET /perimetres) : le lieu d'une
- * affaire. Le défaut est celui que le serveur DÉSIGNE (`par_defaut`).
- *
- * ⚠️ Pour l'heure dans le paquet des affaires : la Résidence (#17) en aura l'usage pour le
- * filtre du carnet — il montera dans la couche commune par un ticket `commun`.
- */
-data class Perimetre(
-    val code: String,
-    val libelle: String,
-    val profondeur: Int = 0,
-    val selectionnable: Boolean = true,
-    val parDefaut: Boolean = false,
-    val parent: String? = null,
-    val niveauxLibres: Int? = null,
-) {
-    companion object {
-        /** L'arbre servi, ACTIFS seulement. */
-        fun lus(servis: List<PerimetreRead>): List<Perimetre> = servis.filter { it.actif }.map {
-            Perimetre(it.code, it.libelle, it.profondeur, it.selectionnable, it.parDefaut ?: false, it.parent, it.niveauxLibres)
-        }
-
-        /**
-         * Les lieux qu'un choix propose : les nœuds sélectionnables, jamais sous un parent
-         * qui ne peut plus rien porter (`niveaux_libres` servi à 0) — la règle se lit sur ce
-         * que le serveur sert. `garder` : le lieu déjà enregistré, proposé quand même.
-         */
-        fun aSaisir(perimetres: List<Perimetre>, garder: String? = null): List<Perimetre> {
-            val libres = perimetres.associate { it.code to it.niveauxLibres }
-            return perimetres.filter { p ->
-                val place = p.parent?.let { libres[it] }
-                p.code == garder || (p.selectionnable && (place ?: 1) > 0)
-            }
-        }
-
-        fun codeParDefaut(perimetres: List<Perimetre>): String? = perimetres.firstOrNull { it.parDefaut }?.code
     }
 }
 

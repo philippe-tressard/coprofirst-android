@@ -70,19 +70,6 @@ class SaisieAffaireTest {
     }
 
     @Test
-    fun lesLieuxProposesSuiventLArbreServi() {
-        val arbre = listOf(
-            Perimetre("copro", "Toute la copropriété", parDefaut = true, niveauxLibres = 2),
-            Perimetre("bat-a", "Bâtiment A", 1, parent = "copro", niveauxLibres = 0),
-            Perimetre("toit-a", "Toit", 2, parent = "bat-a"),
-            Perimetre("groupe", "Regroupement", selectionnable = false),
-        )
-        assertEquals(listOf("copro", "bat-a"), Perimetre.aSaisir(arbre).map { it.code })
-        assertEquals(listOf("copro", "bat-a", "toit-a"), Perimetre.aSaisir(arbre, garder = "toit-a").map { it.code })
-        assertEquals("copro", Perimetre.codeParDefaut(arbre))
-    }
-
-    @Test
     fun lesOptionsDuSiteSontGenerees() {
         assertEquals(listOf("epingle", "urgente"), TablesAffaires.options.map { it.cle })
         assertTrue(TablesAffaires.options.first().active(fiche(DroitsServisAffaire()).copy(epingle = true)))

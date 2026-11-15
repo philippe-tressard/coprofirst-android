@@ -80,11 +80,11 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   fusionnées, ce qui se fait sur le site. Les Archives se rangent par année. La fiche montre le fil de l'affaire (la
   demande, la suite, les comptes rendus, la synthèse) et ses messages ; en bas, ses gestes
   selon ce que le serveur ouvre au compte : copier ou partager le lien, Répondre, Ajouter
-  une suite (un commentaire ou un nouvel état), épingler ou marquer urgente, archiver.
+  une suite (un commentaire ou un nouvel état), Modifier (seuls les champs changés
+  partent), épingler ou marquer urgente, archiver.
   Chaque entrée de la suite se corrige ou se supprime (« ⋯ »), si le serveur le permet.
   « Nouvelle affaire » (le « + » du haut) : catégorie, titre, description, lieu, urgence —
-  les photos, et ce que le conseil désigne, s'ajoutent depuis le site. « Modifier
-  l'affaire » suit (#16).
+  les photos, les prestataires et ce que le conseil désigne se règlent sur le site.
 - **Ma résidence** : la Fiche (photo, immatriculation, lots, assurance et syndic — qui
   ouvre l'annuaire du syndic —, composition par bâtiment ; règles, plans, règlement,
   comptes-rendus d'AG et diagnostics, chacun s'ouvrant dans l'app de l'appareil) ; aux

@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.fonctions.affaires
 
+import fr.coprofirst.app.commun.perimetres.Perimetre
 import fr.coprofirst.app.session.AdresseInstallation
 import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.Installation
