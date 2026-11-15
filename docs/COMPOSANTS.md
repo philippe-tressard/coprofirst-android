@@ -15,10 +15,13 @@ l'app iOS est la référence fonctionnelle (`CLAUDE.md`).
 
 ## Règles
 
-1. **Un écran = un paquet** `fr.coprofirst.app.fonctions.<menu>` (et ses tests sous le
-   même paquet). Il ne touche ni `charte/`, ni `commun/`, ni `session/`, ni `entree/`, ni
-   la navigation. *Le registre des menus (une ligne par écran) arrive avec le lot de
-   navigation : la règle « une ligne au registre » et son exemple seront écrits ici.*
+1. **Un écran = un paquet + une ligne au registre.** Le paquet
+   `fr.coprofirst.app.fonctions.<menu>` (et ses tests sous le même paquet) ; la ligne,
+   dans `app/src/main/java/fr/coprofirst/app/navigation/RegistreDesMenus.kt`, où chaque
+   menu a **sa ligne réservée d'avance** (un commentaire `// "<id>" — #<ticket>`, entre
+   deux lignes vides). La session du menu remplace SA ligne, et aucune autre — deux
+   sessions parallèles ne touchent jamais la même ligne. Elle ne touche ni `charte/`, ni
+   `commun/`, ni `session/`, ni `entree/`, ni `navigation/` (hors sa ligne).
 2. **Un service par menu** : une `interface Service<Menu>` (ce dont l'écran a besoin),
    sa réalisation `Service<Menu>Api` par le client généré, à travers
    `SessionOuverte.appeler` — et, pour les tests et les aperçus, une réalisation simulée.
@@ -26,6 +29,43 @@ l'app iOS est la référence fonctionnelle (`CLAUDE.md`).
    date ou de nombre à la main**, **aucun `Button` de Material** : `verifier-depot.sh`
    les refuse.
 4. **Ce que l'iOS laisse au site reste au site**, et l'écran le dit.
+
+## Un écran de menu, de bout en bout
+
+```kotlin
+// app/src/main/java/fr/coprofirst/app/fonctions/profil/EcranProfil.kt
+package fr.coprofirst.app.fonctions.profil
+
+@Composable
+fun EcranProfil(contexte: ContexteDeMenu) {
+    val service = remember(contexte.session) { ServiceProfilApi(contexte.session) }
+    Chargement(charger = { service.moi() }, squelette = { Carte { Text("Prénom Nom") } }) { moi, _ ->
+        Carte { Text(FormatsDuSite.nom(moi.nomAffiche, moi.prenom, moi.nom)) }
+    }
+}
+```
+
+et, dans `RegistreDesMenus.kt`, la ligne réservée `// "profil" — #21` devient :
+
+```kotlin
+        "profil" to { contexte -> EcranProfil(contexte) },
+```
+
+`ContexteDeMenu` donne à l'écran : `page` (sa page : `titre`, `route`…), `session`
+(`SessionOuverte`, pour ses services) et `droits` (`DroitsOnglet` du compte : `cs`,
+`administrateur`, `locataire`… — un geste fin se juge sur le `peut_*` servi avec l'objet,
+jamais sur ces droits seuls). Le titre de la page est posé par la barre : l'écran n'en
+pose pas. Une page sans ligne au registre affiche « Bientôt ».
+
+## Navigation — `fr.coprofirst.app.navigation` (à la couche commune)
+
+| API | Pendant iOS | Rôle |
+|---|---|---|
+| `RegistreDesMenus` | `RegistreDesMenus` | id de page → écran ; « Bientôt » sinon. |
+| `ContexteDeMenu` | `ContexteDeMenu` | Ce qu'un écran reçoit. |
+| `DroitsOnglet`, `PagesOuvertes`, `OngletsDuSite.ouverts(page, droits)` | idem | Qui voit quelle page, quel onglet (tables générées). |
+| `PagesParDefaut`, `OrdrePages`, `Installation.pages` | idem | La barre : ordre servi (`pages_order`), libellés (`page_config_*`). |
+| `EcranResidence` | `OngletsView` | La barre (4 pages + « Plus »). |
 
 ## Session — `fr.coprofirst.app.session`
 
@@ -96,5 +136,5 @@ Nombres : `nombre`, `montant`, `octets`. Personnes : `nom(affiche, prenom, nom)`
 
 Texte du site (HTML sur liste blanche) et tables de libellés — 15b ; cadre à onglets,
 droits par onglet, avis éphémère, recherche — 15c ; pièces jointes, photo protégée,
-document — 15d ; navigation, registre des menus, barre de la résidence — lot de
-navigation (#11). Le suivi : #15, #11.
+document — 15d ; le fil d'activité (page `tableau-de-bord`) et la cloche — #11, #22.
+Le suivi : #15, #11.
