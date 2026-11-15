@@ -16,7 +16,7 @@
 #   7. aucune requête HTTP ni route écrite à la main dans l'app : le client généré
 #      (client-api) seul — autotest d'abord pour chaque motif.
 #   8. un seul bouton plein, `BoutonPlein` (Composants.kt) ;
-#   9. le générateur des palettes passe ses tests (scripts/test_generer_charte.py) ;
+#   9. les générateurs du build passent leurs tests (scripts/test_*.py) ;
 #  10. aucun chemin de .claude/worktrees/ suivi.
 #
 # Il juge les fichiers que git connaît (index compris) : un fichier ignoré n'est
@@ -137,9 +137,11 @@ BOUTON_PLEIN='(^|[^A-Za-z])Button\('
 autotest_motif "bouton plein" "$BOUTON_PLEIN" '    Button(onClick = f) { Text("x") }' '    TextButton(onClick = f) { Text("x") }'
 interdire "$BOUTON_PLEIN" "bouton plein écrit à la main — passer par BoutonPlein" '^app/src/main/java/fr/coprofirst/app/entree/Composants\.kt$'
 
-# Le générateur des palettes : ses tests, dont la génération des tables du plancher.
-python3 -I scripts/test_generer_charte.py >/dev/null 2>&1 \
-  || echec "scripts/test_generer_charte.py en échec (python3 -I scripts/test_generer_charte.py)"
+# Les générateurs du build (palettes, logo) : leurs tests, dont la génération des
+# fichiers recopiés. Chaque `scripts/test_*.py` versionné est joué.
+while IFS= read -r t; do
+  python3 -I "$t" >/dev/null 2>&1 || echec "$t en échec (python3 -I $t)"
+done < <(grep -E '^scripts/test_[a-z_]+\.py$' <<< "$FICHIERS")
 
 ! grep -q '^\.claude/worktrees/' <<< "$FICHIERS" || echec ".claude/worktrees/ suivi : git rm -r --cached .claude/worktrees"
 
