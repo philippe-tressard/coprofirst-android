@@ -28,6 +28,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: bash scripts/importer-contrat.sh --verifier
+      - name: Logo et sa licence identiques à coprofirst
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/importer-logo.sh --verifier
       - name: REUSE
         run: |
           python3 -m venv "$RUNNER_TEMP/reuse"
