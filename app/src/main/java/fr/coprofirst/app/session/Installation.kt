@@ -17,6 +17,8 @@ data class Installation(
     val nom: String,
     /** Le contrat servi (`version_contrat`), tel que servi ; absent s'il ne l'est pas. */
     val versionContrat: String? = null,
+    /** Le code de sa palette (`site_palette`) ; absent : la charte. */
+    val codePalette: String? = null,
 ) {
     val adresse: AdresseInstallation? get() = AdresseInstallation.relire(url)
     val contrat: VersionContrat? get() = VersionContrat.lire(versionContrat)
@@ -32,7 +34,7 @@ data class Installation(
         fun depuisConfig(adresse: AdresseInstallation, cles: Map<String, String?>): Installation {
             val nom = cles["site_nom"]?.trim().orEmpty()
             if (nom.isEmpty()) throw ErreurEntree.PasCoproFirst
-            val installation = Installation(adresse.url, nom, cles["version_contrat"])
+            val installation = Installation(adresse.url, nom, cles["version_contrat"], cles["site_palette"]?.takeIf { it.isNotBlank() })
             val contrat = installation.contrat
             if (contrat != null && contrat < VersionContrat.PLANCHER) throw ErreurEntree.ResidenceAMettreAJour
             return installation

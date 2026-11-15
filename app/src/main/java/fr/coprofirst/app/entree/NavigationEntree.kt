@@ -29,6 +29,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import fr.coprofirst.app.R
+import fr.coprofirst.app.ThemeCoproFirst
+import fr.coprofirst.app.charte.Palettes
 
 /** Les gestes des écrans de l'entrée — une interface, pour que les aperçus s'en passent. */
 interface ActionsEntree {
@@ -76,21 +78,25 @@ fun NavigationEntree(parcours: ParcoursEntree = viewModel(factory = ParcoursEntr
     // L'espace d'une résidence ouverte ne se quitte que par « Se déconnecter » ; le retour
     // système y ferme l'app, comme sur un écran racine.
     BackHandler(enabled = etat.ecran == EcranEntree.Connexion) { parcours.retour() }
-    Surface(modifier = Modifier.fillMaxSize()) {
-        AnimatedContent(
-            targetState = etat.ecran,
-            transitionSpec = {
-                val sens = if (targetState >= initialState) 1 else -1
-                (fadeIn(tween(DUREE_MS, easing = SORTIE_RAPIDE)) +
-                    slideInHorizontally(tween(DUREE_MS, easing = SORTIE_RAPIDE)) { sens * it / 12 })
-                    .togetherWith(fadeOut(tween(DUREE_MS / 2)))
-            },
-            label = "entree",
-        ) { ecran ->
-            when (ecran) {
-                EcranEntree.Accueil -> EcranAccueil(parcours)
-                EcranEntree.Connexion -> EcranConnexion(etat, parcours)
-                EcranEntree.Espace -> EcranEspace(etat.ouverte, parcours)
+    // La palette de la résidence s'applique dès qu'elle est reconnue, comme sur iOS.
+    val palette = Palettes.pour((etat.ouverte ?: etat.reconnue)?.codePalette)
+    ThemeCoproFirst(palette) {
+        Surface(modifier = Modifier.fillMaxSize()) {
+            AnimatedContent(
+                targetState = etat.ecran,
+                transitionSpec = {
+                    val sens = if (targetState >= initialState) 1 else -1
+                    (fadeIn(tween(DUREE_MS, easing = SORTIE_RAPIDE)) +
+                        slideInHorizontally(tween(DUREE_MS, easing = SORTIE_RAPIDE)) { sens * it / 12 })
+                        .togetherWith(fadeOut(tween(DUREE_MS / 2)))
+                },
+                label = "entree",
+            ) { ecran ->
+                when (ecran) {
+                    EcranEntree.Accueil -> EcranAccueil(parcours)
+                    EcranEntree.Connexion -> EcranConnexion(etat, parcours)
+                    EcranEntree.Espace -> EcranEspace(etat.ouverte, parcours)
+                }
             }
         }
     }

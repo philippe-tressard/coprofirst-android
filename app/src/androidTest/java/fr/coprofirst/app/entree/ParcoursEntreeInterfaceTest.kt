@@ -13,7 +13,6 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import fr.coprofirst.app.ThemeCoproFirst
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -31,7 +30,7 @@ class ParcoursEntreeInterfaceTest {
     @Before
     fun ouvrir() {
         val parcours = serveur.parcours()
-        ecran.setContent { ThemeCoproFirst { NavigationEntree(parcours) } }
+        ecran.setContent { NavigationEntree(parcours) }
         ecran.onNodeWithText("Entrer dans ma résidence").performClick()
     }
 

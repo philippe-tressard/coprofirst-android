@@ -25,6 +25,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.ThemeCoproFirst
 
@@ -46,7 +47,7 @@ fun EcranAccueil(parcours: ActionsEntree) {
         Text(
             stringResource(R.string.nom_app),
             style = MaterialTheme.typography.displaySmall,
-            color = MaterialTheme.colorScheme.primary,
+            color = LocalCouleurs.current.primary,
             modifier = Modifier.semantics { heading() },
         )
         Spacer(Modifier.height(12.dp))

@@ -1,6 +1,9 @@
 // SPDX-FileCopyrightText: 2026 Philippe TRESSARD
 // SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 
+import org.gradle.process.ExecOperations
+import javax.inject.Inject
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -45,6 +48,38 @@ android {
         // Android (élargissement à demander côté coprofirst) : pas d'icône d'ici là.
         // À retirer avec l'icône — une dispense sans objet ne reste pas.
         disable += "MissingApplicationIcon"
+    }
+}
+
+/**
+ * Les palettes de la charte, GÉNÉRÉES au build depuis contrat/tables-clients.json (la
+ * pièce jointe de la release de coprofirst au plancher) par scripts/generer_charte.py.
+ * Rien de généré n'est versionné ; aucune couleur ne s'écrit à la main.
+ */
+abstract class GenererCharte : DefaultTask() {
+    @get:InputFile abstract val tables: RegularFileProperty
+    @get:InputFile abstract val generateur: RegularFileProperty
+    @get:OutputDirectory abstract val sortie: DirectoryProperty
+    @get:Inject abstract val processus: ExecOperations
+
+    @TaskAction
+    fun generer() {
+        sortie.get().asFile.deleteRecursively()
+        processus.exec {
+            commandLine("python3", "-I", generateur.get().asFile.path, tables.get().asFile.path, sortie.get().asFile.path)
+        }
+    }
+}
+
+val genererCharte = tasks.register<GenererCharte>("genererCharte") {
+    tables.set(rootProject.layout.projectDirectory.file("contrat/tables-clients.json"))
+    generateur.set(rootProject.layout.projectDirectory.file("scripts/generer_charte.py"))
+    sortie.set(layout.buildDirectory.dir("generated/charte"))
+}
+
+androidComponents {
+    onVariants { variante ->
+        variante.sources.kotlin?.addGeneratedSourceDirectory(genererCharte, GenererCharte::sortie)
     }
 }
 
