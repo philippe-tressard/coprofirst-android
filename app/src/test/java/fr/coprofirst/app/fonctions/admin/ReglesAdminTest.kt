@@ -107,7 +107,7 @@ class ReglesAdminTest {
         assertEquals(PorteeTelemetrie.Mois, etat.porteeLue)
     }
 
-    private class ServiceSimule : ServiceAdmin {
+    private class ServiceSimule : ServiceAdmin by ServiceAbsent {
         val demandes = mutableListOf<Pair<PorteeTelemetrie, Boolean>>()
         var echec: ErreurService? = null
 

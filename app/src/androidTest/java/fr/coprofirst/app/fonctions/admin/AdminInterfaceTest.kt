@@ -6,16 +6,20 @@ package fr.coprofirst.app.fonctions.admin
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.api.modeles.IndicateursTelemetrie
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.commun.GestesDeSortie
+import fr.coprofirst.app.commun.PhraseAvis
 import fr.coprofirst.app.commun.StockageApparence
+import fr.coprofirst.app.commun.TonAvis
 import fr.coprofirst.app.commun.onglets.CadreAOnglets
 import fr.coprofirst.app.commun.onglets.OngletsSurLeSite
 import fr.coprofirst.app.commun.onglets.ReperesOnglets
@@ -107,6 +111,36 @@ class AdminInterfaceTest {
         ecran.waitUntil(5_000) { service.sans.lastOrNull() == true }
     }
 
+    @Test
+    fun lesUtilisateursEtLaFiche() {
+        ouvrir(administrateur)
+        ecran.onNodeWithTag(ReperesOnglets.onglet("utilisateurs")).performScrollTo().performClick()
+        ecran.waitUntil(5_000) { service.lectures.contains("utilisateurs") }
+        ecran.onNodeWithTag(ReperesAdmin.utilisateur(11)).assertExists()
+        ecran.onNodeWithTag(ReperesAdmin.RECHERCHE).performTextInput("dominique")
+        ecran.onNodeWithTag(ReperesAdmin.utilisateur(11)).assertDoesNotExist()
+        ecran.onNodeWithTag(ReperesAdmin.utilisateur(12)).performScrollTo().performClick()
+        ecran.onNodeWithTag(ReperesAdmin.FICHE_FERMER).assertIsDisplayed()
+        ecran.onNodeWithTag(ReperesAdmin.FICHE_SUPPRIMER).assertExists()
+        ecran.onNodeWithTag(ReperesAdmin.role("operateur")).assertDoesNotExist()
+        // Un geste ferme la fiche, son annonce suit.
+        ecran.onNodeWithTag(ReperesAdmin.FICHE_COMMUNAUTE).performScrollTo().performClick()
+        ecran.waitUntil(5_000) { service.lectures.contains("ban-12") }
+        ecran.waitUntil(5_000) { ecran.onAllNodesWithTag(ReperesAdmin.FICHE_FERMER).fetchSemanticsNodes().isEmpty() }
+    }
+
+    @Test
+    fun laConfirmationDitVotreCompte() {
+        ouvrir(administrateur)
+        ecran.onNodeWithTag(ReperesOnglets.onglet("utilisateurs")).performScrollTo().performClick()
+        ecran.waitUntil(5_000) { service.lectures.contains("utilisateurs") }
+        ecran.onNodeWithTag(ReperesAdmin.utilisateur(11)).performScrollTo().performClick()
+        ecran.onNodeWithTag(ReperesAdmin.role("conseil_syndical")).performScrollTo().performClick()
+        ecran.onNodeWithText("Retirer le rôle Conseil syndical de votre compte ?").assertIsDisplayed()
+        ecran.onNodeWithTag(ReperesAdmin.FICHE_CONFIRMER).performClick()
+        ecran.waitUntil(5_000) { service.lectures.contains("role-11-conseil_syndical") }
+    }
+
     /** La résidence simulée : des réponses inventées, aucun nom ni machine réels. */
     private class ServiceSimule : ServiceAdmin {
         val lectures = mutableListOf<String>()
@@ -141,6 +175,38 @@ class AdminInterfaceTest {
                 listOf(TableauTelemetrie.UtilisateurActif("Camille EXEMPLE", "locataire", 34, 9, null)),
                 TableauTelemetrie.FiltreGestionnaire(true, true, sansGestionnaire, null),
             )
+        }
+
+        override suspend fun utilisateurs(): List<UtilisateurAdmin> {
+            lectures += "utilisateurs"
+            return listOf(
+                UtilisateurAdmin(
+                    11, "Camille", "Exemple", "camille@exemple.test", "copropriétaire_résident",
+                    listOf("conseil_syndical", "admin"), actif = true, emailVerifie = true, aDesLots = true,
+                    gestesRoles = listOf(GesteDeRole("conseil_syndical", GesteRole.Retirer)),
+                ),
+                UtilisateurAdmin(
+                    12, "Dominique", "Fictif", "dominique@exemple.test", "locataire", listOf("résident"),
+                    actif = true, emailVerifie = true, aDesLots = true, gestesRoles = listOf(GesteDeRole("conseil_syndical", GesteRole.Ajouter)),
+                ),
+            )
+        }
+
+        override suspend fun lecteur() = Lecteur(11, instanceCommune = false)
+
+        override suspend fun changerRole(id: Int, geste: GesteDeRole) {
+            lectures += "role-$id-${geste.role}"
+        }
+
+        override suspend fun bannirCommunaute(id: Int, interdit: Boolean): BanCommunaute {
+            lectures += "ban-$id"
+            return BanCommunaute(banni = interdit, jusquAu = Instant.parse("2026-12-15T10:00:00Z"))
+        }
+
+        override suspend fun relancerRapprochement(id: Int) = PhraseAvis("Aucun lot trouvé.", TonAvis.Avertissement)
+
+        override suspend fun supprimerUtilisateur(id: Int) {
+            lectures += "supprimer-$id"
         }
     }
 }

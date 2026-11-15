@@ -3,8 +3,15 @@
 
 package fr.coprofirst.app.fonctions.admin
 
+import fr.coprofirst.api.modeles.BanCommunauteBody
+import fr.coprofirst.api.modeles.RoleAction
 import fr.coprofirst.api.routes.AdminApi
+import fr.coprofirst.api.routes.AuthApi
+import fr.coprofirst.api.routes.ConfigApi
 import fr.coprofirst.api.routes.TelemetryApi
+import fr.coprofirst.app.commun.PhraseAvis
+import fr.coprofirst.app.commun.TonAvis
+import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.SessionOuverte
 
 /**
@@ -26,7 +33,31 @@ interface ServiceAdmin {
 
     /** GET /telemetry/dashboard (administration) : le tableau d'une vue, avec ou sans le gestionnaire du site. */
     suspend fun tableauTelemetrie(portee: PorteeTelemetrie, sansGestionnaire: Boolean): TableauTelemetrie
+
+    /** GET /admin/utilisateurs (conseil et administration) : tous les comptes, avec les gestes de rôle servis. */
+    suspend fun utilisateurs(): List<UtilisateurAdmin>
+
+    /**
+     * Le compte qui lit (GET /auth/me) et si l'instance est commune (`operateur_par_exploitant`
+     * de GET /config, clé calculée par le serveur) — ce que la fiche DIT, aucun geste n'en dépend.
+     */
+    suspend fun lecteur(): Lecteur
+
+    /** POST /admin/utilisateurs/{id}/ajouter-role | retirer-role (administration) — un geste SERVI. */
+    suspend fun changerRole(id: Int, geste: GesteDeRole)
+
+    /** PATCH /admin/utilisateurs/{id}/ban-communaute (administration) — rend l'état servi. */
+    suspend fun bannirCommunaute(id: Int, interdit: Boolean): BanCommunaute
+
+    /** POST /admin/utilisateurs/{id}/auto-match (conseil et administration) — l'annonce du serveur, avec son ton. */
+    suspend fun relancerRapprochement(id: Int): PhraseAvis
+
+    /** DELETE /admin/utilisateurs/{id} (administration) — définitif. */
+    suspend fun supprimerUtilisateur(id: Int)
 }
+
+/** Le compte qui lit la liste, et si l'instance est commune (#94 de l'iOS). */
+data class Lecteur(val id: Int?, val instanceCommune: Boolean)
 
 /** Le Paramétrage par le client généré, à travers LA porte de la résidence. */
 class ServiceAdminApi(private val session: SessionOuverte) : ServiceAdmin {
@@ -38,7 +69,49 @@ class ServiceAdminApi(private val session: SessionOuverte) : ServiceAdmin {
         TelemetryApi(b, c).getTelemetryDashboard(portee.code, if (sansGestionnaire) SANS else AVEC).lu()
     }
 
+    override suspend fun utilisateurs() = session.appeler { b, c -> AdminApi(b, c).getAdminUtilisateurs().map { it.lu() } }
+
+    override suspend fun lecteur(): Lecteur {
+        // Ni l'un ni l'autre ne décide d'un geste : illisibles, la fiche dit la notification et rien de l'exploitant.
+        val id = try {
+            session.appeler { b, c -> AuthApi(b, c).getAuthMe().id }
+        } catch (_: ErreurService) {
+            null
+        }
+        val commune = try {
+            session.appeler { b, c -> ConfigApi(b, c).getConfig()[CLE_EXPLOITANT] } == "1"
+        } catch (_: ErreurService) {
+            false
+        }
+        return Lecteur(id, commune)
+    }
+
+    override suspend fun changerRole(id: Int, geste: GesteDeRole) {
+        session.appeler { b, c ->
+            val api = AdminApi(b, c)
+            when (geste.geste) {
+                GesteRole.Ajouter -> api.postAdminUtilisateursUserIdAjouterRole(id, RoleAction(geste.role))
+                GesteRole.Retirer -> api.postAdminUtilisateursUserIdRetirerRole(id, RoleAction(geste.role))
+            }
+        }
+    }
+
+    override suspend fun bannirCommunaute(id: Int, interdit: Boolean) = session.appeler { b, c ->
+        AdminApi(b, c).patchAdminUtilisateursUserIdBanCommunaute(id, BanCommunauteBody(interdit)).ban()
+    }
+
+    override suspend fun relancerRapprochement(id: Int) = session.appeler { b, c ->
+        AdminApi(b, c).postAdminUtilisateursUserIdAutoMatch(id).annonce.let { PhraseAvis(it.texte, TonAvis.depuis(it.ton.value)) }
+    }
+
+    override suspend fun supprimerUtilisateur(id: Int) {
+        session.appeler { b, c -> AdminApi(b, c).deleteAdminUtilisateursUserId(id) }
+    }
+
     private companion object {
+        /** `1` sur une instance commune, où l'exploitant désigne l'opérateur (`utils/config_publique`). */
+        const val CLE_EXPLOITANT = "operateur_par_exploitant"
+
         /** Le filtre « gestionnaire » de la route : écarté (`sans`) ou compté (`avec`). */
         const val SANS = "sans"
         const val AVEC = "avec"
