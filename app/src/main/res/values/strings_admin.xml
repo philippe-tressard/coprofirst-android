@@ -47,7 +47,6 @@ GÉNÉRÉS (`TablesAdmin`).
     <string name="admin_telemetrie_vues_uniques">%1$s vues, %2$s uniques</string>
     <string name="admin_telemetrie_utilisateurs">%1$s utilisateurs</string>
     <string name="admin_telemetrie_derniere_connexion">Dernière connexion : %1$s</string>
-    <string name="admin_telemetrie_graphe_squelette">Pages vues par heure</string>
     <!-- Les nombres clés, dans l'ordre du site (`FrequentationTelemetrie.svelte`) -->
     <string name="admin_telemetrie_kpi_vues_jour">Pages vues aujourd\'hui</string>
     <string name="admin_telemetrie_kpi_vues_mois">Pages vues (30 j)</string>
