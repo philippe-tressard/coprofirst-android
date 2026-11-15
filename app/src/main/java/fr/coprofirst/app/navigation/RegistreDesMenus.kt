@@ -43,7 +43,7 @@ object RegistreDesMenus {
 
         // "faq" — #20
 
-        // "profil" — #21
+        "profil" to { contexte -> fr.coprofirst.app.fonctions.profil.EcranProfil(contexte) },
 
         // "notifications" — #22
 

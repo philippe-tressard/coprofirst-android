@@ -26,8 +26,9 @@ import fr.coprofirst.app.commun.cliquable
 
 /**
  * « Plus », comme l'iOS (`PlusView`) : les pages au-delà de la barre, puis Profil et
- * À propos. ⚠️ Divergence déclarée : « Se déconnecter » y est, en attendant l'écran
- * Profil (#21) — c'est là que l'iOS le place ; il y passera avec lui.
+ * À propos. ⚠️ Divergence déclarée : « Se déconnecter » y reste tant que `ContexteDeMenu`
+ * ne porte pas les gestes de sortie (#41) — l'iOS le place au bas du Profil (#21), où il
+ * passera alors.
  */
 @Composable
 fun ListeDePlus(pages: List<PageDeNavigation>, ouvrir: (String) -> Unit, deconnecter: () -> Unit) {

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+-->
+<!-- L'écran Profil (#21) : les libellés de l'iOS (ProfilView et ses formulaires), mot pour mot. -->
+<resources>
+    <string name="profil_ok">OK</string>
+    <string name="profil_annuler">Annuler</string>
+    <string name="profil_enregistrer">Enregistrer</string>
+
+    <!-- Résidence -->
+    <string name="profil_residence">Résidence</string>
+    <string name="profil_roles">Rôles : %1$s</string>
+    <string name="profil_profil_utilisateur">Profil d\'utilisateur</string>
+    <string name="profil_batiment">Bâtiment</string>
+    <string name="profil_statut_compte">Statut du compte</string>
+    <string name="profil_actif">Actif</string>
+    <string name="profil_inactif">Inactif</string>
+    <string name="profil_membre_depuis">Membre depuis</string>
+    <string name="profil_derniere_connexion">Dernière connexion</string>
+    <string name="profil_demander_modification">Demander une modification (profil / bâtiment)</string>
+
+    <!-- Informations personnelles -->
+    <string name="profil_informations">Informations personnelles</string>
+    <string name="profil_photo_au_site">La photo de profil et l\'étage de votre logement se règlent sur le site.</string>
+    <string name="profil_telephone">Téléphone</string>
+    <string name="profil_societe">Société</string>
+    <string name="profil_fonction">Fonction</string>
+    <string name="profil_modifier_informations">Modifier mes informations</string>
+    <string name="profil_prenom">Prénom</string>
+    <string name="profil_nom">Nom</string>
+    <string name="profil_email">Adresse e-mail</string>
+    <string name="profil_mot_de_passe_actuel">Mot de passe actuel</string>
+    <string name="profil_changement_adresse">Un lien de confirmation partira à la nouvelle adresse et un avis à l’actuelle, qui reste celle de votre compte — connexion comprise — jusqu’à ce que vous cliquiez sur le lien.</string>
+    <string name="profil_exemple_telephone">+33 6 00 00 00 00</string>
+    <string name="profil_exemple_societe">Ex : Agence Dupont, Cabinet ABC…</string>
+    <string name="profil_exemple_fonction">Ex : Gestionnaire, Mandataire…</string>
+    <string name="profil_lien_envoye">Un lien de confirmation a été envoyé à %1$s. Votre adresse actuelle reste celle du compte jusqu’à ce que vous cliquiez dessus.</string>
+    <string name="profil_mis_a_jour">Profil mis à jour</string>
+
+    <!-- Ce qui reste au site (coprofirst#2755, #41) -->
+    <string name="profil_au_site">La saisie d\'une affaire, ce que j\'affiche (préférences de notification) et le thème se règlent sur le site pour l\'instant.</string>
+
+    <!-- Sécurité -->
+    <string name="profil_securite">Sécurité</string>
+    <string name="profil_modifier_mot_de_passe">Modifier le mot de passe</string>
+    <string name="profil_titre_mot_de_passe">Mot de passe</string>
+    <string name="profil_mot_de_passe_aide">Il vous faut votre mot de passe actuel, puis le nouveau saisi deux fois.</string>
+    <string name="profil_nouveau_mot_de_passe">Nouveau mot de passe</string>
+    <string name="profil_confirmation">Confirmation</string>
+    <string name="profil_confirmation_differe">Cette saisie diffère du nouveau mot de passe.</string>
+    <string name="profil_attente_actuel">Saisissez d’abord votre mot de passe actuel.</string>
+    <string name="profil_attente_nouveau">Saisissez le nouveau mot de passe, puis sa confirmation.</string>
+    <string name="profil_attente_confirmation">Les deux saisies du nouveau mot de passe doivent être identiques.</string>
+    <string name="profil_mot_de_passe_modifie">Mot de passe modifié</string>
+
+    <!-- Demande de modification -->
+    <string name="profil_titre_demande_modification">Demande de modification</string>
+    <string name="profil_demande_en_attente">Demande en attente</string>
+    <string name="profil_nouveau_profil">Nouveau profil d\'utilisateur</string>
+    <string name="profil_inchange">Inchangé</string>
+    <string name="profil_inchange_tirets">— Inchangé —</string>
+    <string name="profil_batiment_souhaite">Bâtiment souhaité</string>
+    <string name="profil_batiment_numero">Bât. %1$s</string>
+    <string name="profil_motif">Motif / justification</string>
+    <string name="profil_motif_exemple">Expliquez brièvement…</string>
+    <string name="profil_envoyer_demande">Envoyer la demande</string>
+    <string name="profil_validation_cs">Les modifications du profil d\'utilisateur et du bâtiment sont soumises à validation du conseil syndical.</string>
+    <string name="profil_demande_envoyee_cs">Demande envoyée au conseil syndical</string>
+    <string name="profil_historique">Historique des demandes (%1$d)</string>
+    <string name="profil_etat_en_attente">En attente</string>
+    <string name="profil_etat_approuvee">Approuvée</string>
+    <string name="profil_etat_rejetee">Rejetée</string>
+    <string name="profil_resume_statut">changement de type vers « %1$s »</string>
+    <string name="profil_resume_batiment">déménagement vers %1$s</string>
+
+    <!-- Vos droits (RGPD) -->
+    <string name="profil_droits">Vos droits (RGPD)</string>
+    <string name="profil_droits_texte">Conformément au RGPD, vous pouvez exercer vos droits d\'accès, rectification, portabilité et effacement en contactant le responsable de traitement à l\'adresse indiquée dans la politique de confidentialité.</string>
+    <string name="profil_politique">Politique de confidentialité</string>
+    <string name="profil_refuser_statistiques">Refuser la collecte de statistiques de navigation</string>
+    <string name="profil_statistiques_desactivees">Collecte de statistiques désactivée.</string>
+    <string name="profil_statistiques_reactivees">Collecte de statistiques réactivée.</string>
+    <string name="profil_exporter">Exporter mes données de navigation</string>
+    <string name="profil_partager_export">Partager l\'export</string>
+    <string name="profil_export_pret">Export prêt.</string>
+    <string name="profil_effacer">Effacer mes données de navigation</string>
+    <string name="profil_oui_effacer">Oui, effacer</string>
+    <string name="profil_donnees_effacees">Données de navigation effacées.</string>
+
+    <!-- Supprimer mon compte -->
+    <string name="profil_supprimer_compte">Supprimer mon compte</string>
+    <string name="profil_suppression_illisible">Impossible de lire l\'état de votre demande : %1$s</string>
+    <string name="profil_suppression_envoyee_le">Demande de suppression envoyée le %1$s.</string>
+    <plurals name="profil_traitee_sous">
+        <item quantity="one">L\'administration de la résidence la traite sous %1$d jour au plus.</item>
+        <item quantity="many">L\'administration de la résidence la traite sous %1$d jours au plus.</item>
+        <item quantity="other">L\'administration de la résidence la traite sous %1$d jours au plus.</item>
+    </plurals>
+    <string name="profil_suppression_invitation">Vous pouvez demander la suppression de votre compte</string>
+    <plurals name="profil_invitation_delai">
+        <item quantity="one"> ; l\'administration de la résidence la traite sous %1$d jour au plus.</item>
+        <item quantity="many"> ; l\'administration de la résidence la traite sous %1$d jours au plus.</item>
+        <item quantity="other"> ; l\'administration de la résidence la traite sous %1$d jours au plus.</item>
+    </plurals>
+    <string name="profil_retirer_demande">Retirer ma demande</string>
+    <string name="profil_demander_suppression">Demander la suppression de mon compte</string>
+    <string name="profil_confirmer_demande">Confirmer la demande</string>
+    <string name="profil_mot_de_passe_confirmer">Votre mot de passe, pour confirmer</string>
+    <string name="profil_motif_facultatif">Motif (facultatif)</string>
+    <string name="profil_demande_suppression_envoyee">Demande de suppression envoyée. Un accusé de réception vous est adressé.</string>
+    <string name="profil_demande_retiree">Demande de suppression retirée : votre compte est conservé.</string>
+</resources>

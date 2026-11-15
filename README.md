@@ -30,6 +30,15 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   Délégations, Paramétrage ne paraissent qu'à ceux qui y ont droit) ; « Plus » pour les
   autres pages, Profil, À propos et « Se déconnecter ». Les écrans des pages arrivent
   menu par menu : en attendant, chaque page dit « Bientôt ».
+- **Profil** (Plus › Profil) : la résidence, le statut et les rôles du compte ; les
+  informations personnelles (une nouvelle adresse demande le mot de passe et ne vaut
+  qu'une fois confirmée) ; le mot de passe ; une demande de changement de profil ou de
+  bâtiment au conseil syndical ; vos droits RGPD (politique de confidentialité, refus,
+  export et effacement des statistiques de navigation) ; **la demande de suppression du
+  compte** — ce qui sera effacé est dit d'abord, le mot de passe la confirme,
+  l'administration de la résidence la traite, et elle se retire tant qu'elle n'est pas
+  traitée. La saisie d'une affaire, les préférences de notification et le thème se
+  règlent encore sur le site (#47).
 
 Pas encore : les écrans des pages, le courriel retenu et la
 biométrie, les personnages de la démo, le QR code, les liens d'application (tickets
