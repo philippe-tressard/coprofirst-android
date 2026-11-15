@@ -46,7 +46,7 @@ object RegistreDesMenus {
 
         "tableau-de-bord" to { contexte -> fr.coprofirst.app.fonctions.fil.EcranFil(contexte) },
 
-        // "mes-demandes" — #16
+        "mes-demandes" to { contexte -> fr.coprofirst.app.fonctions.affaires.EcranAffaires(contexte) },
 
         "residence" to { contexte -> fr.coprofirst.app.fonctions.residence.EcranMaResidence(contexte) },
 
@@ -80,7 +80,7 @@ object RegistreDesMenus {
      *     "affaire" to FicheDeMenu(R.string.affaire_titre) { contexte, id -> DetailAffaire(contexte, id) },
      */
     val fiches: Map<String, FicheDeMenu> = mapOf(
-        // "affaire" — #16
+        "affaire" to FicheDeMenu(R.string.affaire_titre) { contexte, id -> fr.coprofirst.app.fonctions.affaires.EcranFicheAffaire(contexte, id) },
 
         "sondage" to FicheDeMenu(R.string.sondage_titre) { contexte, id ->
             id.toIntOrNull()?.let { fr.coprofirst.app.commun.detail.sondage.PageSondage(it, contexte.session) }
