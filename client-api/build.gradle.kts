@@ -48,8 +48,34 @@ openApiGenerate {
     )
 }
 
+// La version du contrat sur laquelle le client est généré — le PLANCHER — lue dans le
+// contrat lui-même (`info.version`), jamais recopiée : l'app refuse une installation
+// qui sert un contrat plus ancien (ses réponses ne se décoderaient pas).
+val contrat = layout.buildDirectory.dir("generated/contrat")
+val genererVersionContrat by tasks.registering {
+    val source = rootProject.file("contrat/openapi.json")
+    val sortie = contrat
+    inputs.file(source)
+    outputs.dir(sortie)
+    doLast {
+        @Suppress("UNCHECKED_CAST")
+        val info = (groovy.json.JsonSlurper().parse(source) as Map<String, Any>)["info"] as Map<String, Any>
+        val version = info["version"] as String
+        require(Regex("""\d+\.\d+\.\d+""").matches(version)) { "info.version illisible : $version" }
+        val fichier = sortie.get().file("fr/coprofirst/api/Contrat.kt").asFile
+        fichier.parentFile.mkdirs()
+        fichier.writeText(
+            "// GÉNÉRÉ par client-api/build.gradle.kts depuis contrat/openapi.json — NE PAS MODIFIER.\n" +
+                "package fr.coprofirst.api\n\n" +
+                "/** La version du contrat d'API sur laquelle ce client est généré : le plancher. */\n" +
+                "const val VERSION_CONTRAT_PLANCHER = \"$version\"\n",
+        )
+    }
+}
+
 sourceSets["main"].kotlin.srcDir(genere.map { it.dir("src/main/kotlin") })
-tasks.named("compileKotlin") { dependsOn("openApiGenerate") }
+sourceSets["main"].kotlin.srcDir(contrat)
+tasks.named("compileKotlin") { dependsOn("openApiGenerate", genererVersionContrat) }
 
 dependencies {
     implementation(libs.kotlinx.serialization.json)

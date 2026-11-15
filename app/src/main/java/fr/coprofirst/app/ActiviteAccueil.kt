@@ -7,12 +7,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import fr.coprofirst.app.entree.NavigationEntree
 
-/** Point d'entrée de l'app : l'écran d'accueil, sous le thème de l'app. */
+/** Point d'entrée de l'app : le parcours d'entrée, sous le thème de l'app. */
 class ActiviteAccueil : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent { ThemeCoproFirst { EcranAccueil() } }
+        setContent { ThemeCoproFirst { NavigationEntree() } }
     }
 }

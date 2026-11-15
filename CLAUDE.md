@@ -25,9 +25,14 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   la pièce jointe de la release de coprofirst au **plancher** (`contrat/plancher.env`),
   recopiée à l'octet par `bash scripts/importer-contrat.sh` ; la CI rejoue
   `--verifier`. Rien de généré n'est versionné. Les chemins s'entendent sous `/api`.
-- **État** : amorce — écran d'accueil seul. Le parcours de référence est l'app iOS
-  (`philippe-tressard/coprofirst-ios`, `Parite/PARITE.md`) : on en reprend les
-  parcours, jamais le code.
+- **État** : il se lit dans `README.md` (« Ce que fait l'app ») et les issues
+  ouvertes.
+- **L'app iOS est la référence fonctionnelle** (consigne de Philippe, 15/11/2026) :
+  l'Android tend vers elle — mêmes écrans, mêmes parcours, mêmes libellés, mêmes choix
+  (`philippe-tressard/coprofirst-ios`, `Parite/PARITE.md`). Une question technique se
+  tranche par le choix que l'iOS a fait ; on en reprend le comportement, jamais le code.
+  Une divergence (contrainte d'Android, étape intermédiaire) se **déclare** dans le
+  commentaire du code et dans la PR, avec le ticket qui la résorbe.
 - **Identifiant** `fr.coprofirst.app`, aligné sur l'iOS ; il se fige à la première
   publication. Signature **au poste** seulement, jamais en CI. Aucune publication
   (Play Console, piste de test ouverte) sans demande explicite de Philippe.
@@ -52,10 +57,15 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
 - **Installation** : aucun annuaire — démo, adresse saisie, QR, lien d'application ;
   l'énumération des installations est interdite (spec `multi-coproprietes.md`
   §4.1 bis de coprofirst).
+- **Réseau** : un seul client HTTP, `session/ClientHttp.kt` (aucune redirection
+  suivie, clair refusé par le manifeste) ; aucune requête ni route écrite à la main —
+  `verifier-depot.sh` le refuse. Le plancher du contrat (`VERSION_CONTRAT_PLANCHER`)
+  est généré depuis `contrat/openapi.json` ; une installation qui sert un contrat plus
+  ancien ne s'ouvre pas.
 - **Sauvegarde** : rien ne quitte l'appareil (`res/xml/regles_extraction.xml`,
   `regles_sauvegarde.xml`) — la session se relit par l'API.
 - **Contrôles** : `bash scripts/verifier-depot.sh` (500 lignes, encodage, modes,
-  syntaxe, LICENSE, couleurs écrites à la main) et `reuse lint`, rejoués par le hook
+  syntaxe, LICENSE, couleurs et requêtes écrites à la main) et `reuse lint`, rejoués par le hook
   pre-commit (armé par `git config core.hooksPath .githooks`) et par la CI ;
-  `./gradlew :app:assembleDebug :app:assembleRelease :app:lintDebug :client-api:test`
+  `./gradlew :app:assembleDebug :app:assembleRelease :app:lintDebug :app:testDebugUnitTest :client-api:test`
   (lint en erreurs).
