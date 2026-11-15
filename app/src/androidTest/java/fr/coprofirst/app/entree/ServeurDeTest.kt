@@ -18,6 +18,7 @@ import mockwebserver3.QueueDispatcher
 import mockwebserver3.RecordedRequest
 import okhttp3.tls.HandshakeCertificates
 import okhttp3.tls.HeldCertificate
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Un serveur local EN HTTPS (le clair est refusé par le manifeste, comme en vrai) et le
@@ -26,6 +27,8 @@ import okhttp3.tls.HeldCertificate
  *
  * GET /flux (le fil, la première page d'une résidence ouverte) se sert HORS de la file, depuis
  * `flux` : il part en même temps que GET /auth/me, et prendrait sinon la réponse de l'autre.
+ * De même toute route posée dans `fixes` (chemin → corps, en 200) : la fiche d'un sondage, lue
+ * avec GET /auth/me.
  */
 class ServeurDeTest : AutoCloseable {
     private val certificat = HeldCertificate.Builder().addSubjectAlternativeName("localhost").build()
@@ -34,10 +37,16 @@ class ServeurDeTest : AutoCloseable {
     /** Ce que sert GET /flux : un fil vide, sauf si le test en pose un. */
     @Volatile
     var flux: String = FIL_VIDE
+
+    /** Les routes servies hors de la file, par chemin (`/api/sondages/3`). */
+    val fixes = ConcurrentHashMap<String, String>()
     val serveur = MockWebServer().apply {
         dispatcher = object : QueueDispatcher() {
-            override fun dispatch(request: RecordedRequest): MockResponse =
-                if (request.url.encodedPath == "/api/flux") json(200, flux) else super.dispatch(request)
+            override fun dispatch(request: RecordedRequest): MockResponse {
+                val chemin = request.url.encodedPath
+                if (chemin == "/api/flux") return json(200, flux)
+                return fixes[chemin]?.let { json(200, it) } ?: super.dispatch(request)
+            }
         }
         useHttps(serveurTls.sslSocketFactory())
         start()

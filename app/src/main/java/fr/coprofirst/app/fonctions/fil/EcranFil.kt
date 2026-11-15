@@ -42,6 +42,8 @@ import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.pieces.AvisOuverture
 import fr.coprofirst.app.commun.pieces.rememberOuverture
 import fr.coprofirst.app.navigation.ContexteDeMenu
+import fr.coprofirst.app.navigation.Destination
+import fr.coprofirst.app.navigation.RegistreDesMenus
 import fr.coprofirst.app.session.SessionOuverte
 import java.time.Instant
 
@@ -49,10 +51,11 @@ import java.time.Instant
  * Le fil de la résidence, jour par jour — la page `tableau-de-bord`, la première après la
  * connexion —, comme l'iOS (`FilView`) : les éléments du plus récent au plus ancien, sous
  * l'en-tête de leur jour qui reste en haut tant que sa journée défile ; « tirer pour
- * actualiser » ; un fil vide et une erreur dits. Un toucher ouvre le résumé ou le document
- * (`DestinationDuFil`).
+ * actualiser » ; un fil vide et une erreur dits. Un toucher ouvre le résumé, le document ou
+ * la fiche d'un sondage ou d'une affaire, poussée par la porte (`DestinationDuFil`).
  *
- * ⚠️ Divergences déclarées : l'affaire et le sondage ne s'ouvrent pas encore (`DestinationDuFil`) ;
+ * ⚠️ Divergences déclarées : l'affaire ne s'ouvre pas tant que Mes affaires n'a pas déclaré
+ * sa fiche (`DestinationDuFil`) ;
  * ni le logement de l'utilisateur dans la barre (`PastilleLogement` de l'iOS, qui ouvre
  * « Mes lots & accès ») ni la pastille de la résidence (`PastilleOuSuisJe`, #15) ; pas de
  * bandeau hors ligne ; une notification touchée n'ouvre pas encore son élément (#23).
@@ -64,17 +67,18 @@ fun EcranFil(contexte: ContexteDeMenu) {
         key = "fil@${System.identityHashCode(session)}",
         factory = viewModelFactory { initializer { ParcoursFil(ServiceFilApi(session)) } },
     )
-    EcranFil(parcours, session)
+    EcranFil(parcours, session, contexte.ouvrir)
 }
 
+/** @param ouvrir la porte (`ContexteDeMenu.ouvrir`) : l'affaire et le sondage s'ouvrent par elle. */
 @Composable
-fun EcranFil(parcours: ParcoursFil, session: SessionOuverte) {
-    Chargement(charger = { parcours.charger() }, squelette = { SqueletteFil() }) { _, _ -> ListeFil(parcours, session) }
+fun EcranFil(parcours: ParcoursFil, session: SessionOuverte, ouvrir: (Destination) -> Boolean) {
+    Chargement(charger = { parcours.charger() }, squelette = { SqueletteFil() }) { _, _ -> ListeFil(parcours, session, ouvrir) }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ListeFil(parcours: ParcoursFil, session: SessionOuverte) {
+private fun ListeFil(parcours: ParcoursFil, session: SessionOuverte, ouvrir: (Destination) -> Boolean) {
     val etat by parcours.etat.collectAsStateWithLifecycle()
     val jours = remember(etat.elements) { etat.jours }
     val maintenant = remember(etat.elements) { Instant.now() }
@@ -102,7 +106,7 @@ private fun ListeFil(parcours: ParcoursFil, session: SessionOuverte) {
             jours.forEach { jour ->
                 stickyHeader(key = "jour-${jour.jour}") { EnTeteJour(TextesFil.entete(jour, maintenant)) }
                 items(jour.elements, key = { it.id }) { element ->
-                    val destination = DestinationDuFil.pour(element.cible)
+                    val destination = DestinationDuFil.pour(element.cible, RegistreDesMenus.fiches.keys)
                     CarteDuFil(
                         element,
                         session,
@@ -113,6 +117,7 @@ private fun ListeFil(parcours: ParcoursFil, session: SessionOuverte) {
                             null -> null
                             DestinationDuFil.Resume -> ({ resume = element.id })
                             is DestinationDuFil.Document -> ({ ouverture.document(destination.id, destination.nom) })
+                            is DestinationDuFil.Element -> ({ ouvrir(Destination.Element(destination.nature, destination.id.toString())) })
                         },
                     )
                 }

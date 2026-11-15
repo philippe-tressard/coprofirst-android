@@ -102,8 +102,8 @@ class ServiceMonLotTest {
         assertEquals("PATCH /api/acces/telecommandes/21/perdu {\"raison\":\"\"}", gestes[0])
         assertTrue(gestes[1].startsWith("PATCH /api/acces/vigiks/12/perdu"))
         assertTrue(gestes[2], gestes[2].contains("\"type\":\"vigik\"") && gestes[2].contains("\"code\":\"IMPORT-1\""))
-        // Un motif blanc part vide (`null`).
-        assertEquals("POST /api/acces/commandes {\"lot_id\":450,\"type\":\"telecommande\",\"quantite\":2,\"motif\":null}", gestes[4])
+        // Un motif blanc ne part pas (un null ne s'envoie plus, #99).
+        assertEquals("POST /api/acces/commandes {\"lot_id\":450,\"type\":\"telecommande\",\"quantite\":2}", gestes[4])
         assertTrue(gestes[5].startsWith("POST /api/bailleur/baux/3/recuperer-acces"))
     }
 

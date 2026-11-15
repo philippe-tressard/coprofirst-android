@@ -71,6 +71,7 @@ fun EcranResidence(session: SessionOuverte, sortie: GestesDeSortie, apparence: A
         else -> enPlus?.let { id -> plus.firstOrNull { it.id == id } ?: PagesDePlus.fixe(id) }
     }
     val fiche = ficheNature?.let { RegistreDesMenus.fiches[it] }
+    val titreFiche = fiche?.let { stringResource(it.titre) }
 
     fun fermerFiche() {
         ficheNature = null
@@ -107,7 +108,7 @@ fun EcranResidence(session: SessionOuverte, sortie: GestesDeSortie, apparence: A
     }
     BackHandler(enabled = retour != null) { retour?.invoke() }
     CadreResidence(
-        titre = fiche?.titre ?: ouverte?.titre ?: stringResource(R.string.plus),
+        titre = titreFiche ?: ouverte?.titre ?: stringResource(R.string.plus),
         retour = retour,
         barreDuHaut = barreDuHaut,
         cloche = { if (notifications != null) BoutonCloche(notifications) { clocheOuverte = true } },
@@ -132,9 +133,9 @@ fun EcranResidence(session: SessionOuverte, sortie: GestesDeSortie, apparence: A
     ) {
         val id = ficheId
         when {
-            fiche != null && id != null -> {
+            fiche != null && titreFiche != null && id != null -> {
                 // La fiche reçoit une page à son titre : elle n'est pas une page de la barre.
-                val page = PageDeNavigation(ficheNature.orEmpty(), "", fiche.titre, fiche.titre, "")
+                val page = PageDeNavigation(ficheNature.orEmpty(), "", titreFiche, titreFiche, "")
                 fiche.ecran(ContexteDeMenu(page, session, etat.droits, sortie, apparence, barreDuHaut, ouvrir), id)
             }
             ouverte != null -> RegistreDesMenus.Ecran(ContexteDeMenu(ouverte, session, etat.droits, sortie, apparence, barreDuHaut, ouvrir))
