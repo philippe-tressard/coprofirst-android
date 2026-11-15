@@ -24,8 +24,11 @@ val LocalCouleurs = staticCompositionLocalOf { Palettes.pour(null).clair }
  * l'iOS. Aucune couleur écrite à la main : Material lit les jetons de la palette.
  */
 @Composable
-fun ThemeCoproFirst(palette: Palette = Palettes.pour(null), contenu: @Composable () -> Unit) {
-    val sombre = isSystemInDarkTheme()
+fun ThemeCoproFirst(
+    palette: Palette = Palettes.pour(null),
+    sombre: Boolean = isSystemInDarkTheme(),
+    contenu: @Composable () -> Unit,
+) {
     val couleurs = if (sombre) palette.sombre else palette.clair
     CompositionLocalProvider(LocalCouleurs provides couleurs) {
         MaterialTheme(colorScheme = schema(couleurs, sombre), content = contenu)

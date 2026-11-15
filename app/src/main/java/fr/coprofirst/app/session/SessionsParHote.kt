@@ -32,6 +32,12 @@ class SessionsParHote(private val base: OkHttpClient = ClientHttp.partage) {
         parHote.remove(cle(adresse))
     }
 
+    /** Retire la session de chaque hôte. */
+    @Synchronized
+    fun oublierTout() {
+        parHote.clear()
+    }
+
     private fun pot(adresse: AdresseInstallation): Pot = parHote.getOrPut(cle(adresse)) { Pot(base) }
 
     private fun cle(adresse: AdresseInstallation) = adresse.url

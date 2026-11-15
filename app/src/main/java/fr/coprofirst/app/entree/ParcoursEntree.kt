@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import fr.coprofirst.app.commun.GestesDeSortie
 import fr.coprofirst.app.session.AdresseInstallation
 import fr.coprofirst.app.session.Connexion
 import fr.coprofirst.app.session.Decouverte
@@ -39,7 +40,7 @@ class ParcoursEntree(
     private val connexion: Connexion = Connexion(sessions),
     private val connues: InstallationsConnues,
     private val lirePreuve: suspend (AdresseInstallation) -> PreuveHote = { PreuveHote.lire(it) },
-) : ViewModel(), ActionsEntree {
+) : ViewModel(), ActionsEntree, GestesDeSortie {
     private val _etat = MutableStateFlow(EtatEntree())
     val etat: StateFlow<EtatEntree> = _etat.asStateFlow()
     private val garde = GardeHote { connues.liste }
@@ -117,6 +118,18 @@ class ParcoursEntree(
         val ouverte = _etat.value.ouverte ?: return
         _etat.update { it.copy(ouverte = null, ecran = EcranEntree.Connexion) }
         viewModelScope.launch { connexion.deconnecter(ouverte) }
+    }
+
+    /** Comme `Parcours.oublierTout` de l'iOS : chaque session fermée, rien de retenu, l'accueil. */
+    override fun oublierTout() {
+        val ouverte = _etat.value.ouverte
+        reconnaissance?.cancel()
+        _etat.value = EtatEntree()
+        connues.vider()
+        viewModelScope.launch {
+            if (ouverte != null) connexion.deconnecter(ouverte)
+            sessions.oublierTout()
+        }
     }
 
     private fun saisir(texte: String, pause: Boolean) {

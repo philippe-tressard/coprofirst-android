@@ -4,13 +4,21 @@
 package fr.coprofirst.app.navigation
 
 import androidx.compose.runtime.Composable
+import fr.coprofirst.app.commun.Apparence
+import fr.coprofirst.app.commun.GestesDeSortie
 import fr.coprofirst.app.session.SessionOuverte
 
-/** Ce qu'un écran de menu reçoit : sa page, la session de la résidence, les droits du compte. */
+/**
+ * Ce qu'un écran de menu reçoit : sa page, la session de la résidence, les droits du
+ * compte, les gestes de sortie (à confirmer par `ConfirmationDeSortie`) et le thème de
+ * l'appareil.
+ */
 data class ContexteDeMenu(
     val page: PageDeNavigation,
     val session: SessionOuverte,
     val droits: DroitsOnglet,
+    val sortie: GestesDeSortie,
+    val apparence: Apparence,
 )
 
 /**

@@ -33,6 +33,8 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Pictogrammes
 import fr.coprofirst.app.charte.Typo
+import fr.coprofirst.app.commun.Apparence
+import fr.coprofirst.app.commun.GestesDeSortie
 import fr.coprofirst.app.session.SessionOuverte
 
 /**
@@ -40,7 +42,7 @@ import fr.coprofirst.app.session.SessionOuverte
  * pages de l'ordre servi, puis « Plus »), et la page choisie, ouverte par le registre.
  */
 @Composable
-fun EcranResidence(session: SessionOuverte, deconnecter: () -> Unit) {
+fun EcranResidence(session: SessionOuverte, sortie: GestesDeSortie, apparence: Apparence) {
     val parcours: ParcoursResidence = viewModel(
         key = session.installation.url,
         factory = viewModelFactory { initializer { ParcoursResidence(session, ServiceCompteApi(session)) } },
@@ -81,9 +83,9 @@ fun EcranResidence(session: SessionOuverte, deconnecter: () -> Unit) {
         },
     ) {
         if (ouverte != null) {
-            RegistreDesMenus.Ecran(ContexteDeMenu(ouverte, session, etat.droits))
+            RegistreDesMenus.Ecran(ContexteDeMenu(ouverte, session, etat.droits, sortie, apparence))
         } else {
-            ListeDePlus(plus, ouvrir = { pageDePlus = it }, deconnecter = deconnecter)
+            ListeDePlus(plus, ouvrir = { pageDePlus = it }, deconnecter = sortie::deconnecter)
         }
     }
 }
