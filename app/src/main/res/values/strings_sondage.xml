@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+
+Les mots de la fiche d'un sondage, écrits une fois — ceux de l'iOS (`TextesSondage`), qui
+reprend la fiche du site (`sondages/[id]/+page.svelte`, `ResultatsSondage.svelte`).
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="fr">
+    <string name="sondage_titre">Sondage</string>
+    <string name="sondage_ouvert">Ouvert</string>
+    <string name="sondage_cloture">Clôturé</string>
+    <string name="sondage_cloture_le">Clôturé le %1$s</string>
+    <string name="sondage_cloture_prevue">Clôture le %1$s</string>
+    <plurals name="sondage_votes">
+        <item quantity="one">%1$s vote</item>
+        <item quantity="many">%1$s votes</item>
+        <item quantity="other">%1$s votes</item>
+    </plurals>
+    <string name="sondage_choisir">Sélectionnez une option</string>
+    <string name="sondage_preciser">Précisez votre réponse</string>
+    <string name="sondage_preciser_invite">Décrivez votre réponse…</string>
+    <string name="sondage_preciser_manque">Merci de préciser votre réponse dans le champ prévu</string>
+    <string name="sondage_requis">requis</string>
+    <string name="sondage_option_a_preciser">Cette réponse inclut un champ de précision</string>
+    <string name="sondage_champ_precision">Champ de précision</string>
+    <string name="sondage_commentaire">Commentaire</string>
+    <string name="sondage_commentaire_invite">Partagez votre point de vue…</string>
+    <string name="sondage_charte">Je m\'engage à rester respectueux envers tous les membres de la résidence. Tout propos irrespectueux pourra entraîner la suppression du commentaire et la suspension de mon compte.</string>
+    <string name="sondage_charte_manque">Vous devez accepter la charte de respect</string>
+    <string name="sondage_voter">Voter</string>
+    <string name="sondage_envoi">Envoi…</string>
+    <string name="sondage_vote_enregistre">Vote enregistré</string>
+    <string name="sondage_mon_vote">Mon vote ✓</string>
+    <string name="sondage_resultats_masques">Les résultats de ce sondage ne seront visibles qu\'après sa clôture.</string>
+    <string name="sondage_pourcentage">%1$s %%</string>
+    <string name="sondage_commentaires">💬 Commentaires (%1$d)</string>
+    <string name="sondage_commentaire_invite_fil">Votre commentaire sur ce sondage…</string>
+    <string name="sondage_commentaire_publie">Commentaire publié</string>
+    <string name="sondage_commentaire_supprime">Commentaire supprimé</string>
+    <string name="sondage_squelette_question">Une question posée à la résidence</string>
+    <string name="sondage_squelette_description">Le sondage se charge.</string>
+    <string name="sondage_squelette_option">Une réponse possible</string>
+</resources>

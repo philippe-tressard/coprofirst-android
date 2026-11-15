@@ -35,8 +35,12 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   dit sa rubrique dans sa teinte, l'heure, la nature d'une affaire, le délai et les dates
   d'une affaire datée, le titre et le début du texte, qui la lit et son lieu, ses pièces
   jointes ; une urgence porte un liseré rouge. Un toucher ouvre le résumé (avec « Voir
-  sur le site » quand le site a une page) ou le document ; l'affaire et le sondage ne
-  s'ouvrent pas encore dans l'app. Tirer la liste la relit ; un fil vide le dit.
+  sur le site » quand le site a une page), le document, ou la fiche d'un sondage : voter
+  (une réponse, sa précision si elle en demande une, un commentaire, sous la charte de
+  respect), les résultats quand le serveur les montre, puis les commentaires — en publier,
+  supprimer les siens (confirmé), signaler ceux des autres au conseil syndical (motif
+  obligatoire). L'affaire ne s'ouvre pas encore dans l'app. Tirer la liste la relit ; un
+  fil vide le dit.
 - **Profil** (Plus › Profil) : la résidence, le statut et les rôles du compte ; les
   informations personnelles (une nouvelle adresse demande le mot de passe et ne vaut
   qu'une fois confirmée) ; le mot de passe ; une demande de changement de profil ou de
@@ -68,6 +72,16 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   au compte ; au conseil syndical, « Nouvelle délégation » (personne aidée, proche aidant,
   motif, date de fin facultative). Une délégation est en lecture seule : l'aidant consulte,
   sans agir au nom de la personne aidée.
+- **Ma résidence** : la Fiche (photo, immatriculation, lots, assurance et syndic — qui
+  ouvre l'annuaire du syndic —, composition par bâtiment ; règles, plans, règlement,
+  comptes-rendus d'AG et diagnostics, chacun s'ouvrant dans l'app de l'appareil) ; aux
+  propriétaires et au conseil, le Carnet d'entretien (par équipement, visites en retard
+  en tête, filtre par périmètre) et le Règlement (poser une question à l'assistant, lire
+  son avis, ses fondements et les extraits qu'il cite). Le bilan de l'exercice se lit
+  encore sur le site.
+- **Annuaire** : le conseil syndical (par bâtiment, président et gestionnaire mis en
+  avant, groupe WhatsApp) et le syndic (espace client, contacts) — un toucher appelle ou
+  écrit.
 - **Paramétrage** (administration et opérateur de la plateforme), en partie :
   **À traiter** (la file des comptes et des commandes d'accès, celle de l'Espace CS, puis
   les demandes de changement de profil : approuver, ou rejeter avec un motif facultatif),

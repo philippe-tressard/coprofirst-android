@@ -89,4 +89,5 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp)
     testImplementation(libs.junit)
+    testImplementation(libs.okhttp.mockwebserver)
 }

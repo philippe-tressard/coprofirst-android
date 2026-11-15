@@ -4,6 +4,7 @@
 package fr.coprofirst.app.navigation
 
 import androidx.compose.runtime.Composable
+import fr.coprofirst.app.R
 import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.commun.GestesDeSortie
 import fr.coprofirst.app.session.SessionOuverte
@@ -47,13 +48,13 @@ object RegistreDesMenus {
 
         // "mes-demandes" — #16
 
-        // "residence" — #17
+        "residence" to { contexte -> fr.coprofirst.app.fonctions.residence.EcranMaResidence(contexte) },
 
-        // "annuaire" — #17
+        "annuaire" to { contexte -> fr.coprofirst.app.fonctions.annuaire.EcranAnnuaire(contexte) },
 
         "mon-lot" to { contexte -> fr.coprofirst.app.fonctions.monlot.EcranMonLot(contexte) },
 
-        // "prestataires" — #19
+        "prestataires" to { contexte -> fr.coprofirst.app.fonctions.prestataires.EcranPrestataires(contexte) },
 
         // "communaute" — #20
 
@@ -76,12 +77,14 @@ object RegistreDesMenus {
      * savoir ouvrir, pour qu'un autre écran (le fil, une notification) y mène sans dépendre
      * de son code. Même règle qu'au-dessus : UNE ligne réservée par nature, que la session
      * du menu remplace par
-     *     "affaire" to FicheDeMenu("Affaire") { contexte, id -> DetailAffaire(contexte, id) },
+     *     "affaire" to FicheDeMenu(R.string.affaire_titre) { contexte, id -> DetailAffaire(contexte, id) },
      */
     val fiches: Map<String, FicheDeMenu> = mapOf(
         // "affaire" — #16
 
-        // "sondage" — #70
+        "sondage" to FicheDeMenu(R.string.sondage_titre) { contexte, id ->
+            id.toIntOrNull()?.let { fr.coprofirst.app.commun.detail.sondage.PageSondage(it, contexte.session) }
+        },
 
     )
 

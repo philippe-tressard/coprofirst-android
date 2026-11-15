@@ -61,7 +61,8 @@ class ServiceAnnoncesCourrielsTest {
         assertTrue(corps, corps.contains("\"format_demande\":\"a5\""))
         assertTrue(corps, corps.contains("\"envoyer_cs\":true"))
         assertTrue(corps, corps.contains("<p>"))
-        assertTrue("aucun périmètre : le défaut du serveur", corps.contains("\"perimetre_cible\":null"))
+        // Aucun périmètre : le champ ne part pas (un null ne s'envoie plus, #99) — le serveur pose le défaut.
+        assertFalse(corps, corps.contains("perimetre_cible"))
         assertFalse(SaisieAnnonceHall(titre = "x", message = "  ").complete)
     }
 
