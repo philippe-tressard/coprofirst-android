@@ -39,7 +39,7 @@ class UtilisateursAdminTest {
             compte(3, "Camille", "exemple", "conseil_syndical", statut = "copropriétaire_résident"),
             compte(4, "Bea", "Etienne", "résident", actif = false),
         )
-        assertEquals("par nom sans accents ni casse ; sans nom en dernier", listOf(3, 4, 1, 2), ListeUtilisateurs.affiches(comptes, "", null, FiltreCompte.Tous).map { it.id })
+        assertEquals("par nom sans accents ni casse ; sans nom en dernier", listOf(1, 4, 3, 2), ListeUtilisateurs.affiches(comptes, "", null, FiltreCompte.Tous).map { it.id })
         assertEquals(listOf(4), ListeUtilisateurs.affiches(comptes, "", null, FiltreCompte.EnAttente).map { it.id })
         assertEquals(listOf(3), ListeUtilisateurs.affiches(comptes, "", "copropriétaire_résident", FiltreCompte.Actifs).map { it.id })
         assertEquals("tous les mots, sans accents", listOf(1), ListeUtilisateurs.affiches(comptes, "zoe ete", null, FiltreCompte.Tous).map { it.id })

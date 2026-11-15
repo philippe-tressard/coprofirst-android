@@ -30,6 +30,13 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   Délégations, Paramétrage ne paraissent qu'à ceux qui y ont droit) ; « Plus » pour les
   autres pages, Profil et À propos. Les écrans des pages arrivent
   menu par menu : en attendant, chaque page dit « Bientôt ».
+- **Fil d'activité** (la première page) : ce qui se passe dans la résidence, jour par
+  jour (« Aujourd'hui », « Hier », puis la date), le plus récent en tête. Chaque carte
+  dit sa rubrique dans sa teinte, l'heure, la nature d'une affaire, le délai et les dates
+  d'une affaire datée, le titre et le début du texte, qui la lit et son lieu, ses pièces
+  jointes ; une urgence porte un liseré rouge. Un toucher ouvre le résumé (avec « Voir
+  sur le site » quand le site a une page) ou le document ; l'affaire et le sondage ne
+  s'ouvrent pas encore dans l'app. Tirer la liste la relit ; un fil vide le dit.
 - **Profil** (Plus › Profil) : la résidence, le statut et les rôles du compte ; les
   informations personnelles (une nouvelle adresse demande le mot de passe et ne vaut
   qu'une fois confirmée) ; le mot de passe ; une demande de changement de profil ou de
@@ -46,6 +53,9 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   choisir plusieurs et les supprimer — toute suppression se confirme, elle est
   définitive. Balayer vers la droite marque lu, vers la gauche supprime. Tirer la liste
   la relit. La cloche de chaque écran et les notifications push viendront ensuite.
+- **FAQ** : les questions de la résidence par catégorie, une réponse dépliée à la fois ;
+  « Partager le lien » d'une question ; le Manuel utilisateur. La rédaction reste au site,
+  et l'écran ne le dit qu'à qui le serveur l'ouvre.
 - **Mes lots & accès** (onglet « Accès ») : ses lots et leurs caractéristiques (vue du
   locataire, du bailleur, ou de tous les autres) ; ses badges Vigik et télécommandes,
   « Signaler perdu », « Nouvel accès » (pour un de ses lots) et « Déclarer un accès » ;

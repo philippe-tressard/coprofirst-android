@@ -43,20 +43,20 @@ import fr.coprofirst.app.commun.Roles
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.onglets.ContexteOnglet
 import fr.coprofirst.app.fonctions.espacecs.CarteDeFile
-import fr.coprofirst.app.fonctions.espacecs.OngletValidations
+import fr.coprofirst.app.fonctions.espacecs.OngletComptesCS
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.launch
 
 /**
  * « À traiter » (onglet `a_traiter`), comme l'iOS (`OngletATraiter`) : ce qui attend un
  * geste de l'administrateur — la file des comptes et des commandes d'accès, la MÊME que
- * celle du conseil (`OngletValidations` de l'Espace CS, mêmes routes, réemployée), puis
+ * celle du conseil (`OngletComptesCS` de l'Espace CS, mêmes routes, réemployée), puis
  * les demandes de modification de profil.
  */
 @Composable
 fun OngletATraiter(contexte: ContexteOnglet, service: ServiceAdmin) {
     Column(verticalArrangement = Arrangement.spacedBy(32.dp)) {
-        OngletValidations(contexte)
+        OngletComptesCS(contexte)
         FileDemandesProfil(contexte, service)
     }
 }

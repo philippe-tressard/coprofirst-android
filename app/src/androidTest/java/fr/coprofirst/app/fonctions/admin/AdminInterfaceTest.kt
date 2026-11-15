@@ -104,10 +104,11 @@ class AdminInterfaceTest {
         ecran.onNodeWithTag(ReperesOnglets.onglet("telemetry")).performScrollTo().performClick()
         ecran.waitUntil(5_000) { service.portees.isNotEmpty() }
         ecran.onNodeWithTag(ReperesAdmin.GRAPHE).performScrollTo().assertIsDisplayed()
-        ecran.onNodeWithTag(ReperesAdmin.vue(PorteeTelemetrie.Mois)).performClick()
+        // Le graphe a fait défiler la page : la pastille revient à l'écran avant d'être touchée.
+        ecran.onNodeWithTag(ReperesAdmin.vue(PorteeTelemetrie.Mois)).performScrollTo().performClick()
         ecran.waitUntil(5_000) { service.portees.lastOrNull() == PorteeTelemetrie.Mois }
         ecran.onNodeWithTag(ReperesAdmin.vue(PorteeTelemetrie.Mois)).assertIsSelected()
-        ecran.onNodeWithTag(ReperesAdmin.FILTRE).performClick()
+        ecran.onNodeWithTag(ReperesAdmin.FILTRE).performScrollTo().performClick()
         ecran.waitUntil(5_000) { service.sans.lastOrNull() == true }
     }
 

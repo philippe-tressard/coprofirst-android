@@ -66,6 +66,19 @@ jamais sur ces droits seuls), `sortie` (`GestesDeSortie` : `deconnecter()`,
 l'écran — le `toolbar` de l'iOS ; elles se retirent quand l'écran se quitte). Le titre de la page est posé par la barre : l'écran n'en
 pose pas. Une page sans ligne au registre affiche « Bientôt ».
 
+**La porte** (#85) — `contexte.ouvrir(destination)` mène d'un écran ailleurs, sans toucher à
+la barre ni dépendre du code d'un autre menu : `Destination.Page(id)` (une page de la barre
+ou de « Plus »), `Destination.Element(nature, id)` (la fiche d'un élément, poussée par-dessus
+la page ouverte, avec retour), `Destination.Notifications` (la cloche). Elle rend `false`
+quand rien ne la porte dans l'app (page que le compte ne voit pas, fiche non déclarée) :
+l'écran garde son repli, « Voir sur le site » par exemple. Un menu **déclare** les éléments
+qu'il sait ouvrir dans `RegistreDesMenus.fiches`, par nature (celles du fil : `affaire`,
+`sondage`), sur SA ligne réservée :
+
+```kotlin
+        "affaire" to FicheDeMenu("Affaire") { contexte, id -> DetailAffaire(contexte, id) },
+```
+
 ## Navigation — `fr.coprofirst.app.navigation` (à la couche commune)
 
 | API | Pendant iOS | Rôle |
@@ -77,6 +90,7 @@ pose pas. Une page sans ligne au registre affiche « Bientôt ».
 | `OngletsDuSite.descriptifs[page]`, `OngletsDuSite.routes[page]` | `Tables<Menu>.descriptifs`, `.routes` | Le descriptif et l'adresse sur le site de chaque onglet (générés). |
 | `EcranResidence` | `OngletsView` | La barre (4 pages + « Plus ») ; en haut, la cloche. |
 | `ActionsDeBarre(contexte) { … }` | `.toolbar` | Les actions de la barre du haut, déclarées par l'écran affiché. |
+| `contexte.ouvrir(Destination)`, `RegistreDesMenus.fiches`, `FicheDeMenu` | `parcours.suivre`, `Destination`, `Aiguillage` | La porte : ouvrir une page, la fiche d'un élément ou la cloche depuis un écran. |
 
 ## Session — `fr.coprofirst.app.session`
 
@@ -301,6 +315,21 @@ LigneDocument(document.fichierNom, ouverture.enCours == "document-${document.id}
 AvisOuverture(ouverture)
 ```
 
+## Qui la lit, et où — `fr.coprofirst.app.commun.lecture`
+
+« Qui la lit » et le lieu d'un contenu (affaire, ligne du fil, annonce, idée, sondage), tels
+que le serveur les SERT (`lecture`, `perimetre_libelle`) — jamais recomposés : la règle est
+celle du serveur seul.
+
+| API | Pendant iOS | Usage |
+|---|---|---|
+| `Lecture`, `Lecture.depuis(servie)`, `Lecture.lire(json)` | `Lecture` | La pastille servie : par le type généré d'une route, ou relue dans un `meta` libre (le fil) — illisible, `null`, sans emporter le reste. `phraseEntiere` : la bulle, puis ceux qui ne lisent pas. |
+| `Lecture.aMontrer(l)` | `Lecture.aMontrer` | La pastille à montrer : `null` quand personne n'est exclu (`par_defaut`) ou qu'elle n'est pas servie. |
+| `PastilleLecture(lecture, masculin = false, memeParDefaut = false)` | `PastilleLecture` | Sur une carte : teinte `badge-blue`, pictogrammes des lecteurs, libellé court, cadenas. Ne s'ouvre pas ; le lecteur d'écran lit « Qui la lit : … ». `masculin` : un sondage (« Qui le lit ») ; `memeParDefaut` : une saisie. |
+| `LectureDetaillee(lecture, masculin)` | `LectureDetaillee` | Sur un détail : l'intitulé, la pastille, le titre, la phrase entière (repère `lecture.detail`). |
+| `EtiquetteLieu(lieu, style?, couleur?)`, `LieuServi.lieu(perimetreLibelle)` | `EtiquetteLieu`, `LieuServi` | Le lieu servi, avec l'épingle ; `""` (le périmètre par défaut) ou absent : rien. |
+| `enClair(lecture, masculin)`, `enClair(lieu)` | `.enClair` | Les mêmes en une phrase, pour le libellé d'une carte au lecteur d'écran. |
+
 ## Charte — `fr.coprofirst.app.charte`, `ThemeCoproFirst`
 
 | API | Rôle |
@@ -309,11 +338,17 @@ AvisOuverture(ouverture)
 | `MaterialTheme.colorScheme` | Les rôles de Material, tirés des mêmes jetons (`ThemeCoproFirst`). |
 | `Mise.rayon`, `Mise.marge`, `Mise.cible`, `Mise.ecart`, `Mise.mosaique`, `Mise.mosaiqueCompacte`, `Mise.vignette` | Les mesures communes (`Mise`). Cible tactile : 48 dp (règle d'Android). |
 | `Typo.titre()`, `Typo.libelle()` | Titre en serif (`Font.titre`), libellé de section (`.styleLibelle()`). |
+| `Pictogrammes.icone(lucide)`, `Pictogrammes.parNom` | Une icône du site (nom Lucide) en icône de Material ; un nom absent prend le repli. Les tests refusent qu'une page, une rubrique du fil ou une nature d'affaire générées en manquent. ⚠️ L'iOS dessine les tracés Lucide du fil ; leur catalogue n'est pas publié avec la release. |
+| `NaturesDuFil.parType`, `NatureDuFil.de(type)`, `NatureDuFil.inconnue` | **Générée** (`naturesDuFil`) : ce que le fil montre d'un type d'élément — `libelle`, `couleur` et `fond` (des JETONS de `Couleurs` : `nature.couleur(LocalCouleurs.current)`), `icone`. Un type inconnu : neutre. |
+| `NaturesAffaire.toutes`, `NatureAffaire` | **Générée** (`naturesAffaire`, `teinteNature`) : les natures d'une affaire dans l'ordre du site — `code`, `libelle`, `icone`, `badge` (pour `PastilleTeinte`). |
 
 ## À venir dans la couche commune
 
-Tables de libellés — 15b ; le fil d'activité (page `tableau-de-bord`) — #11 ; la cloche
+Tables de libellés — 15b ; la cloche
 qui rouvre une notification touchée — #23. Composants de l'iOS employés par UN seul menu
 pour l'heure, à monter ici dès qu'un deuxième les emploie : `ChampSaisie` (Espace CS),
 `FlowEtiquettes` (Communauté) ; et la pastille « où suis-je » (`PastilleOuSuisJe` : logo et
-nom de la résidence dans la barre du haut, changer de résidence). Le suivi : #15, #11.
+nom de la résidence dans la barre du haut, changer de résidence). Demandés par le fil
+(#11) : un geste de `ContexteDeMenu` qui ouvre une autre page de la barre — et un élément
+précis (une affaire, un sondage) — depuis un écran ; le jour et le mois en toutes lettres
+dans `FormatsDuSite` (l'en-tête d'un jour du fil). Le suivi : #15, #11.

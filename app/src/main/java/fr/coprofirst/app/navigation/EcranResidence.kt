@@ -41,7 +41,9 @@ import fr.coprofirst.app.session.SessionOuverte
 /**
  * La résidence ouverte, comme `OngletsView` de l'iOS : la barre du bas (les 4 premières
  * pages de l'ordre servi, puis « Plus »), et la page choisie, ouverte par le registre ; en
- * haut, la cloche, qui ouvre les notifications en feuille (`Cloche`).
+ * haut, la cloche, qui ouvre les notifications en feuille (`Cloche`). La porte
+ * (`ContexteDeMenu.ouvrir`, #85) y mène d'un écran à une page, à la fiche d'un élément —
+ * poussée par-dessus la page ouverte — ou à la cloche, par `Aiguillage`.
  */
 @Composable
 fun EcranResidence(session: SessionOuverte, sortie: GestesDeSortie, apparence: Apparence) {
@@ -55,19 +57,58 @@ fun EcranResidence(session: SessionOuverte, sortie: GestesDeSortie, apparence: A
     val plus = pages.drop(ParcoursResidence.VISIBLES)
     // Une page que les droits retirent (relus) ne reste pas ouverte.
     val onglet = etat.onglet.takeIf { it == EtatResidence.PLUS || barre.any { p -> p.id == it } } ?: barre.firstOrNull()?.id
-    var pageDePlus by rememberSaveable(onglet) { mutableStateOf<String?>(null) }
+    var pageDePlus by rememberSaveable { mutableStateOf<String?>(null) }
+    // La fiche ouverte par la porte : sa nature et son identifiant (`Destination.Element`).
+    var ficheNature by rememberSaveable { mutableStateOf<String?>(null) }
+    var ficheId by rememberSaveable { mutableStateOf<String?>(null) }
     val barreDuHaut = remember { BarreDuHaut() }
     var clocheOuverte by rememberSaveable { mutableStateOf(false) }
     val notifications = Cloche.page
 
+    val enPlus = if (onglet == EtatResidence.PLUS) pageDePlus else null
     val ouverte: PageDeNavigation? = when {
         onglet != EtatResidence.PLUS -> barre.firstOrNull { it.id == onglet }
-        else -> pageDePlus?.let { id -> plus.firstOrNull { it.id == id } ?: PagesDePlus.fixe(id) }
+        else -> enPlus?.let { id -> plus.firstOrNull { it.id == id } ?: PagesDePlus.fixe(id) }
     }
-    BackHandler(enabled = pageDePlus != null) { pageDePlus = null }
+    val fiche = ficheNature?.let { RegistreDesMenus.fiches[it] }
+
+    fun fermerFiche() {
+        ficheNature = null
+        ficheId = null
+    }
+
+    fun aller(id: String) {
+        parcours.choisir(id)
+        pageDePlus = null
+        fermerFiche()
+    }
+    val ouvrir: (Destination) -> Boolean = { destination ->
+        val aiguillage = Aiguillage.aiguiller(destination, barre.map { it.id }, plus.map { it.id }, RegistreDesMenus.fiches.keys, notifications != null)
+        // La cloche est une feuille : tout autre écran demandé la referme d'abord (l'iOS).
+        if (aiguillage != Aiguillage.Aucun) clocheOuverte = aiguillage == Aiguillage.Cloche
+        when (aiguillage) {
+            is Aiguillage.Onglet -> aller(aiguillage.id)
+            is Aiguillage.PageDePlus -> {
+                aller(EtatResidence.PLUS)
+                pageDePlus = aiguillage.id
+            }
+            is Aiguillage.Fiche -> {
+                ficheNature = aiguillage.element.nature
+                ficheId = aiguillage.element.id
+            }
+            Aiguillage.Cloche, Aiguillage.Aucun -> Unit
+        }
+        aiguillage != Aiguillage.Aucun
+    }
+    val retour: (() -> Unit)? = when {
+        fiche != null -> ::fermerFiche
+        enPlus != null -> ({ pageDePlus = null })
+        else -> null
+    }
+    BackHandler(enabled = retour != null) { retour?.invoke() }
     CadreResidence(
-        titre = ouverte?.titre ?: stringResource(R.string.plus),
-        retour = if (pageDePlus != null) ({ pageDePlus = null }) else null,
+        titre = fiche?.titre ?: ouverte?.titre ?: stringResource(R.string.plus),
+        retour = retour,
         barreDuHaut = barreDuHaut,
         cloche = { if (notifications != null) BoutonCloche(notifications) { clocheOuverte = true } },
         barre = {
@@ -75,30 +116,35 @@ fun EcranResidence(session: SessionOuverte, sortie: GestesDeSortie, apparence: A
                 barre.forEach { page ->
                     NavigationBarItem(
                         selected = onglet == page.id,
-                        onClick = { parcours.choisir(page.id) },
+                        onClick = { aller(page.id) },
                         icon = { Icon(Pictogrammes.icone(page.icone), contentDescription = null) },
                         label = { Text(page.libelle, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                     )
                 }
                 NavigationBarItem(
                     selected = onglet == EtatResidence.PLUS,
-                    onClick = { parcours.choisir(EtatResidence.PLUS) },
+                    onClick = { aller(EtatResidence.PLUS) },
                     icon = { Icon(Icons.Filled.MoreHoriz, contentDescription = null) },
                     label = { Text(stringResource(R.string.plus)) },
                 )
             }
         },
     ) {
-        if (ouverte != null) {
-            RegistreDesMenus.Ecran(ContexteDeMenu(ouverte, session, etat.droits, sortie, apparence, barreDuHaut))
-        } else {
-            ListeDePlus(plus, ouvrir = { pageDePlus = it })
+        val id = ficheId
+        when {
+            fiche != null && id != null -> {
+                // La fiche reçoit une page à son titre : elle n'est pas une page de la barre.
+                val page = PageDeNavigation(ficheNature.orEmpty(), "", fiche.titre, fiche.titre, "")
+                fiche.ecran(ContexteDeMenu(page, session, etat.droits, sortie, apparence, barreDuHaut, ouvrir), id)
+            }
+            ouverte != null -> RegistreDesMenus.Ecran(ContexteDeMenu(ouverte, session, etat.droits, sortie, apparence, barreDuHaut, ouvrir))
+            else -> ListeDePlus(plus, ouvrir = { pageDePlus = it })
         }
     }
     if (clocheOuverte && notifications != null) {
         FeuilleNotifications(
             notifications,
-            contexte = { barre -> ContexteDeMenu(notifications, session, etat.droits, sortie, apparence, barre) },
+            contexte = { barre -> ContexteDeMenu(notifications, session, etat.droits, sortie, apparence, barre, ouvrir) },
             fermer = { clocheOuverte = false },
         )
     }
