@@ -34,10 +34,10 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
-import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.BoutonPlein
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.FlowCapsules
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 
@@ -120,7 +120,7 @@ private fun Personnes(delegation: Delegation) {
 @Composable
 private fun Personne(role: String, nom: String) {
     Column(Modifier.semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Text(role.uppercase(), style = Typo.libelle(), color = LocalCouleurs.current.textMuted)
+        Libelle(role)
         Text(nom, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = LocalCouleurs.current.text)
     }
 }

@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
-import fr.coprofirst.app.charte.Typo
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.session.SessionOuverte
@@ -67,12 +67,7 @@ fun PiecesJointesVue(
     val ouverture = rememberOuverture(session)
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         if (format == FormatPieces.Grand) {
-            Text(
-                stringResource(R.string.pieces_titre, pieces.nombre).uppercase(),
-                style = Typo.libelle(),
-                color = couleurs.textMuted,
-                modifier = Modifier.semantics { heading() },
-            )
+            Libelle(stringResource(R.string.pieces_titre, pieces.nombre), Modifier.semantics { heading() })
         }
         if (pieces.photos.isNotEmpty()) {
             MosaiquePhotos(

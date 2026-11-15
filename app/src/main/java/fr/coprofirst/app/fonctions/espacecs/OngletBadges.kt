@@ -39,11 +39,11 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
-import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.ChampRecherche
 import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.EtatVide
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.Pastille
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.formats.FormatsDuSite
@@ -111,7 +111,7 @@ private fun Parc(parc: List<AccesDuParc>) {
 @Composable
 private fun FiltreTypes(type: TypeAcces?, choisir: (TypeAcces?) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text(stringResource(R.string.espacecs_badges_type).uppercase(), style = Typo.libelle(), color = LocalCouleurs.current.textMuted)
+        Libelle(stringResource(R.string.espacecs_badges_type))
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Pastille(stringResource(R.string.espacecs_badges_tous), retenue = type == null) { choisir(null) }
             TypeAcces.entries.forEach { option ->

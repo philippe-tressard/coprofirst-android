@@ -48,6 +48,7 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Carte
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.commun.phrase
 import fr.coprofirst.app.session.ErreurService
@@ -58,12 +59,7 @@ fun SectionProfil(titre: String?, note: String? = null, contenu: @Composable Col
     val couleurs = LocalCouleurs.current
     Column(Modifier.fillMaxWidth().padding(horizontal = Mise.marge), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         if (titre != null) {
-            Text(
-                titre.uppercase(),
-                style = Typo.libelle(),
-                color = couleurs.textMuted,
-                modifier = Modifier.padding(start = 4.dp).semantics { heading() },
-            )
+            Libelle(titre, Modifier.padding(start = 4.dp).semantics { heading() })
         }
         Carte(contenu = contenu)
         if (note != null) Note(note, Modifier.padding(horizontal = 4.dp))

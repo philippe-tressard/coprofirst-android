@@ -57,6 +57,7 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.BoutonPlein
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.session.ErreurService
@@ -192,7 +193,7 @@ private fun ChoixType(type: TypeAcces, choisir: (TypeAcces) -> Unit) {
 
 @Composable
 private fun Section(libelle: Int) {
-    Text(stringResource(libelle).uppercase(), style = Typo.libelle(), color = LocalCouleurs.current.textMuted)
+    Libelle(stringResource(libelle))
 }
 
 @Composable

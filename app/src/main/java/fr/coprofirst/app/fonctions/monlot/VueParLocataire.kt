@@ -31,7 +31,9 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.Carte
+import fr.coprofirst.app.commun.Intertitre
 import fr.coprofirst.app.commun.MessageErreur
+import fr.coprofirst.app.commun.NoteEnCarte
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.launch
@@ -55,7 +57,7 @@ fun VueParLocataire(
     Intertitre(stringResource(R.string.monlot_vue_par_locataire))
     erreur?.let { MessageErreur(it) }
     if (groupes.isEmpty()) {
-        NoteMonLot(stringResource(R.string.monlot_aucun_bail_actif_point))
+        NoteEnCarte(stringResource(R.string.monlot_aucun_bail_actif_point))
     } else {
         Text(stringResource(R.string.monlot_vue_par_locataire_intro), style = MaterialTheme.typography.bodyMedium, color = LocalCouleurs.current.textMuted)
         groupes.forEach { groupe -> CarteGroupe(groupe) { aRecuperer = groupe } }

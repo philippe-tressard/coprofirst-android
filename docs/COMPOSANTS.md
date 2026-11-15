@@ -107,6 +107,10 @@ class ServiceProfilApi(private val session: SessionOuverte) : ServiceProfil {
 | `ErreurService.phrase()` | `.phrase` | La phrase d'une erreur, en `@Composable`. |
 | `EtatVide(titre, icone?, explication?)` | `ContentUnavailableView` | Une liste vide, dite. |
 | `Carte(ouvrir?, action?) { … }` | `Carte` | La surface d'une carte : `surface`, filet `border`, sans ombre ; touchable si `ouvrir`. |
+| `Intertitre(titre)` | `Intertitre` | Le titre d'une section de fiche (compte compris), marqué titre. |
+| `LigneFiche(libelle, valeur)` | `LigneFiche` | Une ligne « libellé — valeur » ; la valeur, sélectionnable, passe dessous quand la place manque. |
+| `NoteEnCarte(texte, titre?, icone?)` | `NoteAcces` | Une note ou un état vide en ligne, dans une carte (`EtatVide` : la page entière vide). |
+| `Libelle(texte, modifier?)` | `.styleLibelle()` | Un libellé en capitales, sourd : section (avec `Modifier.semantics { heading() }`) ou champ. Jamais `uppercase()` + `Typo.libelle()` à la main. |
 | `PastilleTeinte(libelle, badge, compacte?)`, `LibelleTeinte` | `PastilleTeinte` | Une pastille d'état : la classe `badge-*` du site → couleurs de la charte ; `LibelleTeinte.brut(v)` pour une valeur inconnue (en gris). |
 | `BoutonPlein(libelle, actif?, enCours?)` | `.plein` | Le bouton principal ; le seul `Button` de l'app. |
 | `BoutonContour(libelle)` | `.contour` | Le bouton secondaire. |

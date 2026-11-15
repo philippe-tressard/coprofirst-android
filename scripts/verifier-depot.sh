@@ -145,6 +145,12 @@ BOUTON_PLEIN='(^|[^A-Za-z])Button\('
 autotest_motif "bouton plein" "$BOUTON_PLEIN" '    Button(onClick = f) { Text("x") }' '    TextButton(onClick = f) { Text("x") }'
 interdire "$BOUTON_PLEIN" "bouton plein écrit à la main — passer par BoutonPlein" '^app/src/main/java/fr/coprofirst/app/commun/Boutons\.kt$'
 
+# Le libellé en capitales (`.styleLibelle()` de l'iOS) s'écrit une fois, `Libelle` de
+# commun/Fiche.kt : recopié à la main dans huit écrans, il divergeait déjà (#84).
+LIBELLE_MAIN='Typo\.libelle\('
+autotest_motif "libellé à la main" "$LIBELLE_MAIN" '    Text(t.uppercase(), style = Typo.libelle())' '    Libelle(t, Modifier.semantics { heading() })'
+interdire "$LIBELLE_MAIN" "libellé en capitales écrit à la main — passer par Libelle (commun/Fiche.kt)" '^app/src/main/java/fr/coprofirst/app/commun/Fiche\.kt$'
+
 # Les dates et les nombres s'écrivent par `FormatsDuSite`, seul, à la règle du site
 # (fr-FR, Paris) : aucun écran ne compose son propre format.
 FORMAT_MAIN='DateTimeFormatter|SimpleDateFormat|NumberFormat|DecimalFormat|String\.format\(|"%[0-9.]*[df]"'
