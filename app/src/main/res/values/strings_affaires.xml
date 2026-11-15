@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+-->
+<!-- « Mes affaires » (#16) : les libellés de l'iOS (Fonctions/Affaires, Commun/Detail), mot pour mot. -->
+<resources>
+    <!-- Liste -->
+    <string name="affaires_rechercher">Rechercher une affaire</string>
+    <string name="affaires_suivi">Suivi</string>
+    <string name="affaires_toutes">Toutes</string>
+    <string name="affaires_filtrer">Filtrer</string>
+    <string name="affaires_aucun_filtre">Aucun filtre</string>
+    <plurals name="affaires_filtres_retenus">
+        <item quantity="one">%1$d filtre retenu</item>
+        <item quantity="other">%1$d filtres retenus</item>
+    </plurals>
+    <string name="affaires_nature">Nature</string>
+    <string name="affaires_toutes_natures">Toutes les natures</string>
+    <string name="affaires_me_concerne">Ce qui me concerne</string>
+    <string name="affaires_inclure_archives">Inclure les archives (%1$s)</string>
+    <string name="affaires_erreur_liste">Impossible d\'afficher les affaires</string>
+    <string name="affaires_aucune_trouvee">Aucune affaire trouvée</string>
+    <string name="affaires_aucune_trouvee_aide">Essayez un autre mot, ou incluez les Archives.</string>
+    <string name="affaires_aucune">Aucune affaire</string>
+    <string name="affaires_aucune_aide">Signalez un problème ou posez une question au conseil syndical.</string>
+    <string name="affaires_archiver">Archiver</string>
+    <string name="affaires_copier_numero">Copier le numéro</string>
+    <string name="affaires_partager_lien">Partager le lien</string>
+    <string name="affaires_gestes">Gestes de l\'affaire</string>
+    <string name="affaires_urgente">Urgente</string>
+    <string name="affaires_archivee_vocal">archivée</string>
+    <string name="affaires_statut_vocal">Statut : %1$s</string>
+
+    <!-- Kanban -->
+    <string name="kanban_erreur">Impossible d\'afficher le Kanban</string>
+    <plurals name="kanban_compte">
+        <item quantity="one">%1$d affaire suivie</item>
+        <item quantity="other">%1$d affaires suivies</item>
+    </plurals>
+    <plurals name="kanban_colonne_vocal">
+        <item quantity="one">%1$s, %2$d affaire</item>
+        <item quantity="other">%1$s, %2$d affaires</item>
+    </plurals>
+    <string name="kanban_deplacer_vers">Déplacer vers…</string>
+    <string name="kanban_deplacer_vers_colonne">Déplacer vers %1$s</string>
+    <string name="kanban_clore_titre">Clore cette affaire ?</string>
+    <string name="kanban_clore_sans_fusion">Clore sans fusionner</string>
+    <plurals name="kanban_clore_message">
+        <item quantity="one">%1$d affaire liée pourrait y être fusionnée. La fusion se fait depuis le site.</item>
+        <item quantity="other">%1$d affaires liées pourraient y être fusionnées. La fusion se fait depuis le site.</item>
+    </plurals>
+
+    <!-- Archives -->
+    <string name="archives_erreur">Impossible d\'afficher les archives</string>
+    <string name="archives_aucune">Aucune archive</string>
+    <string name="archives_aucune_aide">Les affaires closes et les actualités passées rejoignent cet onglet.</string>
+    <plurals name="archives_annee_vocal">
+        <item quantity="one">%1$s, %2$d affaire</item>
+        <item quantity="other">%1$s, %2$d affaires</item>
+    </plurals>
+    <string name="archives_depliee">dépliée</string>
+    <string name="archives_repliee">repliée</string>
+    <string name="archives_deplier">Déplie l\'année</string>
+    <string name="archives_replier">Replie l\'année</string>
+
+    <!-- Fiche -->
+    <string name="affaire_titre">Affaire</string>
+    <string name="affaire_actualite">Actualité</string>
+    <string name="affaire_affaire">Affaire</string>
+    <string name="affaire_epinglee">Épinglée</string>
+    <string name="affaire_archivee">Archivée</string>
+    <string name="affaire_messages">Messages</string>
+    <string name="affaire_vous">Vous</string>
+    <string name="affaire_interne">interne</string>
+
+    <!-- Le fil d'une affaire : les rubriques du site (CorpsCarteTicket, ComptesRendusAffaire, SyntheseFil). -->
+    <string name="affaires_fil_demande">La demande</string>
+    <string name="affaires_fil_suite">La suite</string>
+    <string name="affaires_fil_comptes_rendus">Comptes rendus</string>
+    <string name="affaires_fil_synthese">La synthèse</string>
+    <string name="affaires_fil_aucune_suite">Aucune suite pour l\'instant.</string>
+    <string name="affaires_fil_aucun_cr">Aucun pour l\'instant.</string>
+    <string name="affaires_fil_aucun_cr_clos">Aucun compte rendu.</string>
+    <string name="affaires_fil_cr_illisibles">Comptes rendus indisponibles.</string>
+    <string name="affaires_fil_a_venir">À venir</string>
+    <string name="affaires_fil_brouillon">Brouillon à relire, puis valider</string>
+    <string name="affaires_fil_cs_et_presents">CS et présents</string>
+    <string name="affaires_fil_partie_synthese">Synthèse</string>
+    <string name="affaires_fil_difficultes">Difficultés</string>
+    <string name="affaires_fil_amelioration">Amélioration</string>
+    <string name="affaires_fil_la_residence">La résidence</string>
+    <string name="affaires_fil_garder_ouvert">Garder ouvert</string>
+    <string name="affaires_fil_ne_plus_garder">Ne plus garder ouvert</string>
+    <string name="affaires_fil_copier">Copier le texte</string>
+    <string name="affaires_fil_repliee">Repliée</string>
+    <string name="affaires_fil_depliee">Dépliée</string>
+    <string name="affaires_fil_ouvrir">Ouvrir un instant</string>
+    <plurals name="affaires_fil_suites">
+        <item quantity="one">%1$d suite</item>
+        <item quantity="other">%1$d suites</item>
+    </plurals>
+    <plurals name="affaires_fil_points">
+        <item quantity="one">%1$d point CS / Syndic</item>
+        <item quantity="other">%1$d points CS / Syndic</item>
+    </plurals>
+    <string name="affaires_fil_dernier_point">Dernier point CS / Syndic le %1$s</string>
+    <string name="affaires_fil_point">Point CS / Syndic du %1$s</string>
+    <string name="affaires_fil_validee">Validée</string>
+    <string name="affaires_fil_validee_le">Validée le %1$s</string>
+    <string name="affaires_fil_etat_le">%1$s le %2$s</string>
+</resources>
