@@ -42,6 +42,8 @@ class ParcoursEntree(
     private val connues: InstallationsConnues,
     /** Efface ce que les pièces ouvertes laissent sur l'appareil (`PiecesLocales.effacer`). */
     private val effacerLesPieces: () -> Unit = {},
+    /** La racine de l'API d'une adresse, pour la session ouverte ; les tests la remplacent par un serveur local. */
+    private val baseApi: (AdresseInstallation) -> String = { it.baseApi },
     private val lirePreuve: suspend (AdresseInstallation) -> PreuveHote = { PreuveHote.lire(it) },
 ) : ViewModel(), ActionsEntree, GestesDeSortie {
     private val _etat = MutableStateFlow(EtatEntree())
@@ -115,7 +117,7 @@ class ParcoursEntree(
     override fun renoncerHote() = _etat.update { it.copy(confirmation = null) }
 
     /** La session de la résidence ouverte, pour les écrans de ses menus — `null` hors session. */
-    fun sessionOuverte(): SessionOuverte? = _etat.value.ouverte?.let { SessionOuverte(it, sessions) }
+    fun sessionOuverte(): SessionOuverte? = _etat.value.ouverte?.let { SessionOuverte(it, sessions, baseApi = baseApi) }
 
     override fun deconnecter() {
         val ouverte = _etat.value.ouverte ?: return

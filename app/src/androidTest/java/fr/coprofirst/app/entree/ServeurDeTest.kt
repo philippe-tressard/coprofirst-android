@@ -47,6 +47,7 @@ class ServeurDeTest : AutoCloseable {
             sessions,
             Connexion(sessions, baseApi = base),
             InstallationsConnues(stockage),
+            baseApi = base,
         ) { preuve }
     }
 
