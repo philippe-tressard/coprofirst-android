@@ -59,7 +59,7 @@ object RegistreDesMenus {
 
         // "espace-cs" — #24
 
-        // "delegations" — #25
+        "delegations" to { contexte -> fr.coprofirst.app.fonctions.delegations.EcranDelegations(contexte) },
 
         // "admin" — #26
 
