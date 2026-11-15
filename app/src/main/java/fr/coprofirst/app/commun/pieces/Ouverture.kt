@@ -43,6 +43,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.IOException
+import okhttp3.Call
 
 /** Pourquoi une pièce ne s'est pas ouverte. */
 sealed interface EchecOuverture {
@@ -87,6 +88,24 @@ class Ouverture internal constructor(
 
     /** Un document du fil, par son identifiant (`DocumentView` de l'iOS). */
     fun document(id: Int, nom: String?) = lancer("document-$id") { locales.document(id, nom, session) }
+
+    /**
+     * Un fichier servi par une ROUTE de l'API (un rapport, un export…), que le client généré
+     * télécharge — comme `fichierServi` de l'iOS. `sous` et `cle` rangent la copie
+     * (`<sous>/<cle>/<nom sûr>`) ; `nom` est le nom montré, `defaut` celui d'un nom absent.
+     * ```
+     * ouverture.fichier("rapports", id.toString(), nom, "rapport-$id") { base, client ->
+     *     DiagnosticsApi(base, client).getDiagnosticsRapportsRapportIdTlcharger(id)
+     * }
+     * ```
+     */
+    fun fichier(
+        sous: String,
+        cle: String,
+        nom: String?,
+        defaut: String,
+        appel: (base: String, client: Call.Factory) -> File,
+    ) = lancer("$sous-$cle") { locales.fichierServi(session, sous, cle, nom, defaut, appel) }
 
     private fun lancer(cle: String, lire: suspend () -> File) {
         if (enCours != null) return
