@@ -53,7 +53,7 @@ class ParcoursEntreeTest {
         val decouverte = Decouverte(OkHttpClient(), Dispatchers.Unconfined, base)
         val sessions = SessionsParHote(OkHttpClient())
         val connexion = Connexion(sessions, Dispatchers.Unconfined, base)
-        parcours = ParcoursEntree(decouverte, sessions, connexion, connues) { preuve }
+        parcours = ParcoursEntree(decouverte, sessions, connexion, connues, baseApi = base) { preuve }
     }
 
     @After
@@ -212,5 +212,20 @@ class ParcoursEntreeTest {
         advanceUntilIdle()
         assertEquals(EtatEntree(), parcours.etat.value)
         assertEquals(emptyList<Installation>(), connues.liste)
+    }
+
+    /** #57 : la session ouverte parle à la même API que la connexion (le serveur local ici). */
+    @Test
+    fun laSessionOuverteParleALaMemeApi() = test {
+        connues.retenir(Installation("https://connue.exemple.fr", "Connue"))
+        pret("connue.exemple.fr")
+        ok()
+        parcours.seConnecter()
+        advanceUntilIdle()
+        val avant = serveur.requestCount
+        residence("Connue")
+        val cles = parcours.sessionOuverte()!!.appeler { b, c -> fr.coprofirst.api.routes.ConfigApi(b, c).getConfig() }
+        assertEquals("Connue", cles["site_nom"])
+        assertEquals(avant + 1, serveur.requestCount)
     }
 }
