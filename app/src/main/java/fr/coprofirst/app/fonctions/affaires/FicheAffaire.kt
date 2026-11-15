@@ -56,6 +56,8 @@ import fr.coprofirst.app.commun.pieces.FormatPieces
 import fr.coprofirst.app.commun.pieces.PiecesJointes
 import fr.coprofirst.app.commun.pieces.PiecesJointesVue
 import fr.coprofirst.app.commun.texte.TexteRiche
+import fr.coprofirst.app.navigation.BarreDuHaut
+import fr.coprofirst.app.navigation.TitreDeBarre
 import fr.coprofirst.app.session.SessionOuverte
 import java.time.Instant
 
@@ -76,6 +78,8 @@ internal fun FicheAffaire(id: Int, ctx: ContexteFiche) {
         squelette = { ContenuAffaire(SQUELETTE, ctx.session) },
     ) { affaire, recharger ->
         val choix = remember(affaire.id) { ChoixDeSuite() }
+        // Le numéro de l'affaire en titre de la barre, comme l'iOS (`.navigationTitle`).
+        ctx.barre?.let { TitreDeBarre(it, affaire.numero) }
         Column(Modifier.fillMaxSize()) {
             PullToRefreshBox(isRefreshing = false, onRefresh = recharger, modifier = Modifier.weight(1f)) {
                 ContenuAffaire(affaire, ctx.session, choix::choisir)
@@ -93,6 +97,8 @@ internal class ContexteFiche(
     /** Le compte est-il du conseil syndical ? Il suit par 🔄, il ne répond pas par 💬. */
     val conseil: Boolean,
     val avis: AvisDuGeste,
+    /** La barre du haut, qui prend le numéro en titre ; `null` hors de la résidence (tests). */
+    val barre: BarreDuHaut?,
     val lienSite: (Int) -> String?,
 )
 
@@ -131,8 +137,6 @@ private fun EnTeteAffaire(affaire: DetailAffaire) {
             Spacer(Modifier.weight(1f))
             affaire.etat?.let { PastilleStatut(it.code, it.libelle) }
         }
-        // Le numéro : la barre du haut porte le titre de la fiche (« Affaire »), l'iOS y met le numéro.
-        Text(affaire.numero, style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum"), color = c.textMuted)
         Text(affaire.titre, Modifier.semantics { heading() }, style = Typo.titre(MaterialTheme.typography.headlineSmall), color = c.text)
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             EtiquetteLieu(affaire.lieu, style = MaterialTheme.typography.bodySmall)

@@ -171,7 +171,7 @@ class AffairesInterfaceTest {
     private fun ouvrirFiche(id: Int, conseil: Boolean = false): AffairesSimulees {
         val service = AffairesSimulees()
         val avis = AvisDuGeste()
-        val fiche = ContexteFiche(service, session, conseil, avis) { "https://residence.exemple.test/tickets/$it" }
+        val fiche = ContexteFiche(service, session, conseil, avis, null) { "https://residence.exemple.test/tickets/$it" }
         ecran.setContent { ThemeCoproFirst { AvisEphemere(avis) { FicheAffaire(id, fiche) } } }
         return service
     }

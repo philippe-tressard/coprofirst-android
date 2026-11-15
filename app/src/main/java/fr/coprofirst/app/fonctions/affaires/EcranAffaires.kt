@@ -107,8 +107,8 @@ fun EcranFicheAffaire(contexte: ContexteDeMenu, id: String) {
     AvisEphemere(avis, Modifier.fillMaxSize().background(LocalCouleurs.current.bg)) {
         val numero = id.toIntOrNull()
         val adresse = contexte.session.installation.url
-        val fiche = remember(service, contexte.droits, avis) {
-            ContexteFiche(service, contexte.session, contexte.droits.cs, avis) { OngletsSurLeSite.lien("/tickets/$it", adresse) }
+        val fiche = remember(service, contexte.droits, contexte.barre, avis) {
+            ContexteFiche(service, contexte.session, contexte.droits.cs, avis, contexte.barre) { OngletsSurLeSite.lien("/tickets/$it", adresse) }
         }
         if (numero == null) MessageErreur(ErreurService.Introuvable, Modifier.padding(Mise.marge)) else FicheAffaire(numero, fiche)
     }
