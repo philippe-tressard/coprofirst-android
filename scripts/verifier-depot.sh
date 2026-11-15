@@ -12,8 +12,10 @@
 #   5. LICENSE = permission magasins + texte de l'AGPL, assemblés par
 #      `--ecrire-licence` : LICENSE n'est que la réunion des deux textes de LICENSES/.
 #   6. aucune couleur écrite à la main dans le Kotlin de l'app : la charte se génère
-#      depuis coprofirst (autotest d'abord : un contrôle qui ne refuse rien ne prouve rien).
-#   7. aucun chemin de .claude/worktrees/ suivi.
+#      depuis coprofirst ;
+#   7. aucune requête HTTP ni route écrite à la main dans l'app : le client généré
+#      (client-api) seul — autotest d'abord pour chaque motif.
+#   8. aucun chemin de .claude/worktrees/ suivi.
 #
 # Il juge les fichiers que git connaît (index compris) : un fichier ignoré n'est
 # pas livré, il n'a pas à passer.
@@ -76,29 +78,45 @@ done < <(git ls-files --stage)
 [ -f LICENSE ] && cmp -s LICENSE <(assembler_licence) \
   || echec "LICENSE diverge de LICENSES/ : bash scripts/verifier-depot.sh --ecrire-licence"
 
-# Les couleurs se GÉNÈRENT depuis les sources de coprofirst : aucune écrite à la main.
-COULEURS_MAIN='Color\(0x|Color\([0-9]|Color\.(Red|Blue|Green|Yellow|Cyan|Magenta|Black|White|Gray|DarkGray|LightGray)\b|#[0-9A-Fa-f]{6,8}\b'
-refus_couleur() { grep -noE "$COULEURS_MAIN" "$1" | head -1; }
-autotest_couleurs() {
+# Motifs interdits dans le code de l'app : chacun a sa raison, et son autotest prouve
+# qu'il refuse ce qu'il doit refuser — un contrôle qui ne refuse rien ne prouve rien.
+# $1 : le motif (ERE) ; $2 : le fichier. Rend la première ligne fautive, ou rien.
+premier_motif() { grep -noE "$1" "$2" | head -1; }
+# $1 : nom du contrôle ; $2 : motif ; $3 : un fichier qui doit être refusé ; $4 : un
+# fichier qui doit passer. Échoue si le contrôle ne départage pas les deux.
+autotest_motif() {
   local d ok=0
   d=$(mktemp -d) || return 1
-  printf 'val c = Color(0xFF112233)\n' > "$d/hexa"
-  printf 'val c = Color.Red\n' > "$d/nommee"
-  printf '<color name="x">#112233</color>\n' > "$d/xml"
-  printf 'val c = MaterialTheme.colorScheme.primary\n' > "$d/propre"
-  [ -n "$(refus_couleur "$d/hexa")" ] || ok=1
-  [ -n "$(refus_couleur "$d/nommee")" ] || ok=1
-  [ -n "$(refus_couleur "$d/xml")" ] || ok=1
-  [ -z "$(refus_couleur "$d/propre")" ] || ok=1
+  printf '%s\n' "$3" > "$d/fautif"
+  printf '%s\n' "$4" > "$d/propre"
+  [ -n "$(premier_motif "$2" "$d/fautif")" ] || ok=1
+  [ -z "$(premier_motif "$2" "$d/propre")" ] || ok=1
   rm -rf "${d:?}"
-  return $ok
+  [ $ok -eq 0 ] || echec "verifier-depot.sh : autotest « $1 » en échec"
 }
-autotest_couleurs || echec "verifier-depot.sh : autotest des couleurs en échec"
-while IFS= read -r f; do
-  [ -f "$f" ] || continue
-  motif=$(refus_couleur "$f")
-  [ -z "$motif" ] || echec "$f : couleur écrite à la main ($motif) — à générer depuis coprofirst"
-done < <(grep -E '^app/src/main/.*\.(kt|xml)$' <<< "$FICHIERS")
+# $1 : motif ; $2 : message. Juge le code et les ressources de l'app.
+interdire() {
+  local f motif
+  while IFS= read -r f; do
+    [ -f "$f" ] || continue
+    motif=$(premier_motif "$1" "$f")
+    [ -z "$motif" ] || echec "$f : $2 ($motif)"
+  done < <(grep -E '^app/src/main/.*\.(kt|xml)$' <<< "$FICHIERS")
+}
+
+# Les couleurs se GÉNÈRENT depuis les sources de coprofirst : aucune écrite à la main.
+COULEURS_MAIN='Color\(0x|Color\([0-9]|Color\.(Red|Blue|Green|Yellow|Cyan|Magenta|Black|White|Gray|DarkGray|LightGray)\b|#[0-9A-Fa-f]{6,8}\b'
+autotest_motif couleurs "$COULEURS_MAIN" 'val c = Color(0xFF112233)' 'val c = MaterialTheme.colorScheme.primary'
+autotest_motif "couleurs nommées" "$COULEURS_MAIN" 'val c = Color.Red' 'val c = colorScheme.error'
+autotest_motif "couleurs XML" "$COULEURS_MAIN" '<color name="x">#112233</color>' '<string name="x">Bonjour</string>'
+interdire "$COULEURS_MAIN" "couleur écrite à la main — à générer depuis coprofirst"
+
+# L'API se parle par le client GÉNÉRÉ (client-api/) : aucune requête écrite à la main,
+# aucune route en dur. Une route absente est un ticket dans coprofirst.
+REQUETE_MAIN='Request\.Builder|HttpURLConnection|openConnection\(|\.newCall\(|"/api/|/api/[a-z]'
+autotest_motif "requêtes à la main" "$REQUETE_MAIN" 'val r = Request.Builder().url(u).build()' 'ConfigApi(base, client).getConfig()'
+autotest_motif "routes en dur" "$REQUETE_MAIN" 'val u = "https://" + hote + "/api/config"' 'val base = "https://$hote/api"'
+interdire "$REQUETE_MAIN" "requête ou route écrite à la main — passer par le client généré (client-api)"
 
 ! grep -q '^\.claude/worktrees/' <<< "$FICHIERS" || echec ".claude/worktrees/ suivi : git rm -r --cached .claude/worktrees"
 
