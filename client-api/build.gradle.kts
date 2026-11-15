@@ -19,7 +19,7 @@ openApiGenerate {
     generatorName.set("kotlin")
     library.set("jvm-okhttp4")
     inputSpec.set(rootProject.file("contrat/openapi.json").path)
-    outputDir.set(genere.map { it.asFile.path })
+    outputDir.set(genere)
     packageName.set("fr.coprofirst.api")
     apiPackage.set("fr.coprofirst.api.routes")
     modelPackage.set("fr.coprofirst.api.modeles")
