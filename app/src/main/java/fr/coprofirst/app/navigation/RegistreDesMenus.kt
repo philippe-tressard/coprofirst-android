@@ -11,7 +11,7 @@ import fr.coprofirst.app.session.SessionOuverte
 /**
  * Ce qu'un écran de menu reçoit : sa page, la session de la résidence, les droits du
  * compte, les gestes de sortie (à confirmer par `ConfirmationDeSortie`), le thème de
- * l'appareil et la barre du haut (`ActionsDeBarre`).
+ * l'appareil, la barre du haut (`ActionsDeBarre`) et la porte (`ouvrir`).
  */
 data class ContexteDeMenu(
     val page: PageDeNavigation,
@@ -21,6 +21,12 @@ data class ContexteDeMenu(
     val apparence: Apparence,
     /** La barre du haut : un écran y pose ses actions par `ActionsDeBarre`. */
     val barre: BarreDuHaut,
+    /**
+     * La porte (#85) : ouvre une page, la fiche d'un élément ou la cloche. `false` : rien ne
+     * la porte dans l'app (page que le compte ne voit pas, fiche non déclarée) — l'écran
+     * garde alors son repli, « Voir sur le site » par exemple.
+     */
+    val ouvrir: (Destination) -> Boolean = { false },
 )
 
 /**
@@ -62,6 +68,20 @@ object RegistreDesMenus {
         "delegations" to { contexte -> fr.coprofirst.app.fonctions.delegations.EcranDelegations(contexte) },
 
         // "admin" — #26
+
+    )
+
+    /**
+     * Les fiches d'éléments, par nature (`Destination.Element`) : ce qu'un menu déclare
+     * savoir ouvrir, pour qu'un autre écran (le fil, une notification) y mène sans dépendre
+     * de son code. Même règle qu'au-dessus : UNE ligne réservée par nature, que la session
+     * du menu remplace par
+     *     "affaire" to FicheDeMenu("Affaire") { contexte, id -> DetailAffaire(contexte, id) },
+     */
+    val fiches: Map<String, FicheDeMenu> = mapOf(
+        // "affaire" — #16
+
+        // "sondage" — #70
 
     )
 
