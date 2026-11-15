@@ -11,11 +11,13 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import fr.coprofirst.app.session.AdresseInstallation
 import fr.coprofirst.app.session.Connexion
 import fr.coprofirst.app.session.Decouverte
-import fr.coprofirst.app.session.ErreurEntree
+import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.GardeHote
 import fr.coprofirst.app.session.InstallationsConnues
 import fr.coprofirst.app.session.OrigineAdresse
 import fr.coprofirst.app.session.PreuveHote
+import fr.coprofirst.app.session.SessionOuverte
+import fr.coprofirst.app.session.SessionsParHote
 import fr.coprofirst.app.session.StockagePreferences
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -33,7 +35,8 @@ import kotlinx.coroutines.launch
  */
 class ParcoursEntree(
     private val decouverte: Decouverte,
-    private val connexion: Connexion,
+    private val sessions: SessionsParHote,
+    private val connexion: Connexion = Connexion(sessions),
     private val connues: InstallationsConnues,
     private val lirePreuve: suspend (AdresseInstallation) -> PreuveHote = { PreuveHote.lire(it) },
 ) : ViewModel(), ActionsEntree {
@@ -87,7 +90,7 @@ class ParcoursEntree(
                 connexion.connecter(installation, etat.email, etat.motDePasse)
                 connues.retenir(installation)
                 _etat.update { it.copy(connexionEnCours = false, motDePasse = "", ouverte = installation, ecran = EcranEntree.Espace) }
-            } catch (erreur: ErreurEntree) {
+            } catch (erreur: ErreurService) {
                 _etat.update { it.copy(connexionEnCours = false, erreurConnexion = erreur) }
             }
         }
@@ -106,6 +109,9 @@ class ParcoursEntree(
     }
 
     override fun renoncerHote() = _etat.update { it.copy(confirmation = null) }
+
+    /** La session de la résidence ouverte, pour les écrans de ses menus — `null` hors session. */
+    fun sessionOuverte(): SessionOuverte? = _etat.value.ouverte?.let { SessionOuverte(it, sessions) }
 
     override fun deconnecter() {
         val ouverte = _etat.value.ouverte ?: return
@@ -128,7 +134,7 @@ class ParcoursEntree(
             try {
                 val installation = decouverte.decouvrir(adresse)
                 _etat.update { it.copy(reconnue = installation, enCours = false) }
-            } catch (erreur: ErreurEntree) {
+            } catch (erreur: ErreurService) {
                 _etat.update { it.copy(erreur = erreur, enCours = false) }
             }
         }
@@ -141,7 +147,10 @@ class ParcoursEntree(
         val Fabrique = viewModelFactory {
             initializer {
                 val stockage = StockagePreferences(this[APPLICATION_KEY]!!)
-                ParcoursEntree(Decouverte(), Connexion(), InstallationsConnues(stockage))
+                // UNE session HTTP par hôte pour toute l'app : la connexion y pose ses
+                // cookies, les écrans des menus les y relisent.
+                val sessions = SessionsParHote()
+                ParcoursEntree(Decouverte(), sessions, Connexion(sessions), InstallationsConnues(stockage))
             }
         }
     }

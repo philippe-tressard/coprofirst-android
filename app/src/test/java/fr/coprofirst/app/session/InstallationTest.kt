@@ -14,11 +14,11 @@ class InstallationTest {
     private val adresse = AdresseInstallation.normaliser("residence.exemple.fr")!!
     private val plancher = VersionContrat.PLANCHER
 
-    private fun refus(cles: Map<String, String?>): ErreurEntree = try {
+    private fun refus(cles: Map<String, String?>): ErreurService = try {
         Installation.depuisConfig(adresse, cles)
         fail("acceptée : $cles")
         error("inaccessible")
-    } catch (erreur: ErreurEntree) {
+    } catch (erreur: ErreurService) {
         erreur
     }
 
@@ -47,8 +47,8 @@ class InstallationTest {
 
     @Test
     fun sansNomCeNEstPasCoproFirst() {
-        assertSame(ErreurEntree.PasCoproFirst, refus(emptyMap()))
-        assertSame(ErreurEntree.PasCoproFirst, refus(mapOf("site_nom" to "  ")))
+        assertSame(ErreurService.PasCoproFirst, refus(emptyMap()))
+        assertSame(ErreurService.PasCoproFirst, refus(mapOf("site_nom" to "  ")))
     }
 
     @Test
@@ -56,7 +56,7 @@ class InstallationTest {
         val dessous = VersionContrat(plancher.majeure, plancher.mineure, plancher.correctif - 1)
             .takeIf { plancher.correctif > 0 } ?: VersionContrat(plancher.majeure, plancher.mineure - 1, 99)
         assertSame(
-            ErreurEntree.ResidenceAMettreAJour,
+            ErreurService.ResidenceAMettreAJour,
             refus(mapOf("site_nom" to "Ancienne", "version_contrat" to dessous.toString())),
         )
     }

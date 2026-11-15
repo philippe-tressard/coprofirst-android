@@ -36,10 +36,10 @@ class DecouverteTest {
         serveur.enqueue(reponse.build())
     }
 
-    private suspend fun echec(): ErreurEntree = try {
+    private suspend fun echec(): ErreurService = try {
         decouverte.decouvrir(adresse)
         error("découverte acceptée")
-    } catch (erreur: ErreurEntree) {
+    } catch (erreur: ErreurService) {
         erreur
     }
 
@@ -54,26 +54,26 @@ class DecouverteTest {
     @Test
     fun aucuneResidenceInstallee() = runTest {
         repondre(421)
-        assertSame(ErreurEntree.HoteInconnu, echec())
+        assertSame(ErreurService.HoteInconnu, echec())
     }
 
     @Test
     fun pageQuiNEstPasLApi() = runTest {
         repondre(200, "<html>Bienvenue</html>", mapOf("Content-Type" to "application/json"))
-        assertSame(ErreurEntree.PasCoproFirst, echec())
+        assertSame(ErreurService.PasCoproFirst, echec())
     }
 
     @Test
     fun redirectionNonSuivie() = runTest {
         repondre(302, entetes = mapOf("Location" to "https://ailleurs.exemple.org/api/config"))
-        assertSame(ErreurEntree.PasCoproFirst, echec())
+        assertSame(ErreurService.PasCoproFirst, echec())
         assertEquals(1, serveur.requestCount)
     }
 
     @Test
     fun erreurDuServeur() = runTest {
         repondre(500)
-        assertSame(ErreurEntree.Inattendue, echec())
+        assertSame(ErreurService.Inattendue, echec())
     }
 
     @Test
@@ -84,9 +84,9 @@ class DecouverteTest {
         val erreur = try {
             injoignable.decouvrir(adresse)
             error("découverte acceptée")
-        } catch (e: ErreurEntree) {
+        } catch (e: ErreurService) {
             e
         }
-        assertSame(ErreurEntree.Injoignable, erreur)
+        assertSame(ErreurService.Injoignable, erreur)
     }
 }
