@@ -10,7 +10,7 @@ le logiciel libre de gestion de copropriété — Kotlin et Jetpack Compose.
 
 ## Ce que fait l'app
 
-L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-tressard/coprofirst-ios).
+L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-tressard/coprofirst-ios), aux couleurs de la charte de CoproFirst — celles de la résidence dès qu'elle est reconnue, au clair comme au sombre.
 
 - **Accueil** : « Entrer dans ma résidence » ou « Découvrir la démo ».
 - **Connectez-vous à votre espace** : l'adresse de la résidence (celle de la fiche
