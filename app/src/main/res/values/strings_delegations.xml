@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+
+Les textes des « Délégations aidant », écrits une fois — ceux de la page du site
+(`routes/(app)/delegations/+page.svelte`) et de l'iOS (`TextesDelegations`).
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="fr">
+    <string name="delegations_personne_aidee">Personne aidée</string>
+    <string name="delegations_aidant">Aidant</string>
+    <string name="delegations_aucune">Aucune délégation.</string>
+    <string name="delegations_nouvelle">Nouvelle délégation</string>
+    <string name="delegations_titre_formulaire">Nouvelle délégation aidant</string>
+    <string name="delegations_accepter">Accepter</string>
+    <string name="delegations_revoquer">Révoquer</string>
+    <string name="delegations_revoquer_question">Révoquer cette délégation ?</string>
+    <string name="delegations_mandant">Personne aidée (mandant)</string>
+    <string name="delegations_proche_aidant">Proche aidant</string>
+    <string name="delegations_choisir">Choisir…</string>
+    <string name="delegations_rechercher">Rechercher un résident</string>
+    <string name="delegations_aucun_resident">Aucun résident ne correspond.</string>
+    <string name="delegations_motif">Motif</string>
+    <string name="delegations_motif_exemple">Ex : Assistance personne âgée</string>
+    <string name="delegations_date_fin">Date de fin</string>
+    <string name="delegations_avec_date_fin">Fixer une date de fin</string>
+    <string name="delegations_sans_date">Sans date, la délégation reste valable sans limite.</string>
+    <string name="delegations_ok">OK</string>
+    <string name="delegations_avertissement">L\'aidant devra accepter la délégation. Il pourra consulter à la place de la personne aidée ce qui lui est adressé, sans agir en son nom. L\'accès aidant ne constitue pas une procuration d\'AG.</string>
+    <string name="delegations_residents_indisponibles">Les menus « mandant » et « aidant » sont vides : la liste des résidents n\'a pas pu être chargée — ce n\'est pas qu\'aucun résident n\'est éligible.</string>
+    <string name="delegations_acceptee">Délégation acceptée</string>
+    <string name="delegations_revoquee">Délégation révoquée</string>
+    <string name="delegations_creee">Délégation créée</string>
+    <string name="delegations_periode_illimitee">Du %1$s — illimité</string>
+    <string name="delegations_periode">Du %1$s au %2$s</string>
+    <string name="delegations_squelette_aidee">Une personne aidée</string>
+    <string name="delegations_squelette_aidant">Son proche aidant</string>
+    <string name="delegations_squelette_motif">Le motif de la délégation</string>
+</resources>

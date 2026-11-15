@@ -57,9 +57,9 @@ object RegistreDesMenus {
 
         "notifications" to { contexte -> fr.coprofirst.app.fonctions.notifications.EcranNotifications(contexte) },
 
-        // "espace-cs" — #24
+        "espace-cs" to { contexte -> fr.coprofirst.app.fonctions.espacecs.EcranEspaceCS(contexte) },
 
-        // "delegations" — #25
+        "delegations" to { contexte -> fr.coprofirst.app.fonctions.delegations.EcranDelegations(contexte) },
 
         // "admin" — #26
 
