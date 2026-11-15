@@ -29,6 +29,7 @@ l'app iOS est la référence fonctionnelle (`CLAUDE.md`).
    date ou de nombre à la main**, **aucun `Button` de Material** : `verifier-depot.sh`
    les refuse.
 4. **Ce que l'iOS laisse au site reste au site**, et l'écran le dit.
+5. **Pas de version dans une PR** : elle se déduit au build (`CLAUDE.md`, « Version »).
 
 ## Un écran de menu, de bout en bout
 
