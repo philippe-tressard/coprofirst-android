@@ -119,6 +119,7 @@ val genererTablesMonLot = generation("genererTablesMonLot", "contrat/tables-clie
 val genererTablesDelegations =
     generation("genererTablesDelegations", "contrat/tables-clients.json", "scripts/generer_tables_delegations.py")
 val genererTablesEspaceCS = generation("genererTablesEspaceCS", "contrat/tables-clients.json", "scripts/generer_tables_espace_cs.py")
+val genererTablesAffaires = generation("genererTablesAffaires", "contrat/tables-clients.json", "scripts/generer_tables_affaires.py")
 
 // Les natures du fil nomment leurs teintes par les jetons de `Couleurs` : generer_tables.py
 // les lit dans generer_charte.py (`propriete`, jetons portés), qu'il charge par son chemin.
@@ -131,6 +132,7 @@ androidComponents {
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererTablesMonLot, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererTablesDelegations, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererTablesEspaceCS, GenererDepuisPython::sortie)
+        variante.sources.kotlin?.addGeneratedSourceDirectory(genererTablesAffaires, GenererDepuisPython::sortie)
         variante.sources.res?.addGeneratedSourceDirectory(genererLogo, GenererDepuisPython::sortie)
     }
 }

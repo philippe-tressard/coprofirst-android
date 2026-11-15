@@ -45,7 +45,7 @@ object RegistreDesMenus {
 
         "tableau-de-bord" to { contexte -> fr.coprofirst.app.fonctions.fil.EcranFil(contexte) },
 
-        // "mes-demandes" — #16
+        "mes-demandes" to { contexte -> fr.coprofirst.app.fonctions.affaires.EcranAffaires(contexte) },
 
         // "residence" — #17
 

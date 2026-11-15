@@ -68,6 +68,14 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   au compte ; au conseil syndical, « Nouvelle délégation » (personne aidée, proche aidant,
   motif, date de fin facultative). Une délégation est en lecture seule : l'aidant consulte,
   sans agir au nom de la personne aidée.
+- **Mes affaires** : Liste, Kanban (au conseil et aux copropriétaires) et Archives. La
+  liste cherche au serveur (et propose les archives trouvées), se filtre par suivi, par
+  nature et par « ce qui me concerne » ; un appui long copie le numéro, partage le lien
+  ou archive, si le serveur le permet. Au Kanban, « Déplacer vers… » change l'état — clore
+  prévient quand des affaires liées pourraient être fusionnées, ce qui se fait sur le
+  site. Les Archives se rangent par année. La fiche montre le fil de l'affaire (la
+  demande, la suite, les comptes rendus, la synthèse) et ses messages, en lecture ; la
+  saisie et les gestes de la fiche suivent (#16).
 
 Pas encore : les écrans des pages, le courriel retenu et la
 biométrie, les personnages de la démo, le QR code, les liens d'application (tickets
