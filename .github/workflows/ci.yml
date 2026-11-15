@@ -10,12 +10,15 @@ on:
   push:
     branches: [main]
   pull_request:
+  # La file de fusion : chaque PR est rejugée sur main + les PR devant elle, avant de
+  # fusionner — main ne peut plus rougir par combinaison de deux PR vertes chacune.
+  merge_group:
 permissions:
   contents: read
 # Une PR : sa nouvelle poussée annule l'exécution précédente (seule la dernière tête
-# compte). main : CHAQUE fusion est jugée — c'est le filet de « main sans à jour »
-# (standards/09 §8 bis). Un groupe par commit, car GitHub ne garde qu'UNE exécution en
-# attente par groupe : un groupe commun évincerait les fusions rapprochées.
+# compte). main et la file de fusion (`merge_group`) : CHAQUE commit est jugé, sans
+# annulation — un groupe par commit, car GitHub ne garde qu'UNE exécution en attente par
+# groupe : un groupe commun évincerait les fusions ou les candidats rapprochés.
 concurrency:
   group: ci-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
