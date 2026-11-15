@@ -58,6 +58,16 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   au compte ; au conseil syndical, « Nouvelle délégation » (personne aidée, proche aidant,
   motif, date de fin facultative). Une délégation est en lecture seule : l'aidant consulte,
   sans agir au nom de la personne aidée.
+- **Communauté** : les rubriques que le site ouvre au compte (un gestionnaire n'a que
+  l'Avis ; un compte suspendu lit le motif du serveur). **Sondages** en cours puis
+  archivés — le vote et les résultats s'ouvrent sur le site pour l'instant (#70) ; « Créer,
+  modifier ou stopper un sondage se fait sur le site » ne se dit qu'à qui le serveur le
+  permet. **Boîte à idées** : les plus soutenues d'abord, un filtre par état, le cœur pour
+  voter, « + » pour proposer une idée. **Petites annonces** : type, catégorie, tri ;
+  l'annonce ouverte (photos, contact, état pour son auteur, suppression à qui le serveur
+  l'ouvre), « + » pour en déposer une — les photos s'ajoutent sur le site. **Avis** sur
+  l'application : filtre par note, réponse de l'équipe ; donner son avis, le corriger,
+  l'archiver ou le restaurer. Répondre et signaler se font encore sur le site (#70).
 
 Pas encore : les écrans des pages, le courriel retenu et la
 biométrie, les personnages de la démo, le QR code, les liens d'application (tickets

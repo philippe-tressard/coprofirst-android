@@ -49,7 +49,7 @@ object RegistreDesMenus {
 
         // "prestataires" — #19
 
-        // "communaute" — #20
+        "communaute" to { contexte -> fr.coprofirst.app.fonctions.communaute.EcranCommunaute(contexte) },
 
         // "faq" — #20
 
