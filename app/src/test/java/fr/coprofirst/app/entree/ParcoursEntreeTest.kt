@@ -5,7 +5,7 @@ package fr.coprofirst.app.entree
 
 import fr.coprofirst.app.session.Connexion
 import fr.coprofirst.app.session.Decouverte
-import fr.coprofirst.app.session.ErreurEntree
+import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.InstallationsConnues
 import fr.coprofirst.app.session.PreuveHote
@@ -51,8 +51,9 @@ class ParcoursEntreeTest {
         // Toute adresse mène au serveur local : seule la base de l'API change.
         val base = { _: Any -> serveur.url("/api").toString() }
         val decouverte = Decouverte(OkHttpClient(), Dispatchers.Unconfined, base)
-        val connexion = Connexion(SessionsParHote(OkHttpClient()), Dispatchers.Unconfined, base)
-        parcours = ParcoursEntree(decouverte, connexion, connues) { preuve }
+        val sessions = SessionsParHote(OkHttpClient())
+        val connexion = Connexion(sessions, Dispatchers.Unconfined, base)
+        parcours = ParcoursEntree(decouverte, sessions, connexion, connues) { preuve }
     }
 
     @After
@@ -133,7 +134,7 @@ class ParcoursEntreeTest {
         parcours.entrer()
         parcours.saisir("inconnue.exemple.fr")
         advanceUntilIdle()
-        assertSame(ErreurEntree.HoteInconnu, parcours.etat.value.erreur)
+        assertSame(ErreurService.HoteInconnu, parcours.etat.value.erreur)
         parcours.saisir("inconnue.exemple.f")
         assertNull(parcours.etat.value.erreur)
         parcours.retour()
@@ -192,7 +193,7 @@ class ParcoursEntreeTest {
         serveur.enqueue(MockResponse.Builder().code(422).build())
         parcours.seConnecter()
         advanceUntilIdle()
-        assertSame(ErreurEntree.IdentifiantsRefuses, parcours.etat.value.erreurConnexion)
+        assertSame(ErreurService.IdentifiantsRefuses, parcours.etat.value.erreurConnexion)
         assertEquals(EcranEntree.Connexion, parcours.etat.value.ecran)
         parcours.saisirMotDePasse("autre")
         assertNull(parcours.etat.value.erreurConnexion)

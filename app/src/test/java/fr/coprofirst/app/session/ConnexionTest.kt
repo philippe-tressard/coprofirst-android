@@ -29,10 +29,10 @@ class ConnexionTest {
         serveur.enqueue(reponse.build())
     }
 
-    private suspend fun echec(): ErreurEntree = try {
+    private suspend fun echec(): ErreurService = try {
         connexion.connecter(residence, "a@exemple.fr", "secret")
         error("connexion acceptée")
-    } catch (erreur: ErreurEntree) {
+    } catch (erreur: ErreurService) {
         erreur
     }
 
@@ -55,12 +55,12 @@ class ConnexionTest {
     @Test
     fun identifiantsRefusesEtTropDEssais() = runTest {
         repondre(422)
-        assertSame(ErreurEntree.IdentifiantsRefuses, echec())
+        assertSame(ErreurService.IdentifiantsRefuses, echec())
         repondre(401)
-        assertSame(ErreurEntree.IdentifiantsRefuses, echec())
+        assertSame(ErreurService.IdentifiantsRefuses, echec())
         repondre(429)
-        assertSame(ErreurEntree.TropDEssais, echec())
+        assertSame(ErreurService.TropDEssais, echec())
         repondre(500)
-        assertSame(ErreurEntree.Inattendue, echec())
+        assertSame(ErreurService.Inattendue, echec())
     }
 }

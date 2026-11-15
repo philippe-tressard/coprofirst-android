@@ -26,17 +26,17 @@ data class Installation(
     companion object {
         /**
          * L'installation que décrit GET /config.
-         * @throws ErreurEntree.PasCoproFirst si rien n'y nomme une résidence ;
-         * @throws ErreurEntree.ResidenceAMettreAJour si elle sert un contrat plus
+         * @throws ErreurService.PasCoproFirst si rien n'y nomme une résidence ;
+         * @throws ErreurService.ResidenceAMettreAJour si elle sert un contrat plus
          *   ancien que le plancher : ses réponses ne se décoderaient pas. Une version
          *   absente ou illisible ne bloque pas.
          */
         fun depuisConfig(adresse: AdresseInstallation, cles: Map<String, String?>): Installation {
             val nom = cles["site_nom"]?.trim().orEmpty()
-            if (nom.isEmpty()) throw ErreurEntree.PasCoproFirst
+            if (nom.isEmpty()) throw ErreurService.PasCoproFirst
             val installation = Installation(adresse.url, nom, cles["version_contrat"], cles["site_palette"]?.takeIf { it.isNotBlank() })
             val contrat = installation.contrat
-            if (contrat != null && contrat < VersionContrat.PLANCHER) throw ErreurEntree.ResidenceAMettreAJour
+            if (contrat != null && contrat < VersionContrat.PLANCHER) throw ErreurService.ResidenceAMettreAJour
             return installation
         }
     }

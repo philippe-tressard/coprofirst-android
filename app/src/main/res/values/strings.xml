@@ -6,6 +6,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 <resources xmlns:tools="http://schemas.android.com/tools" tools:locale="fr">
     <string name="nom_app">CoproFirst</string>
     <string name="retour">Retour</string>
+    <string name="reessayer">Réessayer</string>
+    <string name="chargement">Chargement</string>
 
     <string name="accueil_devise">La copropriété, enfin partagée.</string>
     <string name="accueil_entrer">Entrer dans ma résidence</string>
@@ -49,5 +51,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="erreur_residence_a_mettre_a_jour">Cette résidence doit être mise à jour pour s\'ouvrir dans l\'app. Prévenez son administrateur.</string>
     <string name="erreur_identifiants_refuses">Adresse électronique ou mot de passe incorrect.</string>
     <string name="erreur_trop_d_essais">Trop d\'essais. Patientez quelques minutes avant de réessayer.</string>
+    <string name="erreur_session_expiree">Votre session a expiré. Connectez-vous de nouveau.</string>
+    <string name="erreur_introuvable">Cet élément n\'est plus disponible, ou vous n\'y avez pas accès.</string>
     <string name="erreur_inattendue">La résidence n\'a pas pu répondre. Réessayez dans un instant.</string>
 </resources>

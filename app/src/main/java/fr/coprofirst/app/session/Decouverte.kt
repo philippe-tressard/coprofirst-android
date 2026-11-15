@@ -21,12 +21,12 @@ class Decouverte(
     private val fond: CoroutineDispatcher = Dispatchers.IO,
     private val baseApi: (AdresseInstallation) -> String = { it.baseApi },
 ) {
-    /** @throws ErreurEntree toujours ce type : chaque échec a sa phrase. */
+    /** @throws ErreurService toujours ce type : chaque échec a sa phrase. */
     suspend fun decouvrir(adresse: AdresseInstallation): Installation = withContext(fond) {
         val cles = try {
             ConfigApi(baseApi(adresse), client).getConfig()
         } catch (erreur: Exception) {
-            throw ErreurEntree.depuis(erreur)
+            throw ErreurService.depuisEntree(erreur)
         }
         Installation.depuisConfig(adresse, cles)
     }

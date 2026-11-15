@@ -3,7 +3,7 @@
 
 package fr.coprofirst.app.entree
 
-import fr.coprofirst.app.session.ErreurEntree
+import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.PreuveHote
 
@@ -20,14 +20,14 @@ data class EtatEntree(
     /** La résidence reconnue à cette adresse — `null` tant qu'aucune ne l'est. */
     val reconnue: Installation? = null,
     /** Pourquoi la dernière reconnaissance n'a pas abouti. */
-    val erreur: ErreurEntree? = null,
+    val erreur: ErreurService? = null,
     val email: String = "",
     val motDePasse: String = "",
     val voirMotDePasse: Boolean = false,
     /** La connexion court. */
     val connexionEnCours: Boolean = false,
     /** Pourquoi la dernière connexion n'a pas abouti. */
-    val erreurConnexion: ErreurEntree? = null,
+    val erreurConnexion: ErreurService? = null,
     /** La confirmation de l'hôte, ouverte avant un premier mot de passe — `null` sinon. */
     val confirmation: ConfirmationHote? = null,
     /** La résidence où une session est ouverte. */

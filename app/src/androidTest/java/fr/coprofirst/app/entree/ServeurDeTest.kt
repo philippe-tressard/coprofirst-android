@@ -39,9 +39,11 @@ class ServeurDeTest : AutoCloseable {
             override fun lire() = valeur
             override fun ecrire(valeur: String) { this.valeur = valeur }
         }
+        val sessions = SessionsParHote(client)
         return ParcoursEntree(
             Decouverte(client, baseApi = base),
-            Connexion(SessionsParHote(client), baseApi = base),
+            sessions,
+            Connexion(sessions, baseApi = base),
             InstallationsConnues(stockage),
         ) { preuve }
     }

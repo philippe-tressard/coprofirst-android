@@ -20,20 +20,20 @@ class Connexion(
     private val fond: CoroutineDispatcher = Dispatchers.IO,
     private val baseApi: (AdresseInstallation) -> String = { it.baseApi },
 ) {
-    /** @throws ErreurEntree toujours ce type : chaque échec a sa phrase. */
+    /** @throws ErreurService toujours ce type : chaque échec a sa phrase. */
     suspend fun connecter(installation: Installation, email: String, motDePasse: String) {
-        val adresse = installation.adresse ?: throw ErreurEntree.Inattendue
+        val adresse = installation.adresse ?: throw ErreurService.Inattendue
         withContext(fond) {
             try {
                 AuthApi(baseApi(adresse), sessions.client(adresse)).postAuthLogin(LoginRequest(email.trim(), motDePasse))
             } catch (erreur: ClientException) {
                 throw when (erreur.statusCode) {
-                    401, 403, 422 -> ErreurEntree.IdentifiantsRefuses
-                    429 -> ErreurEntree.TropDEssais
-                    else -> ErreurEntree.depuis(erreur)
+                    401, 403, 422 -> ErreurService.IdentifiantsRefuses
+                    429 -> ErreurService.TropDEssais
+                    else -> ErreurService.depuis(erreur)
                 }
             } catch (erreur: Exception) {
-                throw ErreurEntree.depuis(erreur)
+                throw ErreurService.depuis(erreur)
             }
         }
     }

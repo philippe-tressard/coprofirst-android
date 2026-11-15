@@ -34,6 +34,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.R
+import fr.coprofirst.app.commun.BoutonPlein
+import fr.coprofirst.app.commun.MessageErreur
 
 /**
  * Les identifiants, sous la résidence, comme l'iOS : adresse électronique, mot de passe
