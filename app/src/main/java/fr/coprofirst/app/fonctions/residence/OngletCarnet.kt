@@ -54,15 +54,15 @@ import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.onglets.OngletsSurLeSite
 import fr.coprofirst.app.commun.texte.TexteDuSite
+import fr.coprofirst.app.navigation.Destination
 
 /**
  * L'onglet « Carnet d'entretien », comme l'iOS (`CarnetView`) : ce qui a été entretenu,
  * réparé et contrôlé, rangé par équipement ; les visites en retard en tête. Réservé aux
  * propriétaires et au conseil syndical (l'onglet ne s'ouvre qu'à eux).
  *
- * ⚠️ Divergence déclarée : l'iOS ouvre une affaire du carnet dans l'app ; ici elle s'ouvre
- * sur le site, comme un contrat ou une intervention, tant que Mes affaires (#16) n'offre
- * pas sa fiche aux autres écrans.
+ * Une affaire s'ouvre dans l'app par la porte (sa fiche, déclarée par Mes affaires) ; tant
+ * qu'aucune fiche ne la porte, sur le site, comme un contrat ou une intervention.
  */
 @Composable
 fun OngletCarnet(
@@ -71,6 +71,7 @@ fun OngletCarnet(
     perimetre: String?,
     cs: Boolean,
     adresse: String,
+    porte: (Destination) -> Boolean,
     choisir: (String?) -> Unit,
 ) {
     val couleurs = LocalCouleurs.current
@@ -88,7 +89,7 @@ fun OngletCarnet(
         carnet.groupes.forEach { groupe ->
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 EnTeteRubrique(groupe.titre ?: stringResource(R.string.carnet_sans_equipement), compte = groupe.entrees.size)
-                groupe.entrees.forEach { CarteEntree(it, adresse) }
+                groupe.entrees.forEach { CarteEntree(it, adresse, porte) }
             }
         }
     }
@@ -159,7 +160,7 @@ private fun EncartAlerte(entrees: List<EntreeCarnet>) {
 /** Une entrée : la date et l'origine en gouttière, le libellé, l'extrait, le détail, l'alerte, le numéro, le lien. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun CarteEntree(entree: EntreeCarnet, adresse: String) {
+private fun CarteEntree(entree: EntreeCarnet, adresse: String, porte: (Destination) -> Boolean) {
     val couleurs = LocalCouleurs.current
     CarteAGouttiere(Nature.duCarnet(entree.origine), date = entree.jour) {
         Text(entree.libelle, style = MaterialTheme.typography.titleMedium, color = couleurs.text)
@@ -174,23 +175,25 @@ private fun CarteEntree(entree: EntreeCarnet, adresse: String) {
                 entree.numero?.let { PastilleNeutre("#$it") }
             }
         }
-        val lien = entree.lien?.let { OngletsSurLeSite.lien(it, adresse) } ?: return@CarteAGouttiere
-        val affaire = entree.origine == "affaire"
-        LienEntree(
-            if (affaire) R.string.carnet_voir_affaire else R.string.carnet_ouvrir_sur_le_site,
-            if (affaire) Icons.AutoMirrored.Outlined.ArrowForward else Icons.AutoMirrored.Outlined.OpenInNew,
-            lien,
-        )
+        val lien = entree.lien?.let { OngletsSurLeSite.lien(it, adresse) }
+        val affaire = entree.affaire
+        when {
+            affaire != null -> LienEntree(R.string.carnet_voir_affaire, Icons.AutoMirrored.Outlined.ArrowForward, lien) {
+                porte(Destination.Element(NATURE_AFFAIRE, affaire))
+            }
+            lien != null -> LienEntree(R.string.carnet_ouvrir_sur_le_site, Icons.AutoMirrored.Outlined.OpenInNew, lien) { false }
+        }
     }
 }
 
+/** Un lien d'entrée : `dansLApp` d'abord (la porte) ; s'il ne mène nulle part, le site. */
 @Composable
-private fun LienEntree(libelle: Int, icone: ImageVector, lien: String) {
+private fun LienEntree(libelle: Int, icone: ImageVector, lien: String?, dansLApp: () -> Boolean) {
     val couleurs = LocalCouleurs.current
     val site = LocalUriHandler.current
     val texte = stringResource(libelle)
     Row(
-        Modifier.heightIn(min = Mise.cible).cliquable(texte) { site.openUri(lien) },
+        Modifier.heightIn(min = Mise.cible).cliquable(texte) { if (!dansLApp() && lien != null) site.openUri(lien) },
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -198,6 +201,9 @@ private fun LienEntree(libelle: Int, icone: ImageVector, lien: String) {
         Icon(icone, contentDescription = null, tint = couleurs.primary, modifier = Modifier.size(16.dp))
     }
 }
+
+/** La nature d'une affaire pour la porte (`Destination.Element`), celle du fil. */
+private const val NATURE_AFFAIRE = "affaire"
 
 /** La classe d'alerte du site. */
 private const val BADGE_ALERTE = "badge-orange"

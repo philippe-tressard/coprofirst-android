@@ -38,6 +38,7 @@ import fr.coprofirst.app.fonctions.annuaire.EcranAnnuaire
 import fr.coprofirst.app.fonctions.annuaire.ServiceAnnuaire
 import fr.coprofirst.app.fonctions.annuaire.ServiceAnnuaireApi
 import fr.coprofirst.app.navigation.ContexteDeMenu
+import fr.coprofirst.app.navigation.Destination
 import fr.coprofirst.app.navigation.DroitsOnglet
 import fr.coprofirst.app.navigation.OngletDuSite
 import fr.coprofirst.app.navigation.OngletsDuSite
@@ -81,9 +82,9 @@ object OngletsResidence {
 private const val RAPPORTS = "rapports"
 
 /** Ce que l'écran ouvre par-dessus lui : un avis, ou l'annuaire placé sur le syndic. */
-sealed interface Destination {
-    data class Avis(val question: QuestionReglement) : Destination
-    data object Syndic : Destination
+sealed interface PageOuverte {
+    data class Avis(val question: QuestionReglement) : PageOuverte
+    data object Syndic : PageOuverte
 }
 
 /** « Ma résidence » (page `residence`, #17) : l'écran du registre. */
@@ -91,7 +92,7 @@ sealed interface Destination {
 fun EcranMaResidence(contexte: ContexteDeMenu) {
     val service = remember(contexte.session) { ServiceResidenceApi(contexte.session) }
     val annuaire = remember(contexte.session) { ServiceAnnuaireApi(contexte.session) }
-    EcranMaResidence(service, annuaire, contexte.droits, contexte.session)
+    EcranMaResidence(service, annuaire, contexte.droits, contexte.session, contexte.ouvrir)
 }
 
 /**
@@ -104,11 +105,17 @@ fun EcranMaResidence(contexte: ContexteDeMenu) {
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun EcranMaResidence(service: ServiceResidence, annuaire: ServiceAnnuaire, droits: DroitsOnglet, session: SessionOuverte?) {
+internal fun EcranMaResidence(
+    service: ServiceResidence,
+    annuaire: ServiceAnnuaire,
+    droits: DroitsOnglet,
+    session: SessionOuverte?,
+    porte: (Destination) -> Boolean = { false },
+) {
     var onglet by rememberSaveable { mutableStateOf(OngletsResidence.FICHE) }
     var accesReglement by remember { mutableStateOf<Boolean?>(null) }
     var relecture by rememberSaveable { mutableIntStateOf(0) }
-    var destination by remember { mutableStateOf<Destination?>(null) }
+    var destination by remember { mutableStateOf<PageOuverte?>(null) }
     LaunchedEffect(droits.proprioOuCS) {
         if (!droits.proprioOuCS) return@LaunchedEffect
         // Une réponse en échec ne masque rien : l'onglet ouvert dira l'erreur.
@@ -126,7 +133,7 @@ internal fun EcranMaResidence(service: ServiceResidence, annuaire: ServiceAnnuai
         document = { ouverture?.document(it.id, it.fichier) },
         rapport = { ouverture?.fichier(RAPPORTS, it.id.toString(), it.fichier, "rapport-${it.id}", ServiceResidenceApi.rapport(it.id)) },
         rapportEnCours = ouverture?.enCours?.removePrefix("$RAPPORTS-")?.toIntOrNull(),
-        syndic = { destination = Destination.Syndic },
+        syndic = { destination = PageOuverte.Syndic },
     )
     PullToRefreshBox(isRefreshing = false, onRefresh = { relecture++ }, modifier = Modifier.fillMaxSize()) {
         Column(
@@ -142,9 +149,9 @@ internal fun EcranMaResidence(service: ServiceResidence, annuaire: ServiceAnnuai
             ) {
                 ouverture?.let { AvisOuverture(it) }
                 when (actif) {
-                    OngletsResidence.CARNET -> Carnet(service, droits.cs, session?.installation?.url.orEmpty(), relecture)
+                    OngletsResidence.CARNET -> Carnet(service, droits.cs, session?.installation?.url.orEmpty(), relecture, porte)
                     OngletsResidence.REGLEMENT -> Reglement(service, droits.cs, relecture, { onglet = OngletsResidence.FICHE }) {
-                        destination = Destination.Avis(it)
+                        destination = PageOuverte.Avis(it)
                     }
                     else -> Chargement(
                         charger = { service.fiche() },
@@ -158,10 +165,10 @@ internal fun EcranMaResidence(service: ServiceResidence, annuaire: ServiceAnnuai
         }
     }
     when (val ouverte = destination) {
-        is Destination.Avis -> FeuilleResidence(stringResource(R.string.avis_titre), { destination = null }) {
+        is PageOuverte.Avis -> FeuilleResidence(stringResource(R.string.avis_titre), { destination = null }) {
             AvisReglement(ouverte.question)
         }
-        Destination.Syndic -> FeuilleResidence(stringResource(R.string.annuaire_titre), { destination = null }, defile = false) {
+        PageOuverte.Syndic -> FeuilleResidence(stringResource(R.string.annuaire_titre), { destination = null }, defile = false) {
             EcranAnnuaire(annuaire, session, AncreAnnuaire.Syndic)
         }
         null -> Unit
@@ -169,7 +176,7 @@ internal fun EcranMaResidence(service: ServiceResidence, annuaire: ServiceAnnuai
 }
 
 @Composable
-private fun Carnet(service: ServiceResidence, cs: Boolean, adresse: String, relecture: Int) {
+private fun Carnet(service: ServiceResidence, cs: Boolean, adresse: String, relecture: Int, porte: (Destination) -> Boolean) {
     var perimetre by rememberSaveable { mutableStateOf<String?>(null) }
     var perimetres by remember { mutableStateOf<List<Perimetre>>(emptyList()) }
     LaunchedEffect(Unit) {
@@ -182,9 +189,9 @@ private fun Carnet(service: ServiceResidence, cs: Boolean, adresse: String, rele
     Chargement(
         charger = { service.carnet(perimetre) },
         cle = relecture to perimetre,
-        squelette = { OngletCarnet(ApercuResidence.carnet, emptyList(), null, false, "", {}) },
+        squelette = { OngletCarnet(ApercuResidence.carnet, emptyList(), null, false, "", { false }, {}) },
     ) { carnet, _ ->
-        OngletCarnet(carnet, perimetres, perimetre, cs, adresse) { perimetre = it }
+        OngletCarnet(carnet, perimetres, perimetre, cs, adresse, porte) { perimetre = it }
     }
 }
 

@@ -67,4 +67,11 @@ class ReglesResidenceTest {
         assertEquals("badge-red", ResidenceSimulee.QUESTION_AVANT.badgeDuVerdict)
         assertEquals("un ton inconnu se lit incertain", "badge-yellow", question.copy(verdictTon = "autre").badgeDuVerdict)
     }
+
+    @Test
+    fun uneAffaireDuCarnetSeReconnaitASonLien() {
+        assertEquals("29", EntreeCarnet("2026-08-02", "Fuite", "affaire", lien = "/tickets/29").affaire)
+        assertEquals(null, EntreeCarnet("2026-08-02", "Contrat", "contrat", lien = "/tickets/29").affaire)
+        assertEquals(null, EntreeCarnet("2026-08-02", "Fuite", "affaire", lien = "/prestataires/3").affaire)
+    }
 }

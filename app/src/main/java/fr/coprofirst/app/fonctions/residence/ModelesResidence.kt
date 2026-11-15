@@ -131,6 +131,15 @@ data class EntreeCarnet(
     val extrait: String? = null,
 ) {
     val cle: String get() = "$origine-${lien ?: libelle}-$date"
+
+    /** L'identifiant de l'affaire d'une entrée « affaire » (`/tickets/29` → « 29 »), comme l'iOS. */
+    val affaire: String?
+        get() = lien?.takeIf { origine == "affaire" && it.startsWith(CHEMIN_AFFAIRE) }
+            ?.removePrefix(CHEMIN_AFFAIRE)?.takeWhile { it.isDigit() }?.takeIf { it.isNotEmpty() }
+
+    private companion object {
+        const val CHEMIN_AFFAIRE = "/tickets/"
+    }
     val jour: Instant? get() = FormatsDuSite.lire(date)
 }
 
