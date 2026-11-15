@@ -21,7 +21,6 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
-import java.time.Instant
 
 /** Chaque lecture et chaque geste part par SA route du contrat, par le client généré. */
 class ServiceAffairesApiTest {
@@ -93,19 +92,49 @@ class ServiceAffairesApiTest {
     }
 
     @Test
-    fun archiverPoseArchiveManuelEtGardeLesPrestataires() = runTest {
-        routes("PATCH /api/tickets/4" to (200 to ticket(4, archivee = true, prestataires = "null")))
-        val lue = service.archiver(AFFAIRE.copy(prestataires = listOf("Ascenseurs du Parc")))
+    fun archiverPoseArchiveManuel() = runTest {
+        routes("PATCH /api/tickets/4" to (200 to ticket(4, archivee = true)))
+        val lue = service.archiver(4)
         assertTrue(recues.single(), "\"archive_manuel\":true" in recues.single())
         assertTrue(lue.archivee)
-        assertEquals(listOf("Ascenseurs du Parc"), lue.prestataires)
+    }
+
+    @Test
+    fun creerEnvoieLaSaisieEnHtmlDuSite() = runTest {
+        routes("POST /api/tickets" to (201 to ticket(9)))
+        val creee = service.creer(SaisieAffaire("panne", " Fuite ", "Au local\n<vélos>", urgente = true, perimetre = "bat-a"))
+        assertEquals(9, creee.id)
+        val corps = recues.single()
+        assertTrue(corps, "\"titre\":\"Fuite\"" in corps && "\"categorie\":\"panne\"" in corps && "\"urgente\":true" in corps)
+        assertTrue(corps, "\"perimetre_cible\":[\"bat-a\"]" in corps && "&lt;vélos&gt;" in corps)
+    }
+
+    @Test
+    fun lesGestesDeLaFichePartentParLeursRoutes() = runTest {
+        routes(
+            "POST /api/tickets/4/messages" to (201 to """{"id": 1, "ticket_id": 4, "contenu": "<p>Merci</p>", "interne": false, "cree_le": "2026-11-05T10:00:00Z"}"""),
+            "POST /api/tickets/4/evolutions" to (201 to EVOLUTION),
+            "PATCH /api/tickets/4" to (200 to ticket(4)),
+            "GET /api/perimetres" to (200 to "[]"),
+        )
+        service.repondre(4, " Merci ")
+        service.ajouterSuite(4, SaisieSuite("ouvert", contenu = "Vu"))
+        service.ajouterSuite(4, SaisieSuite("ouvert", statut = "en_cours"))
+        service.regler(4, TablesAffaires.options.first { it.cle == "epingle" }, true)
+        service.regler(4, TablesAffaires.options.first { it.cle == "urgente" }, false)
+        assertEquals(emptyList<Perimetre>(), service.perimetres())
+        assertTrue(recues[0], recues[0].startsWith("POST /api/tickets/4/messages") && "\"contenu\":\"<p>Merci</p>\"" in recues[0])
+        assertTrue(recues[1], "\"type\":\"commentaire\"" in recues[1] && "nouveau_statut" !in recues[1])
+        assertTrue(recues[2], "\"type\":\"etat\"" in recues[2] && "\"nouveau_statut\":\"en_cours\"" in recues[2] && "\"contenu\"" !in recues[2])
+        assertTrue(recues[3], "\"epingle\":true" in recues[3])
+        assertTrue(recues[4], "\"urgente\":false" in recues[4])
     }
 
     @Test
     fun unRefusDuServeurDitSaPhrase() = runTest {
         routes("PATCH /api/tickets/4" to (403 to """{"detail": "Seul le conseil syndical peut archiver."}"""))
         try {
-            service.archiver(AFFAIRE)
+            service.archiver(4)
             fail("refus attendu")
         } catch (e: ErreurService.Refus) {
             assertEquals("Seul le conseil syndical peut archiver.", e.phraseServie)
@@ -145,8 +174,6 @@ class ServiceAffairesApiTest {
     }
 
     private companion object {
-        val AFFAIRE = Affaire(4, "A-0004", "Fuite", "", Instant.EPOCH, statut = "ouvert", statutLibelle = "Ouvert", categorie = "panne", categorieLibelle = "Panne")
-
         fun ticket(
             id: Int,
             archivee: Boolean = false,

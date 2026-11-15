@@ -48,6 +48,7 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
+import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.formats.FormatsDuSite
@@ -63,23 +64,36 @@ import java.time.Instant
  * (`DetailAffaireView`) : l'en-tête, le fil de l'affaire (la demande, la suite, les comptes
  * rendus, la synthèse) et, sauf sur une actualité, le fil des messages.
  *
- * ⚠️ Pour l'heure en lecture : les gestes du bandeau de l'iOS (Répondre, Suite, Modifier,
- * options, archiver, lien) arrivent avec la PR suivante de #16 ; « Qui la lit » se tait
- * jusqu'au composant commun (#70).
+ * En bas, le bandeau de ses gestes (`BandeauAffaire`). « Qui la lit » se tait jusqu'au
+ * composant commun (#70).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun FicheAffaire(id: Int, service: ServiceAffaires, session: SessionOuverte, titrePage: String, retour: () -> Unit) {
+internal fun FicheAffaire(id: Int, ctx: ContexteFiche, retour: () -> Unit) {
     Chargement(
-        charger = { service.affaire(id) },
+        charger = { ctx.service.affaire(id) },
         cle = id,
-        squelette = { ContenuAffaire(SQUELETTE, session, titrePage, retour) },
+        squelette = { ContenuAffaire(SQUELETTE, ctx.session, ctx.titrePage, retour) },
     ) { affaire, recharger ->
-        PullToRefreshBox(isRefreshing = false, onRefresh = recharger, modifier = Modifier.fillMaxSize()) {
-            ContenuAffaire(affaire, session, titrePage, retour)
+        Column(Modifier.fillMaxSize()) {
+            PullToRefreshBox(isRefreshing = false, onRefresh = recharger, modifier = Modifier.weight(1f)) {
+                ContenuAffaire(affaire, ctx.session, ctx.titrePage, retour)
+            }
+            BandeauAffaire(affaire, ctx.conseil, ctx.service, ctx.lienSite(affaire.id), ctx.avis, recharger)
         }
     }
 }
+
+/** Ce que la fiche reçoit de l'écran : le service, la session (pièces jointes), le titre de la page, l'avis, le lien. */
+internal class ContexteFiche(
+    val service: ServiceAffaires,
+    val session: SessionOuverte,
+    val titrePage: String,
+    /** Le compte est-il du conseil syndical ? Il suit par 🔄, il ne répond pas par 💬. */
+    val conseil: Boolean,
+    val avis: AvisDuGeste,
+    val lienSite: (Int) -> String?,
+)
 
 @Composable
 private fun ContenuAffaire(affaire: DetailAffaire, session: SessionOuverte, titrePage: String, retour: () -> Unit) {
@@ -112,7 +126,7 @@ private fun EnTeteAffaire(affaire: DetailAffaire) {
                 color = if (affaire.estActualite) c.primary else c.filRouge,
             )
             if (affaire.urgente) Marque(Icons.Filled.Warning, stringResource(R.string.affaires_urgente), c.danger)
-            if (affaire.epingle) Marque(Icons.Filled.PushPin, null, c.primary, stringResource(R.string.affaire_epinglee))
+            if (affaire.epingle) Marque(Icons.Filled.PushPin, null, c.primary, TablesAffaires.options.firstOrNull { it.cle == OptionAffaire.EPINGLE }?.etat)
             if (affaire.archivee) Marque(Icons.Outlined.Archive, stringResource(R.string.affaire_archivee), c.textMuted)
             Spacer(Modifier.weight(1f))
             affaire.etat?.let { PastilleStatut(it.code, it.libelle) }

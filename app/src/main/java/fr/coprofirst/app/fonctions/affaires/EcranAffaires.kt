@@ -10,6 +10,10 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -19,8 +23,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
+import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.commun.AvisEphemere
@@ -28,6 +35,7 @@ import fr.coprofirst.app.commun.TonAvis
 import fr.coprofirst.app.commun.onglets.BarreOnglets
 import fr.coprofirst.app.commun.onglets.OngletsSurLeSite
 import fr.coprofirst.app.commun.phrase
+import fr.coprofirst.app.navigation.ActionsDeBarre
 import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.navigation.ContexteDeMenu
 import fr.coprofirst.app.navigation.DroitsOnglet
@@ -64,10 +72,10 @@ object ReperesAffaires {
 /** Les onglets de la page et le geste d'ouvrir une affaire, que chaque onglet reçoit. */
 internal class ContexteAffaires(
     val etat: EtatAffaires,
-    val barre: BarreDuHaut,
-    val avis: AvisDuGeste,
     /** L'adresse de la page d'une affaire sur le site (« Partager le lien ») ; `null` si l'adresse n'est pas sûre. */
     val lienSite: (Int) -> String?,
+    /** « Nouvelle affaire », offerte aussi par une liste vide. */
+    val nouvelle: () -> Unit,
     val ouvrir: (Affaire) -> Unit,
 )
 
@@ -107,7 +115,9 @@ internal fun EcranAffaires(
     // Un onglet que la réserve retire ne s'atteint pas (la redirection du site).
     val actif = onglet.takeIf { id -> onglets.any { it.id == id } } ?: ONGLET_LISTE
     val portee = rememberCoroutineScope()
-    val contexteOnglet = remember(etat, barre, avis) { ContexteAffaires(etat, barre, avis, lienSite) { ouverte = it.id } }
+    var nouvelle by rememberSaveable { mutableStateOf(false) }
+    val contexteOnglet = remember(etat) { ContexteAffaires(etat, lienSite, { nouvelle = true }) { ouverte = it.id } }
+    val contexteFiche = remember(service, session, titre, droits, avis) { ContexteFiche(service, session, titre, droits.cs, avis, lienSite) }
 
     LaunchedEffect(etat) { etat.charger() }
     // Un geste qui échoue se dit dans l'avis, puis s'efface.
@@ -119,11 +129,26 @@ internal fun EcranAffaires(
         }
     }
     BackHandler(enabled = ouverte != null) { ouverte = null }
+    // La barre du haut : les filtres de la Liste, puis « Nouvelle affaire » — pas sur la fiche.
+    if (ouverte == null) {
+        ActionsDeBarre(barre) {
+            if (actif == ONGLET_LISTE) MenuFiltres(etat)
+            IconButton({ nouvelle = true }, Modifier.testTag(ReperesNouvelle.NOUVELLE)) {
+                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.nouvelle_titre), tint = LocalCouleurs.current.primary)
+            }
+        }
+    }
+    if (nouvelle) {
+        FeuilleNouvelleAffaire(etat.referentiels, etat.erreurReferentiels, service, fermer = { nouvelle = false }) { creee ->
+            etat.ajouter(creee)
+            onglet = ONGLET_LISTE
+        }
+    }
 
     AvisEphemere(avis, Modifier.fillMaxSize().background(LocalCouleurs.current.bg)) {
         val id = ouverte
         if (id != null) {
-            FicheAffaire(id, service, session, titre) {
+            FicheAffaire(id, contexteFiche) {
                 ouverte = null
                 // La fiche a pu changer l'affaire (un geste) : la liste se relit.
                 portee.launch { etat.charger() }

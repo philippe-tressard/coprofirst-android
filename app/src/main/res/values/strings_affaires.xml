@@ -68,7 +68,6 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="affaire_retour">Retour à %1$s</string>
     <string name="affaire_actualite">Actualité</string>
     <string name="affaire_affaire">Affaire</string>
-    <string name="affaire_epinglee">Épinglée</string>
     <string name="affaire_archivee">Archivée</string>
     <string name="affaire_lieu">Lieu : %1$s</string>
     <string name="affaire_messages">Messages</string>
@@ -110,4 +109,52 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="affaires_fil_validee">Validée</string>
     <string name="affaires_fil_validee_le">Validée le %1$s</string>
     <string name="affaires_fil_etat_le">%1$s le %2$s</string>
+
+    <!-- Nouvelle affaire (NouvelleAffaireView, ChampsAffaire, ChoixCategorie) -->
+    <string name="nouvelle_titre">Nouvelle affaire</string>
+    <string name="nouvelle_envoyer">Envoyer</string>
+    <string name="nouvelle_abandonner_titre">Abandonner cette affaire ?</string>
+    <string name="nouvelle_abandonner">Abandonner la saisie</string>
+    <string name="nouvelle_continuer">Continuer la saisie</string>
+    <string name="nouvelle_categorie">Catégorie</string>
+    <string name="nouvelle_carnet">Le liseré doré : une affaire résolue y alimente le carnet d\'entretien.</string>
+    <string name="nouvelle_chargement_categories">Chargement des catégories</string>
+    <string name="nouvelle_champ_titre">Titre</string>
+    <string name="nouvelle_titre_indication">En quelques mots</string>
+    <string name="nouvelle_description">Description</string>
+    <string name="nouvelle_description_indication">Le problème, en détail</string>
+    <string name="nouvelle_de_quoi">De quoi s\'agit-il ?</string>
+    <string name="nouvelle_lieu">Lieu</string>
+    <string name="nouvelle_non_precise">Non précisé</string>
+    <string name="nouvelle_bogue">Un bogue concerne le site, pas un lieu de la copropriété.</string>
+    <string name="nouvelle_urgente_avertissement">Une affaire urgente laisse une trace de votre signalement ; elle n\'alerte pas les secours. En cas de danger : 15 (SAMU) · 17 (Police secours) · 18 (Sapeurs-pompiers) · 112 (urgences).</string>
+    <string name="nouvelle_depuis_le_site">Depuis le site</string>
+    <string name="nouvelle_pieces_au_site">Les photos et les documents s\'ajoutent depuis le site.</string>
+    <string name="nouvelle_reserve_au_site">L\'équipement, la date, l\'intervenant, les destinataires et les affaires liées aussi.</string>
+    <string name="nouvelle_conseil_au_site">Le conseil syndical désigne l\'équipement, la date, l\'intervenant et les destinataires.</string>
+
+    <!-- Le bandeau d'une affaire (BandeauAffaire, GesteAffaire) -->
+    <string name="geste_lien">Copier le lien</string>
+    <string name="geste_partager">Partager…</string>
+    <string name="geste_repondre">Répondre</string>
+    <string name="geste_suite">Ajouter une suite</string>
+    <string name="geste_options">Options</string>
+    <string name="geste_archiver">Archiver</string>
+    <string name="geste_lien_copie">Lien copié</string>
+    <string name="geste_reponse_envoyee">Réponse envoyée</string>
+    <string name="geste_statut_mis_a_jour">Statut mis à jour</string>
+    <string name="geste_commentaire_ajoute">Commentaire ajouté</string>
+    <string name="geste_option_retiree">%1$s : retiré</string>
+    <string name="geste_archivee">Affaire archivée — elle rejoint l\'onglet Archives</string>
+
+    <!-- Répondre, Ajouter une suite (RepondreFeuille, SuiteFeuille) -->
+    <string name="repondre_votre_reponse">Votre réponse</string>
+    <string name="suite_titre">Suite</string>
+    <string name="suite_suivi">Suivi</string>
+    <string name="suite_etat">État</string>
+    <string name="suite_changera">L\'affaire changera d\'état.</string>
+    <string name="suite_garder">Garder l\'état : un commentaire seul.</string>
+    <string name="suite_commentaire">Commentaire</string>
+    <string name="suite_mot_facultatif">Un mot sur ce changement (facultatif)</string>
+    <string name="suite_commentaire_indication">Ajoutez un commentaire de suivi…</string>
 </resources>

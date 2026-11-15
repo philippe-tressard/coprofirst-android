@@ -119,8 +119,9 @@ class EtatAffaires(private val service: ServiceAffaires) {
     suspend fun archiver(affaire: Affaire) {
         remplacer(affaire.id) { it.copy(archivee = true) }
         try {
-            val lue = service.archiver(affaire)
-            remplacer(affaire.id) { lue }
+            // La réponse du geste peut se lire sans ses prestataires : on garde ceux qu'on lisait.
+            val lue = service.archiver(affaire.id)
+            remplacer(affaire.id) { lue.copy(prestataires = lue.prestataires.ifEmpty { affaire.prestataires }) }
         } catch (e: ErreurService) {
             remplacer(affaire.id) { affaire }
             avis = e
