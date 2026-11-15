@@ -6,10 +6,8 @@ package fr.coprofirst.app.navigation
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -18,26 +16,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.stringResource
 import fr.coprofirst.app.LocalCouleurs
-import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Pictogrammes
 import fr.coprofirst.app.commun.cliquable
 
 /**
  * « Plus », comme l'iOS (`PlusView`) : les pages au-delà de la barre, puis Profil et
- * À propos. ⚠️ Divergence déclarée : « Se déconnecter » y reste tant que `ContexteDeMenu`
- * ne porte pas les gestes de sortie (#41) — l'iOS le place au bas du Profil (#21), où il
- * passera alors.
+ * À propos. « Se déconnecter » est au bas du Profil (#21), comme sur l'iOS.
  */
 @Composable
-fun ListeDePlus(pages: List<PageDeNavigation>, ouvrir: (String) -> Unit, deconnecter: () -> Unit) {
+fun ListeDePlus(pages: List<PageDeNavigation>, ouvrir: (String) -> Unit) {
     LazyColumn {
         items(pages, key = { it.id }) { page -> Entree(page.libelle, Pictogrammes.icone(page.icone), "plus.${page.id}") { ouvrir(page.id) } }
         item { Entree(PagesDePlus.profil.libelle, Icons.Filled.AccountCircle, "plus.profil") { ouvrir(PagesDePlus.profil.id) } }
         item { Entree(PagesDePlus.aPropos.libelle, Icons.Filled.Info, "plus.a-propos") { ouvrir(PagesDePlus.aPropos.id) } }
-        item { HorizontalDivider() }
-        item { Entree(stringResource(R.string.se_deconnecter), Icons.AutoMirrored.Filled.Logout, "plus.deconnexion", deconnecter) }
     }
 }
 

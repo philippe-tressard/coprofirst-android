@@ -49,16 +49,12 @@ class ProfilTest {
     private fun nul(corps: JsonObject, cle: String) = corps[cle] == null || corps[cle] is JsonNull
 
     @Test
-    fun leCompteSeLitEtSesLibellesViennentDesTables() = runTest {
+    fun leCompteSeLitEtSonStatutFaitSaPastille() = runTest {
         repondre(200, FixturesProfil.MOI)
         val moi = service.moi()
         assertEquals("Camille EXEMPLE", moi.nomAffiche)
-        assertEquals("Copropriétaire résident", RolesDuProfil.libelleStatut(moi.statut.value))
-        assertEquals(
-            listOf("Copropriétaire résident", "Conseil syndical"),
-            RolesDuProfil.affiches(moi.statut.value, RolesDuProfil.portes(moi)),
-        )
-        assertEquals("statut_inconnu", RolesDuProfil.libelleStatut("statut_inconnu"))
+        assertEquals(listOf("Copropriétaire résident"), pastillesDuProfil(moi.statut.value).map { it.libelle })
+        assertEquals("un statut inconnu ne fait pas de pastille", emptyList<String>(), pastillesDuProfil("statut_inconnu").map { it.libelle })
     }
 
     @Test

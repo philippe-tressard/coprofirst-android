@@ -37,6 +37,7 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.BoutonPlein
+import fr.coprofirst.app.commun.Roles
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.phrase
 import fr.coprofirst.app.session.ErreurService
@@ -77,7 +78,7 @@ fun FeuilleDemandeModification(service: ServiceProfil, fermer: () -> Unit) {
 
 @Composable
 private fun FormulaireDemande(service: ServiceProfil, batiments: List<BatimentPublic>, envoyee: () -> Unit) {
-    var statut by remember { mutableStateOf<String?>(null) }
+    val statut: String? = null
     var batiment by remember { mutableStateOf<Int?>(null) }
     var motif by remember { mutableStateOf("") }
     var envoi by remember { mutableStateOf(false) }
@@ -85,14 +86,10 @@ private fun FormulaireDemande(service: ServiceProfil, batiments: List<BatimentPu
     var refus by remember { mutableStateOf<ErreurService?>(null) }
     val portee = rememberCoroutineScope()
     val couleurs = LocalCouleurs.current
-    val inchange = stringResource(R.string.profil_inchange)
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Choix(
-            libelle = stringResource(R.string.profil_nouveau_profil),
-            choix = listOf(null to inchange) + TablesProfil.statutsDemandables.map { it to RolesDuProfil.libelleStatut(it) },
-            choisi = statut,
-            repere = "profil.demande.statut",
-        ) { statut = it }
+        // ⚠️ Divergence déclarée : l'iOS propose aussi un nouveau profil d'utilisateur
+        // (`STATUTS_DEMANDABLES`), que la couche commune ne génère pas encore — demandé,
+        // branché dès qu'il l'est (#47). D'ici là, seul le bâtiment se demande ici.
         Choix(
             libelle = stringResource(R.string.profil_batiment_souhaite),
             choix = listOf(null to stringResource(R.string.profil_inchange_tirets)) +
@@ -171,7 +168,7 @@ private fun StatutDemandeProfil.libelle(): Int = when (this) {
 @Composable
 private fun resume(demande: DemandeModifRead): String {
     val parties = listOfNotNull(
-        demande.statutSouhaite?.let { stringResource(R.string.profil_resume_statut, RolesDuProfil.libelleStatut(it)) },
+        demande.statutSouhaite?.let { stringResource(R.string.profil_resume_statut, Roles.statut(it).libelle) },
         demande.batimentNomSouhaite?.let { stringResource(R.string.profil_resume_batiment, it) },
     )
     return parties.joinToString(" + ").replaceFirstChar { it.uppercase() }

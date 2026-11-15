@@ -89,21 +89,36 @@ fun LigneValeur(libelle: String, valeur: String) {
     }
 }
 
-/** Un geste en ligne : un texte touchable, en couleur primaire (ou en rouge s'il détruit). */
+/**
+ * Un geste en ligne : un texte touchable, en couleur primaire (en rouge s'il détruit) ;
+ * `discret`, petit, gris et centré (« Oublier toutes les résidences »).
+ */
 @Composable
-fun LigneAction(libelle: String, repere: String, detruit: Boolean = false, actif: Boolean = true, onClick: () -> Unit) {
+fun LigneAction(
+    libelle: String,
+    repere: String,
+    detruit: Boolean = false,
+    actif: Boolean = true,
+    discret: Boolean = false,
+    onClick: () -> Unit,
+) {
     val couleurs = LocalCouleurs.current
     val couleur = when {
-        !actif -> couleurs.textMuted
+        !actif || discret -> couleurs.textMuted
         detruit -> couleurs.danger
         else -> couleurs.primary
     }
     Box(
         Modifier.fillMaxWidth().heightIn(min = Mise.cible).testTag(repere)
             .then(if (actif) Modifier.cliquable(libelle, onClick) else Modifier),
-        contentAlignment = Alignment.CenterStart,
+        contentAlignment = if (discret) Alignment.Center else Alignment.CenterStart,
     ) {
-        Text(libelle, color = couleur, fontWeight = FontWeight.Medium)
+        Text(
+            libelle,
+            color = couleur,
+            style = if (discret) MaterialTheme.typography.bodySmall else MaterialTheme.typography.bodyLarge,
+            fontWeight = if (discret) null else FontWeight.Medium,
+        )
     }
 }
 
@@ -136,7 +151,7 @@ fun FeuilleProfil(
                     title = { Text(titre, style = Typo.titre(MaterialTheme.typography.titleLarge)) },
                     navigationIcon = {
                         IconButton(onClick = fermer, enabled = !enCours) {
-                            Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.profil_annuler))
+                            Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.annuler))
                         }
                     },
                     actions = {

@@ -74,8 +74,14 @@ class ParcoursEntreeInterfaceTest {
         // La résidence ouverte : la barre, la première page (pas encore portée : « Bientôt »).
         attendre("Bientôt")
         ecran.onNodeWithText("Plus").performClick()
+        // « Se déconnecter » est au bas du Profil, comme sur l'iOS (#21) — même quand le
+        // compte ne se lit pas — et se confirme.
+        serveur.repondre(404) // GET /auth/me du Profil
+        ecran.onNodeWithTag("plus.profil").performClick()
+        attendre("Réessayer")
         serveur.repondre(200) // POST /auth/logout
-        ecran.onNodeWithTag("plus.deconnexion").performClick()
+        ecran.onNodeWithTag("profil.deconnecter").performClick()
+        ecran.onNodeWithTag("sortie.confirmer").performClick()
         attendre("Connectez-vous à votre espace")
     }
 

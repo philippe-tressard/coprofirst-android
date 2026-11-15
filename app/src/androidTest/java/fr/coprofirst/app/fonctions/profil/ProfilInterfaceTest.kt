@@ -85,7 +85,7 @@ class ProfilInterfaceTest {
     fun ouvrirLeProfil() {
         serveur.serveur.dispatcher = residence
         val parcours = serveur.parcours()
-        ecran.setContent { NavigationEntree(parcours) }
+        ecran.setContent { NavigationEntree(serveur.apparence(), parcours) }
         ecran.onNodeWithText("Entrer dans ma résidence").performClick()
         ecran.onNodeWithTag(Reperes.RESIDENCE).performTextInput("residence.exemple.fr")
         attendre("Les Glycines")
@@ -122,7 +122,15 @@ class ProfilInterfaceTest {
     fun leProfilDitLaResidenceEtLeStatutServis() {
         attendre("Bât. A, T3, 2ème")
         attendre("Copropriétaire résident")
-        attendre("Conseil syndical")
+    }
+
+    /** Le thème de l'appareil se choisit au Profil ; la sortie y est, et se confirme. */
+    @Test
+    fun leThemeSeChoisitEtLaSortieSeConfirme() {
+        amener("profil.theme.sombre").performClick()
+        amener("profil.deconnecter").performClick()
+        ecran.onNodeWithTag("sortie.confirmer").performClick()
+        attendre("Connectez-vous à votre espace")
     }
 
     @Test

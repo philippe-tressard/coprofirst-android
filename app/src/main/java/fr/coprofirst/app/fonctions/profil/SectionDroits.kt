@@ -122,7 +122,7 @@ fun SectionDroits(compte: UserRead, installation: Installation, service: Service
                     }
                 }) { Text(stringResource(R.string.profil_oui_effacer), color = couleurs.danger) }
             },
-            dismissButton = { TextButton(onClick = { effacer = false }) { Text(stringResource(R.string.profil_annuler)) } },
+            dismissButton = { TextButton(onClick = { effacer = false }) { Text(stringResource(R.string.annuler)) } },
         )
     }
 }

@@ -3,7 +3,6 @@
 
 package fr.coprofirst.app.fonctions.profil
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.HorizontalDivider
@@ -38,7 +36,11 @@ import fr.coprofirst.api.modeles.UserRead
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.commun.Chargement
+import fr.coprofirst.app.commun.GestesDeSortie
+import fr.coprofirst.app.commun.PastilleTeinte
+import fr.coprofirst.app.commun.Roles
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.navigation.ContexteDeMenu
 import fr.coprofirst.app.session.Installation
@@ -47,7 +49,7 @@ import fr.coprofirst.app.session.Installation
 @Composable
 fun EcranProfil(contexte: ContexteDeMenu) {
     val service = remember(contexte.session) { ServiceProfilApi(contexte.session) }
-    EcranProfil(service, contexte.session.installation)
+    EcranProfil(service, contexte.session.installation, contexte.sortie, contexte.apparence)
 }
 
 /** Les formulaires du Profil, chacun dans sa feuille. */
@@ -55,45 +57,48 @@ private enum class Feuille { Identite, MotDePasse, DemandeModification }
 
 /**
  * Plus › Profil, comme l'iOS (`ProfilView`), dans l'ordre du site : la résidence et le
- * statut, les informations personnelles, la sécurité, les droits RGPD, la demande de
- * suppression du compte.
+ * statut, les informations personnelles, la sécurité, l'apparence, les droits RGPD, la
+ * demande de suppression du compte — puis tout en bas les gestes de sortie.
  *
- * ⚠️ Divergences déclarées, résorbées par #47, chacune avec sa dépendance :
- * - « Saisie d'une affaire » et « Ce que j'affiche » restent au site, et l'écran le dit :
- *   leurs tables (options, défauts) ne sont pas publiées (coprofirst#2755) ;
- * - « Apparence » (le thème de l'appareil) et les gestes de sortie (« Se déconnecter »,
- *   « Oublier toutes les résidences ») attendent la couche commune (#41) — d'ici là,
- *   « Se déconnecter » reste dans « Plus ».
+ * ⚠️ Divergences déclarées. Si le compte ne se lit pas, l'iOS garde « Apparence » ; ici
+ * elle se range avec les sections du compte, sous la phrase d'erreur — seule la sortie
+ * reste. Et, résorbée par #47 : « Saisie d'une affaire » et « Ce que
+ * j'affiche » restent au site, et l'écran le dit — leurs tables (options, défauts) ne
+ * sont pas publiées (coprofirst#2755).
  */
 @Composable
-fun EcranProfil(service: ServiceProfil, installation: Installation) {
+fun EcranProfil(service: ServiceProfil, installation: Installation, sortie: GestesDeSortie, apparence: Apparence) {
     var feuille by rememberSaveable { mutableStateOf<Feuille?>(null) }
     var phrase by remember { mutableStateOf<Phrase?>(null) }
-    Chargement(
-        charger = { service.moi() },
-        squelette = { SqueletteProfil(installation) },
-    ) { lu, recharger ->
-        var compte by remember(lu) { mutableStateOf(lu) }
-        LazyColumn(
-            contentPadding = PaddingValues(vertical = Mise.marge),
-            verticalArrangement = Arrangement.spacedBy(24.dp),
-        ) {
-            item(key = "residence") { SectionResidence(installation, compte) { feuille = Feuille.DemandeModification } }
-            item(key = "identite") { SectionIdentite(compte) { feuille = Feuille.Identite } }
-            item(key = "securite") { SectionSecurite { feuille = Feuille.MotDePasse } }
-            item(key = "au-site") { Note(stringResource(R.string.profil_au_site), Modifier.padding(horizontal = Mise.marge + 4.dp)) }
-            item(key = "droits") { SectionDroits(compte, installation, service) { compte = it } }
-            item(key = "suppression") { SectionSuppressionCompte(service) }
-        }
-        when (feuille) {
-            Feuille.Identite -> FormulaireIdentite(compte, service, fermer = { feuille = null }) { message ->
-                phrase = message
-                recharger()
+    LazyColumn(
+        contentPadding = PaddingValues(vertical = Mise.marge),
+        verticalArrangement = Arrangement.spacedBy(24.dp),
+    ) {
+        item(key = "compte") {
+            Chargement(charger = { service.moi() }, squelette = { SqueletteProfil(installation) }) { lu, recharger ->
+                var compte by remember(lu) { mutableStateOf(lu) }
+                Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
+                    SectionResidence(installation, compte) { feuille = Feuille.DemandeModification }
+                    SectionIdentite(compte) { feuille = Feuille.Identite }
+                    SectionSecurite { feuille = Feuille.MotDePasse }
+                    SectionApparence(apparence)
+                    Note(stringResource(R.string.profil_au_site), Modifier.padding(horizontal = Mise.marge + 4.dp))
+                    SectionDroits(compte, installation, service) { compte = it }
+                    SectionSuppressionCompte(service)
+                }
+                when (feuille) {
+                    Feuille.Identite -> FormulaireIdentite(compte, service, fermer = { feuille = null }) { message ->
+                        phrase = message
+                        recharger()
+                    }
+                    Feuille.MotDePasse -> FormulaireMotDePasse(service) { feuille = null }
+                    Feuille.DemandeModification -> FeuilleDemandeModification(service) { feuille = null }
+                    null -> Unit
+                }
             }
-            Feuille.MotDePasse -> FormulaireMotDePasse(service) { feuille = null }
-            Feuille.DemandeModification -> FeuilleDemandeModification(service) { feuille = null }
-            null -> Unit
         }
+        // Toujours là, même si le compte ne se lit pas : on doit pouvoir sortir (iOS : hors du `if let compte`).
+        item(key = "sortie") { SectionSortie(installation.nom, sortie) }
     }
     AvisProfil(phrase) { phrase = null }
 }
@@ -124,20 +129,20 @@ private fun SectionResidence(installation: Installation, compte: UserRead, deman
                     Text(logement, style = MaterialTheme.typography.bodyMedium, color = couleurs.textMuted)
                 }
             }
-            val roles = RolesDuProfil.affiches(compte.statut.value, RolesDuProfil.portes(compte) + compte.role.value)
+            val roles = pastillesDuProfil(compte.statut.value)
             if (roles.isNotEmpty()) {
-                val annonce = stringResource(R.string.profil_roles, roles.joinToString(", "))
+                val annonce = stringResource(R.string.profil_roles, roles.joinToString(", ") { it.libelle })
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp),
                     modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = annonce },
                 ) {
-                    roles.forEach { PastilleRole(it) }
+                    roles.forEach { PastilleTeinte(it) }
                 }
             }
         }
         HorizontalDivider(color = couleurs.border)
-        LigneValeur(stringResource(R.string.profil_profil_utilisateur), RolesDuProfil.libelleStatut(compte.statut.value))
+        LigneValeur(stringResource(R.string.profil_profil_utilisateur), Roles.statut(compte.statut.value).libelle)
         LigneValeur(stringResource(R.string.profil_batiment), compte.batimentNom ?: "—")
         LigneValeur(
             stringResource(R.string.profil_statut_compte),
@@ -176,20 +181,4 @@ private fun SectionSecurite(modifier: () -> Unit) {
     SectionProfil(stringResource(R.string.profil_securite)) {
         LigneAction(stringResource(R.string.profil_modifier_mot_de_passe), "profil.motDePasse", onClick = modifier)
     }
-}
-
-/**
- * Un rôle en pastille sobre, comme l'iOS (`PastillesRoles` : `primary` sur `primaryLight`).
- * ⚠️ Aucune classe `badge-*` ne donne cette teinte à `PastilleTeinte` : la pastille des
- * rôles, commune sur l'iOS (`Commun/Compte`), passera à la couche commune (#41).
- */
-@Composable
-private fun PastilleRole(libelle: String) {
-    val couleurs = LocalCouleurs.current
-    Text(
-        libelle,
-        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-        color = couleurs.primary,
-        modifier = Modifier.background(couleurs.primaryLight, CircleShape).padding(horizontal = 10.dp, vertical = 4.dp),
-    )
 }
