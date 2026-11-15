@@ -18,6 +18,20 @@ import androidx.compose.runtime.setValue
  */
 class BarreDuHaut {
     internal var actions by mutableStateOf<(@Composable RowScope.() -> Unit)?>(null)
+    internal var titre by mutableStateOf<String?>(null)
+}
+
+/**
+ * Le titre de la barre du haut, posé par l'écran affiché tant qu'il l'est — le
+ * `.navigationTitle` de l'iOS : le numéro d'une affaire poussée par la porte, plutôt que
+ * « Affaire ». Sans lui, la barre porte le titre de la page ou de la fiche.
+ */
+@Composable
+fun TitreDeBarre(barre: BarreDuHaut, titre: String?) {
+    DisposableEffect(barre, titre) {
+        barre.titre = titre
+        onDispose { if (barre.titre == titre) barre.titre = null }
+    }
 }
 
 /**

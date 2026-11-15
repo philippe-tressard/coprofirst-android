@@ -108,7 +108,7 @@ fun EcranResidence(session: SessionOuverte, sortie: GestesDeSortie, apparence: A
     }
     BackHandler(enabled = retour != null) { retour?.invoke() }
     CadreResidence(
-        titre = titreFiche ?: ouverte?.titre ?: stringResource(R.string.plus),
+        titre = barreDuHaut.titre ?: titreFiche ?: ouverte?.titre ?: stringResource(R.string.plus),
         retour = retour,
         barreDuHaut = barreDuHaut,
         cloche = { if (notifications != null) BoutonCloche(notifications) { clocheOuverte = true } },

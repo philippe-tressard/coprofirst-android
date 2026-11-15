@@ -90,6 +90,7 @@ qu'il sait ouvrir dans `RegistreDesMenus.fiches`, par nature (celles du fil : `a
 | `OngletsDuSite.descriptifs[page]`, `OngletsDuSite.routes[page]` | `Tables<Menu>.descriptifs`, `.routes` | Le descriptif et l'adresse sur le site de chaque onglet (générés). |
 | `EcranResidence` | `OngletsView` | La barre (4 pages + « Plus ») ; en haut, la cloche. |
 | `ActionsDeBarre(contexte) { … }` | `.toolbar` | Les actions de la barre du haut, déclarées par l'écran affiché. |
+| `TitreDeBarre(contexte.barre, titre)` | `.navigationTitle` | Le titre de la barre du haut, posé par l'écran affiché (le numéro d'une affaire poussée) ; retiré quand il le quitte. |
 | `contexte.ouvrir(Destination)`, `RegistreDesMenus.fiches`, `FicheDeMenu` | `parcours.suivre`, `Destination`, `Aiguillage` | La porte : ouvrir une page, la fiche d'un élément ou la cloche depuis un écran. |
 
 ## Session — `fr.coprofirst.app.session`
@@ -241,7 +242,8 @@ Il reste dit en tête de la page des notifications.
 
 Les formats du site (`FormatsDuSite`), fr-FR, à l'heure de Paris ; « — » pour une
 valeur absente. Dates : `date`, `dateCourte`, `dateLongue`, `dateHeure`,
-`dateHeureCourte`, `heure`, `jourCourt`, `jourIso` (envoyé), `moisAnnee`, `moisCourt` —
+`dateHeureCourte`, `heure`, `jourCourt`, `jourIso` (envoyé), `moisAnnee`, `moisCourt`,
+`relatif` (« hier », « il y a 3 jours », comme `.relative(presentation: .named)` de l'iOS) —
 chacune prend un `Instant` ou la chaîne ISO servie (`lire` la lit comme le navigateur).
 Nombres : `nombre`, `montant`, `octets`. Personnes : `nom(affiche, prenom, nom)` — le
 `nom_affiche` servi d'abord, jamais composé dans un écran.

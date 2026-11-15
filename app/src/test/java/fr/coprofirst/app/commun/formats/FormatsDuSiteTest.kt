@@ -79,4 +79,27 @@ class FormatsDuSiteTest {
         assertEquals("Camille Exemple", F.nom("  ", "Camille", "Exemple"))
         assertEquals(F.TIRET, F.nom(null, null, " "))
     }
+
+    /** La date relative de l'iOS (`.relative(presentation: .named)`) : la plus grande unité, nommée quand elle vaut un. */
+    @Test
+    fun relatifCommeLiOS() {
+        val maintenant = Instant.parse("2026-11-17T10:00:00Z")
+        fun il(iso: String) = F.relatif(Instant.parse(iso), maintenant)
+        assertEquals("maintenant", il("2026-11-17T10:00:00Z"))
+        assertEquals("il y a 30 secondes", il("2026-11-17T09:59:30Z"))
+        assertEquals("il y a 1 minute", il("2026-11-17T09:59:00Z"))
+        assertEquals("il y a 9 heures", il("2026-11-17T01:00:00Z"))
+        assertEquals("hier", il("2026-11-16T08:00:00Z"))
+        assertEquals("avant-hier", il("2026-11-15T09:00:00Z"))
+        assertEquals("il y a 3 jours", il("2026-11-14T09:00:00Z"))
+        assertEquals("la semaine dernière", il("2026-11-09T10:00:00Z"))
+        assertEquals("il y a 2 semaines", il("2026-11-02T10:00:00Z"))
+        assertEquals("le mois dernier", il("2026-10-10T10:00:00Z"))
+        assertEquals("il y a 3 mois", il("2026-08-01T10:00:00Z"))
+        assertEquals("l’année dernière", il("2025-11-01T10:00:00Z"))
+        assertEquals("il y a 2 ans", il("2024-11-01T10:00:00Z"))
+        assertEquals("demain", il("2026-11-18T12:00:00Z"))
+        assertEquals("dans 2 heures", il("2026-11-17T12:00:00Z"))
+        assertEquals(F.TIRET, F.relatif(null as Instant?, maintenant))
+    }
 }
