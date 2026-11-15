@@ -70,8 +70,8 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   sans agir au nom de la personne aidée.
 - **Mes affaires** : Liste, Kanban (au conseil et aux copropriétaires) et Archives. La
   liste cherche au serveur (et propose les archives trouvées), se filtre par suivi, par
-  nature et par « ce qui me concerne » ; un appui long copie le numéro, partage le lien
-  ou archive, si le serveur le permet. Au Kanban, « Déplacer vers… » change l'état — clore
+  nature et par « ce qui me concerne » ; un appui long copie le numéro ou partage le
+  lien (archiver attend un correctif du client d'API, #99). Au Kanban, « Déplacer vers… » change l'état — clore
   prévient quand des affaires liées pourraient être fusionnées, ce qui se fait sur le
   site. Les Archives se rangent par année. La fiche montre le fil de l'affaire (la
   demande, la suite, les comptes rendus, la synthèse) et ses messages, en lecture ; la

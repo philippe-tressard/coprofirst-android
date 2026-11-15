@@ -166,6 +166,13 @@ object ReglesAffaires {
     /** En dessous, une frappe n'est pas encore une recherche (`RECHERCHE_MIN` du site). */
     const val RECHERCHE_MINIMALE = 2
 
+    /**
+     * 🔴 Les gestes par `PATCH /tickets/{id}` (archiver, les options) sont retenus : le client
+     * généré envoie tous les champs absents à `null`, et le serveur applique ces `null` (les
+     * affaires liées d'une affaire archivée seraient supprimées). Ils s'ouvrent avec #99.
+     */
+    const val GESTES_PAR_PATCH = false
+
     /** Le temps de finir un mot avant d'interroger le serveur. */
     const val DELAI_DE_FRAPPE_MS = 250L
 
