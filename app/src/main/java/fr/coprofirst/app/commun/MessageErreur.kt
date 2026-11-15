@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.commun
 
+import android.content.res.Resources
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -33,6 +34,9 @@ import fr.coprofirst.app.session.ErreurService
 /** La phrase d'une erreur : celle du serveur s'il en a donné une, sinon celle de l'app. */
 @Composable
 fun ErreurService.phrase(): String = (this as? ErreurService.Refus)?.phraseServie ?: stringResource(phraseRes)
+
+/** La même, hors composition — l'avis d'un geste échoué (`avis.dire(e.phrase(ressources), TonAvis.Erreur)`). */
+fun ErreurService.phrase(ressources: Resources): String = (this as? ErreurService.Refus)?.phraseServie ?: ressources.getString(phraseRes)
 
 /**
  * Une erreur dite en une phrase, avec, au besoin, de quoi réessayer — comme l'iOS

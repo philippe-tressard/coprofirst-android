@@ -330,6 +330,59 @@ celle du serveur seul.
 | `EtiquetteLieu(lieu, style?, couleur?)`, `LieuServi.lieu(perimetreLibelle)` | `EtiquetteLieu`, `LieuServi` | Le lieu servi, avec l'épingle ; `""` (le périmètre par défaut) ou absent : rien. |
 | `enClair(lecture, masculin)`, `enClair(lieu)` | `.enClair` | Les mêmes en une phrase, pour le libellé d'une carte au lecteur d'écran. |
 
+## Fil des réponses — `fr.coprofirst.app.commun.reponses`
+
+Les réponses d'une idée, d'une annonce, les commentaires d'un sondage (`ReponseCommunauteRead`,
+le type du contrat — texte brut, jamais du HTML). Les droits sont SERVIS : l'écran ne les
+recalcule pas.
+
+| API | Pendant iOS | Usage |
+|---|---|---|
+| `FilReponses(reponses, moi, gestes, modifier?, invite?, entete?)` | `FilReponses` | Une `Column` (dans la page qui défile) : l'en-tête (repère `reponses.entete` ; « 💬 Répondre », « 💬 3 réponses » par défaut — `entete: @Composable (Int) -> String` le remplace), chaque réponse (repère `reponse.<id>` ; le conseil syndical sur le fond bleu, ⭐), puis le champ (`reponses.saisie`, `invite` : « Votre réponse… » par défaut) et la flèche (`reponses.envoyer`). « Supprimer » suit `peut_supprimer` servi et se **confirme** dans le fil (« Supprimer définitivement », `reponses.confirmerSuppression`) ; « Signaler » ne s'offre que sur les réponses des autres (`moi` : l'id de GET /auth/me ; `null` : partout). |
+| `GestesReponses(publier, retirer, signaler)` | `GestesReponses` | Ce que le fil fait au serveur, dit par l'écran : `publier: suspend (String) -> Boolean` (`false` : le texte reste dans le champ), `retirer: suspend (ReponseCommunauteRead) -> Unit` (après la confirmation), `signaler: (ReponseCommunauteRead) -> Unit` (ouvre la boîte de l'écran, `SignalementAuConseil`). |
+| `Reponses.peutSupprimer(r)`, `.peutSignaler(r, moi)`, `.estCs(r)`, `.auteur(r)`, `.aPublier(texte)` | `ReponseCommunaute` | Les règles, testées sur la JVM. |
+| `ReperesReponses` | — | Les repères de l'iOS ; plus `reponse.<id>.actions` (le « ⋮ »), `reponse.<id>.supprimer`, `reponse.<id>.signaler`. |
+| `enteteReponses(n)` | `FilReponses.enteteReponses` | L'en-tête par défaut. |
+
+⚠️ Divergence déclarée : les gestes d'une réponse sont sous son « ⋮ » ; l'iOS les offre au
+balayage et au menu contextuel (Compose n'a pas d'actions de balayage dans une liste).
+
+## Signaler au conseil syndical — `fr.coprofirst.app.commun`
+
+| API | Pendant iOS | Usage |
+|---|---|---|
+| `SignalementAuConseil(cible, envoyer, fermer)` | `.signalementAuConseil` | La boîte des mots du site (`signaler()`) : paraît tant que `cible: C?` n'est pas `null` ; motif **obligatoire** (`signalement.motif`) ; « Signaler » (`signalement.envoyer`) rend `envoyer(cible, motif sans blancs)` et ferme ; « Annuler » ferme. L'écran envoie et dit « Signalement transmis au conseil syndical » (`R.string.signalement_transmis`). |
+| `CibleSignalement(type, id)`, `CibleSignalement.commentaire(id)` | `CibleSignalement` | `cible_type`, `cible_id` de POST /signalements — le type que le site envoie. |
+| `ServiceSignalements`, `ServiceSignalementsApi(session)` | `ServiceSignalements` | `suspend signalerAuConseil(cible, motif)` — POST /signalements par le client généré. Le service d'un écran qui signale en hérite (`ServiceSignalements by ServiceSignalementsApi(session)`). |
+
+```kotlin
+var signale by remember { mutableStateOf<ReponseCommunauteRead?>(null) }
+FilReponses(idee.reponses, moi, GestesReponses(publier = { … }, retirer = { … }, signaler = { signale = it }))
+SignalementAuConseil(signale, envoyer = { r, motif ->
+    portee.launch { service.signalerAuConseil(CibleSignalement.commentaire(r.id), motif); avis.dire(…) }
+}, fermer = { signale = null })
+```
+
+## Fiche d'un sondage — `fr.coprofirst.app.commun.detail.sondage`
+
+| API | Pendant iOS | Usage |
+|---|---|---|
+| `FicheSondage(id, session, avis, modifier?, service?)` | `SondageView` | La fiche, qui défile seule : l'en-tête (état, clôture, question `sondage.question`, description, total `sondage.total`), puis le vote s'il est ouvert (`sondage.option.<id>`, `sondage.precision`, `sondage.commentaire`, `sondage.charte`, `sondage.voter`, ce qui manque `sondage.manque`) ou les résultats (`sondage.resultat.<id>` ; masqués : `sondage.resultatsMasques`), puis les commentaires (`FilReponses`, signalement compris). Chaque geste dit sa phrase par `avis` (celle du serveur s'il refuse) et la fiche se relit. L'écran pose `AvisEphemere(avis)` autour. `service` : `ServiceSondageApi(session)` par défaut. |
+| `FeuilleSondage(id, session, fermer, service?)` | `NavigationLink → SondageView` | La fiche en feuille pleine hauteur, titre « Sondage », « OK » (`sondage.ok`), avec son avis — ce qu'ouvre le fil. |
+| `ServiceSondage` (`: ServiceSignalements`), `ServiceSondageApi(session)` | `ServiceSondage` | `sondage(id)` (GET /sondages/{id} et /auth/me ensemble ; un compte illisible n'empêche pas la fiche), `voter(vote, sondage)`, `commenter(texte, sondage)`, `supprimerCommentaire(id, sondage)`. |
+| `DetailSondage`, `OptionSondage`, `VoteSondage`, `CalculsSondage.pourcentage` | `DetailSondage`, `VoteSondage`… | Le modèle : `peutVoter`, `totalVotes` ; `VoteSondage.choisir(id)` (vide la précision), `manque(champLibre)` (`@StringRes`, l'ordre du site), `corps()` (les textes vides ne partent pas). |
+| `SondageSimule`, `FixturesSondage` (source `debug`) | `ServiceSimule`, `FixturesSondage` | Le serveur simulé et les fiches de l'iOS, pour les tests et les aperçus. |
+
+⚠️ Divergence déclarée : depuis le fil, la fiche s'ouvre en feuille (`FeuilleSondage`) ; l'iOS
+la pousse — la navigation commune n'a pas de pile par page (#11).
+
+## Feuille pleine — `fr.coprofirst.app.commun`
+
+| API | Pendant iOS | Usage |
+|---|---|---|
+| `FeuillePleine(titre, repereOk, fermer, actions?) { contenu }` | feuille `.large` | Une feuille pleine hauteur qui porte un écran : titre, `actions` (sa barre), « OK » (`repereOk`) ; le contenu défile seul. Les notifications de la cloche et la fiche d'un sondage. |
+| `ErreurService.phrase(ressources)` | `.phrase` | La phrase d'une erreur hors composition (l'avis d'un geste échoué). |
+
 ## Charte — `fr.coprofirst.app.charte`, `ThemeCoproFirst`
 
 | API | Rôle |
@@ -350,5 +403,5 @@ pour l'heure, à monter ici dès qu'un deuxième les emploie : `ChampSaisie` (Es
 `FlowEtiquettes` (Communauté) ; et la pastille « où suis-je » (`PastilleOuSuisJe` : logo et
 nom de la résidence dans la barre du haut, changer de résidence). Demandés par le fil
 (#11) : un geste de `ContexteDeMenu` qui ouvre une autre page de la barre — et un élément
-précis (une affaire, un sondage) — depuis un écran ; le jour et le mois en toutes lettres
+précis (une affaire ; le sondage s'ouvre en feuille, `FeuilleSondage`) — depuis un écran ; le jour et le mois en toutes lettres
 dans `FormatsDuSite` (l'en-tête d'un jour du fil). Le suivi : #15, #11.

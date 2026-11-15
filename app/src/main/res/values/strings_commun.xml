@@ -16,7 +16,7 @@ ceux de l'iOS (`OngletSurLeSite`, `TextesFeuille`, `ChampRecherche`, `feuilleNot
     <string name="feuille_enregistrer">Enregistrer</string>
     <string name="feuille_en_cours">Enregistrement…</string>
 
-    <string name="cloche_ok">OK</string>
+    <string name="feuille_ok">OK</string>
 
     <!-- « Qui la lit » et le lieu d'un contenu (`Lecture`, `PastilleLecture`, `EtiquetteLieu` de l'iOS). -->
     <string name="lecture_qui_la_lit">Qui la lit</string>
@@ -24,4 +24,27 @@ ceux de l'iOS (`OngletSurLeSite`, `TextesFeuille`, `ChampRecherche`, `feuilleNot
     <string name="lecture_en_clair">Qui la lit : %1$s. %2$s</string>
     <string name="lecture_en_clair_masculin">Qui le lit : %1$s. %2$s</string>
     <string name="lieu_en_clair">Lieu : %1$s</string>
+
+    <!-- Le fil des réponses (`FilReponses` de l'iOS, `Reponses.svelte` du site). -->
+    <string name="reponses_repondre_entete">💬 Répondre</string>
+    <plurals name="reponses_nombre">
+        <item quantity="one">💬 %1$d réponse</item>
+        <item quantity="many">💬 %1$d réponses</item>
+        <item quantity="other">💬 %1$d réponses</item>
+    </plurals>
+    <string name="reponses_invite">Votre réponse…</string>
+    <string name="reponses_repondre">Répondre</string>
+    <string name="reponses_auteur_inconnu">Un résident</string>
+    <string name="reponses_actions">Gestes sur la réponse</string>
+    <string name="reponses_signaler">Signaler cette réponse</string>
+    <string name="reponses_supprimer">Supprimer</string>
+    <string name="reponses_confirmer_titre">Supprimer définitivement</string>
+    <string name="reponses_confirmer_message">Cette réponse\n\nCette action est irréversible.</string>
+
+    <!-- « Signaler au conseil syndical » (`SignalementAuConseil` de l'iOS, `signaler()` du site). -->
+    <string name="signalement_titre">Signaler au conseil syndical</string>
+    <string name="signalement_message">Le motif sera transmis au conseil syndical, avec le contenu concerné.</string>
+    <string name="signalement_motif">Pourquoi signalez-vous ce contenu ?</string>
+    <string name="signalement_signaler">Signaler</string>
+    <string name="signalement_transmis">Signalement transmis au conseil syndical</string>
 </resources>
