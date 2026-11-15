@@ -5,7 +5,6 @@ package fr.coprofirst.app.entree
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -32,6 +31,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import fr.coprofirst.app.R
 import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.ThemeCoproFirst
+import fr.coprofirst.app.charte.Mouvement
 import fr.coprofirst.app.charte.Palettes
 import fr.coprofirst.app.navigation.EcranResidence
 
@@ -72,7 +72,6 @@ interface ActionsEntree {
  * parcours, 220 ms, courbe ease-out marquée. Il est rare (quelques fois par session) :
  * il dit d'où l'on vient. L'échelle d'animation du système le réduit ou le supprime.
  */
-private val SORTIE_RAPIDE = CubicBezierEasing(0.23f, 1f, 0.32f, 1f)
 private const val DUREE_MS = 220
 
 @Composable
@@ -91,8 +90,8 @@ fun NavigationEntree(apparence: Apparence, parcours: ParcoursEntree = viewModel(
                 targetState = etat.ecran,
                 transitionSpec = {
                     val sens = if (targetState >= initialState) 1 else -1
-                    (fadeIn(tween(DUREE_MS, easing = SORTIE_RAPIDE)) +
-                        slideInHorizontally(tween(DUREE_MS, easing = SORTIE_RAPIDE)) { sens * it / 12 })
+                    (fadeIn(tween(DUREE_MS, easing = Mouvement.sortie)) +
+                        slideInHorizontally(tween(DUREE_MS, easing = Mouvement.sortie)) { sens * it / 12 })
                         .togetherWith(fadeOut(tween(DUREE_MS / 2)))
                 },
                 label = "entree",

@@ -4,7 +4,7 @@ SPDX-FileCopyrightText: 2026 Philippe TRESSARD
 SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 
 Les textes de la couche commune (pages à onglets, composants, cloche), écrits une fois —
-ceux de l'iOS (`OngletSurLeSite`, `TextesFeuille`, `ChampRecherche`, `feuilleNotifications`).
+ceux de l'iOS (`OngletSurLeSite`, `TextesFeuille`, `ChampRecherche`, `feuilleNotifications`, `ChoixPerimetres`, `EtiquetteLieu`).
 -->
 <resources xmlns:tools="http://schemas.android.com/tools" tools:locale="fr">
     <string name="onglets_sur_le_site">Sur le site</string>
@@ -24,4 +24,6 @@ ceux de l'iOS (`OngletSurLeSite`, `TextesFeuille`, `ChampRecherche`, `feuilleNot
     <string name="lecture_en_clair">Qui la lit : %1$s. %2$s</string>
     <string name="lecture_en_clair_masculin">Qui le lit : %1$s. %2$s</string>
     <string name="lieu_en_clair">Lieu : %1$s</string>
+    <string name="perimetres_preciser">Préciser dans %1$s</string>
+    <string name="perimetres_facultatif">" — facultatif"</string>
 </resources>
