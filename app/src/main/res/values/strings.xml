@@ -43,6 +43,12 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 
     <string name="plus">Plus</string>
     <string name="se_deconnecter">Se déconnecter</string>
+    <string name="annuler">Annuler</string>
+    <string name="sortie_deconnecter_titre">Se déconnecter de %1$s ?</string>
+    <string name="sortie_deconnecter_message">Vous reviendrez à l\'écran de connexion.</string>
+    <string name="sortie_oublier_titre">Oublier toutes les résidences ?</string>
+    <string name="sortie_oublier_message">Chaque session sera fermée et l\'app reviendra à son accueil, comme neuve.</string>
+    <string name="sortie_oublier_bouton">Oublier toutes les résidences</string>
     <string name="bientot_titre">Bientôt</string>
     <string name="bientot_explication">« %1$s » arrive dans une prochaine version de l\'app.</string>
 

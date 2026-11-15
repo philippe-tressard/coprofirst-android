@@ -3,6 +3,8 @@
 
 package fr.coprofirst.app.entree
 
+import fr.coprofirst.app.commun.Apparence
+import fr.coprofirst.app.commun.StockageApparence
 import fr.coprofirst.app.session.ClientHttp
 import fr.coprofirst.app.session.Connexion
 import fr.coprofirst.app.session.Decouverte
@@ -47,6 +49,13 @@ class ServeurDeTest : AutoCloseable {
             InstallationsConnues(stockage),
         ) { preuve }
     }
+
+    /** Le thème de l'appareil, gardé en mémoire le temps du test. */
+    fun apparence() = Apparence(object : StockageApparence {
+        private var valeur: String? = null
+        override fun lire() = valeur
+        override fun ecrire(valeur: String) { this.valeur = valeur }
+    })
 
     fun residence(nom: String) = repondre(200, """{"site_nom": "$nom"}""")
 

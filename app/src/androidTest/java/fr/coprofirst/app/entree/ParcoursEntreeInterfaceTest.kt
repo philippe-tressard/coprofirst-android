@@ -30,7 +30,7 @@ class ParcoursEntreeInterfaceTest {
     @Before
     fun ouvrir() {
         val parcours = serveur.parcours()
-        ecran.setContent { NavigationEntree(parcours) }
+        ecran.setContent { NavigationEntree(serveur.apparence(), parcours) }
         ecran.onNodeWithText("Entrer dans ma résidence").performClick()
     }
 

@@ -50,11 +50,28 @@ class Tables(unittest.TestCase):
         with self.assertRaises(g.TableInattendue):
             g.kotlin({"pages": t([]), "titreFil": t(""), **DROITS}, "t")
 
+    def test_tables_communes(self):
+        tables = {
+            "attributsStatut": t({"locataire": {"libelle": "Locataire", "abrege": "Loc.", "badge": "badge-purple"}}),
+            "attributsRole": t({"admin": {"libelle": "Admin", "badge": "badge-orange"}}),
+            "libellesHerites": t({"bailleur": "Copropriétaire bailleur"}),
+            "optionsTheme": t([{"val": "auto", "label": "Automatique", "desc": "Suit l'appareil"}, {"val": "sombre", "label": "Sombre"}]),
+            "themeParDefaut": t("auto"), "cookieTheme": t("theme"),
+        }
+        texte = g.kotlin_commun(tables, "t")
+        self.assertIn('"locataire" to AttributRole("Locataire", "badge-purple", "Loc."),', texte)
+        self.assertIn('"admin" to AttributRole("Admin", "badge-orange", null),', texte)
+        self.assertIn('OptionTheme("sombre", "Sombre", ""),', texte)
+        self.assertIn('const val THEME_PAR_DEFAUT: String = "auto"', texte)
+        with self.assertRaises(g.TableInattendue):
+            g.kotlin_commun({**tables, "themeParDefaut": t("inconnu")}, "t")
+
     def test_echappement(self):
         self.assertEqual(g.chaine('a"b$c'), '"a\\"b\\$c"')
 
     def test_le_plancher_se_genere(self):
         tables = json.loads((RACINE / "contrat" / "tables-clients.json").read_text(encoding="utf-8"))["tables"]
+        g.kotlin_commun(tables, "tables-clients.json")
         texte = g.kotlin(tables, "tables-clients.json")
         for page in ("tableau-de-bord", "residence", "mes-demandes", "espace-cs", "admin", "delegations"):
             self.assertIn(f'PageDeNavigation("{page}"', texte)

@@ -198,4 +198,19 @@ class ParcoursEntreeTest {
         parcours.saisirMotDePasse("autre")
         assertNull(parcours.etat.value.erreurConnexion)
     }
+
+    @Test
+    fun oublierToutRevientALAccueilCommeNeuve() = test {
+        connues.retenir(Installation("https://connue.exemple.fr", "Connue"))
+        pret("connue.exemple.fr")
+        ok()
+        parcours.seConnecter()
+        advanceUntilIdle()
+        assertEquals(EcranEntree.Espace, parcours.etat.value.ecran)
+        ok() // POST /auth/logout
+        parcours.oublierTout()
+        advanceUntilIdle()
+        assertEquals(EtatEntree(), parcours.etat.value)
+        assertEquals(emptyList<Installation>(), connues.liste)
+    }
 }

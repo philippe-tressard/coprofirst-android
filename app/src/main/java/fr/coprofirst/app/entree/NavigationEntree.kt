@@ -28,7 +28,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.foundation.isSystemInDarkTheme
 import fr.coprofirst.app.R
+import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.charte.Palettes
 import fr.coprofirst.app.navigation.EcranResidence
@@ -74,14 +76,16 @@ private val SORTIE_RAPIDE = CubicBezierEasing(0.23f, 1f, 0.32f, 1f)
 private const val DUREE_MS = 220
 
 @Composable
-fun NavigationEntree(parcours: ParcoursEntree = viewModel(factory = ParcoursEntree.Fabrique)) {
+fun NavigationEntree(apparence: Apparence, parcours: ParcoursEntree = viewModel(factory = ParcoursEntree.Fabrique)) {
     val etat by parcours.etat.collectAsStateWithLifecycle()
     // L'espace d'une résidence ouverte ne se quitte que par « Se déconnecter » ; le retour
     // système y ferme l'app, comme sur un écran racine.
     BackHandler(enabled = etat.ecran == EcranEntree.Connexion) { parcours.retour() }
     // La palette de la résidence s'applique dès qu'elle est reconnue, comme sur iOS.
     val palette = Palettes.pour((etat.ouverte ?: etat.reconnue)?.codePalette)
-    ThemeCoproFirst(palette) {
+    // Le thème de l'appareil (Profil › Apparence), appliqué à la racine comme sur iOS.
+    val choix by apparence.choix.collectAsStateWithLifecycle()
+    ThemeCoproFirst(palette, sombre = apparence.sombre(choix, isSystemInDarkTheme())) {
         Surface(modifier = Modifier.fillMaxSize()) {
             AnimatedContent(
                 targetState = etat.ecran,
@@ -96,7 +100,7 @@ fun NavigationEntree(parcours: ParcoursEntree = viewModel(factory = ParcoursEntr
                 when (ecran) {
                     EcranEntree.Accueil -> EcranAccueil(parcours)
                     EcranEntree.Connexion -> EcranConnexion(etat, parcours)
-                    EcranEntree.Espace -> parcours.sessionOuverte()?.let { EcranResidence(it, parcours::deconnecter) }
+                    EcranEntree.Espace -> parcours.sessionOuverte()?.let { EcranResidence(it, parcours, apparence) }
                 }
             }
         }
