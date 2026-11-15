@@ -24,7 +24,7 @@ class ServiceNotificationsApiTest {
     private val serveur = MockWebServer().apply { start() }
     private val base = { _: AdresseInstallation -> serveur.url("/api").toString() }
     private val session = SessionOuverte(
-        Installation("https://residence.exemple.fr", "Les Glycines"),
+        Installation("https://residence.exemple.test", "Les Glycines"),
         SessionsParHote(OkHttpClient()),
         Dispatchers.Unconfined,
         base,
