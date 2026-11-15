@@ -74,8 +74,10 @@ internal fun NouvelleAnnonceHall(service: ServiceAnnoncesHall, perimetres: Servi
         } catch (_: ErreurService) {
             ArbreDesPerimetres(emptyList())
         }
-        arbre = lu
+        // Le défaut AVANT l'arbre : les pastilles ne paraissent qu'avec l'arbre, un toucher ne
+        // peut donc plus précéder le défaut et être écrasé par lui.
         if (choix.codes.isEmpty()) choix = choix.choisirDefaut(lu)
+        arbre = lu
     }
     val saisie = SaisieAnnonceHall(titre, message, format, envoyerCS, envoyerSyndic, envoyerAuteur, choix.codes)
 

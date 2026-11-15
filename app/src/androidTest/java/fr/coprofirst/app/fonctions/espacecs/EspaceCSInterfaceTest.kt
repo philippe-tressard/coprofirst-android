@@ -5,6 +5,7 @@ package fr.coprofirst.app.fonctions.espacecs
 
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isSelected
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -185,15 +186,14 @@ class EspaceCSInterfaceTest {
         ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_TITRE).performTextInput("Ascenseur à l'arrêt")
         ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_MESSAGE).performTextInput("Lundi matin.")
         // Le périmètre : l'arbre servi, le défaut d'abord ; le bâtiment A retenu.
-        atteindre("${ReperesEspaceCS.NOUVELLE_PERIMETRE}.bat_a")
+        val batA = "${ReperesEspaceCS.NOUVELLE_PERIMETRE}.bat_a"
+        atteindre(batA)
+        ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(batA) and isSelected()).fetchSemanticsNodes().isNotEmpty() }
         atteindre(ReperesEspaceCS.nouvelleFormat("a5"))
         atteindre(ReperesEspaceCS.NOUVELLE_CREER)
         attendre("Annonce A5 créée et envoyée à 1 membre du CS")
-        assertTrue(
-            residence.recues.any {
-                it.startsWith("POST /api/annonces-hall ") && it.contains("\"a5\"") && it.contains("\"perimetre_cible\":[\"bat_a\"]")
-            },
-        )
+        val creation = synchronized(residence) { residence.recues.toList() }.single { it.startsWith("POST /api/annonces-hall ") }
+        assertTrue(creation, creation.contains("\"a5\"") && creation.contains("\"perimetre_cible\":[\"bat_a\"]"))
 
         // Les archives : en cours puis archivées ; le menu « … » range une affiche.
         attendreRepere(ReperesEspaceCS.annonce(2))
