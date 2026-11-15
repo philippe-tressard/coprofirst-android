@@ -132,7 +132,7 @@ private fun Onglet(
         onglet.id == OngletsSurLeSite.ID ->
             OngletSurLeSite(onglets.ailleurs, page.descriptifs, page.routes, contexte.session.installation.url)
         ecran != null ->
-            ecran(ContexteOnglet(contexte.page, onglet, contexte.session, contexte.droits, avis, actualisation, contexte.barre))
+            ecran(ContexteOnglet(contexte.page, onglet, contexte.session, contexte.droits, avis, actualisation, contexte.barre, contexte.ouvrir))
         else -> OngletBientot(onglet)
     }
 }
