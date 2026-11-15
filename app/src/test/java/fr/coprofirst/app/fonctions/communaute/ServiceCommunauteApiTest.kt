@@ -137,12 +137,16 @@ class ServiceCommunauteApiTest {
         assertEquals("POST /api/avis", depot)
         assertEquals(2, corps(corpsDepot)["note"]!!.jsonPrimitive.int)
         assertEquals("Lent", corps(corpsDepot)["remarque"]!!.jsonPrimitive.content)
+        assertFalse("pas d'accord de diffusion sous le seuil", "consentement_publication" in corps(corpsDepot))
 
         repondre(200, avis)
         service.corrigerAvis(6, SaisieAvis(note = 5, titre = "T", description = "D", consentement = true))
         val (correction, corpsCorrection) = requete()
         assertEquals("PATCH /api/avis/6", correction)
         assertTrue(corps(corpsCorrection)["consentement_publication"]!!.jsonPrimitive.boolean)
+        // Seuls les champs de la saisie partent : la remarque, que la note 5 n'exige pas, est
+        // OMISE — jamais envoyée à null, que le serveur appliquerait (#99), comme l'iOS.
+        assertEquals(setOf("note", "titre", "description", "consentement_publication"), corps(corpsCorrection).keys)
 
         repondre(204, "")
         service.archiverAvis(6, archive = true)

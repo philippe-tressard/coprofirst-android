@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+-->
+<!-- L'Annuaire (#17) : les libellés de l'iOS (TextesAnnuaire), mot pour mot. -->
+<resources>
+    <string name="annuaire_titre">Annuaire</string>
+    <string name="annuaire_descriptif">Coordonnées des membres du Conseil Syndical et du Syndic. En cas d\'urgence, contactez le syndic directement par téléphone. Sinon, faites une demande depuis la plateforme.</string>
+    <string name="annuaire_conseil">Conseil Syndical</string>
+    <string name="annuaire_syndic">Syndic</string>
+    <string name="annuaire_whatsapp">Groupe WhatsApp copropriété</string>
+    <string name="annuaire_espace_client">Espace client</string>
+    <string name="annuaire_aucun_membre">Aucun membre CS enregistré.</string>
+    <string name="annuaire_aucun_contact">Aucun contact syndic enregistré.</string>
+    <string name="annuaire_sans_batiment">Sans bâtiment</string>
+    <string name="annuaire_batiment">Bâtiment %1$s</string>
+    <string name="annuaire_bat">Bât. %1$s</string>
+    <string name="annuaire_president">Président du Conseil Syndical</string>
+    <string name="annuaire_principal">Gestionnaire principal</string>
+    <string name="annuaire_gestionnaire">Gestionnaire %1$s</string>
+    <string name="annuaire_vote_en_ag">Voté en AG %1$s</string>
+    <string name="annuaire_vote_en_ag_le">Voté en AG %1$s - %2$s</string>
+    <string name="annuaire_lien_externe">Ouvre un lien hors de l\'app</string>
+    <string name="annuaire_ecrire">Écrit un courriel</string>
+    <string name="annuaire_appeler">Appelle ce numéro</string>
+</resources>

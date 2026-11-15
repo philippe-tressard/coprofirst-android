@@ -65,8 +65,8 @@ private sealed interface FeuilleAvis {
  * le permet (`restaurable`). « + » seulement à qui n'a pas d'avis (`mon_avis_id`, servi).
  * Répondre et retenir pour coprofirst.fr se fait sur le site.
  *
- * ⚠️ Divergences déclarées : les gestes d'un avis sont dans son menu « ⋮ » — l'iOS les offre
- * au balayage et à l'appui long ; « Modifier » son avis attend #99 (`CORRECTION_SURE`).
+ * ⚠️ Divergence déclarée : les gestes d'un avis sont dans son menu « ⋮ » — l'iOS les offre
+ * au balayage et à l'appui long.
  */
 @Composable
 fun OngletAvis(contexte: ContexteOnglet, service: ServiceCommunaute) {
@@ -121,17 +121,10 @@ private fun Avis(liste: AvisListe, contexte: ContexteOnglet, service: ServiceCom
     }
 }
 
-/**
- * Corriger son avis (PATCH /avis/{id}) attend #99 : le client généré enverrait à `null` les
- * champs que la note n'exige pas (`remarque`, `consentement_publication`), et le serveur
- * les appliquerait — l'iOS les omet. Se rouvre quand le client n'envoie plus les `null`.
- */
-private val CORRECTION_SURE = false
-
 /** Les gestes qu'un avis offre à CE lecteur — archiver, jamais supprimer. */
 private class GestesAvis(avis: AvisRead, gestionnaire: Boolean, val corriger: () -> Unit, val archiver: (Boolean) -> Unit) {
     private val archive = avis.archivee == true
-    val peutCorriger = CORRECTION_SURE && avis.estAuteur == true && !archive
+    val peutCorriger = avis.estAuteur == true && !archive
     val peutArchiver = !archive && (avis.estAuteur == true || gestionnaire)
     val peutRestaurer = archive && avis.restaurable == true
     val aucun get() = !peutCorriger && !peutArchiver && !peutRestaurer

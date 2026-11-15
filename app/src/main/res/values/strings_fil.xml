@@ -14,6 +14,8 @@ Les textes du fil d'activité, écrits une fois — ceux de l'iOS (`FilView`, `C
     <string name="fil_entete">%1$s · %2$s</string>
     <string name="fil_urgent">Urgent</string>
     <string name="fil_voir_resume">Voir le résumé</string>
+    <string name="fil_voir_sondage">Voir le sondage</string>
+    <string name="fil_voir_affaire">Voir l’affaire</string>
     <string name="fil_voir_sur_le_site">Voir sur le site</string>
     <string name="fil_prevu_le">prévu le %1$s</string>
     <string name="fil_prevu_du_au">prévu du %1$s au %2$s</string>
