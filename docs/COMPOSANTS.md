@@ -73,8 +73,9 @@ pose pas. Une page sans ligne au registre affiche « Bientôt ».
 | `RegistreDesMenus` | `RegistreDesMenus` | id de page → écran ; « Bientôt » sinon. |
 | `ContexteDeMenu` | `ContexteDeMenu` | Ce qu'un écran reçoit. |
 | `DroitsOnglet`, `PagesOuvertes`, `OngletsDuSite.ouverts(page, droits)` | idem | Qui voit quelle page, quel onglet (tables générées). |
-| `PagesParDefaut`, `OrdrePages`, `Installation.pages` | idem | La barre : ordre servi (`pages_order`), libellés (`page_config_*`). |
-| `EcranResidence` | `OngletsView` | La barre (4 pages + « Plus »). |
+| `PagesParDefaut`, `OrdrePages`, `Installation.pages` | idem | La barre : ordre servi (`pages_order`), libellés (`page_config_*`). `PagesParDefaut.horsMenu` : les pages sans entrée de menu (profil, notifications). |
+| `OngletsDuSite.descriptifs[page]`, `OngletsDuSite.routes[page]` | `Tables<Menu>.descriptifs`, `.routes` | Le descriptif et l'adresse sur le site de chaque onglet (générés). |
+| `EcranResidence` | `OngletsView` | La barre (4 pages + « Plus ») ; en haut, la cloche. |
 | `ActionsDeBarre(contexte) { … }` | `.toolbar` | Les actions de la barre du haut, déclarées par l'écran affiché. |
 
 ## Session — `fr.coprofirst.app.session`
@@ -113,6 +114,13 @@ class ServiceProfilApi(private val session: SessionOuverte) : ServiceProfil {
 | `Roles.affiches(statut, roles)`, `Roles.demandables` | `ProfilResidence.rolesAffiches` | Les pastilles d'un compte (statut, puis rôles mis en avant) ; les statuts qu'un compte peut demander. |
 | `ConfirmationDeSortie(geste, sortie, fermer)`, `GesteDeSortie` | `confirmationDeSortie` | La confirmation de « Se déconnecter » / « Oublier toutes les résidences » (repère `sortie.confirmer`). |
 | `Apparence` | Profil › Apparence | Le thème de l'appareil : `choix` (`auto`, `clair`, `sombre`), `options` (`OPTIONS_THEME`), `choisir(v)` — appliqué à la racine. |
+| `Pastille(libelle, retenue, compte?, role?) { … }` | `Pastille` | Une pastille de filtre (ou d'onglet, `role = Role.Tab`) : retenue, fond plein (`primaryPlein`) ; sinon surface et filet. Le `compte` ne paraît que sur la retenue. Dite « sélectionnée » au lecteur d'écran. |
+| `ChampRecherche(texte, changer, indication, repere)` | `ChampRecherche` | Le champ de recherche d'une liste, DANS la page (pas dans la barre) : loupe, indication, croix « Effacer la recherche ». Le filtre : `Recherche.contientTousLesMots`. |
+| `BoutonsFeuille(envoi, repere, annuler, libelle?, actif?) { envoyer }` | `BoutonsFeuille` | Le pied d'une feuille de saisie : « Enregistrer » (ou `libelle`) en `BoutonPlein`, « Enregistrement… » pendant l'envoi, puis « Annuler ». |
+| `FlowCapsules { … }` | `FlowCapsules` | Des `PastilleTeinte(…, compacte = true)` côte à côte, qui passent à la ligne au bord. |
+
+⚠️ Divergence déclarée : `BoutonsFeuille` est au pied de la feuille, sous le pouce — l'iOS
+les pose dans la barre de la feuille ; une feuille d'Android n'en a pas.
 
 Exemple :
 
@@ -127,6 +135,93 @@ fun EcranProfil(service: ServiceProfil) {
     }
 }
 ```
+
+## Avis éphémère — `fr.coprofirst.app.commun`
+
+La phrase brève qui suit un geste (le « toast » du site) : l'écran la DIT, seul
+`AvisEphemere` la montre. Elle monte du bas (fondu seul quand les animations de l'appareil
+sont coupées), reste `AvisDuSite.DUREE_MS` — **générée** depuis `dureeToastMs` de
+`tables-clients.json` (`DUREE_TOAST_MS` du site, 4 s), comme l'iOS (`AvisDuSite`) —, puis
+se retire. Elle est annoncée au lecteur d'écran (région vivante) et suivie d'un retour
+haptique selon son ton. Une phrase dite remplace celle qui est à l'écran ; le retrait d'une
+phrase n'efface jamais celle qui l'a remplacée.
+
+| API | Pendant iOS | Usage |
+|---|---|---|
+| `AvisDuGeste()` | `AvisDuGeste` | L'avis d'un écran : `dire(texte, ton = TonAvis.Succes)`, `dire(PhraseAvis)` ; `texte`, `phrase` (lus par l'avis seul). |
+| `avis.direApresFermeture(texte, ton)`, `avis.feuilleFermee()` | idem | Dite par une FEUILLE : la phrase attend que la feuille soit fermée (`feuilleFermee()` dans son `fermer`) — sinon elle passerait derrière. |
+| `TonAvis` (`Succes`, `Avertissement`, `Erreur`, `Info`), `TonAvis.depuis(v)` | `TonAvis` | Le ton du site (`success`, `warning`, `error`, `info`) : le pictogramme et le retour haptique ; un ton servi inconnu se dit en `Info`. |
+| `AvisEphemere(avis) { contenu }` | `.avisEphemere(avis)` | Le contenu, et l'avis en bas, par-dessus (repère `avis`). Le cadre à onglets le pose déjà : un onglet dit `contexte.avis.dire(…)`. |
+
+⚠️ Divergence déclarée : la bulle garde les couleurs de l'avis du site quel que soit le ton
+(`text` à 92 %, `textInverse`), comme l'iOS ; `teinteDuTon` de `tables-clients.json` est
+celle des verdicts du journal (`journal-verdicts.ts`), pas celle de l'avis.
+
+```kotlin
+val avis = remember { AvisDuGeste() }
+val ressources = LocalResources.current
+AvisEphemere(avis, Modifier.fillMaxSize()) {
+    // … un geste réussi :
+    avis.dire(ressources.getString(R.string.monlot_acces_enregistre))
+}
+```
+
+## Pages à onglets — `fr.coprofirst.app.commun.onglets`
+
+Une page du site à onglets (Espace CS, Paramétrage…) déclare sa TABLE d'onglets ; le cadre
+fait le reste, comme `CadreAOnglets` de l'iOS : barre d'onglets dans l'ordre du site,
+filtrée par les droits du compte (`OngletsDuSite.ouverts(page, droits)`), descriptif de
+l'onglet (généré), défilement, « tirer pour actualiser », avis éphémère, « page réservée »
+si le compte n'en ouvre aucun. Le titre est celui de la barre du haut : le cadre n'en pose
+pas. L'onglet rend son CONTENU — une `Column`, jamais une `LazyColumn` (le cadre défile).
+
+| API | Pendant iOS | Usage |
+|---|---|---|
+| `CadreAOnglets(contexte, page)` | `CadreAOnglets` | Le cadre ; repères `onglet.<id>`, `onglets.reservee`. |
+| `PageAOnglets(id, ecrans, reserve, renvoieAuSite = false)` | `PageAOnglets` | `ecrans` : id d'onglet du site → `@Composable (ContexteOnglet) -> Unit`, une ligne par onglet ; `reserve` : la phrase (`@StringRes`) de la page réservée. `renvoieAuSite` : la barre n'offre que les onglets inscrits, puis « Sur le site ». `descriptifs`, `routes` : ceux du site par défaut. |
+| `ContexteOnglet` | `ContexteOnglet` | Ce qu'un onglet reçoit : `page`, `onglet`, `session`, `droits`, `avis` (`avis.dire(…)`), `actualisation` (augmente à chaque « tirer pour actualiser » : `Chargement(cle = contexte.actualisation)`), `barre` (`ActionsDeBarre(contexte.barre) { … }`). |
+| `BarreOnglets(onglets, actif, marges?) { choisir }` | `BarreOnglets` | La barre seule, pour une page qui garde sa mise en page (Mes lots & accès, Prestataires, Résidence) : `Pastille` qui défilent de côté, repères `onglet.<id>`. |
+| `OngletBientot(onglet)` | `OngletBientot` | Un onglet du site que l'app ne porte pas encore : « Bientôt » (posé par le cadre). |
+| `OngletSurLeSite(onglets, descriptifs, routes, adresse)` | `OngletSurLeSite` | Les onglets laissés au site, chacun avec son lien (repère `site.onglet.<id>`), ouvert par le navigateur à l'adresse de la résidence (posé par le cadre). |
+| `OngletsSurLeSite.lien(route, adresse)` | `OngletSurLeSite.lien` | L'adresse d'un onglet sur le site, sous celle de la résidence (qui peut porter un chemin) ; `null` pour ce qui n'est pas un chemin. |
+| `OngletsDeLaPage(page, portes, renvoieAuSite, droits, surLeSite)` | — | La logique de la barre (`barre`, `ailleurs`, `actif(choisi)`), testée sur la JVM. |
+
+```kotlin
+// fonctions/espacecs/EcranEspaceCS.kt — et SA ligne au registre : "espace-cs" to { EcranEspaceCS(it) }
+@Composable
+fun EcranEspaceCS(contexte: ContexteDeMenu) = CadreAOnglets(
+    contexte,
+    PageAOnglets(
+        "espace-cs",
+        mapOf(
+            "validations" to { onglet -> OngletValidations(onglet) },
+
+            "badges" to { onglet -> OngletBadges(onglet) },
+        ),
+        reserve = R.string.espacecs_reserve,
+    ),
+)
+
+@Composable
+fun OngletValidations(contexte: ContexteOnglet) {
+    val service = remember(contexte.session) { ServiceEspaceCSApi(contexte.session) }
+    Chargement(charger = { service.aValider() }, cle = contexte.actualisation, squelette = { … }) { comptes, recharger ->
+        Column(verticalArrangement = Arrangement.spacedBy(Mise.ecart)) { … contexte.avis.dire(…) … }
+    }
+}
+```
+
+## Cloche — `fr.coprofirst.app.navigation`
+
+| API | Pendant iOS | Usage |
+|---|---|---|
+| `BoutonCloche(page) { ouvrir }` | `ClocheNotifications` | Dans la barre du haut de chaque page de la résidence (posée par `EcranResidence`, après les actions de l'écran ; repère `cloche`). |
+| `FeuilleNotifications(page, contexte, fermer)` | `.feuilleNotifications` | La page `notifications` DU REGISTRE (`RegistreDesMenus`), en feuille : son titre, les actions que son écran déclare (`ActionsDeBarre` : la barre de la feuille), « OK » (repère `notifications.ok`). |
+| `Cloche.page` | — | La page des notifications (`PagesParDefaut.horsMenu`, générée) ; absente : pas de cloche. |
+
+⚠️ Divergence déclarée : pas de point « non lues » sur la cloche — l'iOS le compte en
+relisant toute la liste (GET /notifications) ; aucune route du contrat ne sert ce nombre.
+Il reste dit en tête de la page des notifications.
 
 ## Formats — `fr.coprofirst.app.commun.formats.FormatsDuSite`
 
@@ -217,6 +312,8 @@ AvisOuverture(ouverture)
 
 ## À venir dans la couche commune
 
-Tables de libellés — 15b ; cadre à onglets, droits par onglet, avis éphémère, champ de
-recherche — 15c ; le fil d'activité (page `tableau-de-bord`) et la cloche — #11, #22.
-Le suivi : #15, #11.
+Tables de libellés — 15b ; le fil d'activité (page `tableau-de-bord`) — #11 ; la cloche
+qui rouvre une notification touchée — #23. Composants de l'iOS employés par UN seul menu
+pour l'heure, à monter ici dès qu'un deuxième les emploie : `ChampSaisie` (Espace CS),
+`FlowEtiquettes` (Communauté) ; et la pastille « où suis-je » (`PastilleOuSuisJe` : logo et
+nom de la résidence dans la barre du haut, changer de résidence). Le suivi : #15, #11.

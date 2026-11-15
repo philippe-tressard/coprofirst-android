@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+
+Les textes de la couche commune (pages à onglets, composants, cloche), écrits une fois —
+ceux de l'iOS (`OngletSurLeSite`, `TextesFeuille`, `ChampRecherche`, `feuilleNotifications`).
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="fr">
+    <string name="onglets_sur_le_site">Sur le site</string>
+    <string name="onglets_sur_le_site_descriptif">Ces onglets se règlent sur le site de la résidence : chacun s\'y ouvre dans le navigateur.</string>
+    <string name="onglets_ouvrir_le_site">Ouvre le site de la résidence</string>
+
+    <string name="recherche_effacer">Effacer la recherche</string>
+
+    <string name="feuille_enregistrer">Enregistrer</string>
+    <string name="feuille_en_cours">Enregistrement…</string>
+
+    <string name="cloche_ok">OK</string>
+</resources>

@@ -36,12 +36,26 @@ class Tables(unittest.TestCase):
             {"id": "profil", "href": None, "navLabel": "Profil", "titre": "Profil", "icone": "user"},
         ]), "test.json")
         self.assertIn('PageDeNavigation("residence", "/residence", "Résidence", "Ma résidence", "building-2"),', texte)
-        self.assertNotIn('PageDeNavigation("profil"', texte)
+        # Sans entrée de menu : hors de la barre, mais connue (la cloche ouvre les notifications).
+        toutes, hors_menu = texte.split("val horsMenu", 1)
+        self.assertNotIn('PageDeNavigation("profil"', toutes)
+        self.assertIn('PageDeNavigation("profil", "", "Profil", "Profil", "user"),', hors_menu)
         self.assertIn('OngletDuSite("fiche", "Fiche", null, false),', texte)
         self.assertIn('OngletDuSite("carnet", "Carnet", ReserveOnglet.ProprioOuCS, false),', texte)
         self.assertIn('OngletDuSite("telemetry", "Télémétrie", null, true),', texte)
         self.assertIn('val pagesReserveesAdmin: Set<String> = setOf("admin")', texte)
         self.assertIn('const val TITRE_DU_FIL: String = "Fil d\'activité"', texte)
+
+    def test_descriptifs_et_adresses_des_onglets(self):
+        texte = g.kotlin(self.tables([
+            {"id": "admin", "href": "/admin", "navLabel": "Admin", "titre": "Paramétrage", "icone": "sliders",
+             "onglets": [{"id": "imports", "label": "Imports", "route": "/admin?onglet=imports", "descriptif": "Charger"},
+                         {"id": "nu", "label": "Nu"}]},
+        ]), "test.json")
+        descriptifs, routes = texte.split("val descriptifs", 1)[1].split("val routes", 1)
+        self.assertIn('"admin" to mapOf(\n            "imports" to "Charger",\n        ),', descriptifs)
+        self.assertIn('"imports" to "/admin?onglet=imports",', routes)
+        self.assertNotIn('"nu" to', descriptifs + routes)
 
     def test_ce_qui_change_de_forme_arrete(self):
         with self.assertRaises(g.TableInattendue):
@@ -49,6 +63,22 @@ class Tables(unittest.TestCase):
                                    "onglets": [{"id": "o", "label": "O", "reserve": "nouvelleReserve"}]}]), "t")
         with self.assertRaises(g.TableInattendue):
             g.kotlin({"pages": t([]), "titreFil": t(""), **DROITS}, "t")
+        for cle in ("route", "descriptif"):
+            with self.assertRaises(g.TableInattendue, msg=cle):
+                g.kotlin(self.tables([{"id": "x", "href": "/x", "navLabel": "X", "titre": "X", "icone": "i",
+                                       "onglets": [{"id": "o", "label": "O", cle: 3}]}]), "t")
+        with self.assertRaises(g.TableInattendue):
+            g.kotlin(self.tables([{"id": "x", "href": None, "navLabel": "X", "titre": "X"}]), "t")
+
+    def test_duree_de_l_avis(self):
+        texte = g.kotlin_avis({"dureeToastMs": t(4000)}, "test.json")
+        self.assertIn("package fr.coprofirst.app.commun", texte)
+        self.assertIn("const val DUREE_MS: Long = 4000L", texte)
+        for mauvaise in (0, -1, "4000", 4.5, True, None):
+            with self.assertRaises(g.TableInattendue, msg=repr(mauvaise)):
+                g.kotlin_avis({"dureeToastMs": t(mauvaise)}, "t")
+        with self.assertRaises(g.TableInattendue):
+            g.kotlin_avis({}, "t")
 
     def test_tables_communes(self):
         tables = {
@@ -81,6 +111,9 @@ class Tables(unittest.TestCase):
         texte = g.kotlin(tables, "tables-clients.json")
         for page in ("tableau-de-bord", "residence", "mes-demandes", "espace-cs", "admin", "delegations"):
             self.assertIn(f'PageDeNavigation("{page}"', texte)
+        self.assertIn('PageDeNavigation("notifications", ""', texte.split("val horsMenu", 1)[1])
+        self.assertIn('"imports" to "/admin?onglet=imports",', texte)
+        self.assertIn("const val DUREE_MS: Long = 4000L", g.kotlin_avis(tables, "tables-clients.json"))
         balises = g.kotlin_balises(tables, "tables-clients.json")
         self.assertIn("package fr.coprofirst.app.commun.texte", balises)
         for attendu in ('"strong"', '"li"', '"a"', '"summary"'):
