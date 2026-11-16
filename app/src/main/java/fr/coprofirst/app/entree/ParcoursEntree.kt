@@ -65,6 +65,19 @@ class ParcoursEntree(
 
     override fun saisir(texte: String) = saisir(texte, pause = true)
 
+    override fun lireQR(texte: String) = recevoir(texte, OrigineAdresse.Scan)
+
+    /**
+     * Une adresse que l'utilisateur n'a pas écrite : elle remplit le champ et se reconnaît
+     * sans attendre, et son origine suit jusqu'à « Se connecter » — où la garde exige
+     * toujours la confirmation de l'hôte, résidence connue ou démonstration comprise.
+     */
+    private fun recevoir(texte: String, origine: OrigineAdresse) {
+        val adresse = AdresseInstallation.normaliser(texte) ?: return
+        _etat.update { it.copy(venue = AdresseVenue(adresse, origine)) }
+        saisir(adresse.enSaisie, pause = false)
+    }
+
     override fun saisirEmail(texte: String) = _etat.update { it.copy(email = texte, erreurConnexion = null) }
 
     override fun saisirMotDePasse(texte: String) = _etat.update { it.copy(motDePasse = texte, erreurConnexion = null) }
@@ -73,7 +86,7 @@ class ParcoursEntree(
 
     override fun retour() {
         reconnaissance?.cancel()
-        _etat.update { it.copy(ecran = EcranEntree.Accueil, enCours = false, confirmation = null) }
+        _etat.update { it.copy(ecran = EcranEntree.Accueil, enCours = false, confirmation = null, venue = null) }
     }
 
     /** Le seul chemin du mot de passe : un hôte à confirmer ouvre la confirmation, RIEN ne part. */
@@ -82,7 +95,9 @@ class ParcoursEntree(
         val installation = etat.reconnue ?: return
         val adresse = installation.adresse ?: return
         if (!etat.connexionPossible) return
-        if (garde.exigeConfirmation(adresse, OrigineAdresse.Saisie)) {
+        // L'origine d'une adresse venue d'un QR ou d'un lien vaut tant que le champ la porte.
+        val origine = etat.venue?.takeIf { it.adresse == adresse }?.origine ?: OrigineAdresse.Saisie
+        if (garde.exigeConfirmation(adresse, origine)) {
             _etat.update { it.copy(confirmation = ConfirmationHote(installation)) }
             viewModelScope.launch {
                 val preuve = lirePreuve(adresse)
