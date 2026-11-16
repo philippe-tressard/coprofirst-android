@@ -29,6 +29,9 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.BoutonContour
+import fr.coprofirst.app.commun.fil.CibleDuFil
+import fr.coprofirst.app.commun.fil.ElementDuFil
+import fr.coprofirst.app.commun.fil.VignetteDeNature
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.pieces.PiecesJointesVue
 import fr.coprofirst.app.commun.texte.TexteDuSite

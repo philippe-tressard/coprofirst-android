@@ -14,6 +14,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="accueil_demo">Découvrir la démo</string>
     <string name="accueil_en_savoir_plus">En savoir plus sur CoproFirst</string>
     <string name="vitrine_essayer_demo">Essayer la démo</string>
+    <!-- L'illustration d'« En savoir plus » (#153), lue d'un bloc : `ApercuDuFil` de l'iOS. -->
+    <string name="vitrine_apercu_fil">Aperçu du fil d\'une résidence</string>
     <string name="demo_entrer">Entrer dans la démonstration</string>
     <string name="demo_aide">Le mot de passe de « %1$s » est publié sur coprofirst.fr.</string>
     <string name="demo_identifiants">Voir les identifiants publics</string>

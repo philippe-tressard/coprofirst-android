@@ -6,6 +6,10 @@ package fr.coprofirst.app.fonctions.fil
 import fr.coprofirst.api.infrastructure.Serializer
 import fr.coprofirst.api.modeles.FluxResponse
 import fr.coprofirst.app.charte.NatureDuFil
+import fr.coprofirst.app.commun.fil.Chronologie
+import fr.coprofirst.app.commun.fil.CibleDuFil
+import fr.coprofirst.app.commun.fil.EcheanceDuFil
+import fr.coprofirst.app.commun.fil.ElementDuFil
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull

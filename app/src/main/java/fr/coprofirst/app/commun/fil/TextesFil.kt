@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Philippe TRESSARD
 // SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 
-package fr.coprofirst.app.fonctions.fil
+package fr.coprofirst.app.commun.fil
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
@@ -59,14 +59,5 @@ object TextesFil {
         element.detail?.let(TexteDuSite::apercu)?.takeIf { it.isNotEmpty() }?.let { morceaux += it }
         element.pieces.enClair?.let { morceaux += it }
         return morceaux.joinToString(", ")
-    }
-
-    /** Ce que fait un toucher, dit au lecteur d'écran (`typeVoirLabel` du site). */
-    @Composable
-    fun action(destination: DestinationDuFil): String = when (destination) {
-        DestinationDuFil.Resume -> stringResource(R.string.fil_voir_resume)
-        is DestinationDuFil.Document -> stringResource(R.string.pieces_ouvrir_document)
-        is DestinationDuFil.Element ->
-            stringResource(if (destination.nature == DestinationDuFil.SONDAGE) R.string.fil_voir_sondage else R.string.fil_voir_affaire)
     }
 }
