@@ -80,9 +80,9 @@ data class ExtraitReglement(
  * l'iOS génère depuis ces fichiers (`TablesReglement`).
  *
  * ⚠️ Divergence déclarée : l'iOS les GÉNÈRE depuis les sources du site ; Android ne lit que
- * ce que coprofirst publie (`tables-clients.json`), qui ne les porte pas encore — elles
- * sont tenues ici, aux valeurs de l'iOS, jusqu'à leur publication (coprofirst#2773), qui
- * les fera générer (coprofirst-android#71).
+ * ce que coprofirst publie. Elles le sont depuis v3.105.0 (`badgesDuVerdict`, `separateurs`
+ * de tables-clients.json, coprofirst#2773) : tenues ici, aux valeurs de l'iOS, tant que le
+ * plancher est sous v3.105.0, générées dès qu'il y montera (#169, #71).
  */
 object TablesReglement {
     /** La classe de la capsule du verdict, pour chaque ton servi. */
