@@ -32,4 +32,10 @@ sealed interface LectureCloche {
     data object EnCours : LectureCloche
 
     data class Lue(val cloche: Cloche) : LectureCloche
+
+    /**
+     * La résidence n'a pas répondu. DIVERGENCE déclarée (#207, lot 6) : la dernière lecture,
+     * datée (« à jour à 14:32 »), vient avec le hors-ligne et ses libellés partagés (#206).
+     */
+    data object Injoignable : LectureCloche
 }
