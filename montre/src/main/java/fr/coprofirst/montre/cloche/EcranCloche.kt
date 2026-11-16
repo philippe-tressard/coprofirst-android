@@ -45,7 +45,8 @@ fun EcranCloche(residence: String, lecture: LectureCloche, ouvrir: (Int) -> Unit
     var luesOuvertes by rememberSaveable { mutableStateOf(false) }
     ScreenScaffold(scrollState = etat) { marges ->
         TransformingLazyColumn(state = etat, contentPadding = marges, modifier = Modifier.testTag("montre.cloche")) {
-            item { ListHeader { Text(residence, textAlign = TextAlign.Center, modifier = Modifier.testTag("montre.residence")) } }
+            // Le repère va sur l'en-tête : il fusionne ses enfants, un repère posé sur le texte s'y perd.
+            item { ListHeader(modifier = Modifier.testTag("montre.residence")) { Text(residence, textAlign = TextAlign.Center) } }
             when (lecture) {
                 LectureCloche.EnCours -> item { Chargement() }
                 is LectureCloche.Lue -> cloche(lecture.cloche, luesOuvertes, { luesOuvertes = !luesOuvertes }, ouvrir)
