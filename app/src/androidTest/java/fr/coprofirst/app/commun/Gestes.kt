@@ -16,6 +16,8 @@ import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
+import androidx.test.espresso.Espresso
+import androidx.test.espresso.NoActivityResumedException
 
 /*
  * LE geste des tests d'interface : un toucher ne s'injecte qu'à l'écran. Un élément hors de
@@ -33,6 +35,10 @@ import androidx.compose.ui.test.performScrollToNode
  *   échouerait (« no parent layout with a Scroll SemanticsAction ») — il est sauté.
  * Puis `assertIsDisplayed()` : un nœud que rien n'a pu ramener à l'écran échoue ICI, en
  * disant lequel, au lieu d'un toucher perdu.
+ *
+ * Et d'abord, le CLAVIER se ferme : juste après une frappe, le bouton au pied d'une feuille
+ * est sous lui — le test le croit affiché (la sémantique ignore le clavier) et le toucher
+ * tombe sur le clavier (la cause la plus fréquente des rouges du 16/11, #113).
  */
 
 /** Le temps qu'un nœud a pour paraître (chargement servi, animation) : celui des tests. */
@@ -47,8 +53,20 @@ fun SemanticsNodeInteraction.amener(): SemanticsNodeInteraction {
     return this
 }
 
-/** Le geste unique : amené à l'écran, vérifié affiché, puis touché. */
-fun SemanticsNodeInteraction.toucher(): SemanticsNodeInteraction = amener().assertIsDisplayed().performClick()
+/** Le geste unique : le clavier fermé, amené à l'écran, vérifié affiché, puis touché. */
+fun SemanticsNodeInteraction.toucher(): SemanticsNodeInteraction {
+    fermerLeClavier()
+    return amener().assertIsDisplayed().performClick()
+}
+
+/** Ferme le clavier s'il est ouvert, et attend qu'il le soit ; sans activité au premier plan, rien. */
+private fun fermerLeClavier() {
+    try {
+        Espresso.closeSoftKeyboard()
+    } catch (_: NoActivityResumedException) {
+        // Pas d'écran au premier plan : pas de clavier non plus.
+    }
+}
 
 private fun SemanticsNode.aUnAncetreDefilant(): Boolean {
     var noeud = parent
@@ -91,7 +109,12 @@ fun ComposeTestRule.toucher(
     critere: SemanticsMatcher,
     useUnmergedTree: Boolean = false,
     delaiMs: Long = DELAI_GESTE_MS,
-): SemanticsNodeInteraction = amener(critere, useUnmergedTree, delaiMs).toucher()
+): SemanticsNodeInteraction {
+    // Le clavier fermé AVANT de chercher : la page se remet en place, le nœud aussi.
+    fermerLeClavier()
+    waitForIdle()
+    return amener(critere, useUnmergedTree, delaiMs).toucher()
+}
 
 /** Par repère (`testTag`, les identifiants d'accessibilité de l'iOS). */
 fun ComposeTestRule.amenerTag(repere: String, useUnmergedTree: Boolean = false) = amener(hasTestTag(repere), useUnmergedTree)
