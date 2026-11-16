@@ -12,6 +12,9 @@
 # - L'émulateur s'arrête à la fin s'il a été démarré ici.
 # - Aucun résultat lu : INCONNU (sortie 2), jamais OK.
 #   $1 (facultatif) : une classe ou une méthode (`-e class`).
+#   ARGUMENTS (environnement, facultatif) : d'autres `-e clé valeur` de l'instrumentation.
+#   RAPATRIER (environnement, facultatif) : `<dossier de l'appareil>:<dossier du poste>`,
+#   copié avant l'arrêt de l'émulateur (les captures du Play Store : captures-play.sh).
 set -uo pipefail
 cd "$(dirname "$0")/.."
 SDK=${ANDROID_HOME:-$(brew --prefix 2>/dev/null)/share/android-commandlinetools}
@@ -53,7 +56,7 @@ installer() {
 installer app/build/outputs/apk/debug/app-debug.apk
 installer app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
 FILTRE=${1:+-e class $1}
-a shell "rm -f /data/local/tmp/resultat.txt; nohup am instrument -w -r $FILTRE fr.coprofirst.app.test/androidx.test.runner.AndroidJUnitRunner > /data/local/tmp/resultat.txt 2>&1 &"
+a shell "rm -f /data/local/tmp/resultat.txt; nohup am instrument -w -r $FILTRE ${ARGUMENTS:-} fr.coprofirst.app.test/androidx.test.runner.AndroidJUnitRunner > /data/local/tmp/resultat.txt 2>&1 &"
 for _ in $(seq 1 200); do
   sleep 3
   a shell cat /data/local/tmp/resultat.txt 2>/dev/null | grep -q 'INSTRUMENTATION_CODE' && break
@@ -62,6 +65,10 @@ RESULTAT=$(a shell cat /data/local/tmp/resultat.txt 2>/dev/null)
 # Le résultat ENTIER reste au poste (l'émulateur s'éteint et l'emporte) : le nom de chaque
 # test en échec et sa pile s'y lisent ; ici, le test en échec puis son message.
 mkdir -p app/build/outputs && printf '%s\n' "$RESULTAT" > app/build/outputs/tests-interface-resultat.txt
+if [ -n "${RAPATRIER:-}" ]; then
+  mkdir -p "${RAPATRIER#*:}" && a pull "${RAPATRIER%%:*}/." "${RAPATRIER#*:}" >/dev/null \
+    || echo "❓ INCONNU : rien à rapatrier de ${RAPATRIER%%:*}" >&2
+fi
 awk '/INSTRUMENTATION_STATUS: class=/{c=$0} /INSTRUMENTATION_STATUS: test=/{t=$0} /INSTRUMENTATION_STATUS: stack=/{sub(/.*class=/,"",c); sub(/.*test=/,"",t); print "✗ " c "." t; print "  " $0}' <<< "$RESULTAT" | sed 's/INSTRUMENTATION_STATUS: stack=//'
 grep -E 'FAILURES|^OK \(|Tests run' <<< "$RESULTAT"
 echo "Résultat entier : app/build/outputs/tests-interface-resultat.txt"
