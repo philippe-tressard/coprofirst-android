@@ -89,5 +89,7 @@ thème clair, résidence fictive (`CapturesPlay`, comme `LancementCaptures` de l
 
 ## Notes de version
 
-Le texte de chaque version (500 caractères au plus), au moment de la publier ; la
-première : « Première version de CoproFirst sur Android. »
+Le texte de chaque version (500 caractères au plus) s'écrit dans
+`docs/play-store/notes/<version>.txt` au moment de la soumettre. Le contrôle avant
+soumission (`scripts/controle_avant_soumission.py`, #4) refuse une version sans notes.
+La première : « Première version de CoproFirst sur Android. »

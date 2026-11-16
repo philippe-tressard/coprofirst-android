@@ -37,6 +37,22 @@ développeur personnels ») au moment de chaque étape.
    classification, accès à l'app par le compte de démonstration).
 4. Fiche principale : `docs/play-store/fiche.md` (textes, visuels).
 
+## Avant CHAQUE envoi d'un AAB : le contrôle de cohérence (#4)
+
+Sur le commit exact à soumettre, poussé sur `main`, dans le clone, et non sur une
+copie de travail :
+
+```bash
+python3 -I scripts/controle_avant_soumission.py --taguer --rapport build/controle-soumission.md
+```
+
+Il refuse au moindre rouge : CI complète verte sur ce commit (tests d'interface et
+parcours sombre au plus grand texte compris), contrat servi en production, fiche,
+« Sécurité des données », notes de version (`docs/play-store/notes/<version>.txt`),
+aucun ticket `bloque-soumission` ouvert. Tout vert, il pose et pousse le tag
+`v<version>`. Seulement alors : `bash scripts/construire-release.sh` sur ce même commit,
+et l'envoi. Le rapport se colle dans la note de publication.
+
 ## 3. D'abord pour soi : le test interne (facultatif, sans attente)
 
 Tests › **Test interne** : jusqu'à 100 testeurs, aucun examen de Google, en ligne en
