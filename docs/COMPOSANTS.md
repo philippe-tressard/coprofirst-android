@@ -225,7 +225,8 @@ plus lents, en regard du délai commun (`DELAI_GESTE_MS`, 10 s). Au poste :
 |---|---|
 | `LocalCouleurs.current` | Les couleurs de la palette en cours (clair ou sombre) : `primary`, `text`, `textMuted`, `surface`, `border`, `danger`, `successFond`… — un jeton de la charte chacune, générées depuis coprofirst. |
 | `MaterialTheme.colorScheme` | Les rôles de Material, tirés des mêmes jetons (`ThemeCoproFirst`). |
-| `Mise.rayon`, `Mise.marge`, `Mise.cible`, `Mise.ecart`, `Mise.mosaique`, `Mise.mosaiqueCompacte`, `Mise.vignette` | Les mesures communes (`Mise`). Cible tactile : 48 dp (règle d'Android). |
+| `Mise.rayon`, `Mise.marge`, `Mise.cible`, `Mise.ecart`, `Mise.mosaique`, `Mise.mosaiqueCompacte`, `Mise.vignette` | Les mesures communes (`Mise`), PROPRES À L'APP, chacune déclarée dans `MesuresTest` (raison, date). Cible tactile : 48 dp (règle d'Android). |
+| `MesuresDuSite.rayon` | **Générée** (`jetonsCharte`, `scripts/generer_mesures.py`) : les mesures du site en dp, que `MesuresTest` confronte à `Mise` — un écart non déclaré, caduc ou dont le jeton a bougé échoue (#2). |
 | `Typo.titre()`, `Typo.libelle()` | Titre en serif (`Font.titre`), libellé de section (`.styleLibelle()`) — ce dernier par `Libelle` seul. |
 | `Pictogrammes.icone(lucide)`, `Pictogrammes.parNom` | Une icône du site (nom Lucide) en icône de Material ; un nom absent prend le repli. Les tests refusent qu'une page, une rubrique du fil ou une nature d'affaire générées en manquent. ⚠️ L'iOS dessine les tracés Lucide du fil ; leur catalogue n'est pas publié avec la release. |
 | `NaturesDuFil.parType`, `NatureDuFil.de(type)`, `NatureDuFil.inconnue` | **Générée** (`naturesDuFil`) : ce que le fil montre d'un type d'élément — `libelle`, `couleur` et `fond` (des JETONS de `Couleurs` : `nature.couleur(LocalCouleurs.current)`), `icone`. Un type inconnu : neutre. |

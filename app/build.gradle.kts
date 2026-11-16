@@ -169,6 +169,8 @@ val genererLogo = generation("genererLogo", "app/src/main/logo/logo.svg", "scrip
 val genererTables = generation("genererTables", "contrat/tables-clients.json", "scripts/generer_tables.py")
 // Les constantes du serveur (#74) : ce que l'API applique sans le dire dans le contrat.
 val genererConstantes = generation("genererConstantes", "contrat/constantes-clients.json", "scripts/generer_constantes.py")
+// Les mesures du site (#2) : les jetons de longueur, que `MesuresTest` confronte à `Mise`.
+val genererMesures = generation("genererMesures", "contrat/tables-clients.json", "scripts/generer_mesures.py")
 
 // Les natures du fil nomment leurs teintes par les jetons de `Couleurs` : generer_tables.py
 // les lit dans generer_charte.py (`propriete`, jetons portés), qu'il charge par son chemin.
@@ -215,6 +217,7 @@ androidComponents {
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererCharte, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererTables, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererConstantes, GenererDepuisPython::sortie)
+        variante.sources.kotlin?.addGeneratedSourceDirectory(genererMesures, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererRegistre, GenererDepuisPython::sortie)
         genererTablesDesMenus.forEach { variante.sources.kotlin?.addGeneratedSourceDirectory(it, GenererDepuisPython::sortie) }
         variante.sources.res?.addGeneratedSourceDirectory(genererLogo, GenererDepuisPython::sortie)
