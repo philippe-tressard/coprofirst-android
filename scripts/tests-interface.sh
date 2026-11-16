@@ -17,11 +17,15 @@
 #   copié avant l'arrêt de l'émulateur (les captures du Play Store : captures-play.sh).
 set -uo pipefail
 cd "$(dirname "$0")/.."
+# Une tâche lourde du poste : sous le verrou commun (#55), elle attend son tour.
+[ -n "${VERROU_POSTE_TENU:-}" ] || exec bash scripts/sous-verrou.sh "tests d'interface Android" -- bash scripts/tests-interface.sh "$@"
 SDK=${ANDROID_HOME:-$(brew --prefix 2>/dev/null)/share/android-commandlinetools}
 ADB=$SDK/platform-tools/adb
 export ANDROID_HOME=$SDK
 export JAVA_HOME=${JAVA_HOME:-$(brew --prefix openjdk@21 2>/dev/null)/libexec/openjdk.jdk/Contents/Home}
 
+# Une suite iOS ne prend pas encore le verrou commun (coprofirst-ios#213) : on la regarde
+# encore ici. À retirer quand elle passera par lui.
 if pgrep -x xcodebuild >/dev/null; then
   echo "⏸  une suite iOS (xcodebuild) tourne : une seule tâche lourde au poste — relancer à sa fin" >&2
   exit 3
