@@ -89,6 +89,7 @@ object ReperesAdmin {
     const val FILTRE = "admin.telemetrie.filtre"
     const val INDICATEURS = "admin.telemetrie.indicateurs"
     const val GRAPHE = "admin.telemetrie.graphe"
+    fun acces(canal: String) = "admin.telemetrie.acces.$canal"
     const val RECHERCHE = "admin.utilisateurs.recherche"
     const val TYPE = "admin.utilisateurs.type"
     fun filtre(filtre: FiltreCompte) = "admin.utilisateurs.compte." + when (filtre) {

@@ -47,7 +47,8 @@ fun TableauDeFrequentation(tableau: TableauTelemetrie, portee: PorteeTelemetrie,
             Spacer(Modifier.height(12.dp))
             GrapheBatons(tableau.graphe, portee)
         }
-        if (tableau.pages.isNotEmpty()) Pages(tableau.pages)
+        if (tableau.canaux.isNotEmpty()) CanauxAcces(tableau.canaux)
+        if (tableau.pages.isNotEmpty()) Pages(tableau.pages, accesParPage = tableau.plusieursCanauxParPage)
         if (tableau.utilisateurs.isNotEmpty()) Utilisateurs(tableau.utilisateurs)
     }
 }
@@ -84,32 +85,40 @@ private fun CarteIndicateur(indicateur: Indicateur, modifier: Modifier) {
     }
 }
 
-/** « Pages les plus vues » : le chemin, ses vues et ses visiteurs uniques. */
+/**
+ * « Pages les plus vues » : le chemin, ses vues et ses visiteurs uniques ; `accesParPage` :
+ * la colonne « Accès » du site, quand la période a plusieurs canaux.
+ */
 @Composable
-private fun Pages(pages: List<TableauTelemetrie.PageVue>) {
+private fun Pages(pages: List<TableauTelemetrie.PageVue>, accesParPage: Boolean) {
     val couleurs = LocalCouleurs.current
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         TitreSection(stringResource(R.string.admin_telemetrie_pages_vues))
         Carte {
             pages.forEachIndexed { rang, page ->
                 if (rang > 0) HorizontalDivider(color = couleurs.border)
-                Row(
-                    Modifier.fillMaxWidth().padding(vertical = 8.dp).semantics(mergeDescendants = true) {},
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        page.page,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontFamily = FontFamily.Monospace,
-                        color = couleurs.text,
-                        modifier = Modifier.weight(1f),
-                    )
-                    Text(
-                        stringResource(R.string.admin_telemetrie_vues_et_uniques, FormatsDuSite.nombre(page.total), FormatsDuSite.nombre(page.uniques)),
-                        style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"),
-                        color = couleurs.textMuted,
-                    )
+                Column(Modifier.fillMaxWidth().padding(vertical = 8.dp).semantics(mergeDescendants = true) {}) {
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            page.page,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontFamily = FontFamily.Monospace,
+                            color = couleurs.text,
+                            modifier = Modifier.weight(1f),
+                        )
+                        Text(
+                            stringResource(R.string.admin_telemetrie_vues_et_uniques, FormatsDuSite.nombre(page.total), FormatsDuSite.nombre(page.uniques)),
+                            style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"),
+                            color = couleurs.textMuted,
+                        )
+                    }
+                    if (accesParPage) {
+                        Text(LecturesTelemetrie.accesDe(page), style = MaterialTheme.typography.bodySmall, color = couleurs.textMuted)
+                    }
                 }
             }
         }

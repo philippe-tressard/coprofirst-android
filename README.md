@@ -160,8 +160,9 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   ses rattachements, et les gestes que le serveur offre : interdire ou réautoriser la
   communauté, ajouter ou retirer un rôle, rejouer l'auto-match des lots, supprimer —
   chacun confirmé s'il le faut, puis annoncé), **Télémétrie** (quatre vues — jour, 30 jours, 12 mois, 10 ans —, le filtre « sans le
-  gestionnaire du site » quand il change quelque chose, les nombres clés, le graphe, les
-  pages les plus vues et les utilisateurs actifs) et **Maintenance** (à l'opérateur, la
+  gestionnaire du site » quand il change quelque chose, les nombres clés, le graphe,
+  « Accès : site ou application » — les vues par canal —, les pages les plus vues avec leur
+  accès, et les utilisateurs actifs) et **Maintenance** (à l'opérateur, la
   santé des tâches planifiées et leurs échecs récents ; à l'administration, le dernier
   export de la copropriété). Les autres onglets sont « Sur le site », chacun avec son
   lien ; lancer une tâche ou un export reste au site, et l'écran le dit.
