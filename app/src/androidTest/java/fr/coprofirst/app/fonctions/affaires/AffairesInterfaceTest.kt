@@ -14,6 +14,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
+import androidx.test.espresso.Espresso
+import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.longClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -120,7 +122,7 @@ private class AffairesSimulees : ServiceAffaires {
     val supprimees = mutableListOf<Int>()
     override suspend fun corrigerSuite(id: Int, suite: Int, correction: CorrectionSuite): IssueCorrection? {
         corrections += correction
-        return IssueCorrection("L'affaire a avancé depuis : elle garde son état.", "ouvert", "Ouvert")
+        return IssueCorrection("L'affaire a avancé depuis : elle garde son état.", "en_cours", "Chez le syndic")
     }
     override suspend fun supprimerSuite(id: Int, suite: Int) {
         supprimees += suite
@@ -197,7 +199,10 @@ class AffairesInterfaceTest {
      * se perd (rouge en CI, run 43777305471).
      */
     private fun toucherDansLaFeuille(noeud: SemanticsNodeInteraction) {
+        Espresso.closeSoftKeyboard()
+        ecran.waitForIdle()
         noeud.performScrollTo()
+        ecran.waitForIdle()
         noeud.performClick()
     }
 
@@ -358,12 +363,12 @@ class AffairesInterfaceTest {
         attendre(ReperesAffaires.gesteSuite(GesteSuite.Modifier))
         el(ReperesAffaires.gesteSuite(GesteSuite.Modifier)).performClick()
         attendre(ReperesFeuilles.SUITE_TEXTE)
-        el(ReperesFeuilles.SUITE_TEXTE).performTextInput(" Relancé.")
+        el(ReperesFeuilles.SUITE_TEXTE).performTextReplacement("Le syndic est prévenu. Relancé.")
         toucherDansLaFeuille(el(ReperesFeuilles.SUITE_ENREGISTRER))
         attendre(ReperesAffaires.APPLIQUER)
         attendreTexte("L'affaire a avancé depuis")
         el(ReperesAffaires.APPLIQUER).performClick()
-        ecran.waitUntil(DELAI_MS) { service.suites.lastOrNull()?.second?.statut == "ouvert" }
+        ecran.waitUntil(DELAI_MS) { service.suites.lastOrNull()?.second?.statut == "en_cours" }
         assertEquals(true, service.corrections.single().contenuHtml?.contains("Relancé"))
         el(ReperesAffaires.gestesSuite(31)).performClick()
         attendre(ReperesAffaires.gesteSuite(GesteSuite.Supprimer))
@@ -380,10 +385,11 @@ class AffairesInterfaceTest {
         attendre(repereGeste(GesteAffaire.Modifier))
         el(repereGeste(GesteAffaire.Modifier)).performClick()
         attendre(ReperesChamps.MODIFIER.titre)
-        el(ReperesChamps.MODIFIER.titre).performTextInput(" (local vélos)")
+        // Le champ est déjà rempli : on remplace son texte (une frappe s'écrirait au début).
+        el(ReperesChamps.MODIFIER.titre).performTextReplacement("Fuite au local vélos")
         toucherDansLaFeuille(el(ReperesNouvelle.MODIFIER_ENREGISTRER))
         attendreTexte("Affaire modifiée")
-        assertEquals(listOf(EditionAffaire(titre = "Fuite dans le local vélos (local vélos)")), service.editions)
+        assertEquals(listOf(EditionAffaire(titre = "Fuite au local vélos")), service.editions)
     }
 
     private companion object {
