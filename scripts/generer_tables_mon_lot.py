@@ -9,7 +9,11 @@ les teintes vivent dans le front du site, qui les publie dans `tables-clients.js
 
 - le descriptif de chaque onglet de la page `mon-lot` (`pages`) — les onglets
   eux-mêmes sont dans `OngletsDuSite` (scripts/generer_tables.py) ;
-- l'état d'un bail (`etatsBail`, `ETATS_BAIL` de `bail.ts`).
+- l'état d'un bail (`etatsBail`, `ETATS_BAIL` de `bail.ts`) ;
+- le type et le statut d'un objet remis au locataire (`typesObjetBail`,
+  `statutsObjetBail`, `bail.ts`) ;
+- la gravité d'un constat, du plus grave au moins grave (`gravitesConstat`,
+  `constats.ts`) — l'ordre de la table est celui de l'écran (#74).
 
 L'état et la famille d'un accès (`statutsAcces`, `typesAcces`) sont communs à deux
 menus : `TablesAcces`, générée par scripts/generer_tables.py (#79).
@@ -31,17 +35,25 @@ from generer_tables import TableInattendue, chaine, teintes, texte, valeur  # no
 PAQUET = "fr.coprofirst.app.fonctions.monlot"
 
 
+def table_teintes(tables: dict, nom: str) -> list[tuple[str, str, str]]:
+    """Une table `code → {libelle, badge}` du site, dans son ordre."""
+    t = valeur(tables, nom)
+    if not isinstance(t, dict) or not t:
+        raise TableInattendue(f"{nom} n'est pas une table")
+    return [(c, texte(v, "libelle", nom), texte(v, "badge", nom)) for c, v in t.items()]
+
+
 def kotlin(tables: dict, source: str) -> str:
     page = next((p for p in valeur(tables, "pages") if p.get("id") == "mon-lot"), None)
     if not page or not page.get("onglets"):
         raise TableInattendue("la page mon-lot et ses onglets sont absents")
-    bail = valeur(tables, "etatsBail")
-    if not isinstance(bail, dict) or not bail:
-        raise TableInattendue("etatsBail n'est pas une table")
-    etats = [(c, texte(v, "libelle", "etatsBail"), texte(v, "badge", "etatsBail")) for c, v in bail.items()]
+    etats, statuts_objet, gravites = (table_teintes(tables, n) for n in ("etatsBail", "statutsObjetBail", "gravitesConstat"))
+    objets = valeur(tables, "typesObjetBail")
+    if not isinstance(objets, list) or not objets:
+        raise TableInattendue("typesObjetBail n'est pas une liste")
     l = [
         "// GÉNÉRÉ par scripts/generer_tables_mon_lot.py — NE PAS MODIFIER À LA MAIN.",
-        f"// Source : {source} (pages, etatsBail).",
+        f"// Source : {source} (pages, etatsBail, typesObjetBail, statutsObjetBail, gravitesConstat).",
         f"package {PAQUET}",
         "",
         "import fr.coprofirst.app.commun.LibelleTeinte",
@@ -54,6 +66,12 @@ def kotlin(tables: dict, source: str) -> str:
     l += [f"        {chaine(texte(o, 'id', 'pages'))} to {chaine(o.get('descriptif', ''))}," for o in page["onglets"]]
     l += ["    )", ""]
     l += teintes("statutsBail", etats, "L'état d'un bail (`ETATS_BAIL`).")
+    l += ["    /** Le type d'un objet remis au locataire (`TYPES_OBJET_BAIL`) : code → libellé. */",
+          "    val typesObjet: Map<String, String> = mapOf("]
+    l += [f"        {chaine(texte(o, 'val', 'typesObjetBail'))} to {chaine(texte(o, 'label', 'typesObjetBail'))}," for o in objets]
+    l += ["    )", ""]
+    l += teintes("statutsObjet", statuts_objet, "Le statut d'un objet remis (`STATUTS_OBJET_BAIL`).")
+    l += teintes("gravites", gravites, "La gravité d'un constat, du plus grave au moins grave (`GRAVITES_CONSTAT`).")
     l += ["}", ""]
     return "\n".join(l)
 
