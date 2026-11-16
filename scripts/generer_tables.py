@@ -63,8 +63,9 @@ BADGE_PAR_COULEUR = {"info": "badge-blue", "violet": "badge-purple", "orange": "
 # `jpe?g` → jpeg, jpg ; `tiff?` → tif, tiff), `PREFIXE_UUID` et les familles de
 # `typeFichier` de coprofirst (front/src/lib/fichiers.ts), NON publiés dans
 # tables-clients.json — l'iOS les lit dans la source du front (`generateurs/fichiers.py`).
-# Mêmes valeurs que sa table générée (v3.101.0) ; à générer quand coprofirst les publiera
-# (coprofirst#2764).
+# Mêmes valeurs que sa table générée (v3.101.0). PUBLIÉES depuis coprofirst v3.105.0
+# (`motifImage`, `prefixeStockage`, `famillesFichiers` de constantes-clients.json) : tenues
+# ici tant que le plancher est sous v3.105.0, générées dès qu'il y montera (#169).
 FICHIERS_EXTENSIONS_IMAGE = ("avif", "bmp", "gif", "heic", "heif", "jpeg", "jpg", "png", "tif", "tiff", "webp")
 FICHIERS_LONGUEUR_PREFIXE = 32
 FICHIERS_FAMILLES = (("JPEG", "JPG"), ("XLSX", "EXCEL"), ("XLS", "EXCEL"), ("DOCX", "WORD"), ("DOC", "WORD"),
