@@ -45,7 +45,7 @@ data class QuestionReglement(
     /** « Ce qui fonde l'avis » : le règlement d'abord, puis les AG, comme le site. */
     val fondements: List<ExtraitReglement> get() = extraitsReglement + extraitsAG
 
-    /** La classe de la capsule du verdict, pour le ton servi (`BadgeVerdict` du site). */
+    /** La classe de la capsule du verdict, pour le ton servi (`BadgeVerdict` du site ; `TablesReglement`, générée). */
     val badgeDuVerdict: String get() = TablesReglement.badgesDuVerdict[verdictTon] ?: TablesReglement.BADGE_INCONNU
 
     companion object {
@@ -73,29 +73,6 @@ data class ExtraitReglement(
             val morceaux = listOfNotNull(acte, rubrique, page).filter { it.isNotEmpty() }
             return if (morceaux.isEmpty()) reference?.takeIf { it.isNotEmpty() } else morceaux.joinToString(Separateur.tiret)
         }
-}
-
-/**
- * Ce que le site écrit de l'avis sur le règlement et que le contrat ne sert pas
- * (`BadgeVerdict.svelte`, `SEPARATEUR.tiret` de `lib/separateurs.ts`) — les valeurs que
- * l'iOS génère depuis ces fichiers (`TablesReglement`).
- *
- * ⚠️ Divergence déclarée : l'iOS les GÉNÈRE depuis les sources du site ; Android ne lit que
- * ce que coprofirst publie. Elles le sont depuis v3.105.0 (`badgesDuVerdict`, `separateurs`
- * de tables-clients.json, coprofirst#2773) : tenues ici, aux valeurs de l'iOS, tant que le
- * plancher est sous v3.105.0, générées dès qu'il y montera (#169, #71).
- */
-object TablesReglement {
-    /** La classe de la capsule du verdict, pour chaque ton servi. */
-    val badgesDuVerdict: Map<String, String> = mapOf(
-        "succes" to "badge-green",
-        "danger" to "badge-red",
-        "alerte" to "badge-orange",
-        "neutre" to "badge-gray",
-    )
-
-    /** Un ton absent ou inconnu : le site le lit incertain. */
-    const val BADGE_INCONNU = "badge-yellow"
 }
 
 internal fun ExtraitRead.lu() = ExtraitReglement(
