@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Pictogrammes
+import fr.coprofirst.app.charte.TracesDuSite
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.formats.FormatsDuSite
@@ -147,7 +148,9 @@ fun VignetteDeNature(element: ElementDuFil) {
         Modifier.size(36.dp).background(nature.fond(couleurs), RoundedCornerShape(10.dp)).clearAndSetSemantics {},
         contentAlignment = Alignment.Center,
     ) {
-        Icon(Pictogrammes.icone(element.pictogramme), contentDescription = null, tint = nature.couleur(couleurs), modifier = Modifier.size(21.dp))
+        // Le TRACÉ publié par le site (#183), comme l'iOS ; l'équivalent de Material s'il manque.
+        val icone = TracesDuSite.icone(element.pictogramme) ?: Pictogrammes.icone(element.pictogramme)
+        Icon(icone, contentDescription = null, tint = nature.couleur(couleurs), modifier = Modifier.size(21.dp))
     }
 }
 

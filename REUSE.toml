@@ -42,6 +42,19 @@ precedence = "override"
 SPDX-FileCopyrightText = "2026 Philippe TRESSARD"
 SPDX-License-Identifier = "AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins"
 
+# Les tracés des icônes du site (#183), joints à la release de coprofirst et recopiés à
+# l'octet par scripts/importer-contrat.sh : Lucide (ISC ; MIT pour la part issue de
+# Feather), le logo WhatsApp de Simple Icons (CC0-1.0), l'icône `stairs` du projet.
+[[annotations]]
+path = "contrat/icones-svg.json"
+precedence = "override"
+SPDX-FileCopyrightText = [
+  "2026 Philippe TRESSARD",
+  "2026 Lucide Icons and Contributors",
+  "2013-present Cole Bemis",
+]
+SPDX-License-Identifier = "AGPL-3.0-or-later AND ISC AND MIT AND CC0-1.0"
+
 # Le contenu de la vitrine (« En savoir plus », la démo) : site/contenu.json de
 # coprofirst-site (même auteur, seul titulaire des droits), recopié à l'octet par
 # scripts/importer-vitrine.sh. Le JSON n'admet pas d'en-tête.
