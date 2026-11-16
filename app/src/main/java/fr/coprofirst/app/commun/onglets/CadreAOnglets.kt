@@ -39,9 +39,11 @@ import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.commun.AvisEphemere
 import fr.coprofirst.app.commun.EtatVide
+import fr.coprofirst.app.commun.audience.PageVue
 import fr.coprofirst.app.commun.texte.TexteDuSite
 import fr.coprofirst.app.navigation.ContexteDeMenu
 import fr.coprofirst.app.navigation.OngletDuSite
+import fr.coprofirst.app.session.audience.CheminDuSite
 
 /**
  * Le CADRE d'une page à onglets, comme `CadreAOnglets` de l'iOS — barre d'onglets dans
@@ -75,6 +77,8 @@ fun CadreAOnglets(contexte: ContexteDeMenu, page: PageAOnglets) {
         }
         return
     }
+    // L'onglet vu se mesure comme sur le site (`trackTabView`) ; « Sur le site » n'en est pas un.
+    PageVue(actif.id.takeIf { it != OngletsSurLeSite.ID }?.let { CheminDuSite.onglet(it, contexte.page.route) })
     Contenu(contexte, page, onglets, actif, fond) { choisi = it }
 }
 

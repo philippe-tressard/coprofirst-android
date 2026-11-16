@@ -99,7 +99,7 @@ class FilInterfaceTest {
         ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(ReperesSondage.QUESTION)).fetchSemanticsNodes().isEmpty() }
     }
 
-    private companion object {
+    internal companion object {
         const val DELAI_MS = 10_000L
 
         /** GET /sondages/3 à la forme du schéma (`SondageDetail`). */

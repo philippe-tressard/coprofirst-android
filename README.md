@@ -140,6 +140,10 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   export de la copropriété). Les autres onglets sont « Sur le site », chacun avec son
   lien ; lancer une tâche ou un export reste au site, et l'écran le dit.
 
+- **Mesure d'audience** : comme sur le site, la résidence compte les écrans vus (sous le
+  chemin de la page équivalente du site, canal « android »), pour ses statistiques de
+  fréquentation ; jamais si le compte l'a refusée (Profil › Vos droits), ni hors d'une
+  résidence ouverte. Aucun identifiant d'appareil, rien chez l'éditeur.
 - **À propos** (Plus) : la résidence et la mention de son pied de page (©, texte libre,
   version de l'app) ; ses mentions légales et sa politique de confidentialité, lues dans
   l'app (« Logiciel libre » sous les mentions) ; le site de CoproFirst, le code du serveur
@@ -178,7 +182,10 @@ App Signing sont dans `docs/signature-android.md`.
 
 `contrat/openapi.json` est la pièce jointe de la release de coprofirst au plancher
 (`contrat/plancher.env`) ; sa provenance est dans `contrat/PROVENANCE.md`. Le
-réimporter : `bash scripts/importer-contrat.sh` (`gh` authentifié).
+réimporter : `bash scripts/importer-contrat.sh` (`gh` authentifié). Chaque jour, le
+workflow « Concordance avec CoproFirst » (`scripts/concordance.py`) vérifie l'écart au
+plancher — pièces identiques, contrat servi par chaque installation connue
+(`INSTALLATIONS`) — et dit si une release plus récente permettrait de le monter.
 
 ## Licence
 
