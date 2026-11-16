@@ -197,7 +197,8 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   avec son titre sur deux lignes et son âge relatif ; « Aucune alerte ») et le détail
   (titre, date ; le corps vient avec le rendu partagé du texte du site, #206).
   Ce que la montre partage avec le téléphone vit dans
-  `partage/` (#206) : le client HTTP, les formats du site, l'alerte reçue — écrits une fois.
+  `partage/` (#206) : le client HTTP, les formats du site, l'alerte reçue, le découpage du
+  texte riche — écrits une fois.
 
 Pas encore : les personnages de la démo, le QR code, les liens d'application (tickets
 ouverts).
