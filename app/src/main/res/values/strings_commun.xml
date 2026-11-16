@@ -18,6 +18,13 @@ ceux de l'iOS (`OngletSurLeSite`, `TextesFeuille`, `ChampRecherche`, `feuilleNot
 
     <string name="feuille_ok">OK</string>
 
+    <!-- Le nombre de non lues : sous le titre des notifications, dit par la cloche (`TextesNotifications.nonLues` de l'iOS). -->
+    <plurals name="non_lues">
+        <item quantity="one">%1$d non lue</item>
+        <item quantity="many">%1$d non lues</item>
+        <item quantity="other">%1$d non lues</item>
+    </plurals>
+
     <!-- « Qui la lit » et le lieu d'un contenu (`Lecture`, `PastilleLecture`, `EtiquetteLieu` de l'iOS). -->
     <string name="lecture_qui_la_lit">Qui la lit</string>
     <string name="lecture_qui_le_lit">Qui le lit</string>

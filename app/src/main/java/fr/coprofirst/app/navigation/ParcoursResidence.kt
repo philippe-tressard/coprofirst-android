@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import fr.coprofirst.api.modeles.UserRead
 import fr.coprofirst.api.routes.AuthApi
+import fr.coprofirst.api.routes.NotificationsApi
 import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.SessionOuverte
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,13 +16,19 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/** Ce que la navigation lit du compte : GET /auth/me. */
+/** Ce que la navigation lit du compte : GET /auth/me, et le nombre de ses alertes non lues. */
 interface ServiceCompte {
     suspend fun moi(): UserRead
+
+    /** Compté sur GET /notifications : aucune route ne sert ce nombre seul (l'iOS de même). */
+    suspend fun nonLues(): Int
 }
 
 class ServiceCompteApi(private val session: SessionOuverte) : ServiceCompte {
     override suspend fun moi(): UserRead = session.appeler { base, client -> AuthApi(base, client).getAuthMe() }
+
+    override suspend fun nonLues(): Int =
+        session.appeler { base, client -> NotificationsApi(base, client).getNotifications().count { !it.lue } }
 }
 
 /** Ce que montre la barre d'une résidence ouverte. */
@@ -39,9 +46,14 @@ data class EtatResidence(
 /**
  * La résidence ouverte : la barre (ses pages, filtrées par les droits du compte), la page
  * choisie — comme `OngletsView` et `Parcours.pagesDeLaBarre` de l'iOS. Le profil se relit
- * à l'ouverture ; un échec laisse la barre sans les outils réservés, et ne bloque rien.
+ * à l'ouverture ; un échec laisse la barre sans les outils réservés, et ne bloque rien. Le
+ * nombre de non lues de la cloche se relit aussi (`relireNonLues`, dans `compteur`).
  */
-class ParcoursResidence(val session: SessionOuverte, private val compte: ServiceCompte) : ViewModel() {
+class ParcoursResidence(
+    val session: SessionOuverte,
+    private val compte: ServiceCompte,
+    private val compteur: CompteurNonLues = CompteurNonLues.partage,
+) : ViewModel() {
     private val pages = session.installation.pages
     private val _etat = MutableStateFlow(EtatResidence(onglet = pages.firstOrNull()?.id ?: EtatResidence.PLUS))
     val etat: StateFlow<EtatResidence> = _etat.asStateFlow()
@@ -61,6 +73,9 @@ class ParcoursResidence(val session: SessionOuverte, private val compte: Service
     fun pagesOuvertes(droits: DroitsOnglet): List<PageDeNavigation> = PagesOuvertes.filtrer(pages, droits)
 
     fun choisir(onglet: String) = _etat.update { it.copy(onglet = onglet) }
+
+    /** Relit le nombre de non lues de la cloche (l'ouverture de la résidence). */
+    suspend fun relireNonLues() = compteur.relire(session.installation.url) { compte.nonLues() }
 
     companion object {
         /** Le nombre de pages dans la barre ; les suivantes vont dans « Plus » (l'iOS en montre 4). */

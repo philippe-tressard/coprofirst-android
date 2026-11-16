@@ -88,13 +88,13 @@ fun OngletBadges(contexte: ContexteOnglet) {
 
 | API | Pendant iOS | Usage |
 |---|---|---|
-| `BoutonCloche(page) { ouvrir }` | `ClocheNotifications` | Dans la barre du haut de chaque page de la résidence (posée par `EcranResidence`, après les actions de l'écran ; repère `cloche`). |
-| `FeuilleNotifications(page, contexte, fermer)` | `.feuilleNotifications` | La page `notifications` DU REGISTRE (`RegistreDesMenus`), en feuille : son titre, les actions que son écran déclare (`ActionsDeBarre` : la barre de la feuille), « OK » (repère `notifications.ok`). |
+| `BoutonCloche(page, nonLues) { ouvrir }` | `ClocheNotifications` | Dans la barre du haut de chaque page de la résidence (posée par `EcranResidence`, après les actions de l'écran ; repère `cloche`). Au-delà de zéro non lue, un point `danger` (repère `cloche.point`, `bell.badge` de l'iOS), et « 12 non lues » dit par TalkBack. |
+| `CompteurNonLues.partage` : `nombre(residence)`, `noter(residence, n)`, `relire(residence) { lire }` ; `CompteurNonLues.phrase(n)` | `CompteurNonLues` | Le nombre de non lues de CHAQUE résidence (clé : `Installation.url`), lu par la cloche en composition. Aucune route ne le sert seul : il se compte sur GET /notifications — la page des notifications le note à chaque lecture et à chaque geste, la résidence le relit à son ouverture (`ParcoursResidence.relireNonLues`) ; un échec garde le nombre noté. `phrase` : « 1 non lue », « 12 non lues ». |
+| `FeuilleNotifications(page, contexte, fermer)` | `.feuilleNotifications` | La page `notifications` DU REGISTRE (`RegistreDesMenus`), en feuille : son titre et le sous-titre que son écran déclare (`SousTitreDeBarre`), ses actions (`ActionsDeBarre` : la barre de la feuille), « OK » (repère `notifications.ok`). |
 | `Cloche.page` | — | La page des notifications (`PagesParDefaut.horsMenu`, générée) ; absente : pas de cloche. |
 
-⚠️ Divergence déclarée : pas de point « non lues » sur la cloche — l'iOS le compte en
-relisant toute la liste (GET /notifications) ; aucune route du contrat ne sert ce nombre.
-Il reste dit en tête de la page des notifications.
+⚠️ Pas encore de relecture à l'arrivée d'une notification push (l'iOS relit alors le
+nombre) : elle vient avec les push, #23.
 
 ## Formats — `fr.coprofirst.app.commun.formats.FormatsDuSite`
 
@@ -179,6 +179,6 @@ AvisOuverture(ouverture)
 
 | API | Pendant iOS | Usage |
 |---|---|---|
-| `FeuillePleine(titre, repereOk, fermer, actions?) { contenu }` | feuille `.large` | Une feuille pleine hauteur qui porte un écran : titre, `actions` (sa barre), « OK » (`repereOk`) ; le contenu défile seul. Les notifications de la cloche et la fiche d'un sondage. |
+| `FeuillePleine(titre, repereOk, fermer, actions?, sousTitre?) { contenu }` | feuille `.large` | Une feuille pleine hauteur qui porte un écran : titre et `sousTitre` (`EnTeteDeBarre`), `actions` (sa barre), « OK » (`repereOk`) ; le contenu défile seul. Les notifications de la cloche et la fiche d'un sondage. |
 | `ErreurService.phrase(ressources)` | `.phrase` | La phrase d'une erreur hors composition (l'avis d'un geste échoué). |
 

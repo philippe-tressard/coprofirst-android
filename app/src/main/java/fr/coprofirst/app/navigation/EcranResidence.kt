@@ -19,6 +19,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
@@ -33,7 +34,6 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Pictogrammes
-import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.commun.GestesDeSortie
 import fr.coprofirst.app.session.SessionOuverte
@@ -41,9 +41,10 @@ import fr.coprofirst.app.session.SessionOuverte
 /**
  * La résidence ouverte, comme `OngletsView` de l'iOS : la barre du bas (les 4 premières
  * pages de l'ordre servi, puis « Plus »), et la page choisie, ouverte par le registre ; en
- * haut, la cloche, qui ouvre les notifications en feuille (`Cloche`). La porte
- * (`ContexteDeMenu.ouvrir`, #85) y mène d'un écran à une page, à la fiche d'un élément —
- * poussée par-dessus la page ouverte — ou à la cloche, par `Aiguillage`.
+ * haut, le titre et le sous-titre que l'écran déclare (`EnTeteDeBarre`), la cloche, qui ouvre
+ * les notifications en feuille (`Cloche`), avec son point « non lues » (`CompteurNonLues`).
+ * La porte (`ContexteDeMenu.ouvrir`, #85) y mène d'un écran à une page, à la fiche d'un
+ * élément — poussée par-dessus la page ouverte — ou à la cloche, par `Aiguillage`.
  */
 @Composable
 fun EcranResidence(session: SessionOuverte, sortie: GestesDeSortie, apparence: Apparence) {
@@ -64,6 +65,9 @@ fun EcranResidence(session: SessionOuverte, sortie: GestesDeSortie, apparence: A
     val barreDuHaut = remember { BarreDuHaut() }
     var clocheOuverte by rememberSaveable { mutableStateOf(false) }
     val notifications = Cloche.page
+    val residence = session.installation.url
+    // Le nombre de non lues de la cloche se relit à l'ouverture de la résidence.
+    LaunchedEffect(parcours) { parcours.relireNonLues() }
 
     val enPlus = if (onglet == EtatResidence.PLUS) pageDePlus else null
     val ouverte: PageDeNavigation? = when {
@@ -109,9 +113,12 @@ fun EcranResidence(session: SessionOuverte, sortie: GestesDeSortie, apparence: A
     BackHandler(enabled = retour != null) { retour?.invoke() }
     CadreResidence(
         titre = barreDuHaut.titre ?: titreFiche ?: ouverte?.titre ?: stringResource(R.string.plus),
+        sousTitre = barreDuHaut.sousTitre,
         retour = retour,
         barreDuHaut = barreDuHaut,
-        cloche = { if (notifications != null) BoutonCloche(notifications) { clocheOuverte = true } },
+        cloche = {
+            if (notifications != null) BoutonCloche(notifications, CompteurNonLues.partage.nombre(residence)) { clocheOuverte = true }
+        },
         barre = {
             NavigationBar {
                 barre.forEach { page ->
@@ -163,6 +170,7 @@ object PagesDePlus {
 @Composable
 private fun CadreResidence(
     titre: String,
+    sousTitre: String?,
     retour: (() -> Unit)?,
     barreDuHaut: BarreDuHaut,
     cloche: @Composable () -> Unit,
@@ -172,7 +180,7 @@ private fun CadreResidence(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(titre, style = Typo.titre(), maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                title = { EnTeteDeBarre(titre, sousTitre) },
                 navigationIcon = {
                     if (retour != null) {
                         IconButton(onClick = retour) {

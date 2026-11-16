@@ -40,10 +40,19 @@ fun ErreurService.phrase(ressources: Resources): String = (this as? ErreurServic
 
 /**
  * Une erreur dite en une phrase, avec, au besoin, de quoi réessayer — comme l'iOS
- * (`MessageErreur`) : pastille d'erreur sur `dangerFond`, annoncée au lecteur d'écran.
+ * (`MessageErreur`) : la phrase de l'erreur (celle du serveur s'il en a donné une).
  */
 @Composable
-fun MessageErreur(erreur: ErreurService, modifier: Modifier = Modifier, reessayer: (() -> Unit)? = null) {
+fun MessageErreur(erreur: ErreurService, modifier: Modifier = Modifier, reessayer: (() -> Unit)? = null) =
+    MessageErreur(erreur.phrase(), modifier, reessayer)
+
+/**
+ * Une phrase composée par l'écran (`MessageErreur(texte:)` de l'iOS) — « 500 notifications
+ * sur 1200 ont été supprimées ; les 700 autres sont toujours là. », puis la raison : pastille
+ * d'erreur sur `dangerFond`, annoncée au lecteur d'écran, « Réessayer » si `reessayer`.
+ */
+@Composable
+fun MessageErreur(texte: String, modifier: Modifier = Modifier, reessayer: (() -> Unit)? = null) {
     val couleurs = LocalCouleurs.current
     Row(
         modifier = modifier
@@ -55,7 +64,7 @@ fun MessageErreur(erreur: ErreurService, modifier: Modifier = Modifier, reessaye
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(Icons.Filled.Error, contentDescription = null, tint = couleurs.danger)
-        Text(erreur.phrase(), style = MaterialTheme.typography.bodyMedium, color = couleurs.text, modifier = Modifier.weight(1f))
+        Text(texte, style = MaterialTheme.typography.bodyMedium, color = couleurs.text, modifier = Modifier.weight(1f))
         if (reessayer != null) {
             TextButton(onClick = reessayer, modifier = Modifier.heightIn(min = Mise.cible)) {
                 Text(stringResource(R.string.reessayer), fontWeight = FontWeight.SemiBold)

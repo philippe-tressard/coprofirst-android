@@ -37,12 +37,6 @@ Les textes de l'écran des notifications, écrits une fois — ceux du site
     <string name="notifications_quoi_une_lue">La notification lue</string>
     <string name="notifications_quoi_lues">Les %1$d notifications lues</string>
 
-    <plurals name="notifications_non_lues">
-        <item quantity="one">%1$d non lue</item>
-        <item quantity="many">%1$d non lues</item>
-        <item quantity="other">%1$d non lues</item>
-    </plurals>
-
     <!-- Une sélection interrompue en route : ce qui est parti, ce qui demeure. -->
     <plurals name="notifications_interrompue_fait">
         <item quantity="one">%1$d notification sur %2$d a été supprimée</item>

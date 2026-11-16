@@ -64,7 +64,7 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   génèrent au build (`scripts/generer_charte.py`, testé par `verifier-depot.sh`) : la
   charte `seine`, celle de la résidence dès qu'elle est reconnue (`site_palette`), clair
   et sombre — `ThemeCoproFirst` les donne à Material, `LocalCouleurs` pour le reste.
-  Le bouton plein s'écrit une fois, `BoutonPlein` (`verifier-depot.sh` le tient). Un besoin côté serveur devient un ticket dans
+  Le bouton plein s'écrit une fois, `commun/Boutons.kt` (`BoutonPlein`, `BoutonPleinDestructif` ; `verifier-depot.sh` le tient). Un besoin côté serveur devient un ticket dans
   coprofirst, jamais une modification de `/Volumes/Data/Dev/5hostachy` d'ici.
 - **Installation** : aucun annuaire — démo, adresse saisie, QR, lien d'application ;
   l'énumération des installations est interdite (spec `multi-coproprietes.md`

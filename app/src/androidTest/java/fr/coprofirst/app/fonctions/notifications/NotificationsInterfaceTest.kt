@@ -5,8 +5,11 @@ package fr.coprofirst.app.fonctions.notifications
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -20,6 +23,7 @@ import fr.coprofirst.app.commun.toucher
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.navigation.ActionsDeclarees
 import fr.coprofirst.app.navigation.BarreDuHaut
+import fr.coprofirst.app.navigation.EnTeteDeBarre
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.delay
 import org.junit.Assert.assertEquals
@@ -95,11 +99,14 @@ class NotificationsInterfaceTest {
     private fun ouvrir(boite: BoiteSimulee = BoiteSimulee()): BoiteSimulee {
         val parcours = ParcoursNotifications(boite)
         val barre = BarreDuHaut()
-        // La barre du haut de la résidence : les actions que l'écran y déclare.
+        // La barre du haut de la feuille : le titre, le sous-titre et les actions que l'écran y déclare.
         ecran.setContent {
             ThemeCoproFirst {
                 Column {
-                    Row { ActionsDeclarees(barre) }
+                    Row {
+                        EnTeteDeBarre("Notifications", barre.sousTitre, Modifier.weight(1f))
+                        ActionsDeclarees(barre)
+                    }
                     EcranNotifications(parcours, barre)
                 }
             }
@@ -123,24 +130,34 @@ class NotificationsInterfaceTest {
 
     private fun toucher(tag: String) = ecran.toucherTag(tag, useUnmergedTree = true)
 
-    /** « Tout marquer lu » et « Modifier » se voient dans la barre du haut ; tout se marque lu. */
+    /**
+     * « Tout marquer lu » et « Modifier » se voient dans la barre du haut, « 12 non lues » sous
+     * son titre ; tout se marque lu, et le sous-titre s'en va.
+     */
     @Test
     fun toutSeMarqueLu() {
         ouvrir()
         attendre("notifications.toutMarquerLu")
         el("notifications.toutMarquerLu").assertIsDisplayed()
         el("notifications.modifier").assertIsDisplayed()
-        attendreTexte("12 non lues")
+        attendre(BarreDuHaut.REPERE_SOUS_TITRE)
+        el(BarreDuHaut.REPERE_SOUS_TITRE).assertTextEquals("12 non lues")
         toucher("notifications.toutMarquerLu")
         disparait("notifications.toutMarquerLu")
+        disparait(BarreDuHaut.REPERE_SOUS_TITRE)
     }
 
-    /** « Modifier », trois alertes choisies, supprimées après confirmation — en une requête. */
+    /**
+     * « Modifier », trois alertes choisies, supprimées après confirmation — en une requête ; le
+     * bouton plein rouge attend une sélection, et le sous-titre suit le nombre de non lues.
+     */
     @Test
     fun plusieursNotificationsSeSuppriment() {
         val boite = ouvrir()
         attendre("notifications.modifier")
         toucher("notifications.modifier")
+        attendre("notifications.supprimerSelection")
+        el("notifications.supprimerSelection").assertIsNotEnabled()
         listOf(5, 4, 3).forEach { ecran.toucherTag("notification.$it") }
         attendreTexte("Supprimer (3)")
         el("notifications.supprimerSelection").assertIsDisplayed().toucher()
@@ -148,8 +165,8 @@ class NotificationsInterfaceTest {
         toucher("notifications.confirmerSuppression")
         disparait("notification.5")
         assertEquals(listOf(3), boite.selections)
-        toucher("notifications.modifier")
         attendreTexte("10 non lues")
+        toucher("notifications.modifier")
         ecran.amenerTag("notification.2").assertIsDisplayed()
     }
 
