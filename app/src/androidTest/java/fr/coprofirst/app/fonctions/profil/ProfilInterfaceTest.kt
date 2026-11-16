@@ -15,7 +15,7 @@ import fr.coprofirst.app.commun.amenerTag
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.commun.toucherTexte
 import fr.coprofirst.app.entree.NavigationEntree
-import fr.coprofirst.app.entree.Reperes
+import fr.coprofirst.app.entree.entrerDansLaResidence
 import fr.coprofirst.app.entree.ServeurDeTest
 import mockwebserver3.Dispatcher
 import mockwebserver3.MockResponse
@@ -83,14 +83,7 @@ class ProfilInterfaceTest {
         serveur.serveur.dispatcher = residence
         val parcours = serveur.parcours()
         ecran.setContent { NavigationEntree(serveur.apparence(), parcours) }
-        ecran.toucherTexte("Entrer dans ma résidence")
-        ecran.onNodeWithTag(Reperes.RESIDENCE).performTextInput("residence.exemple.test")
-        attendre("Les Glycines")
-        ecran.onNodeWithTag(Reperes.EMAIL).performTextInput("camille@exemple.test")
-        ecran.onNodeWithTag(Reperes.MOT_DE_PASSE).performTextInput("secret")
-        ecran.toucherTag(Reperes.VALIDER)
-        attendre("Me connecter à cette adresse")
-        ecran.toucherTexte("Me connecter à cette adresse")
+        ecran.entrerDansLaResidence("residence.exemple.test", "Les Glycines")
         attendre("Plus")
         ecran.toucherTexte("Plus")
         ecran.toucherTag("plus.profil")

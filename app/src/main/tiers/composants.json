@@ -1,0 +1,60 @@
+{
+  "composants": [
+    {
+      "nom": "Android Jetpack (AndroidX, Compose)",
+      "licences": ["Apache-2.0"],
+      "role": "Les écrans de l'app, leurs composants et leur cycle de vie.",
+      "modules": ["androidx.*:*"],
+      "textes": ["LICENSES/Apache-2.0.txt"]
+    },
+    {
+      "nom": "Kotlin",
+      "licences": ["Apache-2.0"],
+      "role": "Le langage de l'app et sa bibliothèque standard.",
+      "modules": ["org.jetbrains.kotlin:*", "org.jetbrains:annotations"],
+      "textes": ["LICENSES/Apache-2.0.txt"]
+    },
+    {
+      "nom": "kotlinx.coroutines",
+      "licences": ["Apache-2.0"],
+      "role": "Les lectures en arrière-plan, sans figer l'écran.",
+      "modules": ["org.jetbrains.kotlinx:kotlinx-coroutines-*"],
+      "textes": ["LICENSES/Apache-2.0.txt"]
+    },
+    {
+      "nom": "kotlinx.serialization",
+      "licences": ["Apache-2.0"],
+      "role": "La lecture des réponses de l'API de CoproFirst.",
+      "modules": ["org.jetbrains.kotlinx:kotlinx-serialization-*"],
+      "textes": ["LICENSES/Apache-2.0.txt"]
+    },
+    {
+      "nom": "OkHttp",
+      "licences": ["Apache-2.0", "MPL-2.0"],
+      "role": "Le transport des requêtes vers la résidence.",
+      "modules": ["com.squareup.okhttp3:*"],
+      "textes": ["app/src/main/tiers/avis-public-suffix-list.txt", "LICENSES/Apache-2.0.txt", "app/src/main/tiers/LICENSE-MPL-2.0.txt"]
+    },
+    {
+      "nom": "Okio",
+      "licences": ["Apache-2.0"],
+      "role": "La lecture et l'écriture des octets échangés avec la résidence.",
+      "modules": ["com.squareup.okio:*"],
+      "textes": ["LICENSES/Apache-2.0.txt"]
+    },
+    {
+      "nom": "Guava ListenableFuture",
+      "licences": ["Apache-2.0"],
+      "role": "Un type commun à plusieurs bibliothèques d'AndroidX.",
+      "modules": ["com.google.guava:listenablefuture"],
+      "textes": ["LICENSES/Apache-2.0.txt"]
+    },
+    {
+      "nom": "JSpecify",
+      "licences": ["Apache-2.0"],
+      "role": "Les annotations de nullité des bibliothèques d'AndroidX.",
+      "modules": ["org.jspecify:jspecify"],
+      "textes": ["LICENSES/Apache-2.0.txt"]
+    }
+  ]
+}

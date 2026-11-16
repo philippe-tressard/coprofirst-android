@@ -10,15 +10,13 @@ import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.commun.detail.sondage.ReperesSondage
 import fr.coprofirst.app.commun.toucher
 import fr.coprofirst.app.commun.toucherDescription
 import fr.coprofirst.app.commun.toucherTag
-import fr.coprofirst.app.commun.toucherTexte
 import fr.coprofirst.app.entree.NavigationEntree
-import fr.coprofirst.app.entree.Reperes
+import fr.coprofirst.app.entree.entrerDansLaResidence
 import fr.coprofirst.app.entree.ServeurDeTest
 import org.junit.After
 import org.junit.Before
@@ -42,17 +40,11 @@ class FilInterfaceTest {
     fun ouvrir() {
         serveur.flux = fil(Instant.now())
         ecran.setContent { NavigationEntree(serveur.apparence(), serveur.parcours()) }
-        ecran.toucherTexte("Entrer dans ma résidence")
         serveur.residence("Les Glycines")
-        ecran.onNodeWithTag(Reperes.RESIDENCE).performTextInput("residence.example.com")
-        attendreTexte("Les Glycines")
-        ecran.onNodeWithTag(Reperes.EMAIL).performTextInput("a@example.com")
-        ecran.onNodeWithTag(Reperes.MOT_DE_PASSE).performTextInput("secret")
-        ecran.toucherTag(Reperes.VALIDER)
-        attendreTexte("Adresse reconnue comme une installation CoproFirst.")
-        serveur.repondre(200) // POST /auth/login
-        serveur.repondre(404) // GET /auth/me : sans profil, la barre reste celle de tous
-        ecran.toucherTexte("Me connecter à cette adresse")
+        ecran.entrerDansLaResidence("residence.example.com", "Les Glycines") {
+            serveur.repondre(200) // POST /auth/login
+            serveur.repondre(404) // GET /auth/me : sans profil, la barre reste celle de tous
+        }
     }
 
     @After

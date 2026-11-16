@@ -201,6 +201,10 @@ identifiants d'accessibilité de l'iOS). Trois règles, tenues par `verifier-dep
   sémantique de son texte (`EtiquetteLieu` : « Lieu : … » ; une carte du fil) ne répond pas à
   `hasText` — `hasTestTag(repère) and hasContentDescription(…, substring = true)` (#129).
 
+Deux gestes de plus, partagés : `ecran.attendreTexte(texte)` (un texte affiché, au délai
+commun) et `ecran.entrerDansLaResidence(adresse, nom) { … }` (`entree/EntreeDeTest.kt` : de
+l'accueil à la connexion ; le bloc sert les réponses de la connexion mises en file).
+
 Le bilan de la CI (job « Interface ») nomme dans le journal les tests en échec et les cinq
 plus lents, en regard du délai commun (`DELAI_GESTE_MS`, 10 s). Au poste :
 `bash scripts/tests-interface.sh [classe]` (une seule tâche lourde à la fois).
