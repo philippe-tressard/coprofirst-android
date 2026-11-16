@@ -37,11 +37,11 @@ lecture l'emporte, ce fichier et la saisie changent ensemble.
 | Permission (`AndroidManifest.xml`) | À quoi elle sert |
 |---|---|
 | `android.permission.INTERNET` | parler au site de la résidence, en HTTPS seulement (le clair est refusé par le manifeste) |
-| `android.permission.CAMERA` | lire, sur l'appareil, le QR code de la fiche d'arrivée ; l'image ne quitte pas l'appareil — à venir (#6) |
+| `android.permission.CAMERA` | lire, sur l'appareil, le QR code de la fiche d'arrivée ; l'image ne quitte pas l'appareil |
 
 Aucune autre : ni localisation, ni contacts, ni stockage partagé, ni notifications tant
-que #23 n'est pas livré. « à venir (#N) » : la permission que le ticket ajoute ; le
-contrôle l'accepte avant comme après. Le contrôle lit le manifeste du dépôt ; ce
+que #23 ne les demande. « à venir (#N) » : la permission que le ticket ajoute, refusée
+dès qu'elle est demandée — la PR qui l'apporte retire la marque. Le contrôle lit le manifeste du dépôt ; ce
 que les bibliothèques ajouteraient au manifeste fusionné se relit au build de la release
 (§6).
 
@@ -74,8 +74,8 @@ l'application » (même choix que l'iOS).
 
 Toutes les écritures du client généré que l'app appelle (`post`, `patch`, `put`,
 `delete`), et les données que chacune porte (« — » : un geste sur un objet existant, sans
-donnée saisie). « à venir (#N) » : un envoi que le ticket ajoute ; la ligne est prête, le
-contrôle l'accepte avant comme après.
+donnée saisie). « à venir (#N) » : un envoi que le ticket ajoute, prêt d'avance ; le
+contrôle le refuse dès que l'envoi existe — la PR qui l'apporte retire la marque.
 
 <!-- table:envois -->
 | Envoi | Données |
@@ -90,9 +90,9 @@ contrôle l'accepte avant comme après.
 | `deleteAuthDemandeSuppression` | — |
 | `patchAuthMeOptOutTelemetrie` | `Autres infos` |
 | `deleteAuthMeTelemetrie` | — |
-| `postTelemetryCollect` | `Interactions` — à venir (#144) |
-| `postAppareils` | `ID appareil` — à venir (#23) |
-| `deleteAppareilsAbonnement` | `ID appareil` — à venir (#23) |
+| `postTelemetryCollect` | `Interactions` |
+| `postAppareils` | `ID appareil` |
+| `deleteAppareilsAbonnement` | `ID appareil` |
 | `postTickets` | `Contenu utilisateur` |
 | `patchTicketsTicketId` | `Contenu utilisateur` |
 | `postTicketsTicketIdEvolutions` | `Contenu utilisateur` |

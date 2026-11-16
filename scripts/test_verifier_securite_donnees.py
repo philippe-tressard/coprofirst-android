@@ -53,6 +53,8 @@ class SecuriteDesDonnees(unittest.TestCase):
             "permission neuve": (DECLARATION, SOURCE, MANIFESTE + '<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>'),
             "permission retirée": (DECLARATION, SOURCE, ""),
             "permission à venir démarquée": (DECLARATION.replace("QR — à venir (#6)", "QR"), SOURCE, MANIFESTE),
+            "envoi à venir déjà là": (DECLARATION, SOURCE + "\npostAppareils(x)", MANIFESTE),
+            "permission à venir déjà là": (DECLARATION, SOURCE, MANIFESTE + '<uses-permission android:name="android.permission.CAMERA"/>'),
             "pas une écriture du contrat": (DECLARATION.replace("`postAuthLogout`", "`postInventee`"), SOURCE, MANIFESTE),
         }
         for nom, (texte, source, manifeste) in cas.items():

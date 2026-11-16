@@ -10,10 +10,11 @@ deux sens :
 - `table:envois` — chaque écriture du client généré (`post`, `patch`, `put`, `delete`
   du contrat) que `app/src/main/java` appelle a sa ligne, et chaque ligne nomme une
   écriture du contrat que l'app appelle. Seule exception, nommée : une ligne marquée
-  « à venir (#N) », prête pour l'envoi qu'un ticket ajoute. Les données d'une ligne sont
-  des codes du §3 (ou « — ») ;
+  « à venir (#N) », prête pour l'envoi qu'un ticket ajoute — et refusée dès que l'envoi
+  existe : la PR qui l'apporte retire la marque (« à venir » ne ment pas longtemps). Les
+  données d'une ligne sont des codes du §3 (ou « — ») ;
 - `table:permissions` — exactement les `uses-permission` du manifeste, une ligne
-  « à venir (#N) » exceptée.
+  « à venir (#N) » exceptée, sous la même règle.
 
 Un tableau absent ou vide rend INCONNU (sortie 2), jamais conforme.
 
@@ -94,11 +95,15 @@ def verifier(texte: str, ecritures: set[str], source: str, manifeste: str) -> li
     erreurs += [f"{e} : appelée par l'app, absente de table:envois" for e in sorted(utilisees - set(lignes))]
     erreurs += [f"{e} : déclarée sans être appelée (ou la marquer « à venir (#N) »)"
                 for e in sorted(set(lignes) - utilisees) if not A_VENIR.search(lignes[e])]
+    erreurs += [f"{e} : « à venir » mais déjà appelée — retirer la marque" for e in sorted(utilisees & set(lignes))
+                if A_VENIR.search(lignes[e])]
     permissions = set(re.findall(r'<uses-permission[^>]*android:name="([^"]+)"', manifeste))
     declarees = {p.strip("`"): usage for p, usage in tableau(texte, "permissions")}
     erreurs += [f"{p} : demandée par le manifeste, absente de table:permissions" for p in sorted(permissions - set(declarees))]
     erreurs += [f"{p} : déclarée sans être demandée (ou la marquer « à venir (#N) »)"
                 for p in sorted(set(declarees) - permissions) if not A_VENIR.search(declarees[p])]
+    erreurs += [f"{p} : « à venir » mais déjà demandée — retirer la marque" for p in sorted(permissions & set(declarees))
+                if A_VENIR.search(declarees[p])]
     return erreurs
 
 
