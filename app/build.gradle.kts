@@ -46,12 +46,6 @@ abstract class ListerModulesEmbarques : DefaultTask() {
 val genererCharte = generation("genererCharte", "contrat/tables-clients.json", "scripts/generer_charte.py")
 val genererLogo = generation("genererLogo", "app/src/main/logo/logo.svg", "scripts/generer_logo.py")
 val genererTables = generation("genererTables", "contrat/tables-clients.json", "scripts/generer_tables.py")
-// Les constantes du serveur (#74) : ce que l'API applique sans le dire dans le contrat.
-// Les familles d'affichage des fichiers se lisent à côté, dans tables-clients.json (#2798).
-val genererConstantes = generation(
-    "genererConstantes", "contrat/constantes-clients.json", "scripts/generer_constantes.py",
-    lus = listOf("contrat/constantes-clients.json", "contrat/tables-clients.json"),
-)
 // Les mesures du site (#2) : les jetons de longueur, que `MesuresTest` confronte à `Mise`.
 val genererMesures = generation("genererMesures", "contrat/tables-clients.json", "scripts/generer_mesures.py")
 // Les tracés des icônes du site (#183), et leur trait (`attributsTrace`) lu dans tables-clients.json.
@@ -104,7 +98,6 @@ androidComponents {
     onVariants { variante ->
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererCharte, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererTables, GenererDepuisPython::sortie)
-        variante.sources.kotlin?.addGeneratedSourceDirectory(genererConstantes, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererMesures, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererTraces, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererRegistre, GenererDepuisPython::sortie)

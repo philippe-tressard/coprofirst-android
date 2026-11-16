@@ -22,7 +22,7 @@ if [ $# -gt 0 ]; then
   exec ./gradlew -q --max-workers=2 "$@"
 fi
 ./gradlew -q --max-workers=2 :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleRelease \
-  :app:assembleDebugAndroidTest :client-api:test :partage:test :partage-android:lintDebug \
+  :app:assembleDebugAndroidTest :client-api:test :partage:test :partage-android:lintDebug :partage-android:testDebugUnitTest \
   :montre:testDebugUnitTest :montre:lintDebug :montre:assembleDebug :montre:assembleRelease || exit 1
 bash scripts/verifier-depot.sh || exit 1
 if command -v reuse >/dev/null; then
