@@ -16,8 +16,13 @@ data class NotificationRecue(
     val lue: Boolean,
     val urgente: Boolean,
     val creeLe: Instant,
+    /**
+     * Le chemin de l'entité sur le site (« /tickets/12 »), ou rien. La montre l'ouvre sur le
+     * téléphone (« Continuer sur le téléphone », #207) ; elle ne le suit jamais elle-même.
+     */
+    val lien: String? = null,
 ) {
     companion object {
-        fun depuis(n: NotificationRead) = NotificationRecue(n.id, n.type, n.titre, n.corps, n.lue, n.urgente, n.creeLe.toInstant())
+        fun depuis(n: NotificationRead) = NotificationRecue(n.id, n.type, n.titre, n.corps, n.lue, n.urgente, n.creeLe.toInstant(), n.lien)
     }
 }

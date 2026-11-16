@@ -3,32 +3,62 @@
 
 package fr.coprofirst.montre.cloche
 
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
 import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
+import androidx.wear.compose.material3.FilledTonalButton
 import androidx.wear.compose.material3.ListHeader
 import androidx.wear.compose.material3.MaterialTheme
+import androidx.wear.compose.material3.OpenOnPhoneDialog
 import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
+import androidx.wear.compose.material3.curvedText
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.fonctions.notifications.NotificationRecue
+import fr.coprofirst.montre.R
+import fr.coprofirst.montre.telephone.OuvrirSurLeTelephone
 
 /**
- * Le détail d'une alerte : son titre et sa date.
+ * Le détail d'une alerte : son titre, sa date, et « Continuer sur le téléphone » quand elle
+ * vise une page du site (`url`, déjà vérifiée par `LienSurLeTelephone`). Le toucher l'ouvre
+ * sur le téléphone, puis la montre le confirme.
  *
  * À VENIR, déclaré (#207) : le `corps` en entier. C'est le HTML de l'éditeur du site, et
  * il se rend par le lecteur du téléphone (`LectureHTML`, `RenduHTML`), que la couche
- * commune partage (#206). « Continuer sur le téléphone » vient avec la liaison (lot 2).
+ * commune partage (#206).
  */
 @Composable
-fun EcranAlerte(alerte: NotificationRecue) {
+fun EcranAlerte(alerte: NotificationRecue, url: String?) {
     val etat = rememberTransformingLazyColumnState()
+    val contexte = LocalContext.current
+    var ouverte by rememberSaveable { mutableStateOf(false) }
+    val confirmation = stringResource(R.string.montre_ouvert_sur_le_telephone)
     ScreenScaffold(scrollState = etat) { marges ->
         TransformingLazyColumn(state = etat, contentPadding = marges, modifier = Modifier.testTag("montre.detail.${alerte.id}")) {
             item { ListHeader { Text(alerte.titre, style = MaterialTheme.typography.titleMedium) } }
             item { Text(FormatsDuSite.dateHeure(alerte.creeLe), style = MaterialTheme.typography.bodySmall) }
+            if (url != null) {
+                item {
+                    FilledTonalButton(
+                        onClick = {
+                            OuvrirSurLeTelephone.ouvrir(contexte, url)
+                            ouverte = true
+                        },
+                        label = { Text(stringResource(R.string.montre_continuer_sur_le_telephone)) },
+                        modifier = Modifier.fillMaxWidth().testTag("montre.continuer"),
+                    )
+                }
+            }
         }
     }
+    OpenOnPhoneDialog(visible = ouverte, onDismissRequest = { ouverte = false }, curvedText = { curvedText(confirmation) })
 }
