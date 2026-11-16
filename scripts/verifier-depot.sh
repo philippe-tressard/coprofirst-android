@@ -57,6 +57,13 @@ echec() { echo "❌ $*"; ECHECS=$((ECHECS + 1)); }
 FICHIERS=$(git ls-files --cached)
 [ -n "$FICHIERS" ] || { echo "❓ INCONNU : git ne connaît aucun fichier (rien d'indexé ?)"; exit 2; }
 
+# Les modules du build, lus dans settings.gradle.kts — la seule liste (#206) : un module
+# ajouté entre d'office dans le périmètre des règles. `:client-api` est GÉNÉRÉ (rien de
+# versionné sous src/), hors périmètre.
+modules=$(grep -oE '":[a-z-]+"' settings.gradle.kts | tr -d '":')
+[ -n "$modules" ] || { echo "❓ INCONNU : settings.gradle.kts, aucun module lu (include)"; exit 2; }
+MODULES_CODE=$(grep -vx 'client-api' <<< "$modules" | paste -sd '|' -)
+
 # Dispensés de la limite de longueur : produits par un outil ou textes de licence,
 # jamais écrits à la main. Toute autre exception se discute, elle ne s'ajoute pas.
 DISPENSES_LONGUEUR='^(LICENSE|LICENSES/.*|contrat/openapi\.json|contrat/tables-clients\.json)$'
@@ -110,10 +117,10 @@ autotest_motif() {
 }
 # $1 : motif ; $2 : message ; $3 (facultatif) : les fichiers DISPENSÉS, nommément (ERE
 # sur le chemin) ; $4 (facultatif) : les fichiers jugés (ERE), par défaut le code et les
-# ressources des deux apps (téléphone, montre #207, ressources-communes/). Une dispense qui ne couvre plus aucun motif échoue : une
+# ressources de chaque module (settings.gradle.kts) et ressources-communes/. Une dispense qui ne couvre plus aucun motif échoue : une
 # exception sans objet se retire.
 interdire() {
-  local f motif dispense=${3:-} perimetre=${4:-'^((app|montre|partage)/src/main|ressources-communes)/.*\.(kt|xml)$'}
+  local f motif dispense=${3:-} perimetre=${4:-"^(($MODULES_CODE)/src/main|ressources-communes)/.*\\.(kt|xml)$"}
   while IFS= read -r f; do
     [ -f "$f" ] || continue
     motif=$(premier_motif "$1" "$f")
@@ -193,7 +200,7 @@ while IFS= read -r f; do
   [ -f "$f" ] || continue
   fautes=$(feuille_mi_hauteur "$f")
   [ -z "$fautes" ] || echec "$f : feuille ouverte à mi-hauteur — sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true) ($fautes)"
-done < <(grep -E '^(app|montre|partage)/src/main/.*\.kt$' <<< "$FICHIERS")
+done < <(grep -E "^($MODULES_CODE)/src/main/.*\\.kt$" <<< "$FICHIERS")
 
 # Les dates et les nombres s'écrivent par `FormatsDuSite`, seul, à la règle du site
 # (fr-FR, Paris) : aucun écran ne compose son propre format.
@@ -263,8 +270,6 @@ interdire "$CLIENT_NEUF" "client HTTP construit hors de ClientHttp — passer pa
 
 # Un module inclus est un module SUIVI : la liste blanche du .gitignore doit l'ouvrir, sinon
 # ses fichiers neufs restent sur le poste, verts en local, absents de la PR (#211, #214).
-modules=$(grep -oE '":[a-z-]+"' settings.gradle.kts | tr -d '":')
-[ -n "$modules" ] || echec "settings.gradle.kts : aucun module lu (include)"
 for m in $modules; do
   grep -qx "$m/build.gradle.kts" <<< "$FICHIERS" \
     || echec "$m/build.gradle.kts : module inclus mais non suivi — ouvrir !/$m/ dans .gitignore, puis git add $m"

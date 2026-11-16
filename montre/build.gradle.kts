@@ -59,6 +59,8 @@ dependencies {
     implementation(libs.wear.remote.interactions)
     // Le client HTTP, les formats du site, l'alerte reçue : ceux du téléphone (#206).
     implementation(project(":partage"))
+    // Le chiffrement au Keystore, celui des sessions du téléphone : la montre y garde son jeton (#206).
+    implementation(project(":partage-android"))
     testImplementation(libs.junit)
     // Le geste commun des tests d'interface (tests-interface-communs, #216) se compile ici aussi.
     androidTestImplementation(platform(libs.compose.bom))
