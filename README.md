@@ -123,6 +123,8 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   Chaque entrée de la suite se corrige ou se supprime (« ⋯ »), si le serveur le permet.
   « Nouvelle affaire » (le « + » du haut) : catégorie, titre, description, lieu, urgence —
   les photos, les prestataires et ce que le conseil désigne se règlent sur le site.
+  En saisie Essentielle (Profil), ce qui n'est pas essentiel pour la catégorie se range
+  dans « Plus de détails », replié — à la création comme à la modification.
 - **Ma résidence** : la Fiche (photo, immatriculation, lots, assurance et syndic — qui
   ouvre l'annuaire du syndic —, composition par bâtiment ; règles, plans, règlement,
   comptes-rendus d'AG et diagnostics, chacun s'ouvrant dans l'app de l'appareil) ; aux

@@ -41,7 +41,7 @@ import kotlinx.coroutines.launch
  * (`TablesProfil.optionsSaisie`).
  */
 @Composable
-fun SectionSaisieAffaire(compte: UserRead, service: ServiceProfil, modifie: (UserRead) -> Unit) {
+fun SectionSaisieAffaire(compte: UserRead, service: ServiceProfil, relireDroits: suspend () -> Unit = {}, modifie: (UserRead) -> Unit) {
     val servi = compte.saisieAffaireEffective ?: return
     val portee = rememberCoroutineScope()
     var refus by remember { mutableStateOf<ErreurService?>(null) }
@@ -62,6 +62,8 @@ fun SectionSaisieAffaire(compte: UserRead, service: ServiceProfil, modifie: (Use
                             portee.launch {
                                 try {
                                     service.choisirSaisie(option.code)
+                                    // « Nouvelle affaire » et « Modifier » suivent la saisie du compte (#178).
+                                    relireDroits()
                                 } catch (e: ErreurService) {
                                     modifie(compte)
                                     refus = e
