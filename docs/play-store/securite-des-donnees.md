@@ -43,6 +43,12 @@ identifiant opaque, jamais de donnée personnelle : le détail se lit ensuite pa
 l'acheminement seulement. Google range les transferts à un prestataire qui agit pour le
 compte de l'app hors du « partage » : c'est la lecture la plus prudente qui l'emporte ici.
 Le lien téléphone ↔ montre (Wearable, #207) se déclare dans le lot qui l'apporte.
+Son premier geste, « Continuer sur le téléphone » (lot 2a), ne fait passer qu'**une adresse
+de page de la résidence** (« https://<résidence>/tickets/12 ») de la montre au téléphone
+relié, par Google Play services. Elle ne porte aucun contenu de l'alerte. La liaison elle-même
+(lot 2b) fera passer le jeton de montre et le nom de la résidence. Les deux se classent
+ensemble dans la grille à ce lot-là, en lecture prudente : Google Play services peut acheminer
+par ses serveurs, et pas seulement de proche en proche.
 
 ⚠️ Lecture prudente, pas un avis juridique ; c'est à Philippe de la retenir. Si une autre
 lecture l'emporte, ce fichier et la saisie changent ensemble.

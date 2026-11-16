@@ -307,6 +307,13 @@ python3 -I scripts/verifier_dependances_google.py --autotest >/dev/null \
 python3 -I scripts/verifier_dependances_google.py \
   || echec "une dépendance Google n'est pas permise par la licence (python3 -I scripts/verifier_dependances_google.py)"
 
+# La CI prépare Android par UNE action commune, qui tient l'image de chaque émulateur en
+# cache et la télécharge avec un réessai borné (#232) : aucun job ne s'en passe.
+python3 -I scripts/verifier_ci.py --autotest >/dev/null \
+  || echec "verifier_ci.py : autotest en échec"
+python3 -I scripts/verifier_ci.py \
+  || echec "un job de la CI se prépare hors de l'action commune (python3 -I scripts/verifier_ci.py)"
+
 # Le contrôle avant soumission (#4) se prouve : il départage un vert, un rouge et un INCONNU.
 python3 -I scripts/controle_avant_soumission.py --autotest >/dev/null \
   || echec "controle_avant_soumission.py : autotest en échec"

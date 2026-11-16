@@ -15,7 +15,7 @@ class ActiviteMontre : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // La liaison est éteinte (`LiaisonMontre`) : aucune résidence gardée à relire encore.
-        val etat = EtatMontre.auLancement(residenceGardee = null)
+        val etat = EtatMontre.auLancement(liaison = null)
         setContent {
             MaterialTheme {
                 // La cloche se lit par le jeton de montre (lot 2) : tant qu'il n'y en a pas, rien.
