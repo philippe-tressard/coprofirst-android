@@ -65,7 +65,7 @@ jobs:
       - name: Plateforme Android de compileSdk
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "platforms;android-37.2" > /dev/null
       - name: Build (debug et release non signée), lint strict, tests — téléphone et montre (#207)
-        run: ./gradlew --no-daemon --max-workers=4 :app:assembleDebug :app:assembleRelease :app:lintDebug :app:testDebugUnitTest :client-api:test :montre:assembleDebug :montre:assembleRelease :montre:lintDebug :montre:testDebugUnitTest
+        run: ./gradlew --no-daemon --max-workers=4 :app:assembleDebug :app:assembleRelease :app:lintDebug :app:testDebugUnitTest :client-api:test :partage:test :montre:assembleDebug :montre:assembleRelease :montre:lintDebug :montre:testDebugUnitTest
   interface:
     name: Interface (émulateur)
     runs-on: ubuntu-latest

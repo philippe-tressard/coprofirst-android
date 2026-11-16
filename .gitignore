@@ -29,6 +29,7 @@
 !/build.gradle.kts
 !/app/
 !/client-api/
+!/partage/
 !/montre/
 !/ressources-communes/
 
