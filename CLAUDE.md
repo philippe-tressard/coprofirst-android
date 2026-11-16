@@ -59,8 +59,9 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   CI) ; le format d'Android en est généré au build (`scripts/generer_logo.py`, qui
   refuse tout élément qu'il ne sait pas rendre) — jamais redessiné ni recoloré.
 - **Ce dépôt et coprofirst ne partagent que ce que coprofirst publie** avec chaque
-  release : le contrat (`openapi.json`) et les tables pour les clients
-  (`tables-clients.json`), recopiés à l'octet dans `contrat/`. Les **palettes** se
+  release : le contrat (`openapi.json`), les tables pour les clients
+  (`tables-clients.json`) et les constantes (`constantes-clients.json`, depuis v3.102.0),
+  recopiés à l'octet dans `contrat/` — jamais le source de coprofirst. Les **palettes** se
   génèrent au build (`scripts/generer_charte.py`, testé par `verifier-depot.sh`) : la
   charte `seine`, celle de la résidence dès qu'elle est reconnue (`site_palette`), clair
   et sombre — `ThemeCoproFirst` les donne à Material, `LocalCouleurs` pour le reste.
