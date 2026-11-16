@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.fonctions.profil
 
+import fr.coprofirst.app.commun.ConstantesDuServeur
 import fr.coprofirst.app.commun.Roles
 import fr.coprofirst.app.session.AdresseInstallation
 import fr.coprofirst.app.session.ErreurService
@@ -86,10 +87,17 @@ class ProfilTest {
 
     @Test
     fun leMotDePasseAttendDansLOrdreDuSiteEtLeRefusPorteLaPhraseDuServeur() = runTest {
-        assertEquals(AttenteMotDePasse.Actuel, attenteMotDePasse("", "neuf", "neuf"))
+        val assez = "n".repeat(ConstantesDuServeur.LONGUEUR_MIN_MOT_DE_PASSE)
+        assertEquals(AttenteMotDePasse.Actuel, attenteMotDePasse("", assez, assez))
         assertEquals(AttenteMotDePasse.Nouveau, attenteMotDePasse("ancien", "", ""))
-        assertEquals(AttenteMotDePasse.Confirmation, attenteMotDePasse("ancien", "neuf", "autre"))
-        assertNull(attenteMotDePasse("ancien", "neuf", "neuf"))
+        // Un caractère de moins que le serveur : trop court, dit avant l'envoi (#47).
+        val court = assez.dropLast(1)
+        assertEquals(AttenteMotDePasse.Nouveau, attenteMotDePasse("ancien", court, court))
+        // Compté en caractères, comme le serveur : un emoji vaut un caractère, pas deux.
+        val emojis = "🔑".repeat(ConstantesDuServeur.LONGUEUR_MIN_MOT_DE_PASSE)
+        assertNull(attenteMotDePasse("ancien", emojis, emojis))
+        assertEquals(AttenteMotDePasse.Confirmation, attenteMotDePasse("ancien", assez, assez + "x"))
+        assertNull(attenteMotDePasse("ancien", assez, assez))
 
         repondre(400, """{"detail": "Mot de passe actuel incorrect."}""")
         val refus = try {
