@@ -20,6 +20,10 @@ data class AvisPrestataire(
     val auteurNom: String? = null,
     val creeLe: Instant,
     val peutModifier: Boolean = false,
+    /** L'affaire jugée ; `null` : un avis sur le prestataire en général. */
+    val ticketId: Int? = null,
+    val ticketTitre: String? = null,
+    val contratId: Int? = null,
 )
 
 /**
@@ -74,6 +78,9 @@ internal fun NotationRead.lu() = AvisPrestataire(
     auteurNom = auteurNom,
     creeLe = creeLe.toInstant(),
     peutModifier = peutModifier ?: false,
+    ticketId = ticketId,
+    ticketTitre = ticketTitre,
+    contratId = contratId,
 )
 
 internal fun ExerciceInterventions.lu(): ExerciceAvis {

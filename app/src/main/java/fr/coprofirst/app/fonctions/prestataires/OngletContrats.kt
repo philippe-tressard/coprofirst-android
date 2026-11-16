@@ -52,7 +52,7 @@ import fr.coprofirst.app.session.ErreurService
  * les archives repliées en bas.
  */
 @Composable
-internal fun OngletContrats(donnees: DonneesPrestataires, service: ServicePrestataires, onglet: ContexteOnglet) {
+internal fun OngletContrats(donnees: DonneesPrestataires, service: ServicePrestataires, onglet: ContexteOnglet, gestes: GestesAvis) {
     var deplie by rememberSaveable { mutableStateOf<Int?>(null) }
     var archives by remember(donnees) { mutableStateOf<List<Contrat>>(emptyList()) }
     LaunchedEffect(donnees) {
@@ -65,7 +65,7 @@ internal fun OngletContrats(donnees: DonneesPrestataires, service: ServicePresta
     val ouverture = rememberOuverture(onglet.session)
     val courants = donnees.contrats
     val carte: @Composable (Contrat) -> Unit = { c ->
-        CarteContrat(c, donnees.prestataire(c.prestataireId), service, ouverture, deplie == c.id) {
+        CarteContrat(c, donnees.prestataire(c.prestataireId), service, ouverture, gestes, deplie == c.id) {
             deplie = if (deplie == c.id) null else c.id
         }
     }
@@ -111,6 +111,7 @@ private fun CarteContrat(
     prestataire: Prestataire?,
     service: ServicePrestataires,
     ouverture: Ouverture,
+    gestes: GestesAvis,
     deplie: Boolean,
     basculer: () -> Unit,
 ) {
@@ -144,6 +145,9 @@ private fun CarteContrat(
                 frequence?.let { PastilleTeinte(it, "badge-gray", compacte = true) }
                 documents?.takeIf { it.isNotEmpty() }?.let { PastilleTeinte("📄 ${FormatsDuSite.nombre(it.size)}", "badge-gray", compacte = true) }
             }
+            // Noter le prestataire du contrat (`CarteContrat.svelte`) : le conseil syndical, et
+            // seulement s'il y a un intervenant à noter.
+            if (gestes.conseil && prestataire != null) BoutonNoter(prestataire, contrat.id, service, gestes)
             Depliage(deplie) { DetailContrat(contrat, frequence, documents.orEmpty(), ouverture) }
         }
     }
