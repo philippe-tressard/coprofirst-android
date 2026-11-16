@@ -14,6 +14,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,7 +53,9 @@ fun FeuilleResume(element: ElementDuFil, session: SessionOuverte, fermer: () -> 
     val couleurs = LocalCouleurs.current
     val site = LocalUriHandler.current
     val lien = (element.cible as? CibleDuFil.Resume)?.lien?.let { DestinationDuFil.surLeSite(it, session.installation.url) }
-    ModalBottomSheet(onDismissRequest = fermer, containerColor = couleurs.bg) {
+    // Ouverte entière, comme toutes les feuilles : « Voir sur le site » ne reste pas sous le bord.
+    val etat = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ModalBottomSheet(onDismissRequest = fermer, sheetState = etat, containerColor = couleurs.bg) {
         Column(
             Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = Mise.marge).padding(bottom = Mise.marge)
                 .testTag(REPERE_RESUME),
