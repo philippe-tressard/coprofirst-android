@@ -35,7 +35,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -49,6 +51,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
@@ -75,17 +78,28 @@ private val icones: Map<String, ImageVector> = mapOf(
     "user-loc" to Icons.Filled.Key,
 )
 
+/**
+ * La vitrine que l'app pose (`ActiviteAccueil`) : relue sur coprofirst.fr une fois par lancement
+ * (#153). Absente — les tests, un aperçu — : la copie embarquée seule, aucun réseau.
+ */
+val LocalVitrine = staticCompositionLocalOf<VitrineDuSite?> { null }
+
 @Composable
 private fun pages(): PagesVitrine {
-    val contexte = LocalContext.current
-    return remember { PagesVitrine.embarquees(contexte.applicationContext) }
+    val vitrine = LocalVitrine.current
+    if (vitrine == null) {
+        val contexte = LocalContext.current
+        return remember { PagesVitrine.embarquees(contexte.applicationContext) }
+    }
+    LaunchedEffect(vitrine) { vitrine.actualiser() }
+    return vitrine.pages.collectAsStateWithLifecycle().value
 }
 
 /**
  * « En savoir plus sur CoproFirst », comme `EnSavoirPlusView` de l'iOS : la page de
  * coprofirst.fr raccourcie (`contenu.json`), d'un seul tenant ; les deux portes restent
- * collées en bas, et sous le chapeau le fil en miniature (`FilEnMiniature`). ⚠️ Divergence
- * déclarée (#153) : le contenu est celui EMBARQUÉ, l'iOS le relisant aussi sur le site.
+ * collées en bas, et sous le chapeau le fil en miniature (`FilEnMiniature`). Les textes sont
+ * relus sur coprofirst.fr une fois par lancement (`VitrineDuSite`, #153).
  */
 @Composable
 fun EcranEnSavoirPlus(parcours: ActionsEntree) {
