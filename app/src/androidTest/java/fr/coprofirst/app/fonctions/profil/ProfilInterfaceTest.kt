@@ -20,6 +20,11 @@ import fr.coprofirst.app.commun.toucherTexte
 import fr.coprofirst.app.entree.NavigationEntree
 import fr.coprofirst.app.entree.entrerDansLaResidence
 import fr.coprofirst.app.entree.ServeurDeTest
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonObject
 import mockwebserver3.Dispatcher
 import mockwebserver3.MockResponse
 import mockwebserver3.RecordedRequest
@@ -47,6 +52,9 @@ class ProfilInterfaceTest {
     private var demandeOuverte = false
     private val motsDePasseRecus = mutableListOf<String>()
     private val saisies = mutableListOf<String>()
+    private val nomsDemandes = mutableListOf<Int>()
+
+    private fun JsonObject.texte(cle: String) = (this[cle] as? JsonPrimitive)?.contentOrNull?.trim().orEmpty()
 
     private val residence = object : Dispatcher() {
         override fun dispatch(request: RecordedRequest): MockResponse {
@@ -59,6 +67,12 @@ class ProfilInterfaceTest {
                     json(200, FixturesProfil.MOI)
                 }
                 chemin.endsWith("/auth/demande-suppression") -> suppression(request)
+                chemin.endsWith("/noms/affiche") -> {
+                    synchronized(nomsDemandes) { nomsDemandes += 1 }
+                    val saisi = Json.parseToJsonElement(request.body?.utf8().orEmpty()).jsonObject
+                    val nom = listOf(saisi.texte("prenom"), saisi.texte("nom").uppercase()).filter { it.isNotEmpty() }.joinToString(" ")
+                    json(200, """{"nom_affiche": "$nom"}""")
+                }
                 else -> json(404, """{"detail": "Introuvable."}""")
             }
         }
@@ -186,7 +200,22 @@ class ProfilInterfaceTest {
         ecran.onAllNodesWithText("réglage par défaut").assertCountEquals(0)
     }
 
+    /**
+     * #47 : sous le prénom et le nom, le nom tel qu'il sera affiché, rendu par le serveur —
+     * celui du compte d'emblée, sans le redemander ; la saisie changée, celui de la saisie.
+     */
+    @Test
+    fun leNomAfficheSuitLaSaisieDeLIdentite() {
+        ecran.toucherTag("profil.modifierIdentite")
+        ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(REPERE_NOM) and hasText("Camille EXEMPLE", substring = true)).fetchSemanticsNodes().isNotEmpty() }
+        assertTrue("le nom du compte ne se redemande pas", synchronized(nomsDemandes) { nomsDemandes.isEmpty() })
+        ecran.onNodeWithTag("profil.identite.prenom").performTextClearance()
+        ecran.onNodeWithTag("profil.identite.prenom").performTextInput("Dominique")
+        ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(REPERE_NOM) and hasText("Dominique EXEMPLE", substring = true)).fetchSemanticsNodes().isNotEmpty() }
+    }
+
     private companion object {
+        const val REPERE_NOM = "profil.identite.nom-affiche"
         const val DELAI_MS = 10_000L
     }
 }
