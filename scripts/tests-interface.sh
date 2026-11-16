@@ -23,14 +23,17 @@ if pgrep -x xcodebuild >/dev/null; then
   echo "⏸  une suite iOS (xcodebuild) tourne : une seule tâche lourde au poste — relancer à sa fin" >&2
   exit 3
 fi
-if pgrep -f qemu-system >/dev/null && ! pgrep -f 'qemu-system.*coprofirst' >/dev/null; then
+# Les émulateurs par leur EXÉCUTABLE (ps comm), pas par le texte des commandes : `pgrep -f`
+# trouvait aussi la ligne de commande de qui lance ce script, si elle nommait l'émulateur.
+emulateurs() { ps -axo comm=,args= | awk '$1 ~ /qemu-system/'; }
+if [ -n "$(emulateurs)" ] && ! emulateurs | grep -q -- '-avd coprofirst'; then
   echo "⏸  un autre émulateur tourne : une seule tâche lourde au poste — relancer à sa fin" >&2
   exit 3
 fi
 a() { for _ in $(seq 1 15); do [ "$("$ADB" get-state 2>/dev/null)" = device ] && "$ADB" "$@" 2>/dev/null && return 0; sleep 2; done; return 1; }
 
 DEMARRE=0
-if ! pgrep -f 'qemu-system.*coprofirst' >/dev/null; then
+if ! emulateurs | grep -q -- '-avd coprofirst'; then
   nohup "$SDK/emulator/emulator" -avd coprofirst -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect >/dev/null 2>&1 &
   DEMARRE=1
 fi
@@ -40,8 +43,15 @@ for _ in $(seq 1 90); do [ "$(a shell getprop sys.boot_completed | tr -d '\r')" 
 
 # Le démon partagé du poste (gradle.properties) : jamais --no-daemon ici.
 ./gradlew -q :app:assembleDebug :app:assembleDebugAndroidTest || exit 1
-a install -r app/build/outputs/apk/debug/app-debug.apk >/dev/null || { echo "❓ INCONNU : installation impossible" >&2; exit 2; }
-a install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk >/dev/null || { echo "❓ INCONNU : installation impossible" >&2; exit 2; }
+# `-d` : la version se déduit du nombre de commits ; une branche plus courte que la dernière
+# build installée rétrogradait, et l'installation était refusée (en silence : la raison
+# d'adb est désormais dite).
+installer() {
+  local sortie
+  sortie=$(a install -r -d "$1") || { echo "❓ INCONNU : installation impossible ($1) — $sortie" >&2; exit 2; }
+}
+installer app/build/outputs/apk/debug/app-debug.apk
+installer app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
 FILTRE=${1:+-e class $1}
 a shell "rm -f /data/local/tmp/resultat.txt; nohup am instrument -w -r $FILTRE fr.coprofirst.app.test/androidx.test.runner.AndroidJUnitRunner > /data/local/tmp/resultat.txt 2>&1 &"
 for _ in $(seq 1 200); do
