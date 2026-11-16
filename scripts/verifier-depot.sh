@@ -276,6 +276,10 @@ python3 -I scripts/verifier_securite_donnees.py \
 python3 -I scripts/verifier_fixtures.py \
   || echec "une réponse simulée ne dit pas ce que le serveur sert (python3 -I scripts/verifier_fixtures.py)"
 
+# Le contrôle avant soumission (#4) se prouve : il départage un vert, un rouge et un INCONNU.
+python3 -I scripts/controle_avant_soumission.py --autotest >/dev/null \
+  || echec "controle_avant_soumission.py : autotest en échec"
+
 # Un écran s'inscrit dans SON paquet (#109) : ni le build ni la navigation ne nomment un
 # menu. Les tables d'un menu se découvrent (`scripts/generer_tables_<menu>.py`), ses
 # pages et ses fiches s'inscrivent (`fonctions/<menu>/Inscription.kt`) — sans quoi deux
