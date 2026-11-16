@@ -52,6 +52,7 @@ import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.Libelle
+import fr.coprofirst.app.commun.PageHorsLigne
 import fr.coprofirst.app.commun.annuaire.Annuaire
 import fr.coprofirst.app.commun.annuaire.CarteContact
 import fr.coprofirst.app.commun.annuaire.Coordonnees
@@ -71,7 +72,7 @@ enum class AncreAnnuaire { Syndic }
 @Composable
 fun EcranAnnuaire(contexte: ContexteDeMenu) {
     val service = remember(contexte.session) { ServiceAnnuaireApi(contexte.session) }
-    EcranAnnuaire(service, contexte.session)
+    PageHorsLigne { EcranAnnuaire(service, contexte.session) }
 }
 
 /**

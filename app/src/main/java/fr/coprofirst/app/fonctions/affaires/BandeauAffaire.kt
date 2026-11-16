@@ -54,6 +54,7 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.AvisDuGeste
+import fr.coprofirst.app.commun.gesteEnLigne
 import kotlinx.coroutines.launch
 
 /** Une feuille ouverte depuis le bandeau. */
@@ -126,8 +127,9 @@ internal fun BandeauAffaire(
                     }
                 }
                 GesteAffaire.Options -> Box {
-                    IconButton({ options = true }, Modifier.testTag(repereGeste(g)), enabled = !enCours) {
-                        Icon(icone(g), contentDescription = libelle, tint = c.primary)
+                    val geste = gesteEnLigne(!enCours)
+                    IconButton({ options = true }, geste.modifier.testTag(repereGeste(g)), enabled = geste.actif) {
+                        Icon(icone(g), contentDescription = libelle, tint = if (geste.actif) c.primary else c.textMuted)
                     }
                     DropdownMenu(options, { options = false }) {
                         TablesAffaires.options.forEach { option ->
@@ -145,20 +147,26 @@ internal fun BandeauAffaire(
                         }
                     }
                 }
-                GesteAffaire.Archiver -> IconButton(
-                    { annonce.lancer(ressources.getString(R.string.geste_archivee)) { service.archiver(affaire.id) } },
-                    Modifier.testTag(repereGeste(g)), enabled = !enCours,
-                ) { Icon(icone(g), contentDescription = libelle, tint = c.primary) }
-                GesteAffaire.Repondre, GesteAffaire.Suite, GesteAffaire.Modifier -> IconButton(
-                    {
-                        feuille = when (g) {
-                            GesteAffaire.Repondre -> FeuilleGeste.Repondre
-                            GesteAffaire.Suite -> FeuilleGeste.Suite
-                            else -> FeuilleGeste.Modifier
-                        }
-                    },
-                    Modifier.testTag(repereGeste(g)),
-                ) { Icon(icone(g), contentDescription = libelle, tint = c.primary) }
+                GesteAffaire.Archiver -> {
+                    val geste = gesteEnLigne(!enCours)
+                    IconButton(
+                        { annonce.lancer(ressources.getString(R.string.geste_archivee)) { service.archiver(affaire.id) } },
+                        geste.modifier.testTag(repereGeste(g)), enabled = geste.actif,
+                    ) { Icon(icone(g), contentDescription = libelle, tint = if (geste.actif) c.primary else c.textMuted) }
+                }
+                GesteAffaire.Repondre, GesteAffaire.Suite, GesteAffaire.Modifier -> {
+                    val geste = gesteEnLigne()
+                    IconButton(
+                        {
+                            feuille = when (g) {
+                                GesteAffaire.Repondre -> FeuilleGeste.Repondre
+                                GesteAffaire.Suite -> FeuilleGeste.Suite
+                                else -> FeuilleGeste.Modifier
+                            }
+                        },
+                        geste.modifier.testTag(repereGeste(g)), enabled = geste.actif,
+                    ) { Icon(icone(g), contentDescription = libelle, tint = if (geste.actif) c.primary else c.textMuted) }
+                }
             }
         }
     }

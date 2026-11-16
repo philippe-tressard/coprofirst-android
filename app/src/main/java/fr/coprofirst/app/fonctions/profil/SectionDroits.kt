@@ -31,6 +31,7 @@ import fr.coprofirst.api.modeles.UserRead
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.commun.gesteEnLigne
 import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.Installation
 import kotlinx.coroutines.launch
@@ -76,9 +77,10 @@ fun SectionDroits(
         LigneAction(stringResource(R.string.profil_politique), "profil.droits.politique") {
             liens.openUri(installation.url.trimEnd('/') + "/" + CHEMIN_POLITIQUE)
         }
+        val enLigne = gesteEnLigne()
         Row(
-            Modifier.fillMaxWidth().heightIn(min = Mise.cible).testTag("profil.droits.refus")
-                .toggleable(value = refus, role = Role.Switch) { valeur ->
+            enLigne.modifier.fillMaxWidth().heightIn(min = Mise.cible).testTag("profil.droits.refus")
+                .toggleable(value = refus, enabled = enLigne.actif, role = Role.Switch) { valeur ->
                     modifie(compte.copy(optOutTelemetrie = valeur))
                     avec(echec = { e ->
                         modifie(compte)
@@ -93,7 +95,7 @@ fun SectionDroits(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(libelleRefus, color = couleurs.text, modifier = Modifier.weight(1f))
-            Switch(checked = refus, onCheckedChange = null)
+            Switch(checked = refus, onCheckedChange = null, enabled = enLigne.actif)
         }
         val pret = export
         if (pret != null) {
@@ -102,7 +104,8 @@ fun SectionDroits(
                 contexte.startActivity(Intent.createChooser(envoi, null))
             }
         } else {
-            LigneAction(stringResource(R.string.profil_exporter), "profil.droits.exporter", actif = !enCours) {
+            val exportation = gesteEnLigne(!enCours)
+            LigneAction(stringResource(R.string.profil_exporter), "profil.droits.exporter", actif = exportation.actif, modifier = exportation.modifier) {
                 enCours = true
                 avec(echec = { e ->
                     enCours = false
@@ -114,7 +117,10 @@ fun SectionDroits(
                 }
             }
         }
-        LigneAction(stringResource(R.string.profil_effacer), "profil.droits.effacer", detruit = true) { effacer = true }
+        val effacement = gesteEnLigne()
+        LigneAction(
+            stringResource(R.string.profil_effacer), "profil.droits.effacer", detruit = true, actif = effacement.actif, modifier = effacement.modifier,
+        ) { effacer = true }
         phrase?.let { Note(it.texte()) }
     }
     if (effacer) {

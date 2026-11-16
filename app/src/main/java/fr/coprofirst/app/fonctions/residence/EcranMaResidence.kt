@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.Chargement
+import fr.coprofirst.app.commun.PageHorsLigne
 import fr.coprofirst.app.commun.perimetres.Perimetre
 import fr.coprofirst.app.commun.pieces.AvisOuverture
 import fr.coprofirst.app.commun.pieces.rememberOuverture
@@ -93,7 +94,7 @@ sealed interface PageOuverte {
 fun EcranMaResidence(contexte: ContexteDeMenu) {
     val service = remember(contexte.session) { ServiceResidenceApi(contexte.session) }
     val annuaire = remember(contexte.session) { ServiceAnnuaireApi(contexte.session) }
-    EcranMaResidence(service, annuaire, contexte.droits, contexte.session, contexte.ouvrir)
+    PageHorsLigne { EcranMaResidence(service, annuaire, contexte.droits, contexte.session, contexte.ouvrir) }
 }
 
 /**

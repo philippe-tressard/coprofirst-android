@@ -69,6 +69,7 @@ import fr.coprofirst.app.commun.ChampRecherche
 import fr.coprofirst.app.commun.EtatVide
 import fr.coprofirst.app.commun.Pastille
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.gesteEnLigne
 import kotlinx.coroutines.launch
 import java.time.Instant
 
@@ -158,14 +159,16 @@ private fun LigneAffaire(affaire: Affaire, ctx: ContexteAffaires) {
             // Ce que le serveur permet à CE lecteur (`peut_archiver`) ; archiver, jamais supprimer.
             if (affaire.peutArchiver && !affaire.archivee) {
                 HorizontalDivider()
+                val geste = gesteEnLigne()
                 DropdownMenuItem(
+                    enabled = geste.actif,
                     text = { Text(stringResource(R.string.affaires_archiver)) },
                     leadingIcon = { Icon(Icons.Outlined.Archive, contentDescription = null) },
                     onClick = {
                         gestes = false
                         portee.launch { ctx.etat.archiver(affaire) }
                     },
-                    modifier = Modifier.testTag(ReperesAffaires.archiver(affaire.numero)),
+                    modifier = geste.modifier.testTag(ReperesAffaires.archiver(affaire.numero)),
                 )
             }
         }
@@ -218,7 +221,8 @@ private fun ListeVide(etat: EtatAffaires, nouvelle: () -> Unit) {
         )
         !etat.rechercheEnCours -> Column(verticalArrangement = Arrangement.spacedBy(Mise.ecart)) {
             EtatVide(stringResource(R.string.affaires_aucune), icone = Icons.Outlined.Inbox, explication = stringResource(R.string.affaires_aucune_aide))
-            BoutonPlein(R.string.nouvelle_titre, onClick = nouvelle)
+            val geste = gesteEnLigne()
+            BoutonPlein(R.string.nouvelle_titre, geste.modifier, actif = geste.actif, onClick = nouvelle)
         }
     }
 }

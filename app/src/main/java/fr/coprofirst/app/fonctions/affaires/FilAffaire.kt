@@ -75,6 +75,7 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Typo
+import fr.coprofirst.app.commun.gesteEnLigne
 import fr.coprofirst.app.commun.pieces.FormatPieces
 import fr.coprofirst.app.commun.pieces.PiecesJointes
 import fr.coprofirst.app.commun.pieces.PiecesJointesVue
@@ -311,13 +312,19 @@ private fun GestesDeLEntree(suite: SuiteAffaire?, choisir: ((GesteSuite, SuiteAf
     if (offerts.isEmpty()) return
     var menu by remember { mutableStateOf(false) }
     val ressources = LocalResources.current
-    val actions = offerts.map { g -> CustomAccessibilityAction(ressources.getString(libelleGesteSuite(g))) { choisir(g, suite); true } }
+    // Grisés en consultation hors ligne — et sans actions du lecteur d'écran, qui passeraient outre.
+    val geste = gesteEnLigne()
+    val actions = if (!geste.actif) emptyList() else offerts.map { g ->
+        CustomAccessibilityAction(ressources.getString(libelleGesteSuite(g))) { choisir(g, suite); true }
+    }
     Box {
         IconButton(
             { menu = true },
-            Modifier.size(32.dp).semantics { customActions = actions }.testTag(ReperesAffaires.gestesSuite(suite.id)),
+            geste.modifier.size(32.dp).semantics { customActions = actions }.testTag(ReperesAffaires.gestesSuite(suite.id)),
+            enabled = geste.actif,
         ) {
-            Icon(Icons.Outlined.MoreHoriz, contentDescription = stringResource(R.string.historique_gestes), tint = LocalCouleurs.current.primary)
+            val couleurs = LocalCouleurs.current
+            Icon(Icons.Outlined.MoreHoriz, contentDescription = stringResource(R.string.historique_gestes), tint = if (geste.actif) couleurs.primary else couleurs.textMuted)
         }
         DropdownMenu(menu, { menu = false }) {
             offerts.forEach { g ->
