@@ -46,30 +46,33 @@ fun EcranCommunaute(contexte: ContexteDeMenu) {
 
 @Composable
 internal fun EcranCommunaute(contexte: ContexteDeMenu, service: ServiceCommunaute) {
-    val page = remember(service) {
-        PageAOnglets(
-            AccesCommunaute.PAGE,
-            mapOf(
-                "sondages" to { onglet -> OngletSondages(onglet, service) },
-                "idees" to { onglet -> OngletIdees(onglet, service) },
-                "annonces" to { onglet -> OngletAnnonces(onglet, service) },
-                "avis" to { onglet -> OngletAvis(onglet, service) },
-            ),
-            reserve = R.string.communaute_reserve,
-        )
-    }
     Chargement(
-        charger = { AccesCommunaute.depuis(service.moi()) },
+        charger = { service.moi() },
         modifier = Modifier.fillMaxSize().background(LocalCouleurs.current.bg),
         squelette = { Column(Modifier.padding(Mise.marge)) { Carte { Text(contexte.page.titre) } } },
-    ) { acces, _ ->
-        when (acces) {
+    ) { moi, _ ->
+        when (val acces = AccesCommunaute.depuis(moi)) {
             is AccesCommunaute.Ferme -> Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
                 EtatVide(contexte.page.titre, icone = Icons.Outlined.Block, explication = stringResource(R.string.communaute_ferme, acces.motif))
             }
-            AccesCommunaute.Ouvert -> CadreAOnglets(contexte, page)
+            AccesCommunaute.Ouvert -> CadreAOnglets(contexte, rememberPage(service, moi.id))
         }
     }
+}
+
+/** La table des onglets ; `moi` : l'identifiant du compte, pour ne pas signaler ce qu'il a écrit. */
+@Composable
+private fun rememberPage(service: ServiceCommunaute, moi: Int) = remember(service, moi) {
+    PageAOnglets(
+        AccesCommunaute.PAGE,
+        mapOf(
+            "sondages" to { onglet -> OngletSondages(onglet, service) },
+            "idees" to { onglet -> OngletIdees(onglet, service, moi) },
+            "annonces" to { onglet -> OngletAnnonces(onglet, service, moi) },
+            "avis" to { onglet -> OngletAvis(onglet, service) },
+        ),
+        reserve = R.string.communaute_reserve,
+    )
 }
 
 /**

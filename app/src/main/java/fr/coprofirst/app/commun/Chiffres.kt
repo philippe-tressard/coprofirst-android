@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Philippe TRESSARD
 // SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 
-package fr.coprofirst.app.fonctions.espacecs
+package fr.coprofirst.app.commun
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -29,9 +29,9 @@ import fr.coprofirst.app.commun.formats.FormatsDuSite
 enum class AlerteChiffre { Avertissement, Danger }
 
 /**
- * Un chiffre de l'Espace CS (`kpi-card` du site), comme l'iOS (`CompteurFile`, `Chiffre`) :
- * la valeur, et ce qu'elle compte ; teinté quand il alerte. Un seul composant pour les
- * compteurs de la file et ceux du Reporting.
+ * Un chiffre (`kpi-card` du site), comme l'iOS (`CompteurFile`, `Chiffre`) : la valeur, et
+ * ce qu'elle compte ; teinté quand il alerte. Un seul composant pour les compteurs de la
+ * file de travail (`commun/validations`) et ceux du Reporting de l'Espace CS.
  */
 @Composable
 fun Chiffre(

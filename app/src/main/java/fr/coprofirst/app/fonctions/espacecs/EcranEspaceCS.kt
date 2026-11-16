@@ -8,6 +8,7 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.commun.onglets.CadreAOnglets
 import fr.coprofirst.app.commun.onglets.ContexteOnglet
 import fr.coprofirst.app.commun.onglets.PageAOnglets
+import fr.coprofirst.app.commun.validations.OngletComptesCS
 import fr.coprofirst.app.navigation.ContexteDeMenu
 
 /**
@@ -16,8 +17,8 @@ import fr.coprofirst.app.navigation.ContexteDeMenu
  * onglet que l'app ne porte pas encore dit « Bientôt » (le cadre).
  *
  * Le service de la page est découpé PAR ONGLET, comme l'iOS (`ServiceComptesCS`,
- * `ServiceBadgesCS`…) : la file « Comptes & accès » sert aussi « À traiter » du
- * Paramétrage (#26), qui n'en prend que sa part.
+ * `ServiceBadgesCS`…) : la file « Comptes & accès » est COMMUNE (`commun/validations`,
+ * `OngletComptesCS`) — « À traiter » du Paramétrage (#26) l'ouvre aussi.
  */
 @Composable
 fun EcranEspaceCS(contexte: ContexteDeMenu) = CadreAOnglets(contexte, PageEspaceCS)
@@ -26,7 +27,7 @@ fun EcranEspaceCS(contexte: ContexteDeMenu) = CadreAOnglets(contexte, PageEspace
 val PageEspaceCS = PageAOnglets(
     "espace-cs",
     mapOf<String, @Composable (ContexteOnglet) -> Unit>(
-        "validations" to { onglet -> OngletValidations(onglet) },
+        "validations" to { onglet -> OngletComptesCS(onglet) },
 
         "badges" to { onglet -> OngletBadges(onglet) },
 
@@ -34,23 +35,15 @@ val PageEspaceCS = PageAOnglets(
 
         "annonces-hall" to { onglet -> OngletAnnoncesHall(onglet) },
 
+        "annuaire" to { onglet -> OngletAnnuaireCS(onglet) },
+
         "courriels" to { onglet -> OngletCourriels(onglet) },
     ),
     reserve = R.string.espacecs_reserve,
 )
 
-/** Les repères des tests d'interface : les identifiants d'accessibilité de l'iOS. */
+/** Les repères des tests d'interface : les identifiants d'accessibilité de l'iOS (ceux de la file : `ReperesValidations`). */
 object ReperesEspaceCS {
-    const val COMPTEUR_COMPTES = "cs.compteur.comptes"
-    const val COMPTEUR_COMMANDES = "cs.compteur.commandes"
-    fun compte(id: Int) = "cs.compte.$id"
-    fun commande(id: Int) = "cs.commande.$id"
-    const val REJET_CONFIRMER = "cs.rejet.confirmer"
-    const val COMMANDE_CODES = "cs.commande.codes"
-    const val COMMANDE_ACCEPTER = "cs.commande.accepter"
-    const val NOUVEL_ARRIVANT = "cs.validation.nouvel-arrivant"
-    const val VALIDATION_ENREGISTRER = "cs.validation.enregistrer"
-
     const val BADGES_RECHERCHE = "cs.badges.recherche"
     const val BADGES_COMPTE = "cs.badges.compte"
     fun badgesType(code: String) = "cs.badges.type.$code"
@@ -84,4 +77,22 @@ object ReperesEspaceCS {
     const val RENOUVELLEMENTS_PREAVIS = "renouvellements.preavis"
     fun renouvellementContrat(id: Int) = "renouvellements.contrat.$id"
     fun renouvellementDiagnostic(id: Int) = "renouvellements.diagnostic.$id"
+
+    const val ANNUAIRE_CONSEIL = "cs.annuaire.conseil"
+    const val ANNUAIRE_CONSEIL_MODIFIER = "cs.annuaire.conseil.modifier"
+    const val ANNUAIRE_CONSEIL_AJOUTER = "cs.annuaire.conseil.ajouter"
+    fun annuaireConseil(rang: Int) = "cs.annuaire.conseil.$rang"
+    const val ANNUAIRE_SYNDIC = "cs.annuaire.syndic"
+    const val ANNUAIRE_SYNDIC_MODIFIER = "cs.annuaire.syndic.modifier"
+    const val ANNUAIRE_SYNDIC_AJOUTER = "cs.annuaire.syndic.ajouter"
+    fun annuaireSyndic(rang: Int) = "cs.annuaire.syndic.$rang"
+    const val ANNUAIRE_RETIRER_CONFIRMER = "cs.annuaire.retirer.confirmer"
+    const val FEUILLE_ENTETE_CONSEIL = "cs.feuille.entete-conseil"
+    const val FEUILLE_ENTETE_SYNDIC = "cs.feuille.entete-syndic"
+    const val FEUILLE_MEMBRE_CONSEIL = "cs.feuille.membre-conseil"
+    const val FEUILLE_MEMBRE_SYNDIC = "cs.feuille.membre-syndic"
+    const val FEUILLE_PRENOM = "cs.feuille.prenom"
+    const val FEUILLE_NOM = "cs.feuille.nom"
+    const val FEUILLE_NOM_AFFICHE = "cs.feuille.nom-affiche"
+    const val FEUILLE_LOGEMENT = "cs.feuille.logement"
 }

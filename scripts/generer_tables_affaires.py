@@ -14,6 +14,8 @@ publie dans `tables-clients.json` :
   de la palette générée (`Couleurs.kanban*`), jamais une couleur ;
 - ce qu'une colonne vide affiche (`motColonneVide`), la catégorie d'une actualité
   (`categorieActualite`) ;
+- les options de mise en avant d'une affaire (`optionsTicket`, `OPTIONS_TICKET`), avec
+  leurs mots (`optionsPublication`, `OPTIONS_PUBLICATION`) ;
 - la pastille (`badge-*`) de chaque statut (`statutsTicket`, `statutsTicketHistoriques`,
   `statutsTicketSansCycle`) — la teinte seule : le libellé est SERVI.
 
@@ -69,6 +71,18 @@ def pastilles(tables: dict) -> list[tuple[str, str]]:
     return sortie
 
 
+def options(tables: dict) -> list[tuple[str, str, str, str]]:
+    cles = valeur(tables, "optionsTicket")
+    if not isinstance(cles, list) or not cles:
+        raise TableInattendue("optionsTicket n'est pas une liste")
+    mots = {o.get("cle"): o for o in valeur(tables, "optionsPublication")}
+    manquantes = [c for c in cles if c not in mots]
+    if manquantes:
+        raise TableInattendue(f"optionsPublication ne décrit pas {manquantes}")
+    return [(c, texte(mots[c], "action", "optionsPublication"), texte(mots[c], "etat", "optionsPublication"),
+             texte(mots[c], "aide", "optionsPublication")) for c in cles]
+
+
 def kotlin(tables: dict, source: str) -> str:
     groupes = []
     for g in valeur(tables, "groupesSuivi"):
@@ -83,8 +97,8 @@ def kotlin(tables: dict, source: str) -> str:
         raise TableInattendue("motColonneVide ou categorieActualite n'est pas un texte")
     l = [
         "// GÉNÉRÉ par scripts/generer_tables_affaires.py — NE PAS MODIFIER À LA MAIN.",
-        f"// Source : {source} (groupesSuivi, colonnesKanban, motColonneVide,",
-        "// categorieActualite, statutsTicket, statutsTicketHistoriques, statutsTicketSansCycle).",
+        f"// Source : {source} (groupesSuivi, colonnesKanban, motColonneVide, categorieActualite,",
+        "// optionsTicket, optionsPublication, statutsTicket, statutsTicketHistoriques, statutsTicketSansCycle).",
         f"package {PAQUET}",
         "",
         "import androidx.compose.ui.graphics.Color",
@@ -100,6 +114,10 @@ def kotlin(tables: dict, source: str) -> str:
           "    /** La teinte de chaque colonne du Kanban, par son code (`KANBAN_COLS`) : un jeton de la palette. */",
           "    val teintesKanban: Map<String, (Couleurs) -> Color> = mapOf("]
     l += [f"        {chaine(c)} to {{ it.{j} }}," for c, j in teintes]
+    l += ["    )", "",
+          "    /** Les options de mise en avant d'une affaire, dans l'ordre du site (`OPTIONS_TICKET`, `OPTIONS_PUBLICATION`). */",
+          "    val options: List<OptionAffaire> = listOf("]
+    l += [f"        OptionAffaire({chaine(c)}, {chaine(a)}, {chaine(e)}, {chaine(d)})," for c, a, e, d in options(tables)]
     l += ["    )", "",
           "    /** La pastille (`badge-*`) de chaque statut — la teinte seule : le libellé est servi. */",
           "    val pastillesStatut: Map<String, String> = mapOf("]

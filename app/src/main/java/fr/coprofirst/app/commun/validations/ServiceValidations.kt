@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Philippe TRESSARD
 // SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 
-package fr.coprofirst.app.fonctions.espacecs
+package fr.coprofirst.app.commun.validations
 
 import fr.coprofirst.api.modeles.AccueilArrivantBody
 import fr.coprofirst.api.modeles.CommandeAccesEnAttente

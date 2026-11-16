@@ -40,6 +40,7 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.charte.Couleurs
 import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Carte
+import fr.coprofirst.app.commun.GRANDE_ECHELLE
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 
 /**

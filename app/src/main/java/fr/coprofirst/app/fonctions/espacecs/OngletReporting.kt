@@ -37,11 +37,14 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.commun.AlerteChiffre
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.Chargement
+import fr.coprofirst.app.commun.Chiffre
 import fr.coprofirst.app.commun.EtatVide
 import fr.coprofirst.app.commun.Pastille
 import fr.coprofirst.app.commun.PastilleTeinte
+import fr.coprofirst.app.commun.RangeeDeChiffres
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.onglets.ContexteOnglet
 import fr.coprofirst.app.navigation.Destination

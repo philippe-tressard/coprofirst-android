@@ -156,6 +156,34 @@ class ServiceCommunauteApiTest {
     }
 
     @Test
+    fun leFilDesReponsesEtLeSignalementPartentParLeursRoutes() = runTest {
+        repondre(201, """{"id": 30, "contenu": "Bonne idée", "cree_le": "2026-11-15T08:30:00Z", "auteur_nom": "Une voisine", "cible_id": 9}""")
+        service.repondre(FilCommunaute.Idee(9), "Bonne idée")
+        val (reponse, corpsReponse) = requete()
+        assertEquals("POST /api/idees/9/reponses", reponse)
+        assertEquals("Bonne idée", corps(corpsReponse)["contenu"]!!.jsonPrimitive.content)
+
+        repondre(201, """{"id": 31, "contenu": "Dispo ?", "cree_le": "2026-11-15T08:30:00Z", "auteur_nom": "Un voisin", "cible_id": 3}""")
+        service.repondre(FilCommunaute.Annonce(3), "Dispo ?")
+        assertEquals("POST /api/annonces/3/reponses", requete().first)
+
+        repondre(204, "")
+        service.supprimerReponse(FilCommunaute.Idee(9), 30)
+        assertEquals("DELETE /api/idees/9/reponses/30", requete().first)
+        repondre(204, "")
+        service.supprimerReponse(FilCommunaute.Annonce(3), 31)
+        assertEquals("DELETE /api/annonces/3/reponses/31", requete().first)
+
+        repondre(201, """{"id": 1}""")
+        service.signalerAuConseil(FilCommunaute.Annonce(3).signalement, "Contenu déplacé")
+        val (signalement, corpsSignalement) = requete()
+        assertEquals("POST /api/signalements", signalement)
+        val envoye = corps(corpsSignalement)
+        assertEquals("annonce", envoye["cible_type"]!!.jsonPrimitive.content)
+        assertEquals(3, envoye["cible_id"]!!.jsonPrimitive.int)
+    }
+
+    @Test
     fun unRefusDitLaPhraseDuServeur() = runTest {
         repondre(403, """{"detail": "Réservé à son auteur ou au conseil syndical."}""")
         try {

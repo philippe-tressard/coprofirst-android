@@ -24,8 +24,13 @@ data class EtatNotifications(
     val interrompue: SuppressionInterrompue? = null,
     /** Une relecture tirée du haut de la liste est en cours. */
     val rafraichissement: Boolean = false,
-    /** Augmente à chaque geste réussi qui se confirme au toucher (tout lu, suppressions groupées). */
+    /** Augmente à chaque geste réussi qui se confirme au toucher (tout lu, sélection supprimée). */
     val confirmations: Int = 0,
+    /**
+     * Augmente à chaque « Supprimer les lues » réussi : l'avis du site le dit (« Notifications
+     * lues supprimées »), avec son retour haptique — comme l'iOS, aucune autre confirmation.
+     */
+    val luesSupprimees: Int = 0,
 ) {
     val nonLues: Int get() = liste.count { !it.lue }
     val lues: Int get() = liste.size - nonLues
@@ -164,7 +169,7 @@ class ParcoursNotifications(private val service: ServiceNotifications) : ViewMod
     suspend fun supprimerLues(): Boolean {
         if (_etat.value.lues == 0) return false
         val reussi = tenter({ liste -> liste.filterNot { it.lue } }) { service.supprimerLues() }
-        if (reussi) confirmer()
+        if (reussi) _etat.update { it.copy(luesSupprimees = it.luesSupprimees + 1) }
         return reussi
     }
 

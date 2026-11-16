@@ -46,6 +46,7 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
+import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.formats.FormatsDuSite
@@ -55,6 +56,8 @@ import fr.coprofirst.app.commun.pieces.FormatPieces
 import fr.coprofirst.app.commun.pieces.PiecesJointes
 import fr.coprofirst.app.commun.pieces.PiecesJointesVue
 import fr.coprofirst.app.commun.texte.TexteRiche
+import fr.coprofirst.app.navigation.BarreDuHaut
+import fr.coprofirst.app.navigation.TitreDeBarre
 import fr.coprofirst.app.session.SessionOuverte
 import java.time.Instant
 
@@ -63,32 +66,55 @@ import java.time.Instant
  * (`DetailAffaireView`) : l'en-tête, le fil de l'affaire (la demande, la suite, les comptes
  * rendus, la synthèse) et, sauf sur une actualité, le fil des messages.
  *
- * ⚠️ Pour l'heure en lecture : les gestes du bandeau de l'iOS (Répondre, Suite, Modifier,
- * options, archiver, lien) arrivent avec la PR suivante de #16.
+ * En bas, le bandeau de ses gestes (`BandeauAffaire`) ; les gestes d'une entrée de la suite
+ * sont dans le fil (`GestesHistorique`).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun FicheAffaire(id: Int, service: ServiceAffaires, session: SessionOuverte) {
+internal fun FicheAffaire(id: Int, ctx: ContexteFiche) {
     Chargement(
-        charger = { service.affaire(id) },
+        charger = { ctx.service.affaire(id) },
         cle = id,
-        squelette = { ContenuAffaire(SQUELETTE, session) },
+        squelette = { ContenuAffaire(SQUELETTE, ctx.session) },
     ) { affaire, recharger ->
-        PullToRefreshBox(isRefreshing = false, onRefresh = recharger, modifier = Modifier.fillMaxSize()) {
-            ContenuAffaire(affaire, session)
+        val choix = remember(affaire.id) { ChoixDeSuite() }
+        // Le numéro de l'affaire en titre de la barre, comme l'iOS (`.navigationTitle`).
+        ctx.barre?.let { TitreDeBarre(it, affaire.numero) }
+        Column(Modifier.fillMaxSize()) {
+            PullToRefreshBox(isRefreshing = false, onRefresh = recharger, modifier = Modifier.weight(1f)) {
+                ContenuAffaire(affaire, ctx.session, choix::choisir)
+            }
+            BandeauAffaire(affaire, ctx.conseil, ctx.service, ctx.lienSite(affaire.id), ctx.avis, recharger)
         }
+        GestesHistorique(affaire, choix, ctx.service, ctx.avis, recharger)
     }
 }
 
+/** Ce que la fiche reçoit de la porte : le service, la session (pièces jointes), l'avis, le lien. */
+internal class ContexteFiche(
+    val service: ServiceAffaires,
+    val session: SessionOuverte,
+    /** Le compte est-il du conseil syndical ? Il suit par 🔄, il ne répond pas par 💬. */
+    val conseil: Boolean,
+    val avis: AvisDuGeste,
+    /** La barre du haut, qui prend le numéro en titre ; `null` hors de la résidence (tests). */
+    val barre: BarreDuHaut?,
+    val lienSite: (Int) -> String?,
+)
+
 @Composable
-private fun ContenuAffaire(affaire: DetailAffaire, session: SessionOuverte) {
+private fun ContenuAffaire(
+    affaire: DetailAffaire,
+    session: SessionOuverte,
+    gestesSuite: ((GesteSuite, SuiteAffaire) -> Unit)? = null,
+) {
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Column(Modifier.widthIn(max = 720.dp).fillMaxWidth().padding(horizontal = Mise.marge).padding(top = 16.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
             EnTeteAffaire(affaire)
-            FilAffaire(affaire, session)
+            FilAffaire(affaire, session, gestesSuite)
             // Pas de messages sur une actualité : elle informe, on n'y répond pas.
             if (!affaire.estActualite) FilMessages(affaire.messages, session)
         }
@@ -106,13 +132,11 @@ private fun EnTeteAffaire(affaire: DetailAffaire) {
                 color = if (affaire.estActualite) c.primary else c.filRouge,
             )
             if (affaire.urgente) Marque(Icons.Filled.Warning, stringResource(R.string.affaires_urgente), c.danger)
-            if (affaire.epingle) Marque(Icons.Filled.PushPin, null, c.primary, stringResource(R.string.affaire_epinglee))
+            if (affaire.epingle) Marque(Icons.Filled.PushPin, null, c.primary, TablesAffaires.options.firstOrNull { it.cle == OptionAffaire.EPINGLE }?.etat)
             if (affaire.archivee) Marque(Icons.Outlined.Archive, stringResource(R.string.affaire_archivee), c.textMuted)
             Spacer(Modifier.weight(1f))
             affaire.etat?.let { PastilleStatut(it.code, it.libelle) }
         }
-        // Le numéro : la barre du haut porte le titre de la fiche (« Affaire »), l'iOS y met le numéro.
-        Text(affaire.numero, style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum"), color = c.textMuted)
         Text(affaire.titre, Modifier.semantics { heading() }, style = Typo.titre(MaterialTheme.typography.headlineSmall), color = c.text)
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             EtiquetteLieu(affaire.lieu, style = MaterialTheme.typography.bodySmall)

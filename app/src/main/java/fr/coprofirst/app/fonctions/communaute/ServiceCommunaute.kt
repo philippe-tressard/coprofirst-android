@@ -13,6 +13,7 @@ import fr.coprofirst.api.modeles.AvisUpdate
 import fr.coprofirst.api.modeles.CategorieAnnonce
 import fr.coprofirst.api.modeles.IdeeCreate
 import fr.coprofirst.api.modeles.IdeeRead
+import fr.coprofirst.api.modeles.ReponseCreate
 import fr.coprofirst.api.modeles.SondageRead
 import fr.coprofirst.api.modeles.StatutAnnonce
 import fr.coprofirst.api.modeles.TypeAnnonce
@@ -21,6 +22,9 @@ import fr.coprofirst.api.routes.AuthApi
 import fr.coprofirst.api.routes.AvisApi
 import fr.coprofirst.api.routes.IdesApi
 import fr.coprofirst.api.routes.SondagesApi
+import fr.coprofirst.app.commun.CibleSignalement
+import fr.coprofirst.app.commun.ServiceSignalements
+import fr.coprofirst.app.commun.ServiceSignalementsApi
 import fr.coprofirst.app.navigation.DroitsOnglet
 import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.SessionOuverte
@@ -32,9 +36,10 @@ import java.math.BigDecimal
  * changer l'état d'une idée, modérer, répondre aux avis) reste au site, et l'écran le dit.
  * Chaque droit est SERVI : `peut_creer` (sondages), `peut_supprimer` (annonce),
  * `gestionnaire` et `mon_avis_id` (avis), `communaute_motif_refus` (le compte) — l'app ne
- * recalcule aucune règle de rôles.
+ * recalcule aucune règle de rôles. Signaler au conseil syndical : le service commun
+ * (`ServiceSignalements`), dont il hérite.
  */
-interface ServiceCommunaute {
+interface ServiceCommunaute : ServiceSignalements {
     /** GET /auth/me : qui regarde, et la conclusion du serveur sur son accès. */
     suspend fun moi(): MoiCommunaute
 
@@ -55,6 +60,10 @@ interface ServiceCommunaute {
     suspend fun changerStatutAnnonce(id: Int, statut: String)
     suspend fun supprimerAnnonce(id: Int)
 
+    /** POST /{idees|annonces}/{id}/reponses ; DELETE …/reponses/{rep}. */
+    suspend fun repondre(fil: FilCommunaute, texte: String)
+    suspend fun supprimerReponse(fil: FilCommunaute, reponse: Int)
+
     /** GET /avis ; POST /avis ; PATCH /avis/{id} ; PATCH /avis/{id}/archivage. */
     suspend fun avis(): AvisListe
     suspend fun deposerAvis(saisie: SaisieAvis)
@@ -63,7 +72,9 @@ interface ServiceCommunaute {
 }
 
 /** La Communauté par le client GÉNÉRÉ, à travers LA porte de la résidence. */
-class ServiceCommunauteApi(private val session: SessionOuverte) : ServiceCommunaute {
+class ServiceCommunauteApi(private val session: SessionOuverte) :
+    ServiceCommunaute,
+    ServiceSignalements by ServiceSignalementsApi(session) {
     override suspend fun moi() = session.appeler { b, c ->
         val moi = AuthApi(b, c).getAuthMe()
         MoiCommunaute(moi.id, DroitsOnglet.depuis(moi), moi.communauteMotifRefus?.takeIf { it.isNotBlank() })
@@ -108,6 +119,25 @@ class ServiceCommunauteApi(private val session: SessionOuverte) : ServiceCommuna
         session.appeler { b, c -> AnnoncesApi(b, c).deleteAnnoncesAnnonceId(id) }
     }
 
+    override suspend fun repondre(fil: FilCommunaute, texte: String) {
+        val corps = ReponseCreate(texte)
+        session.appeler { b, c ->
+            when (fil) {
+                is FilCommunaute.Idee -> IdesApi(b, c).postIdeesCibleIdReponses(fil.id, corps)
+                is FilCommunaute.Annonce -> AnnoncesApi(b, c).postAnnoncesCibleIdReponses(fil.id, corps)
+            }
+        }
+    }
+
+    override suspend fun supprimerReponse(fil: FilCommunaute, reponse: Int) {
+        session.appeler { b, c ->
+            when (fil) {
+                is FilCommunaute.Idee -> IdesApi(b, c).deleteIdeesCibleIdReponsesRepId(fil.id, reponse)
+                is FilCommunaute.Annonce -> AnnoncesApi(b, c).deleteAnnoncesCibleIdReponsesRepId(fil.id, reponse)
+            }
+        }
+    }
+
     override suspend fun avis() = session.appeler { b, c -> AvisApi(b, c).getAvis() }
 
     override suspend fun deposerAvis(saisie: SaisieAvis) {
@@ -122,5 +152,21 @@ class ServiceCommunauteApi(private val session: SessionOuverte) : ServiceCommuna
 
     override suspend fun archiverAvis(id: Int, archive: Boolean) {
         session.appeler { b, c -> AvisApi(b, c).patchAvisAvisIdArchivage(id, Archivage(archive)) }
+    }
+}
+
+/** Le contenu dont on lit et nourrit le fil des réponses — et qu'on signale au conseil. */
+sealed interface FilCommunaute {
+    val id: Int
+
+    /** Le contenu lui-même, pour POST /signalements (le type que le site envoie). */
+    val signalement: CibleSignalement
+
+    data class Idee(override val id: Int) : FilCommunaute {
+        override val signalement get() = CibleSignalement("idee", id)
+    }
+
+    data class Annonce(override val id: Int) : FilCommunaute {
+        override val signalement get() = CibleSignalement("annonce", id)
     }
 }

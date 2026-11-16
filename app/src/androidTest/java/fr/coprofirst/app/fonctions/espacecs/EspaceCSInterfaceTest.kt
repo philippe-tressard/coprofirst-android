@@ -22,6 +22,7 @@ import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.commun.GestesDeSortie
 import fr.coprofirst.app.commun.StockageApparence
 import fr.coprofirst.app.commun.onglets.ReperesOnglets
+import fr.coprofirst.app.commun.validations.ReperesValidations
 import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.navigation.ContexteDeMenu
 import fr.coprofirst.app.navigation.DroitsOnglet
@@ -171,31 +172,31 @@ class EspaceCSInterfaceTest {
 
     @Test
     fun approuverUnNouvelArrivantPuisAccepterUneCommande() {
-        attendreRepere(ReperesEspaceCS.compte(501))
-        attendreRepere(ReperesEspaceCS.COMPTEUR_COMPTES)
-        atteindre("${ReperesEspaceCS.compte(501)}.approuver")
-        toucher(ReperesEspaceCS.NOUVEL_ARRIVANT)
+        attendreRepere(ReperesValidations.compte(501))
+        attendreRepere(ReperesValidations.COMPTEUR_COMPTES)
+        atteindre("${ReperesValidations.compte(501)}.approuver")
+        toucher(ReperesValidations.NOUVEL_ARRIVANT)
         attendre("Ancien résident")
-        ecran.onNodeWithTag(ReperesEspaceCS.VALIDATION_ENREGISTRER).performScrollTo().performClick()
-        disparu(ReperesEspaceCS.compte(501))
+        ecran.onNodeWithTag(ReperesValidations.VALIDATION_ENREGISTRER).performScrollTo().performClick()
+        disparu(ReperesValidations.compte(501))
         attendre("Compte activé — 1 lot rattaché.")
         assertTrue(residence.recues.any { it.startsWith("POST /api/admin/utilisateurs/501/accueil-arrivant") })
 
-        atteindre("${ReperesEspaceCS.commande(71)}.approuver")
-        toucher(ReperesEspaceCS.COMMANDE_CODES)
-        ecran.onNodeWithTag(ReperesEspaceCS.COMMANDE_CODES).performTextInput("4521")
-        toucher(ReperesEspaceCS.COMMANDE_ACCEPTER)
-        disparu(ReperesEspaceCS.commande(71))
+        atteindre("${ReperesValidations.commande(71)}.approuver")
+        toucher(ReperesValidations.COMMANDE_CODES)
+        ecran.onNodeWithTag(ReperesValidations.COMMANDE_CODES).performTextInput("4521")
+        toucher(ReperesValidations.COMMANDE_ACCEPTER)
+        disparu(ReperesValidations.commande(71))
         attendre("Commande approuvée")
         assertTrue(residence.recues.any { it.contains("/admin/commandes-acces/71/traiter") && it.contains("\"4521\"") })
     }
 
     @Test
     fun rejeterUnCompte() {
-        atteindre("${ReperesEspaceCS.compte(503)}.rejeter")
+        atteindre("${ReperesValidations.compte(503)}.rejeter")
         attendre("Rejeter le compte de Alix MODÈLE ?")
-        toucher(ReperesEspaceCS.REJET_CONFIRMER)
-        disparu(ReperesEspaceCS.compte(503))
+        toucher(ReperesValidations.REJET_CONFIRMER)
+        disparu(ReperesValidations.compte(503))
         attendre("Compte rejeté")
     }
 
@@ -264,6 +265,25 @@ class EspaceCSInterfaceTest {
         attendreRepere(ReperesEspaceCS.RENOUVELLEMENTS_PREAVIS)
         attendre("Préavis en cours")
         attendreRepere(ReperesEspaceCS.renouvellementDiagnostic(1))
+    }
+
+    /** Annuaire CS & Syndic : les fiches, l'en-tête du conseil en feuille, puis un interlocuteur monté d'un rang. */
+    @Test
+    fun lAnnuaireDuConseilEtDuSyndic() {
+        atteindre(ReperesOnglets.onglet("annuaire"))
+        attendreRepere(ReperesEspaceCS.annuaireConseil(0))
+        attendre("Camille EXEMPLE")
+        atteindre(ReperesEspaceCS.ANNUAIRE_CONSEIL_MODIFIER)
+        attendreRepere(ReperesEspaceCS.FEUILLE_ENTETE_CONSEIL)
+        ecran.onNodeWithTag("${ReperesEspaceCS.FEUILLE_ENTETE_CONSEIL}.enregistrer").performScrollTo().performClick()
+        disparu(ReperesEspaceCS.FEUILLE_ENTETE_CONSEIL)
+        attendre("Conseil Syndical enregistré")
+        assertTrue(residence.recues.any { it.startsWith("PUT /api/admin/annuaire/cs") && it.contains("\"ag_annee\":2026") })
+
+        atteindre("${ReperesEspaceCS.annuaireSyndic(1)}.gestes")
+        toucher("${ReperesEspaceCS.annuaireSyndic(1)}.monter")
+        attendre("Syndic enregistré")
+        assertTrue(residence.recues.any { it.startsWith("PUT /api/admin/annuaire/syndic") && it.indexOf("Sacha") < it.indexOf("Dominique") })
     }
 
     private companion object {

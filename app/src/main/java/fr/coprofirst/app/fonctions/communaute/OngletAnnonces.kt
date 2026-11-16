@@ -37,6 +37,10 @@ import fr.coprofirst.app.commun.Pastille
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.onglets.ContexteOnglet
+import fr.coprofirst.app.commun.lecture.EtiquetteLieu
+import fr.coprofirst.app.commun.lecture.Lecture
+import fr.coprofirst.app.commun.lecture.LieuServi
+import fr.coprofirst.app.commun.lecture.PastilleLecture
 import fr.coprofirst.app.commun.texte.TexteDuSite
 
 /**
@@ -45,7 +49,7 @@ import fr.coprofirst.app.commun.texte.TexteDuSite
  * réponses) ; « + » en dépose une.
  */
 @Composable
-fun OngletAnnonces(contexte: ContexteOnglet, service: ServiceCommunaute) {
+fun OngletAnnonces(contexte: ContexteOnglet, service: ServiceCommunaute, moi: Int) {
     var nouvelle by rememberSaveable { mutableStateOf(false) }
     var relecture by rememberSaveable { mutableIntStateOf(0) }
     BoutonCreer(contexte.barre, R.string.annonces_deposer) { nouvelle = true }
@@ -54,7 +58,7 @@ fun OngletAnnonces(contexte: ContexteOnglet, service: ServiceCommunaute) {
         cle = contexte.actualisation to relecture,
         squelette = { LigneAnnonce(SQUELETTE) {} },
     ) { annonces, recharger ->
-        Annonces(annonces, contexte, service, recharger)
+        Annonces(annonces, contexte, service, moi, recharger)
     }
     if (nouvelle) {
         FormulaireAnnonce(contexte.avis, service, fermer = { nouvelle = false }) { relecture++ }
@@ -62,7 +66,7 @@ fun OngletAnnonces(contexte: ContexteOnglet, service: ServiceCommunaute) {
 }
 
 @Composable
-private fun Annonces(annonces: List<AnnonceRead>, contexte: ContexteOnglet, service: ServiceCommunaute, recharger: () -> Unit) {
+private fun Annonces(annonces: List<AnnonceRead>, contexte: ContexteOnglet, service: ServiceCommunaute, moi: Int, recharger: () -> Unit) {
     var type by rememberSaveable { mutableStateOf<String?>(null) }
     var categorie by rememberSaveable { mutableStateOf<String?>(null) }
     var tri by rememberSaveable { mutableStateOf(ReglesCommunaute.triParDefaut) }
@@ -100,7 +104,7 @@ private fun Annonces(annonces: List<AnnonceRead>, contexte: ContexteOnglet, serv
         }
     }
     ouverte?.let { id ->
-        DetailAnnonce(annonces.firstOrNull { it.id == id }, contexte, service, recharger) { ouverte = null }
+        DetailAnnonce(annonces.firstOrNull { it.id == id }, contexte, service, moi, recharger) { ouverte = null }
     }
 }
 
@@ -133,7 +137,7 @@ fun TypeAnnonce(annonce: AnnonceRead) {
     )
 }
 
-/** Le statut, la catégorie, le prix (« Négociable ») et l'auteur — dans l'ordre du site. */
+/** Le statut, la catégorie, le prix (« Négociable ») et l'auteur — dans l'ordre du site ; puis qui la lit et son lieu, servis. */
 @Composable
 fun EtiquettesAnnonce(annonce: AnnonceRead) {
     val couleurs = LocalCouleurs.current
@@ -149,6 +153,8 @@ fun EtiquettesAnnonce(annonce: AnnonceRead) {
             if (annonce.negotiable == true) Etiquette(stringResource(R.string.annonces_negociable))
         }
         auteurAnnonce(annonce)?.let { Etiquette(it) }
+        PastilleLecture(annonce.lecture?.let(Lecture::depuis))
+        EtiquetteLieu(LieuServi.lieu(annonce.perimetreLibelle))
     }
 }
 

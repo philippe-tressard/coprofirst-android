@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+
+Les textes du Paramétrage (page `admin`), écrits une fois — ceux du site
+(`OngletMaintenance.svelte`, `OngletTelemetrie.svelte`…) et de l'iOS (`TextesAdmin`,
+`TextesMaintenance`, `TextesTelemetrie`). Les noms des tâches et de leurs statuts sont
+GÉNÉRÉS (`TablesAdmin`).
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="fr">
+    <!-- Le cadre -->
+    <string name="admin_reserve">Le paramétrage est réservé à l\'administration et à l\'opérateur de la plateforme.</string>
+    <string name="admin_sur_le_site">Sur le site</string>
+
+    <!-- Maintenance -->
+    <string name="admin_maintenance_intro_operateur">Exécution des tâches planifiées sur les nœuds de l\'installation. Le nœud actif assure la maintenance applicative (purges, VACUUM) ; le nœud en veille fait son hygiène locale et transmet son rapport au nœud actif.</string>
+    <string name="admin_maintenance_intro_admin">La supervision technique de l\'installation — tâches planifiées, contrôles de fiabilité, base de données — est réservée à l\'opérateur de la plateforme.</string>
+    <string name="admin_maintenance_sante_titre">Santé des tâches planifiées</string>
+    <string name="admin_maintenance_export_titre">Export de la copropriété</string>
+    <string name="admin_maintenance_sur_le_site">Lancer une tâche, l\'historique de chaque exécution, les contrôles de fiabilité, le contrôle de santé, la consommation de l\'assistant IA, l\'export et sa vérification, et la conservation des affaires se font sur le site.</string>
+    <string name="admin_maintenance_dernier_rapport">Dernier rapport : %1$s</string>
+    <string name="admin_maintenance_en_retard">%1$s en retard</string>
+    <string name="admin_maintenance_anomalies">%1$s exécution(s) en échec ces %2$s derniers jours.</string>
+    <string name="admin_maintenance_aucun_export">Aucun export dans le volume des sauvegardes.</string>
+    <string name="admin_maintenance_dernier_export">Dernier export : %1$s — %2$s, %3$s lignes, %4$s fichiers.</string>
+    <string name="admin_maintenance_dernier_export_date">Dernier export : %1$s — %2$s, %3$s lignes, %4$s fichiers, le %5$s.</string>
+    <string name="admin_maintenance_squelette_tache">Sauvegarde quotidienne</string>
+
+    <!-- Télémétrie -->
+    <string name="admin_telemetrie_vide">Aucune donnée de télémétrie</string>
+    <string name="admin_telemetrie_vide_message">Les données apparaîtront après les premières visites.</string>
+    <string name="admin_telemetrie_sans_gestionnaire">Sans le gestionnaire du site</string>
+    <string name="admin_telemetrie_aucun_gestionnaire">Aucun gestionnaire du site n’est désigné (Copropriété › Fonctionnement) : le filtre « sans le gestionnaire du site » n’a donc rien à écarter.</string>
+    <string name="admin_telemetrie_filtre_applique">Les vues du gestionnaire du site sont écartées des indicateurs, du graphe, des pages, des utilisateurs, de « Qui vient » et des arrivées par notification. Les erreurs, les gestes et les durées d’affichage, sans compte, ne changent pas.</string>
+    <string name="admin_telemetrie_filtre_jusqu_au">Jusqu’au %1$s, les agrégats ne distinguaient pas le gestionnaire : ses vues y restent comptées.</string>
+    <string name="admin_telemetrie_pages_vues">Pages les plus vues</string>
+    <string name="admin_telemetrie_utilisateurs_actifs">Utilisateurs actifs</string>
+    <string name="admin_telemetrie_sur_le_site">Les erreurs vues par les résidents, « Qui vient », le retour des comptes, les gestes aboutis, les arrivées par notification et les durées d’affichage se consultent sur le site.</string>
+    <string name="admin_telemetrie_vue_jour">Jour</string>
+    <string name="admin_telemetrie_vue_mois">Mois (30 j)</string>
+    <string name="admin_telemetrie_vue_annee">Année (12 mois)</string>
+    <string name="admin_telemetrie_vue_total">Total (10 ans)</string>
+    <string name="admin_telemetrie_vues_et_uniques">%1$s vues · %2$s uniques</string>
+    <string name="admin_telemetrie_vues_et_pages">%1$s vues · %2$s pages</string>
+    <string name="admin_telemetrie_vues">%1$s vues</string>
+    <string name="admin_telemetrie_vues_uniques">%1$s vues, %2$s uniques</string>
+    <string name="admin_telemetrie_utilisateurs">%1$s utilisateurs</string>
+    <string name="admin_telemetrie_derniere_connexion">Dernière connexion : %1$s</string>
+    <!-- Les nombres clés, dans l'ordre du site (`FrequentationTelemetrie.svelte`) -->
+    <string name="admin_telemetrie_kpi_vues_jour">Pages vues aujourd\'hui</string>
+    <string name="admin_telemetrie_kpi_vues_mois">Pages vues (30 j)</string>
+    <string name="admin_telemetrie_kpi_vues_annee">Pages vues (12 mois)</string>
+    <string name="admin_telemetrie_kpi_vues_total">Pages vues (total)</string>
+    <string name="admin_telemetrie_kpi_utilisateurs_jour">Utilisateurs actifs aujourd\'hui</string>
+    <string name="admin_telemetrie_kpi_utilisateurs_pic">Utilisateurs uniques (pic)</string>
+    <string name="admin_telemetrie_kpi_pages">Pages distinctes visitées</string>
+    <string name="admin_telemetrie_kpi_heure_pointe">Heure de pointe</string>
+    <string name="admin_telemetrie_kpi_moy_vues_utilisateur">Moy. vues / utilisateur</string>
+    <string name="admin_telemetrie_kpi_moy_vues_jour">Moy. vues / jour</string>
+    <string name="admin_telemetrie_kpi_moy_utilisateurs_jour">Moy. utilisateurs / jour</string>
+    <string name="admin_telemetrie_kpi_mois_actifs">Mois avec activité</string>
+    <string name="admin_telemetrie_kpi_moy_vues_mois">Moy. vues / mois</string>
+    <string name="admin_telemetrie_kpi_annees_actives">Années avec activité</string>
+    <string name="admin_telemetrie_kpi_moy_vues_an">Moy. vues / an</string>
+    <string name="admin_telemetrie_kpi_record_jour">Record jour — %1$s</string>
+    <string name="admin_telemetrie_kpi_record_mois">Record mois — %1$s</string>
+
+    <!-- Utilisateurs (`OngletUtilisateurs.svelte`, `FiltresUtilisateurs.svelte`, `#lib/comptes.ts`) -->
+    <string name="admin_utilisateurs_recherche">Rechercher un nom, un e-mail…</string>
+    <string name="admin_utilisateurs_aucun_resultat">Aucun résultat</string>
+    <string name="admin_utilisateurs_tous_types">Tous types</string>
+    <string name="admin_utilisateurs_tous_comptes">Tous comptes</string>
+    <string name="admin_utilisateurs_actifs">Actifs</string>
+    <string name="admin_utilisateurs_en_attente">En attente</string>
+    <string name="admin_utilisateurs_actif">Actif</string>
+    <string name="admin_utilisateurs_email_non_verifie">Email non vérifié</string>
+    <string name="admin_utilisateurs_compteur_tous">%1$s comptes · %2$s au conseil syndical</string>
+    <string name="admin_utilisateurs_compteur_filtre">%1$s sur %2$s · %3$s au conseil syndical</string>
+    <string name="admin_utilisateurs_bailleur">Bailleur : %1$s</string>
+    <string name="admin_utilisateurs_purge_avertie">Inactif, averti le %1$s</string>
+    <string name="admin_utilisateurs_purge_aide">Supprimé trente jours après cet avertissement s\'il ne se reconnecte pas.</string>
+    <string name="admin_utilisateurs_banni">Exclu de la communauté</string>
+    <string name="admin_utilisateurs_ouvrir">Ouvre la fiche du compte</string>
+    <string name="admin_utilisateurs_sur_le_site">Modifier la fiche, ajouter ou retirer un rôle et l\'accueil d\'un arrivant se font sur le site.</string>
+    <string name="admin_utilisateurs_sur_le_site_sans_roles">Modifier la fiche et l\'accueil d\'un arrivant se font sur le site.</string>
+    <string name="admin_utilisateurs_squelette_nom">Prénom Nom du compte</string>
+    <string name="admin_utilisateurs_squelette_email">adresse@exemple.test</string>
+
+    <!-- La fiche d'un compte -->
+    <string name="admin_fiche_fermer">Fermer</string>
+    <string name="admin_fiche_compte">Compte</string>
+    <string name="admin_fiche_email">E-mail</string>
+    <string name="admin_fiche_type">Type</string>
+    <string name="admin_fiche_batiment">Bâtiment</string>
+    <string name="admin_fiche_inscription">Inscription</string>
+    <string name="admin_fiche_derniere_connexion">Dernière connexion</string>
+    <string name="admin_fiche_rattachements">Rattachements</string>
+    <string name="admin_fiche_communaute">Communauté</string>
+    <string name="admin_fiche_autorisee">Autorisée</string>
+    <string name="admin_fiche_banni_pour_de_bon">Banni définitivement</string>
+    <string name="admin_fiche_banni_jusqu_au">Banni jusqu\'au %1$s (probatoire)</string>
+    <string name="admin_fiche_interdire">Interdire la communauté</string>
+    <string name="admin_fiche_autoriser">Autoriser la communauté</string>
+    <string name="admin_fiche_rapprochement">Rejouer l\'auto-match des lots</string>
+    <string name="admin_fiche_supprimer">Supprimer le compte</string>
+    <string name="admin_fiche_confirmer_suppression">Le compte de %1$s (%2$s) sera supprimé définitivement.</string>
+    <string name="admin_fiche_annuler">Annuler</string>
+    <string name="admin_fiche_roles">Rôles</string>
+    <string name="admin_fiche_role_ajouter">Ajouter le rôle %1$s</string>
+    <string name="admin_fiche_role_retirer">Retirer le rôle %1$s</string>
+    <string name="admin_fiche_role_question_ajouter">Ajouter le rôle %1$s à %2$s ?</string>
+    <string name="admin_fiche_role_question_retirer">Retirer le rôle %1$s de %2$s ?</string>
+    <string name="admin_fiche_votre_compte">votre compte</string>
+    <string name="admin_fiche_notifie">Cette personne recevra une notification.</string>
+    <string name="admin_fiche_perdra_administration">Vous perdrez aussitôt l\'accès à l\'administration.</string>
+    <string name="admin_fiche_gardera_supervision">Vous n\'y garderez que la supervision de la plateforme.</string>
+    <string name="admin_fiche_operateur_par_exploitant">Opérateur désigné par l’exploitant</string>
+    <string name="admin_fiche_confirmer">Confirmer</string>
+    <!-- Les rattachements (`ETIQUETTES_COMPTE`), dans l'ordre du site -->
+    <string name="admin_fiche_loti">Loti</string>
+    <string name="admin_fiche_loti_ok">Rattaché à au moins un lot</string>
+    <string name="admin_fiche_loti_manque">Aucun lot rattaché</string>
+    <string name="admin_fiche_tc">TC</string>
+    <string name="admin_fiche_tc_ok">Porte une télécommande</string>
+    <string name="admin_fiche_tc_manque">Un parking, mais aucune télécommande</string>
+    <string name="admin_fiche_tc_sans_objet">Sans objet : aucun parking</string>
+    <string name="admin_fiche_vigik">Vigik</string>
+    <string name="admin_fiche_vigik_ok">Porte un badge Vigik</string>
+    <string name="admin_fiche_vigik_manque">Un appartement, mais aucun Vigik</string>
+    <string name="admin_fiche_vigik_sans_objet">Sans objet : aucun appartement</string>
+    <string name="admin_fiche_bail">Bail</string>
+    <string name="admin_fiche_bail_ok">Un bail enregistré</string>
+    <string name="admin_fiche_bail_manque">Bailleur ou locataire, mais aucun bail enregistré</string>
+    <string name="admin_fiche_bail_sans_objet">Sans objet : ni bailleur, ni locataire</string>
+
+    <!-- Les annonces des gestes -->
+    <string name="admin_annonce_banni_definitivement">%1$s banni définitivement de la communauté.</string>
+    <string name="admin_annonce_banni_un_mois">%1$s banni de la communauté pour 1 mois (probatoire).</string>
+    <string name="admin_annonce_reautorise">%1$s réautorisé à la communauté.</string>
+    <string name="admin_annonce_supprime">%1$s supprimé.</string>
+    <string name="admin_annonce_role_ajoute">Rôle %1$s ajouté à %2$s.</string>
+    <string name="admin_annonce_role_retire">Rôle %1$s retiré de %2$s.</string>
+
+    <!-- À traiter (`OngletATraiter.svelte`) -->
+    <string name="admin_demandes_titre">Demandes de profil</string>
+    <string name="admin_demandes_aucune">Aucune demande en attente.</string>
+    <string name="admin_demandes_type">Type</string>
+    <string name="admin_demandes_batiment">Bât.</string>
+    <string name="admin_demandes_souhait">%1$s : %2$s</string>
+    <string name="admin_demandes_rejeter">Rejeter la demande de %1$s ?</string>
+    <string name="admin_demandes_motif">Motif du refus (facultatif)</string>
+    <string name="admin_demandes_motif_indication">Motif…</string>
+</resources>

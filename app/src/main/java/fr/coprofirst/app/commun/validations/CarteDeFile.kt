@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Philippe TRESSARD
 // SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 
-package fr.coprofirst.app.fonctions.espacecs
+package fr.coprofirst.app.commun.validations
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -35,6 +35,7 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.Carte
+import fr.coprofirst.app.commun.GRANDE_ECHELLE
 
 /**
  * La carte d'une ligne d'une file de travail (comptes, commandes, demandes de profil du

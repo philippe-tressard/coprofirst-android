@@ -9,8 +9,10 @@ les teintes vivent dans le front du site, qui les publie dans `tables-clients.js
 
 - le descriptif de chaque onglet de la page `mon-lot` (`pages`) — les onglets
   eux-mêmes sont dans `OngletsDuSite` (scripts/generer_tables.py) ;
-- `statutsAcces` et `typesAcces` (`types-acces.ts`) ;
 - l'état d'un bail (`etatsBail`, `ETATS_BAIL` de `bail.ts`).
+
+L'état et la famille d'un accès (`statutsAcces`, `typesAcces`) sont communs à deux
+menus : `TablesAcces`, générée par scripts/generer_tables.py (#79).
 
 Une table qui change de forme : la génération s'arrête.
 
@@ -24,44 +26,22 @@ import pathlib
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-from generer_tables import TableInattendue, chaine  # noqa: E402
+from generer_tables import TableInattendue, chaine, teintes, texte, valeur  # noqa: E402
 
 PAQUET = "fr.coprofirst.app.fonctions.monlot"
-
-
-def valeur(tables: dict, nom: str):
-    v = tables.get(nom, {}).get("valeur")
-    if v is None:
-        raise TableInattendue(f"{nom} absente")
-    return v
-
-
-def texte(entree: dict, cle: str, table: str) -> str:
-    v = entree.get(cle)
-    if not isinstance(v, str):
-        raise TableInattendue(f"{table} : {cle} manquant ({entree})")
-    return v
-
-
-def teintes(nom: str, entrees: list[tuple[str, str, str]], doc: str) -> list[str]:
-    return [f"    /** {doc} */", f"    val {nom}: Map<String, LibelleTeinte> = mapOf("] + [
-        f"        {chaine(c)} to LibelleTeinte({chaine(l)}, {chaine(b)})," for c, l, b in entrees] + ["    )", ""]
 
 
 def kotlin(tables: dict, source: str) -> str:
     page = next((p for p in valeur(tables, "pages") if p.get("id") == "mon-lot"), None)
     if not page or not page.get("onglets"):
         raise TableInattendue("la page mon-lot et ses onglets sont absents")
-    statuts = [(texte(s, "val", "statutsAcces"), texte(s, "label", "statutsAcces"), texte(s, "badge", "statutsAcces"))
-               for s in valeur(tables, "statutsAcces")]
-    types = [(texte(t, "val", "typesAcces"), texte(t, "label", "typesAcces")) for t in valeur(tables, "typesAcces")]
     bail = valeur(tables, "etatsBail")
     if not isinstance(bail, dict) or not bail:
         raise TableInattendue("etatsBail n'est pas une table")
     etats = [(c, texte(v, "libelle", "etatsBail"), texte(v, "badge", "etatsBail")) for c, v in bail.items()]
     l = [
         "// GÉNÉRÉ par scripts/generer_tables_mon_lot.py — NE PAS MODIFIER À LA MAIN.",
-        f"// Source : {source} (pages, statutsAcces, typesAcces, etatsBail).",
+        f"// Source : {source} (pages, etatsBail).",
         f"package {PAQUET}",
         "",
         "import fr.coprofirst.app.commun.LibelleTeinte",
@@ -72,11 +52,6 @@ def kotlin(tables: dict, source: str) -> str:
         "    val descriptifs: Map<String, String> = mapOf(",
     ]
     l += [f"        {chaine(texte(o, 'id', 'pages'))} to {chaine(o.get('descriptif', ''))}," for o in page["onglets"]]
-    l += ["    )", ""]
-    l += teintes("statutsAcces", statuts, "L'état d'un badge ou d'une télécommande (`STATUTS_ACCES`).")
-    l += ["    /** Les deux familles d'accès, dans l'ordre du site (`TYPES_ACCES`) : code → libellé. */",
-          "    val typesAcces: List<Pair<String, String>> = listOf("]
-    l += [f"        {chaine(c)} to {chaine(lib)}," for c, lib in types]
     l += ["    )", ""]
     l += teintes("statutsBail", etats, "L'état d'un bail (`ETATS_BAIL`).")
     l += ["}", ""]

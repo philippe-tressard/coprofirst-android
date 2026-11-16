@@ -17,6 +17,7 @@ import androidx.compose.ui.test.performScrollToNode
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.api.NOTIFICATIONS_SELECTION_PAR_REQUETE
 import fr.coprofirst.app.ThemeCoproFirst
+import fr.coprofirst.app.commun.REPERE_AVIS
 import fr.coprofirst.app.navigation.ActionsDeclarees
 import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.session.ErreurService
@@ -156,7 +157,7 @@ class NotificationsInterfaceTest {
         ligne(2).assertIsDisplayed()
     }
 
-    /** « Supprimer les lues » : direct, confirmé — la confirmation dit ce qui part —, puis absent. */
+    /** « Supprimer les lues » : direct, confirmé — la confirmation dit ce qui part —, dit par l'avis, puis absent. */
     @Test
     fun lesLuesSeSupprimentDUnGeste() {
         ouvrir()
@@ -164,6 +165,8 @@ class NotificationsInterfaceTest {
         el("notifications.supprimerLues").assertIsDisplayed().performClick()
         attendreTexte("Les 138 notifications lues")
         el("notifications.confirmerSuppression").performClick()
+        attendreTexte("Notifications lues supprimées")
+        el(REPERE_AVIS).assertIsDisplayed()
         disparait("notification.3")
         ligne(5).assertIsDisplayed()
         disparait("notifications.supprimerLues")

@@ -55,10 +55,11 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   puis « Plus anciennes ». Un toucher marque lu ; « Tout marquer lu » en haut, avec le
   nombre de non lues ; « Supprimer les lues » en tête de la liste ; « Modifier » pour en
   choisir plusieurs et les supprimer — toute suppression se confirme, elle est
-  définitive. Balayer vers la droite marque lu, vers la gauche supprime. Tirer la liste
-  la relit. La cloche de chaque écran et les notifications push viendront ensuite.
+  définitive ; les lues supprimées, un avis le dit. Balayer vers la droite marque lu,
+  vers la gauche supprime. Tirer la liste la relit. La cloche, en haut de chaque page de
+  la résidence, ouvre la liste en feuille ; les notifications push viendront ensuite.
 - **FAQ** : les questions de la résidence par catégorie, une réponse dépliée à la fois ;
-  « Partager le lien » d'une question ; le Manuel utilisateur. La rédaction reste au site,
+  « Partager le lien » d'une question ; « Créer une affaire » et le Manuel utilisateur. La rédaction reste au site,
   et l'écran ne le dit qu'à qui le serveur l'ouvre.
 - **Mes lots & accès** (onglet « Accès ») : ses lots et leurs caractéristiques (vue du
   locataire, du bailleur, ou de tous les autres) ; ses badges Vigik et télécommandes,
@@ -74,12 +75,17 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   sans agir au nom de la personne aidée.
 - **Mes affaires** : Liste, Kanban (au conseil et aux copropriétaires) et Archives. La
   liste cherche au serveur (et propose les archives trouvées), se filtre par suivi, par
-  nature et par « ce qui me concerne » ; un appui long copie le numéro ou partage le
-  lien (archiver attend un correctif du client d'API, #99). Au Kanban, « Déplacer
+  nature et par « ce qui me concerne » ; un appui long copie le numéro, partage le lien
+  ou archive, si le serveur le permet. Au Kanban, « Déplacer
   vers… » change l'état — clore prévient quand des affaires liées pourraient être
   fusionnées, ce qui se fait sur le site. Les Archives se rangent par année. La fiche montre le fil de l'affaire (la
-  demande, la suite, les comptes rendus, la synthèse) et ses messages, en lecture ; la
-  saisie et les gestes de la fiche suivent (#16).
+  demande, la suite, les comptes rendus, la synthèse) et ses messages ; en bas, ses gestes
+  selon ce que le serveur ouvre au compte : copier ou partager le lien, Répondre, Ajouter
+  une suite (un commentaire ou un nouvel état), Modifier (seuls les champs changés
+  partent), épingler ou marquer urgente, archiver.
+  Chaque entrée de la suite se corrige ou se supprime (« ⋯ »), si le serveur le permet.
+  « Nouvelle affaire » (le « + » du haut) : catégorie, titre, description, lieu, urgence —
+  les photos, les prestataires et ce que le conseil désigne se règlent sur le site.
 - **Ma résidence** : la Fiche (photo, immatriculation, lots, assurance et syndic — qui
   ouvre l'annuaire du syndic —, composition par bâtiment ; règles, plans, règlement,
   comptes-rendus d'AG et diagnostics, chacun s'ouvrant dans l'app de l'appareil) ; aux
@@ -92,14 +98,28 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   écrit.
 - **Communauté** : les rubriques que le site ouvre au compte (un gestionnaire n'a que
   l'Avis ; un compte suspendu lit le motif du serveur). **Sondages** en cours puis
-  archivés — le vote et les résultats s'ouvrent sur le site pour l'instant (#70) ; « Créer,
+  archivés, chacun ouvrant sa fiche (vote, résultats, commentaires) ; « Créer,
   modifier ou stopper un sondage se fait sur le site » ne se dit qu'à qui le serveur le
   permet. **Boîte à idées** : les plus soutenues d'abord, un filtre par état, le cœur pour
   voter, « + » pour proposer une idée. **Petites annonces** : type, catégorie, tri ;
   l'annonce ouverte (photos, contact, état pour son auteur, suppression à qui le serveur
   l'ouvre), « + » pour en déposer une — les photos s'ajoutent sur le site. **Avis** sur
   l'application : filtre par note, réponse de l'équipe ; donner son avis, le corriger,
-  l'archiver ou le restaurer. Répondre et signaler se font encore sur le site (#70).
+  l'archiver ou le restaurer. Une idée ou une annonce ouverte porte le fil des réponses
+  (répondre, supprimer la sienne, signaler celles des autres) et « Signaler » au conseil
+  syndical ; chaque contenu dit qui le lit et où.
+- **Paramétrage** (administration et opérateur de la plateforme), en partie :
+  **À traiter** (la file des comptes et des commandes d'accès, celle de l'Espace CS, puis
+  les demandes de changement de profil : approuver, ou rejeter avec un motif facultatif),
+  **Utilisateurs** (recherche, type, état du compte, compteurs ; la fiche d'un compte,
+  ses rattachements, et les gestes que le serveur offre : interdire ou réautoriser la
+  communauté, ajouter ou retirer un rôle, rejouer l'auto-match des lots, supprimer —
+  chacun confirmé s'il le faut, puis annoncé), **Télémétrie** (quatre vues — jour, 30 jours, 12 mois, 10 ans —, le filtre « sans le
+  gestionnaire du site » quand il change quelque chose, les nombres clés, le graphe, les
+  pages les plus vues et les utilisateurs actifs) et **Maintenance** (à l'opérateur, la
+  santé des tâches planifiées et leurs échecs récents ; à l'administration, le dernier
+  export de la copropriété). Les autres onglets sont « Sur le site », chacun avec son
+  lien ; lancer une tâche ou un export reste au site, et l'écran le dit.
 
 Pas encore : les écrans des pages, le courriel retenu et la
 biométrie, les personnages de la démo, le QR code, les liens d'application (tickets

@@ -40,6 +40,7 @@ import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.Pastille
 import fr.coprofirst.app.commun.PastilleTeinte
+import fr.coprofirst.app.commun.annuaire.Coordonnees
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 
 /**
@@ -141,7 +142,7 @@ private fun CarteDuBail(bail: BailDuLocataire) {
         apres.forEach { (libelle, valeur) -> LigneFiche(libelle, valeur) }
         if (bail.nomBailleur != FormatsDuSite.TIRET) {
             HorizontalDivider(color = LocalCouleurs.current.border)
-            Coordonnees(bail.bailleurEmail, bail.bailleurTelephone, stringResource(R.string.monlot_proprietaire, bail.nomBailleur))
+            Coordonnees(bail.bailleurEmail, listOfNotNull(bail.bailleurTelephone), stringResource(R.string.monlot_proprietaire, bail.nomBailleur))
         }
     }
 }
@@ -201,7 +202,7 @@ private fun CarteLocataire(groupe: GroupesDeBaux.Groupe, lots: List<LotDuCompte>
                 )
                 PastilleTeinte(LibellesMonLot.statutBail(premier.statut), compacte = true)
             }
-            Coordonnees(premier.locataireEmail, premier.locataireTelephone)
+            Coordonnees(premier.locataireEmail, listOfNotNull(premier.locataireTelephone))
             groupe.baux.forEach { bail ->
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     lots.firstOrNull { it.id == bail.lotId }?.let { lot ->
