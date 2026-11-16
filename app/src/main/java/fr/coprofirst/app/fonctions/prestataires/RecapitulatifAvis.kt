@@ -45,6 +45,7 @@ import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.texte.Separateur
 import fr.coprofirst.app.session.ErreurService
 
 /** Les repères des avis : ceux de l'iOS. */
@@ -136,7 +137,7 @@ private fun nombres(exercice: ExerciceAvis): String {
         if (exercice.nbNotees > 1) R.string.prestataires_notees else R.string.prestataires_notees_une,
         FormatsDuSite.nombre(exercice.nbNotees),
     )
-    return "$interventions · $notees"
+    return "$interventions${Separateur.point}$notees"
 }
 
 @Composable
@@ -145,7 +146,7 @@ private fun LigneAvis(ligne: LigneIntervention, avisOuvert: Int?, basculer: (Int
     val titre = ligne.titre ?: stringResource(R.string.prestataires_avis_sans_affaire)
     Column(Modifier.padding(start = RETRAIT).padding(vertical = 2.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
-            ligne.date?.let { "${FormatsDuSite.date(it)} · $titre" } ?: titre,
+            ligne.date?.let { "${FormatsDuSite.date(it)}${Separateur.point}$titre" } ?: titre,
             style = MaterialTheme.typography.bodyMedium.copy(fontStyle = if (ligne.generaux) FontStyle.Italic else FontStyle.Normal),
             color = couleurs.text,
         )
@@ -194,7 +195,7 @@ private fun DetailAvis(avis: AvisPrestataire) {
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Text(
-            "${avis.auteurNom ?: FormatsDuSite.TIRET} · ${FormatsDuSite.date(avis.creeLe)}",
+            "${avis.auteurNom ?: FormatsDuSite.TIRET}${Separateur.point}${FormatsDuSite.date(avis.creeLe)}",
             style = MaterialTheme.typography.bodySmall,
             color = couleurs.textMuted,
         )

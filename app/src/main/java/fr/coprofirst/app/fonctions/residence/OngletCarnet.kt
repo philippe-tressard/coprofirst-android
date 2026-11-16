@@ -54,6 +54,7 @@ import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.onglets.OngletsSurLeSite
 import fr.coprofirst.app.commun.perimetres.Perimetre
+import fr.coprofirst.app.commun.texte.Separateur
 import fr.coprofirst.app.commun.texte.TexteDuSite
 import fr.coprofirst.app.navigation.Destination
 
@@ -153,7 +154,7 @@ private fun EncartAlerte(entrees: List<EntreeCarnet>) {
             fontWeight = FontWeight.SemiBold, color = couleurs.warningTexte,
         )
         entrees.forEach { entree ->
-            Text("• ${entree.libelle}" + (entree.alerte?.let { " — $it" } ?: ""), style = MaterialTheme.typography.bodyMedium, color = couleurs.warningTexte)
+            Text("• ${entree.libelle}" + (entree.alerte?.let { "${Separateur.tiret}$it" } ?: ""), style = MaterialTheme.typography.bodyMedium, color = couleurs.warningTexte)
         }
     }
 }

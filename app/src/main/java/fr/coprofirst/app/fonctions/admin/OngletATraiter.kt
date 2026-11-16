@@ -42,6 +42,7 @@ import fr.coprofirst.app.commun.PhraseAvis
 import fr.coprofirst.app.commun.Roles
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.onglets.ContexteOnglet
+import fr.coprofirst.app.commun.texte.Separateur
 import fr.coprofirst.app.commun.validations.CarteDeFile
 import fr.coprofirst.app.commun.validations.OngletComptesCS
 import fr.coprofirst.app.session.ErreurService
@@ -151,7 +152,7 @@ private fun LigneDemandeProfil(demande: DemandeProfil) {
     val couleurs = LocalCouleurs.current
     Text(demande.utilisateurNom, style = MaterialTheme.typography.titleMedium, color = couleurs.text)
     demande.utilisateurEmail?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = couleurs.textMuted) }
-    val actuel = listOfNotNull(demande.statutActuel?.let { Roles.statut(it).libelle }, demande.batimentActuel).joinToString(" — ")
+    val actuel = listOfNotNull(demande.statutActuel?.let { Roles.statut(it).libelle }, demande.batimentActuel).joinToString(Separateur.tiret)
     if (actuel.isNotEmpty()) Text(actuel, style = MaterialTheme.typography.bodyMedium, color = couleurs.textMuted)
     demande.statutSouhaite?.let { Souhait(stringResource(R.string.admin_demandes_type), Roles.statut(it).libelle) }
     demande.batimentNomSouhaite?.let { Souhait(stringResource(R.string.admin_demandes_batiment), it) }

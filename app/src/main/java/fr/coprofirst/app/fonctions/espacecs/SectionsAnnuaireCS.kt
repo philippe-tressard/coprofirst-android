@@ -41,6 +41,7 @@ import fr.coprofirst.app.commun.annuaire.Medaille
 import fr.coprofirst.app.commun.annuaire.medaillonsDuConseil
 import fr.coprofirst.app.commun.annuaire.medaillonsDuSyndic
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.texte.Separateur
 import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.SessionOuverte
 import kotlinx.coroutines.launch
@@ -92,7 +93,7 @@ internal fun SectionConseilCS(gestes: GestesAnnuaire, actualisation: Int) {
                         ),
                     ) {
                         if (logement.isNotEmpty()) {
-                            Text(logement.joinToString(" · "), style = MaterialTheme.typography.bodyMedium, color = c.textMuted)
+                            Text(logement.joinToString(Separateur.point), style = MaterialTheme.typography.bodyMedium, color = c.textMuted)
                         }
                         if (membre.userId != null) InscritLie()
                     }
@@ -231,7 +232,7 @@ internal fun <M> retenue(membres: List<M>, rang: Int?): M? = membres.getOrNull(r
 private fun texteAg(annee: Int?, date: String?): String {
     val debut = annee?.let { stringResource(R.string.espacecs_annuaire_ag, it.toString()) }
         ?: stringResource(R.string.espacecs_annuaire_ag_absente)
-    return FormatsDuSite.lire(date)?.let { "$debut · ${FormatsDuSite.dateCourte(it)}" } ?: debut
+    return FormatsDuSite.lire(date)?.let { "$debut${Separateur.point}${FormatsDuSite.dateCourte(it)}" } ?: debut
 }
 
 /** Un geste du menu d'une fiche. */

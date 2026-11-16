@@ -3,6 +3,8 @@
 
 package fr.coprofirst.app.commun.perimetres
 
+import fr.coprofirst.app.commun.texte.Separateur
+
 /**
  * L'arbre des périmètres tel que le CHOIX le parcourt, comme `ArbreDesPerimetres` de l'iOS
  * (`perimetresNiveau1` du site, `PerimetrePicker.svelte`) : une rangée de TÊTES — le défaut,
@@ -104,7 +106,7 @@ data class ChoixDePerimetres(
     fun libelleDeTete(tete: Perimetre, arbre: ArbreDesPerimetres): String {
         val retenus = espacesRetenus(tete.code, arbre)
         if (retenus.isEmpty()) return tete.libelle
-        return tete.libelle + " › " + retenus.joinToString(" · ") { it.libelleCourt ?: it.libelle }
+        return tete.libelle + " › " + retenus.joinToString(Separateur.point) { it.libelleCourt ?: it.libelle }
     }
 
     /** L'aide du choix : la description du seul code retenu, s'il en a une. */

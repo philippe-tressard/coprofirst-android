@@ -5,6 +5,7 @@ package fr.coprofirst.app.fonctions.residence
 
 import fr.coprofirst.api.modeles.ExtraitRead
 import fr.coprofirst.api.modeles.QuestionReglementRead
+import fr.coprofirst.app.commun.texte.Separateur
 import java.time.Instant
 
 /** L'état de l'assistant du règlement (GET /reglement). */
@@ -70,7 +71,7 @@ data class ExtraitReglement(
     val origine: String?
         get() {
             val morceaux = listOfNotNull(acte, rubrique, page).filter { it.isNotEmpty() }
-            return if (morceaux.isEmpty()) reference?.takeIf { it.isNotEmpty() } else morceaux.joinToString(TablesReglement.TIRET)
+            return if (morceaux.isEmpty()) reference?.takeIf { it.isNotEmpty() } else morceaux.joinToString(Separateur.tiret)
         }
 }
 
@@ -95,9 +96,6 @@ object TablesReglement {
 
     /** Un ton absent ou inconnu : le site le lit incertain. */
     const val BADGE_INCONNU = "badge-yellow"
-
-    /** Ce qui joint l'acte, la rubrique et la page d'un extrait. */
-    const val TIRET = " — "
 }
 
 internal fun ExtraitRead.lu() = ExtraitReglement(

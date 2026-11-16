@@ -4,6 +4,7 @@
 package fr.coprofirst.app.fonctions.apropos
 
 import fr.coprofirst.api.routes.ConfigApi
+import fr.coprofirst.app.commun.texte.Separateur
 import fr.coprofirst.app.session.SessionOuverte
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -36,7 +37,7 @@ data class AProposResidence(
 
         /** La mention du pied : l'année, le texte libre, puis la version de l'app (« app 0.8.13 »). */
         fun mention(lu: AProposResidence?, courante: Int, version: String?): String =
-            listOfNotNull(mentionAnnee(lu?.anneeDebut, courante), lu?.texte, version?.let { "app $it" }).joinToString(" · ")
+            listOfNotNull(mentionAnnee(lu?.anneeDebut, courante), lu?.texte, version?.let { "app $it" }).joinToString(Separateur.point)
     }
 }
 

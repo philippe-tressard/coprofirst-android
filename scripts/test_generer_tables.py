@@ -197,6 +197,25 @@ class Natures(unittest.TestCase):
             self.assertIn(f'NatureAffaire("{nature}"', texte)
 
 
+class Separateurs(unittest.TestCase):
+    """`Separateur` (#117) : la table publiée, l'espace insécable écrite échappée."""
+
+    def test_la_table_publiee(self):
+        tables = json.loads((RACINE / "contrat" / "tables-clients.json").read_text(encoding="utf-8"))["tables"]
+        texte = g.kotlin_separateurs(tables, "tables-clients.json")
+        self.assertIn('const val point = " ·\\u00A0"', texte)
+        self.assertIn('const val tiret = " —\\u00A0"', texte)
+        self.assertIn('const val fleche = " →\\u00A0"', texte)
+        self.assertNotIn("\u00a0", texte)
+
+    def test_une_forme_inattendue_arrete(self):
+        for valeur in (None, {"point": " ·\u00a0"}, {"point": " · ", "tiret": " —\u00a0", "fleche": " →\u00a0"},
+                       {"point": " ·\u00a0", "tiret": "—\u00a0", "fleche": " →\u00a0"},
+                       {"point": "  \u00a0", "tiret": " —\u00a0", "fleche": " →\u00a0"}):
+            with self.assertRaises(g.TableInattendue, msg=repr(valeur)):
+                g.kotlin_separateurs({"separateurs": {"valeur": valeur}}, "t")
+
+
 class Acces(unittest.TestCase):
     """`TablesAcces` : communes à « Mes lots & accès » et à l'Espace CS (#79)."""
 

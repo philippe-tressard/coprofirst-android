@@ -168,7 +168,7 @@ private fun SemanticsNodeInteraction.attendreImmobile(): SemanticsNodeInteractio
         Thread.sleep(PAS_IMMOBILE_MS)
         val apres = fetchSemanticsNode().boundsInRoot
         if (apres == avant) return this
-        check(System.nanoTime() < limite) { "Toucher : le nœud bouge encore après $IMMOBILE_MS ms ($avant → $apres)." }
+        check(System.nanoTime() < limite) { "Toucher : le nœud bouge encore après $IMMOBILE_MS ms ($avant →\u00A0$apres)." }
         avant = apres
     }
 }

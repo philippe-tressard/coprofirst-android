@@ -40,7 +40,7 @@ OngletGestionLocative, InventaireBail), repris de l'iOS (TextesAcces).
     <string name="monlot_entree">Entrée</string>
     <string name="monlot_sortie_prevue">Sortie prévue</string>
     <string name="monlot_depuis">Depuis le %1$s</string>
-    <string name="monlot_depuis_sortie">Depuis le %1$s · Sortie prévue %2$s</string>
+    <string name="monlot_depuis_sortie">Depuis le %1$s ·\u00A0Sortie prévue %2$s</string>
 
     <!-- Badges et télécommandes -->
     <string name="monlot_gestes">Nouvel accès ou déclaration</string>

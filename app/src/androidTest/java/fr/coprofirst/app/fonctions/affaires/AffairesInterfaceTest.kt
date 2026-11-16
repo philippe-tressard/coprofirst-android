@@ -301,7 +301,7 @@ class AffairesInterfaceTest {
     fun laFicheMontreLeFilEtLesMessages() {
         ouvrirFiche(1)
         ecran.attendreTag(ReperesAffaires.etape(EtapeFil.Cle.Suite), useUnmergedTree = true)
-        ecran.attendreTexte("Ouvert → Chez le syndic", useUnmergedTree = true)
+        ecran.attendreTexte("Ouvert →\u00A0Chez le syndic", useUnmergedTree = true)
         ecran.attendreTag(ReperesAffaires.message(41), useUnmergedTree = true)
         el(ReperesAffaires.element("suite.31")).toucher()
         ecran.attendreTexte("Le syndic est prévenu.", useUnmergedTree = true)

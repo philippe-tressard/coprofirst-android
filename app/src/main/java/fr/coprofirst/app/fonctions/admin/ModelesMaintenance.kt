@@ -4,12 +4,13 @@
 package fr.coprofirst.app.fonctions.admin
 
 import fr.coprofirst.api.modeles.AnomalieRecente
+import fr.coprofirst.api.modeles.DernierExport as DernierExportLu
 import fr.coprofirst.api.modeles.SanteMaintenance
 import fr.coprofirst.api.modeles.SanteTache
 import fr.coprofirst.app.commun.LibelleTeinte
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.texte.Separateur
 import java.time.Instant
-import fr.coprofirst.api.modeles.DernierExport as DernierExportLu
 
 /**
  * La santé des tâches planifiées, telle que le serveur la juge (`utils/etat_taches`) :
@@ -59,7 +60,7 @@ object LibellesMaintenance {
 
     /** « Copie hors site (manuelle) · nœud-a · 10/11/2026, 01:15 » : la ligne d'une anomalie. */
     fun anomalie(a: SanteTaches.Anomalie): String =
-        listOfNotNull(tache(a.tache), a.noeud, a.creeLe?.let(FormatsDuSite::dateHeure)).joinToString(" · ")
+        listOfNotNull(tache(a.tache), a.noeud, a.creeLe?.let(FormatsDuSite::dateHeure)).joinToString(Separateur.point)
 
     private const val STATUT_OK = "ok"
 }

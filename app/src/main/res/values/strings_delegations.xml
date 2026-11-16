@@ -31,7 +31,7 @@ Les textes des « Délégations aidant », écrits une fois — ceux de la page 
     <string name="delegations_acceptee">Délégation acceptée</string>
     <string name="delegations_revoquee">Délégation révoquée</string>
     <string name="delegations_creee">Délégation créée</string>
-    <string name="delegations_periode_illimitee">Du %1$s — illimité</string>
+    <string name="delegations_periode_illimitee">Du %1$s —\u00A0illimité</string>
     <string name="delegations_periode">Du %1$s au %2$s</string>
     <string name="delegations_squelette_aidee">Une personne aidée</string>
     <string name="delegations_squelette_aidant">Son proche aidant</string>

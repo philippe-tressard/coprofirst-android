@@ -23,8 +23,8 @@ GÉNÉRÉS (`TablesAdmin`).
     <string name="admin_maintenance_en_retard">%1$s en retard</string>
     <string name="admin_maintenance_anomalies">%1$s exécution(s) en échec ces %2$s derniers jours.</string>
     <string name="admin_maintenance_aucun_export">Aucun export dans le volume des sauvegardes.</string>
-    <string name="admin_maintenance_dernier_export">Dernier export : %1$s — %2$s, %3$s lignes, %4$s fichiers.</string>
-    <string name="admin_maintenance_dernier_export_date">Dernier export : %1$s — %2$s, %3$s lignes, %4$s fichiers, le %5$s.</string>
+    <string name="admin_maintenance_dernier_export">Dernier export : %1$s —\u00A0%2$s, %3$s lignes, %4$s fichiers.</string>
+    <string name="admin_maintenance_dernier_export_date">Dernier export : %1$s —\u00A0%2$s, %3$s lignes, %4$s fichiers, le %5$s.</string>
     <string name="admin_maintenance_squelette_tache">Sauvegarde quotidienne</string>
 
     <!-- Télémétrie -->
@@ -38,7 +38,7 @@ GÉNÉRÉS (`TablesAdmin`).
     <!-- « Accès : site ou application » (#127), les mots de l'iOS (`TextesTelemetrie`, `CanauxAcces.svelte`). -->
     <string name="admin_telemetrie_filtre_repartition">de la répartition par accès,\u0020</string>
     <string name="admin_telemetrie_acces">Accès : site ou application</string>
-    <string name="admin_telemetrie_vues_et_part">%1$s vues · %2$s %%</string>
+    <string name="admin_telemetrie_vues_et_part">%1$s vues ·\u00A0%2$s %%</string>
     <string name="admin_telemetrie_un_seul_acces">Toutes les vues de la période viennent de : %1$s. L’application ne compte ses pages vues que depuis la version qui les envoie.</string>
     <string name="admin_telemetrie_utilisateurs_par_acces">Un utilisateur qui passe par le site et par l’application compte dans les deux lignes : les utilisateurs ne s’additionnent pas.</string>
     <string name="admin_telemetrie_utilisateurs_actifs">Utilisateurs actifs</string>
@@ -47,8 +47,8 @@ GÉNÉRÉS (`TablesAdmin`).
     <string name="admin_telemetrie_vue_mois">Mois (30 j)</string>
     <string name="admin_telemetrie_vue_annee">Année (12 mois)</string>
     <string name="admin_telemetrie_vue_total">Total (10 ans)</string>
-    <string name="admin_telemetrie_vues_et_uniques">%1$s vues · %2$s uniques</string>
-    <string name="admin_telemetrie_vues_et_pages">%1$s vues · %2$s pages</string>
+    <string name="admin_telemetrie_vues_et_uniques">%1$s vues ·\u00A0%2$s uniques</string>
+    <string name="admin_telemetrie_vues_et_pages">%1$s vues ·\u00A0%2$s pages</string>
     <string name="admin_telemetrie_vues">%1$s vues</string>
     <string name="admin_telemetrie_vues_uniques">%1$s vues, %2$s uniques</string>
     <string name="admin_telemetrie_utilisateurs">%1$s utilisateurs</string>
@@ -69,8 +69,8 @@ GÉNÉRÉS (`TablesAdmin`).
     <string name="admin_telemetrie_kpi_moy_vues_mois">Moy. vues / mois</string>
     <string name="admin_telemetrie_kpi_annees_actives">Années avec activité</string>
     <string name="admin_telemetrie_kpi_moy_vues_an">Moy. vues / an</string>
-    <string name="admin_telemetrie_kpi_record_jour">Record jour — %1$s</string>
-    <string name="admin_telemetrie_kpi_record_mois">Record mois — %1$s</string>
+    <string name="admin_telemetrie_kpi_record_jour">Record jour —\u00A0%1$s</string>
+    <string name="admin_telemetrie_kpi_record_mois">Record mois —\u00A0%1$s</string>
 
     <!-- Utilisateurs (`OngletUtilisateurs.svelte`, `FiltresUtilisateurs.svelte`, `#lib/comptes.ts`) -->
     <string name="admin_utilisateurs_recherche">Rechercher un nom, un e-mail…</string>
@@ -81,8 +81,8 @@ GÉNÉRÉS (`TablesAdmin`).
     <string name="admin_utilisateurs_en_attente">En attente</string>
     <string name="admin_utilisateurs_actif">Actif</string>
     <string name="admin_utilisateurs_email_non_verifie">Email non vérifié</string>
-    <string name="admin_utilisateurs_compteur_tous">%1$s comptes · %2$s au conseil syndical</string>
-    <string name="admin_utilisateurs_compteur_filtre">%1$s sur %2$s · %3$s au conseil syndical</string>
+    <string name="admin_utilisateurs_compteur_tous">%1$s comptes ·\u00A0%2$s au conseil syndical</string>
+    <string name="admin_utilisateurs_compteur_filtre">%1$s sur %2$s ·\u00A0%3$s au conseil syndical</string>
     <string name="admin_utilisateurs_bailleur">Bailleur : %1$s</string>
     <string name="admin_utilisateurs_purge_avertie">Inactif, averti le %1$s</string>
     <string name="admin_utilisateurs_purge_aide">Supprimé trente jours après cet avertissement s\'il ne se reconnecte pas.</string>
