@@ -5,6 +5,7 @@ package fr.coprofirst.app.commun
 
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SemanticsNodeInteraction
@@ -15,6 +16,7 @@ import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.NoActivityResumedException
@@ -64,13 +66,18 @@ fun SemanticsNodeInteraction.amener(): SemanticsNodeInteraction {
     for (id in ancetres.asReversed()) {
         val noeud = fetchSemanticsNode()
         val ancetre = noeud.ancetresDefilants().firstOrNull { it.id == id } ?: continue
-        val (dx, dy) = ecart(noeud.boundsInRoot, ancetre.boundsInRoot)
+        // La place NON rognée du nœud (`boundsInRoot` est rogné par les ancêtres : hors de
+        // la vue, il vaut zéro) contre la partie visible de l'ancêtre.
+        val (dx, dy) = ecart(Rect(noeud.positionInRoot, noeud.size.toSize()), ancetre.boundsInRoot)
         if (dx != 0f || dy != 0f) {
             InstrumentationRegistry.getInstrumentation().runOnMainSync {
                 ancetre.config[SemanticsActions.ScrollBy].action?.invoke(dx, dy)
             }
         }
     }
+    // Puis le chemin éprouvé de Compose pour l'ancêtre le plus proche : il cale le nœud
+    // exactement (et ne fait rien s'il est déjà visible).
+    if (ancetres.isNotEmpty()) performScrollTo()
     return this
 }
 
@@ -104,8 +111,9 @@ private fun SemanticsNodeInteraction.afficheOuDitOu(): SemanticsNodeInteraction 
         assertIsDisplayed()
     } catch (e: AssertionError) {
         val noeud = fetchSemanticsNode()
-        val ancetres = noeud.ancetresDefilants().joinToString { it.boundsInWindow.toString() }
-        throw AssertionError("${e.message} — nœud ${noeud.boundsInWindow}, ancêtres défilants [$ancetres]", e)
+        val place = Rect(noeud.positionInRoot, noeud.size.toSize())
+        val ancetres = noeud.ancetresDefilants().joinToString { it.boundsInRoot.toString() }
+        throw AssertionError("${e.message} — nœud $place (non rogné), ancêtres défilants visibles [$ancetres]", e)
     }
     return this
 }
