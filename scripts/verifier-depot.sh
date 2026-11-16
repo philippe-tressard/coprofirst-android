@@ -141,12 +141,13 @@ autotest_motif "routes en dur" "$REQUETE_MAIN" 'val u = "https://" + hote + "/ap
 DISPENSES_REQUETE='^app/src/main/java/fr/coprofirst/app/(session/PreuveHote|commun/pieces/FichierProtege)\.kt$'
 interdire "$REQUETE_MAIN" "requête ou route écrite à la main — passer par le client généré (client-api)" "$DISPENSES_REQUETE"
 
-# Le bouton plein (fond `primaryPlein`, texte `surPlein`, comme le `.plein` de l'iOS)
-# s'écrit une fois, dans `BoutonPlein` : un `Button(` de Material ailleurs reprendrait
-# les couleurs par défaut, illisibles au sombre (constaté le 15/11/2026).
+# Le bouton plein (texte `surPlein` sur un fond plein de la charte, comme le `.plein` de
+# l'iOS) s'écrit une fois, dans `Boutons.kt` (`BoutonPlein`, `BoutonPleinDestructif`) : un
+# `Button(` de Material ailleurs reprendrait les couleurs par défaut, illisibles au sombre
+# (constaté le 15/11/2026).
 BOUTON_PLEIN='(^|[^A-Za-z])Button\('
 autotest_motif "bouton plein" "$BOUTON_PLEIN" '    Button(onClick = f) { Text("x") }' '    TextButton(onClick = f) { Text("x") }'
-interdire "$BOUTON_PLEIN" "bouton plein écrit à la main — passer par BoutonPlein" '^app/src/main/java/fr/coprofirst/app/commun/Boutons\.kt$'
+interdire "$BOUTON_PLEIN" "bouton plein écrit à la main — passer par BoutonPlein ou BoutonPleinDestructif" '^app/src/main/java/fr/coprofirst/app/commun/Boutons\.kt$'
 
 # Le libellé en capitales (`.styleLibelle()` de l'iOS) s'écrit une fois, `Libelle` de
 # commun/Fiche.kt : recopié à la main dans une vingtaine d'écrans, il divergeait déjà —

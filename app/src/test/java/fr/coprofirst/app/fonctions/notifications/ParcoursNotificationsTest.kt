@@ -209,6 +209,27 @@ class ParcoursNotificationsTest {
         assertEquals(ErreurService.Injoignable, parcours.etat.value.echec)
     }
 
+    /** La page nourrit la cloche (`CompteurNonLues`) : à la lecture, puis après chaque geste, réussi ou non. */
+    @Test
+    fun laClocheSuitChaqueLectureEtChaqueGeste() = runTest {
+        val notes = mutableListOf<Int>()
+        val serveur = ServeurFactice(listOf(alerte(1, 1.0), alerte(2, 2.0), alerte(3, 30.0, lue = true)))
+        val parcours = ParcoursNotifications(serveur) { notes += it }
+        parcours.charger()
+        assertEquals("la lecture note les non lues", listOf(2), notes)
+
+        parcours.marquerLue(parcours.etat.value.liste[0])
+        assertEquals(listOf(2, 1), notes)
+
+        parcours.toutMarquerLu()
+        assertEquals("tout lu : le point s'éteint", listOf(2, 1, 0), notes)
+
+        val refuse = ParcoursNotifications(ServeurFactice(listOf(alerte(1, 1.0), alerte(2, 2.0)), refuse = true)) { notes += it }
+        refuse.charger()
+        refuse.toutMarquerLu()
+        assertEquals("refusé : la liste revient, et la cloche garde son nombre", listOf(2, 2), notes.takeLast(2))
+    }
+
     @Test
     fun uneSelectionVideNEnvoieRien() = runTest {
         val serveur = ServeurFactice(listOf(alerte(1, 1.0)))

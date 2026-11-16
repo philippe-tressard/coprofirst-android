@@ -76,8 +76,14 @@ sealed interface SuppressionDemandee {
  * Les notifications de la résidence ouverte : chargement, liste, gestes — comme
  * `EtatNotifications` de l'iOS. Chaque geste se voit tout de suite ; s'il échoue, la liste
  * revient et une phrase le dit.
+ *
+ * `noterNonLues` reçoit le nombre de non lues après chaque lecture et chaque geste, réussi ou
+ * non : la cloche le montre (`CompteurNonLues`, noté pour la résidence de l'écran).
  */
-class ParcoursNotifications(private val service: ServiceNotifications) : ViewModel() {
+class ParcoursNotifications(
+    private val service: ServiceNotifications,
+    private val noterNonLues: (Int) -> Unit = {},
+) : ViewModel() {
     private val _etat = MutableStateFlow(EtatNotifications())
     val etat: StateFlow<EtatNotifications> = _etat.asStateFlow()
     private var chargee = false
@@ -92,10 +98,17 @@ class ParcoursNotifications(private val service: ServiceNotifications) : ViewMod
             viewModelScope.launch { relire() }
             return
         }
-        val liste = service.notifications()
+        recevoir(service.notifications())
+    }
+
+    /** Une liste lue du serveur : elle remplace la liste, efface l'échec, et la cloche suit. */
+    private fun recevoir(liste: List<NotificationRecue>) {
         chargee = true
         _etat.update { it.copy(liste = liste, echec = null, interrompue = null) }
+        noter()
     }
+
+    private fun noter() = noterNonLues(_etat.value.nonLues)
 
     /** Tirée du haut de la liste : la relecture se voit, son échec se dit. */
     fun rafraichir() {
@@ -108,9 +121,7 @@ class ParcoursNotifications(private val service: ServiceNotifications) : ViewMod
 
     private suspend fun relire() {
         try {
-            val liste = service.notifications()
-            chargee = true
-            _etat.update { it.copy(liste = liste, echec = null, interrompue = null) }
+            recevoir(service.notifications())
         } catch (e: ErreurService) {
             _etat.update { it.copy(echec = e, interrompue = null) }
         }
@@ -187,6 +198,7 @@ class ParcoursNotifications(private val service: ServiceNotifications) : ViewMod
     /**
      * Le geste se voit tout de suite ; s'il échoue, la liste revient et une phrase le dit.
      * Un geste interrompu après un premier succès ne rend que ce que le serveur n'a pas supprimé.
+     * Au bout, réussi ou non, la cloche reçoit le nombre qui reste (l'iOS de même).
      */
     private suspend fun tenter(local: (List<NotificationRecue>) -> List<NotificationRecue>, appel: suspend () -> Unit): Boolean {
         val avant = _etat.value.liste
@@ -200,6 +212,8 @@ class ParcoursNotifications(private val service: ServiceNotifications) : ViewMod
         } catch (e: ErreurService) {
             _etat.update { it.copy(liste = avant, echec = e) }
             false
+        } finally {
+            noter()
         }
     }
 

@@ -52,12 +52,13 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   toutes les résidences », au bas du Profil. La saisie d'une affaire et les préférences
   de notification se règlent encore sur le site (#47).
 - **Notifications** : les alertes du compte, « Aujourd'hui » (les 24 dernières heures)
-  puis « Plus anciennes ». Un toucher marque lu ; « Tout marquer lu » en haut, avec le
-  nombre de non lues ; « Supprimer les lues » en tête de la liste ; « Modifier » pour en
-  choisir plusieurs et les supprimer — toute suppression se confirme, elle est
-  définitive ; les lues supprimées, un avis le dit. Balayer vers la droite marque lu,
-  vers la gauche supprime. Tirer la liste la relit. La cloche, en haut de chaque page de
-  la résidence, ouvre la liste en feuille ; les notifications push viendront ensuite.
+  puis « Plus anciennes ». Un toucher marque lu ; « Tout marquer lu » en haut, le
+  nombre de non lues sous le titre ; « Supprimer les lues » en tête de la liste ;
+  « Modifier » pour en choisir plusieurs et les supprimer — toute suppression se confirme,
+  elle est définitive ; les lues supprimées, un avis le dit. Balayer vers la droite marque
+  lu, vers la gauche supprime. Tirer la liste la relit. La cloche, en haut de chaque page
+  de la résidence, ouvre la liste en feuille ; un point y dit qu'une alerte attend (le
+  nombre, au lecteur d'écran). Les notifications push viendront ensuite.
 - **FAQ** : les questions de la résidence par catégorie, une réponse dépliée à la fois ;
   « Partager le lien » d'une question ; « Créer une affaire » et le Manuel utilisateur. La rédaction reste au site,
   et l'écran ne le dit qu'à qui le serveur l'ouvre.

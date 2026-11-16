@@ -7,13 +7,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import fr.coprofirst.app.R
+import fr.coprofirst.app.commun.phrase
 
-/** Les phrases composées de l'écran, comme `TextesNotifications` de l'iOS. */
+/**
+ * Les phrases composées de l'écran, comme `TextesNotifications` de l'iOS. « 12 non lues »
+ * est commune (`CompteurNonLues.phrase`) : la cloche la dit aussi.
+ */
 object TextesNotifications {
-    /** « 1 non lue », « 3 non lues ». */
-    @Composable
-    fun nonLues(nombre: Int): String = pluralStringResource(R.plurals.notifications_non_lues, nombre, nombre)
-
     /** « Supprimer », puis « Supprimer (3) » dès qu'une sélection existe. */
     @Composable
     fun supprimerSelection(nombre: Int): String =
@@ -41,11 +41,19 @@ object TextesNotifications {
         if (demande is SuppressionDemandee.Selection) supprimerSelection(demande.ids.size) else stringResource(R.string.notifications_supprimer)
 
     /**
-     * « 500 notifications sur 1200 ont été supprimées ; les 700 autres sont toujours là. »
-     * La phrase de la raison suit, dite par `MessageErreur`.
+     * Ce que l'écran dit d'un geste qui a échoué, en UNE phrase (`phraseEchec` de l'iOS) : la
+     * raison ; pour une sélection interrompue, d'abord ce qui est parti et ce qui demeure.
+     * `null` : rien n'a échoué.
      */
     @Composable
-    fun interrompue(e: SuppressionInterrompue): String {
+    fun echec(etat: EtatNotifications): String? {
+        val raison = etat.echec?.phrase() ?: return null
+        return etat.interrompue?.let { interrompue(it) + " " + raison } ?: raison
+    }
+
+    /** « 500 notifications sur 1200 ont été supprimées ; les 700 autres sont toujours là. » */
+    @Composable
+    private fun interrompue(e: SuppressionInterrompue): String {
         val parties = e.parties.size
         val reste = e.demandees - parties
         val fait = pluralStringResource(R.plurals.notifications_interrompue_fait, parties, parties, e.demandees)

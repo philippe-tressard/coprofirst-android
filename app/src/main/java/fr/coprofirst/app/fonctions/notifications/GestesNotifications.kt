@@ -7,7 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -40,20 +39,23 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.commun.BoutonPleinDestructif
 import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.navigation.ActionsDeBarre
 import fr.coprofirst.app.navigation.BarreDuHaut
+import fr.coprofirst.app.navigation.CompteurNonLues
+import fr.coprofirst.app.navigation.SousTitreDeBarre
 
 /**
  * Dans la barre du haut, comme le `toolbar` de l'iOS : « Tout marquer lu » dès qu'une
  * alerte attend, ou, en édition, « Tout sélectionner » ; « Modifier » / « OK » dès que la
- * liste a une alerte.
+ * liste a une alerte. Sous le titre, « 12 non lues » dès qu'une alerte attend (le
+ * `navigationSubtitle` de l'iOS, `SousTitreDeBarre`).
  *
  * ⚠️ Divergence déclarée : la barre d'Android n'a qu'un emplacement, à droite, et deux
  * libellés y effaceraient le titre sur un téléphone étroit — « Tout marquer lu » et « Tout
  * sélectionner » y sont des icônes, leur libellé dit au lecteur d'écran (avec le nombre
- * de non lues, comme l'indice VoiceOver de l'iOS). Le nombre visible, que l'iOS met sous
- * le titre, va en tête de la liste (`NombreNonLues`) : la barre n'a pas de sous-titre (#120).
+ * de non lues, comme l'indice VoiceOver de l'iOS).
  */
 @Composable
 fun ActionsNotifications(
@@ -65,7 +67,8 @@ fun ActionsNotifications(
     toutChoisir: (toutes: Boolean) -> Unit,
     basculer: () -> Unit,
 ) {
-    val nonLues = TextesNotifications.nonLues(etat.nonLues)
+    val nonLues = CompteurNonLues.phrase(etat.nonLues)
+    SousTitreDeBarre(barre, nonLues.takeIf { etat.nonLues > 0 })
     val marquer = stringResource(R.string.notifications_tout_marquer_lu)
     val choisir = stringResource(if (toutesChoisies) R.string.notifications_tout_deselectionner else R.string.notifications_tout_selectionner)
     val bascule = stringResource(if (enEdition) R.string.notifications_terminer else R.string.notifications_modifier)
@@ -88,17 +91,6 @@ fun ActionsNotifications(
             }
         }
     }
-}
-
-/** « 12 non lues », en tête de la liste (le sous-titre de l'iOS). */
-@Composable
-fun NombreNonLues(nombre: Int) {
-    Text(
-        TextesNotifications.nonLues(nombre),
-        style = MaterialTheme.typography.labelMedium,
-        color = LocalCouleurs.current.textMuted,
-        modifier = Modifier.testTag("notifications.nonLues"),
-    )
 }
 
 /**
@@ -131,27 +123,23 @@ fun GesteSurLesLues(actif: Boolean, demander: () -> Unit) {
 
 /**
  * En édition : supprimer la sélection, au bas de l'écran, au-dessus de la barre de la
- * résidence. ⚠️ Divergence déclarée : l'iOS en fait un bouton plein rouge ; la couche
- * commune n'a pas encore de bouton destructif plein (#120) — un bouton texte rouge d'ici là.
+ * résidence — un bouton plein rouge calé à droite, comme l'iOS ; il attend une sélection.
  */
 @Composable
 fun BarreDeSuppression(nombre: Int, demander: () -> Unit) {
     val couleurs = LocalCouleurs.current
     HorizontalDivider(color = couleurs.border)
     Row(
-        Modifier.fillMaxWidth().background(couleurs.surface).padding(horizontal = Mise.marge, vertical = 4.dp),
+        Modifier.fillMaxWidth().background(couleurs.surface).padding(horizontal = Mise.marge, vertical = 8.dp),
         horizontalArrangement = Arrangement.End,
     ) {
-        TextButton(
+        BoutonPleinDestructif(
+            TextesNotifications.supprimerSelection(nombre),
+            Modifier.testTag("notifications.supprimerSelection"),
+            actif = nombre > 0,
+            icone = Icons.Outlined.Delete,
             onClick = demander,
-            enabled = nombre > 0,
-            colors = ButtonDefaults.textButtonColors(contentColor = couleurs.danger),
-            modifier = Modifier.heightIn(min = Mise.cible).testTag("notifications.supprimerSelection"),
-        ) {
-            Icon(Icons.Outlined.Delete, contentDescription = null, modifier = Modifier.size(20.dp))
-            Spacer(Modifier.size(8.dp))
-            Text(TextesNotifications.supprimerSelection(nombre), fontWeight = FontWeight.SemiBold)
-        }
+        )
     }
 }
 

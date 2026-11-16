@@ -16,7 +16,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.NotificationsOff
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,7 +35,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.AvisDuGeste
@@ -46,6 +44,7 @@ import fr.coprofirst.app.commun.EtatVide
 import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.navigation.BarreDuHaut
+import fr.coprofirst.app.navigation.CompteurNonLues
 import fr.coprofirst.app.navigation.ContexteDeMenu
 import java.time.Instant
 
@@ -58,18 +57,23 @@ import java.time.Instant
  * choisir plusieurs alertes et de les supprimer. Le balayage reste un raccourci, et un
  * toucher marque lu. Toute suppression se confirme : elle est définitive.
  *
- * « Tout marquer lu » et « Modifier » sont dans la barre du haut, comme l'iOS
- * (`ActionsNotifications`, et sa divergence déclarée). Les lues supprimées, l'avis du site
- * le dit (« Notifications lues supprimées », `AvisEphemere`), comme l'iOS. La cloche, qui
- * ouvre cet écran en feuille avec « OK », est commune (`navigation/Cloche.kt`) ; l'offre
- * des notifications push vient avec #23.
+ * « Tout marquer lu » et « Modifier » sont dans la barre du haut, « 12 non lues » sous son
+ * titre, comme l'iOS (`ActionsNotifications`, et sa divergence déclarée). Un échec se dit en
+ * une phrase (`MessageErreur`, `TextesNotifications.echec`). Les lues supprimées, l'avis du
+ * site le dit (« Notifications lues supprimées », `AvisEphemere`), comme l'iOS. La cloche,
+ * qui ouvre cet écran en feuille avec « OK », est commune (`navigation/Cloche.kt`) : la page
+ * lui note le nombre de non lues à chaque lecture et à chaque geste (`CompteurNonLues`) ;
+ * l'offre des notifications push vient avec #23.
  */
 @Composable
 fun EcranNotifications(contexte: ContexteDeMenu) {
     val session = contexte.session
+    val residence = session.installation.url
     val parcours: ParcoursNotifications = viewModel(
         key = "notifications@${System.identityHashCode(session)}",
-        factory = viewModelFactory { initializer { ParcoursNotifications(ServiceNotificationsApi(session)) } },
+        factory = viewModelFactory {
+            initializer { ParcoursNotifications(ServiceNotificationsApi(session)) { CompteurNonLues.partage.noter(residence, it) } }
+        },
     )
     EcranNotifications(parcours, contexte.barre)
 }
@@ -91,6 +95,7 @@ private fun ListeNotifications(parcours: ParcoursNotifications, barre: BarreDuHa
     val haptique = LocalHapticFeedback.current
     val avis = remember { AvisDuGeste() }
     val luesSupprimees = stringResource(R.string.notifications_lues_supprimees)
+    val echec = TextesNotifications.echec(etat)
     // Le dernier « Supprimer les lues » déjà dit : un écran recomposé (rotation, retour
     // sur la page) ne redit pas un avis passé.
     var avisDits by rememberSaveable { mutableIntStateOf(etat.luesSupprimees) }
@@ -135,23 +140,15 @@ private fun ListeNotifications(parcours: ParcoursNotifications, barre: BarreDuHa
                     contentPadding = PaddingValues(horizontal = Mise.marge, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(Mise.ecart),
                 ) {
-                    if (etat.nonLues > 0 && !enEdition) item(key = "nonLues") { NombreNonLues(etat.nonLues) }
-                    etat.echec?.let { echec ->
-                        item(key = "echec") {
-                            // L'iOS dit l'interruption et sa raison dans UN message ; `MessageErreur`
-                            // ne prend qu'une `ErreurService` (#120) : la phrase de l'interruption le précède.
-                            Column(Modifier.testTag("notifications.echec")) {
-                                etat.interrompue?.let { Text(TextesNotifications.interrompue(it), color = LocalCouleurs.current.text) }
-                                MessageErreur(echec)
-                            }
-                        }
+                    echec?.let { phrase ->
+                        item(key = "echec") { MessageErreur(phrase, Modifier.testTag("notifications.echec")) }
                     }
                     if (etat.lues > 0) {
                         item(key = "lues") {
                             GesteSurLesLues(actif = !enEdition) { aConfirmer = SuppressionDemandee.Lues(etat.lues) }
                         }
                     }
-                    if (etat.liste.isEmpty() && etat.echec == null) {
+                    if (etat.liste.isEmpty() && echec == null) {
                         item(key = "vide") {
                             EtatVide(
                                 titre = stringResource(R.string.notifications_vide),

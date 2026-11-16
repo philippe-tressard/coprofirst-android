@@ -113,6 +113,8 @@ inscription :
 | `EcranResidence` | `OngletsView` | La barre (4 pages + « Plus ») ; en haut, la cloche. |
 | `ActionsDeBarre(contexte) { … }` | `.toolbar` | Les actions de la barre du haut, déclarées par l'écran affiché. |
 | `TitreDeBarre(contexte.barre, titre)` | `.navigationTitle` | Le titre de la barre du haut, posé par l'écran affiché (le numéro d'une affaire poussée) ; retiré quand il le quitte. |
+| `SousTitreDeBarre(contexte.barre, texte?)` | `.navigationSubtitle` | Le sous-titre, sous le titre (« 12 non lues ») ; `null` : aucun. Posé par l'écran affiché, retiré quand il le quitte — dans la barre de la résidence comme dans celle d'une `FeuillePleine` (repère `barre.sousTitre`). |
+| `EnTeteDeBarre(titre, sousTitre?)` | — | Le titre (serif, annoncé comme titre) et le sous-titre d'une barre, tels que la résidence et `FeuillePleine` les affichent ; un écran ne l'appelle pas. |
 | `contexte.ouvrir(Destination)`, `RegistreDesMenus.fiches`, `FicheDeMenu` | `parcours.suivre`, `Destination`, `Aiguillage` | La porte : ouvrir une page, la fiche d'un élément ou la cloche depuis un écran. |
 
 ## Session — `fr.coprofirst.app.session`
@@ -141,11 +143,13 @@ class ServiceProfilApi(private val session: SessionOuverte) : ServiceProfil {
 |---|---|---|
 | `Chargement(charger, squelette, contenu)` | `Chargement` | Charger puis montrer : squelette estompé, puis contenu ; sur un échec, `MessageErreur` et « Réessayer ». `contenu(valeur, recharger)`. `cle` relance quand elle change. |
 | `MessageErreur(erreur, reessayer?)` | `MessageErreur` | Une erreur en une phrase (celle du serveur s'il en donne une), sur `dangerFond`, annoncée au lecteur d'écran. |
+| `MessageErreur(texte, reessayer?)` | `MessageErreur(texte:)` | La même, pour une phrase que l'écran compose (« 500 notifications sur 1200 ont été supprimées ; … » puis la raison) : même mise en forme, même « Réessayer ». La version `erreur` passe par elle. |
 | `ErreurService.phrase()` | `.phrase` | La phrase d'une erreur, en `@Composable`. |
 | `EtatVide(titre, icone?, explication?)` | `ContentUnavailableView` | Une liste vide, dite. |
 | `Carte(ouvrir?, action?) { … }` | `Carte` | La surface d'une carte : `surface`, filet `border`, sans ombre ; touchable si `ouvrir`. |
 | `PastilleTeinte(libelle, badge, compacte?)`, `LibelleTeinte` | `PastilleTeinte` | Une pastille d'état : la classe `badge-*` du site → couleurs de la charte ; `LibelleTeinte.brut(v)` pour une valeur inconnue (en gris). |
-| `BoutonPlein(libelle, actif?, enCours?)` | `.plein` | Le bouton principal ; le seul `Button` de l'app. |
+| `BoutonPlein(libelle, actif?, enCours?)` | `.plein` | Le bouton principal (`primaryPlein`), toute la largeur. Le `Button` de Material ne s'écrit que dans `Boutons.kt`. |
+| `BoutonPleinDestructif(libelle, actif?, icone?)` | `Button(role: .destructive)` plein | Le bouton plein d'un geste définitif : fond `dangerPlein`, texte `surPlein`, `icone` avant le libellé ; à la largeur de son libellé (l'écran le place). « Supprimer (3) » des notifications. |
 | `BoutonContour(libelle)` | `.contour` | Le bouton secondaire. |
 | `Roles.statut(v)`, `Roles.role(v)`, `Roles.statutAbrege(v)` | `RolesUtilisateur.libelleStatut` | Le libellé et la pastille (`LibelleTeinte`) d'un statut ou d'un rôle servi, depuis les tables générées ; une clé inconnue s'affiche brute. |
 | `Roles.affiches(statut, roles)`, `Roles.demandables` | `ProfilResidence.rolesAffiches` | Les pastilles d'un compte (statut, puis rôles mis en avant) ; les statuts qu'un compte peut demander. |

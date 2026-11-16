@@ -22,22 +22,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
-import fr.coprofirst.app.charte.Typo
+import fr.coprofirst.app.navigation.EnTeteDeBarre
 import kotlinx.coroutines.launch
 
 /**
  * Une feuille PLEINE HAUTEUR qui porte un écran entier — les notifications de la cloche, la
- * fiche d'un sondage ouverte depuis le fil —, comme une feuille `.large` de l'iOS : son titre,
- * les `actions` de l'écran (sa propre barre), « OK » qui la ferme (repère `repereOk`), puis le
- * `contenu`, qui défile seul. Un balayage vers le bas la ferme aussi.
+ * fiche d'un sondage ouverte depuis le fil —, comme une feuille `.large` de l'iOS : son titre et
+ * son `sousTitre` (`EnTeteDeBarre`), les `actions` de l'écran (sa propre barre), « OK » qui la
+ * ferme (repère `repereOk`), puis le `contenu`, qui défile seul. Un balayage vers le bas la
+ * ferme aussi.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,6 +44,7 @@ fun FeuillePleine(
     repereOk: String,
     fermer: () -> Unit,
     actions: @Composable RowScope.() -> Unit = {},
+    sousTitre: String? = null,
     contenu: @Composable BoxScope.() -> Unit,
 ) {
     val etat = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -54,14 +53,7 @@ fun FeuillePleine(
     ModalBottomSheet(onDismissRequest = fermer, sheetState = etat, containerColor = couleurs.bg) {
         Column(Modifier.fillMaxSize()) {
             Row(Modifier.fillMaxWidth().padding(start = Mise.marge, end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    titre,
-                    style = Typo.titre(),
-                    color = couleurs.text,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f).semantics { heading() },
-                )
+                EnTeteDeBarre(titre, sousTitre, Modifier.weight(1f))
                 actions()
                 TextButton(
                     onClick = { portee.launch { etat.hide() }.invokeOnCompletion { fermer() } },
