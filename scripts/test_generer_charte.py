@@ -19,14 +19,15 @@ def table(valeur):
 
 
 class Resolution(unittest.TestCase):
-    def test_hexa_rgba_var_et_boucle(self):
-        t = {"a": "#102030", "b": "var(--a)", "c": "rgba(0, 0, 0, 0.45)", "d": "var(--d)", "e": "color-mix(x)"}
+    def test_hexa_et_rgba_seulement(self):
+        t = {"a": "#102030", "c": "rgba(0, 0, 0, 0.45)", "b": "var(--a)", "e": "color-mix(x)"}
         self.assertEqual(g.resoudre("a", t), (0x10, 0x20, 0x30, 1.0))
-        self.assertEqual(g.resoudre("b", t), (0x10, 0x20, 0x30, 1.0))
         self.assertEqual(g.resoudre("c", t), (0, 0, 0, 0.45))
-        self.assertIsNone(g.resoudre("d", t))
-        self.assertIsNone(g.resoudre("e", t))
         self.assertIsNone(g.resoudre("absent", t))
+        # Ce que coprofirst n'a pas résolu arrête : l'app ne résout plus rien (#74).
+        for nom in ("b", "e"):
+            with self.assertRaises(g.ValeurNonResolue):
+                g.resoudre(nom, t)
 
     def test_noms_et_couleurs(self):
         self.assertEqual(g.propriete("color-primary-plein"), "primaryPlein")
@@ -36,31 +37,27 @@ class Resolution(unittest.TestCase):
         self.assertEqual(g.argb((0, 0, 0, 0.45)), "Color(0x73000000)")
 
 
-class Cascade(unittest.TestCase):
+class PalettesResolues(unittest.TestCase):
     TABLES = {
-        "jetonsCharte": table({"--color-bg": "#ffffff", "--color-text": "#000000", "--teinte": "#111111",
-                               "--kanban-ag": "var(--teinte)", "--color-mix": "color-mix(in srgb, red 5%, black)",
-                               "color": "var(--color-text)"}),
-        "jetonsCharteSombre": table({"--color-bg": "#0d1b2a", "--color-text": "#e8e6e1"}),
-        "palettesClaires": table({"prune": {"--color-bg": "#f0e0f0", "--color-text": "#200020"}}),
-        "palettesSombres": table({"prune": {"--color-bg": "#100010"}}),
+        "palettesResolues": table({
+            "prune": {"clair": {"--color-bg": "#f0e0f0", "--color-text": "#200020", "--kanban-ag": "#111111"},
+                      "sombre": {"--color-bg": "#100010", "--color-text": "#e8e6e1", "--kanban-ag": "#111111"}},
+            "seine": {"clair": {"--color-bg": "#ffffff", "--color-text": "#000000", "--kanban-ag": "#111111",
+                                "--color-rare": "#123456", "color": "#000000"},
+                      "sombre": {"--color-bg": "#0d1b2a", "--color-text": "#e8e6e1", "--kanban-ag": "#111111"}},
+        }),
     }
 
-    def test_cascade_du_site(self):
+    def test_la_charte_d_abord_puis_les_palettes_publiees(self):
         p = g.cascade(self.TABLES)
-        self.assertEqual(set(p), {"seine", "prune"})
-        clair, sombre = p["prune"]
-        self.assertEqual(clair["color-bg"], "#f0e0f0")
-        # Au sombre : la charte sombre passe par-dessus la palette claire…
-        self.assertEqual(sombre["color-text"], "#e8e6e1")
-        # … et la palette sombre par-dessus tout.
-        self.assertEqual(sombre["color-bg"], "#100010")
+        self.assertEqual(list(p), ["seine", "prune"])
+        self.assertEqual(p["prune"][1]["color-bg"], "#100010")
 
     def test_portables_et_ecartes(self):
         p = g.cascade(self.TABLES)
         gardes, ecartes = g.portables(p["seine"][0], p)
         self.assertEqual(gardes, ["color-bg", "color-text", "kanban-ag"])
-        self.assertEqual(ecartes, ["color-mix"])
+        self.assertEqual(ecartes, ["color-rare"])
 
     def test_kotlin(self):
         texte = g.kotlin(self.TABLES, "test.json")
@@ -68,6 +65,12 @@ class Cascade(unittest.TestCase):
         self.assertIn("val kanbanAg: Color,", texte)
         self.assertIn('"prune" to Palette(', texte)
         self.assertIn("Color(0xFF100010)", texte)
+
+    def test_la_resolution_locale_ne_revient_pas(self):
+        """#74 : la cascade et la résolution des `var(--…)` sont faites par coprofirst."""
+        source = (RACINE / "scripts" / "generer_charte.py").read_text(encoding="utf-8")
+        for ancien in ("jetonsCharte", "palettesClaires", "palettesSombres", "var(--"):
+            self.assertNotIn(ancien, source)
 
 
 class TablesPubliees(unittest.TestCase):

@@ -130,13 +130,13 @@ class Balises(unittest.TestCase):
         return {"balisesAdmises": t(self.BALISES if balises is None else balises),
                 "attributsAdmis": t(["href", "alt"] if attributs is None else attributs)}
 
-    def test_liste_blanche_et_schemas(self):
+    def test_liste_blanche(self):
         texte = g.kotlin_balises(self.tables(), "test.json")
         self.assertIn('val balises: Set<String> = setOf("a", "b", "br", "em", "h1", "i", "li", "ol", "p", "s", '
                       '"strong", "u", "ul")', texte)
         self.assertIn('val attributs: Set<String> = setOf("alt", "href")', texte)
-        # Les schémas de l'iOS (`SCHEMAS_URL` de l'API) : ni javascript, ni data, ni tel.
-        self.assertIn('val schemasDeLien: Set<String> = setOf("http", "https", "mailto")', texte)
+        # Les schémas d'un lien sont des constantes du serveur (generer_constantes.py, #74).
+        self.assertNotIn("schemasDeLien", texte)
 
     def test_une_forme_inattendue_arrete(self):
         for mauvaise in (self.tables(balises="p"), self.tables(balises=["p", "br"]),
@@ -148,10 +148,10 @@ class Balises(unittest.TestCase):
 
 
 class Natures(unittest.TestCase):
-    # Une charte minimale : deux jetons portés, un écarté (color-mix), comme generer_charte les trie.
-    CHARTE = {"jetonsCharte": t({"--fil-rouge": "#aa0000", "--fil-rouge-fond": "var(--fil-rouge)",
-                                 "--color-primary": "#0000aa", "--color-mix": "color-mix(x)"}),
-              "jetonsCharteSombre": t({}), "palettesClaires": t({}), "palettesSombres": t({})}
+    # Une charte minimale, publiée résolue : trois jetons portés, un écarté (absent au
+    # sombre), comme generer_charte les trie.
+    _PORTES = {"--fil-rouge": "#aa0000", "--fil-rouge-fond": "#aa0000", "--color-primary": "#0000aa"}
+    CHARTE = {"palettesResolues": t({"seine": {"clair": {**_PORTES, "--color-mix": "#123456"}, "sombre": _PORTES}})}
 
     def tables(self, rubriques=None, natures=None, teintes=None):
         return {**self.CHARTE,
@@ -182,7 +182,7 @@ class Natures(unittest.TestCase):
             self.tables(natures=[{"val": "calendrier", "libelle": "Calendrier"}]),
             self.tables(teintes={}),
             self.tables(teintes={"calendrier": {"--nature-fort": "var(--color-rose)"}}),  # sans classe badge-*
-            {k: v for k, v in self.tables().items() if k != "jetonsCharte"},
+            {k: v for k, v in self.tables().items() if k != "palettesResolues"},
         ]
         for mauvaise in mauvaises:
             with self.assertRaises(g.TableInattendue, msg=repr(mauvaise)[:200]):
