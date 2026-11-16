@@ -16,8 +16,9 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   sur CoproFirst ».
 - **En savoir plus** : la page de coprofirst.fr raccourcie — ce que fait CoproFirst, un
   aperçu du fil d'une résidence (trois cartes inventées, rendues par l'app), six fonctions —, avec « Entrer dans ma résidence » et « Essayer la démo » collés en bas. Les
-  textes sont ceux du site (`contenu.json` de coprofirst-site, recopié à l'octet par
-  `scripts/importer-vitrine.sh`), jamais réécrits dans l'app.
+  textes sont ceux du site : `contenu.json`, relu sur coprofirst.fr une fois par lancement
+  (sans cookie ni donnée de l'utilisateur) et gardé pour le suivant, la copie embarquée à
+  défaut (recopiée à l'octet par `scripts/importer-vitrine.sh`) — jamais réécrits dans l'app.
 - **La démo** : trois rôles (conseil syndical, copropriétaire, locataire) ; un toucher
   ouvre la connexion à la démo, l'identifiant public du rôle pré-rempli, et dit où lire
   son mot de passe (« Voir les identifiants publics », sur coprofirst.fr).
