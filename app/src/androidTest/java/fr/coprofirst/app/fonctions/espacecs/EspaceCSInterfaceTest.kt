@@ -11,6 +11,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
+import androidx.test.espresso.Espresso
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.commun.Apparence
@@ -196,8 +197,10 @@ class EspaceCSInterfaceTest {
         toucher(ReperesEspaceCS.NOUVELLE_TITRE)
         ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_TITRE).performTextInput("Ascenseur à l'arrêt")
         ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_MESSAGE).performTextInput("Lundi matin.")
+        // Le clavier, ouvert par la frappe, couvre le bas de la page : un toucher s'y perdait.
+        Espresso.closeSoftKeyboard()
         // Le format d'abord, puis le périmètre : le lieu que le serveur nomme arrive après le
-        // choix et déplace la page — un toucher pris avant ce décalage tombait à côté (CI de #112).
+        // choix et déplace la page ; chaque pastille est touchée jusqu'à être retenue.
         retenir(ReperesEspaceCS.nouvelleFormat("a5"))
         retenir("${ReperesEspaceCS.NOUVELLE_PERIMETRE}.bat_a")
         attendre("Bâtiment A ›")
