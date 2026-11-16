@@ -19,6 +19,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -37,6 +38,7 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Pictogrammes
 import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.commun.GestesDeSortie
+import fr.coprofirst.app.commun.LocalSaisieAffaire
 import fr.coprofirst.app.commun.audience.CheminsDeLApp
 import fr.coprofirst.app.commun.audience.LocalMesureAudience
 import fr.coprofirst.app.commun.audience.PageVue
@@ -149,54 +151,57 @@ fun EcranResidence(
             else -> ouverte?.let { CheminDuSite.page(it.id) }
         },
     )
-    CadreResidence(
-        titre = barreDuHaut.titre ?: titreFiche ?: ouverte?.titre ?: stringResource(R.string.plus),
-        sousTitre = barreDuHaut.sousTitre,
-        retour = retour,
-        barreDuHaut = barreDuHaut,
-        cloche = {
-            PastilleResidence(session.installation) { residencesOuvertes = true }
-            if (notifications != null) BoutonCloche(notifications, CompteurNonLues.partage.nombre(residence)) { clocheOuverte = true }
-        },
-        barre = {
-            NavigationBar {
-                barre.forEach { page ->
+    // Le mode de saisie d'une affaire du compte, pour « Nouvelle affaire » et « Modifier » (#178).
+    CompositionLocalProvider(LocalSaisieAffaire provides etat.saisieAffaire) {
+        CadreResidence(
+            titre = barreDuHaut.titre ?: titreFiche ?: ouverte?.titre ?: stringResource(R.string.plus),
+            sousTitre = barreDuHaut.sousTitre,
+            retour = retour,
+            barreDuHaut = barreDuHaut,
+            cloche = {
+                PastilleResidence(session.installation) { residencesOuvertes = true }
+                if (notifications != null) BoutonCloche(notifications, CompteurNonLues.partage.nombre(residence)) { clocheOuverte = true }
+            },
+            barre = {
+                NavigationBar {
+                    barre.forEach { page ->
+                        NavigationBarItem(
+                            selected = onglet == page.id,
+                            onClick = { aller(page.id) },
+                            icon = { Icon(Pictogrammes.icone(page.icone), contentDescription = null) },
+                            label = { Text(page.libelle, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                        )
+                    }
                     NavigationBarItem(
-                        selected = onglet == page.id,
-                        onClick = { aller(page.id) },
-                        icon = { Icon(Pictogrammes.icone(page.icone), contentDescription = null) },
-                        label = { Text(page.libelle, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                        selected = onglet == EtatResidence.PLUS,
+                        onClick = { aller(EtatResidence.PLUS) },
+                        icon = { Icon(Icons.Filled.MoreHoriz, contentDescription = null) },
+                        label = { Text(stringResource(R.string.plus)) },
                     )
                 }
-                NavigationBarItem(
-                    selected = onglet == EtatResidence.PLUS,
-                    onClick = { aller(EtatResidence.PLUS) },
-                    icon = { Icon(Icons.Filled.MoreHoriz, contentDescription = null) },
-                    label = { Text(stringResource(R.string.plus)) },
-                )
+            },
+        ) {
+            val id = ficheId
+            when {
+                fiche != null && titreFiche != null && id != null -> {
+                    // La fiche reçoit une page à son titre : elle n'est pas une page de la barre.
+                    val page = PageDeNavigation(ficheNature.orEmpty(), "", titreFiche, titreFiche, "")
+                    fiche.ecran(ContexteDeMenu(page, session, etat.droits, sortie, apparence, barreDuHaut, ouvrir, parcours::relireDroits), id)
+                }
+                ouverte != null -> RegistreDesMenus.Ecran(ContexteDeMenu(ouverte, session, etat.droits, sortie, apparence, barreDuHaut, ouvrir, parcours::relireDroits))
+                else -> ListeDePlus(plus, ouvrir = { pageDePlus = it })
             }
-        },
-    ) {
-        val id = ficheId
-        when {
-            fiche != null && titreFiche != null && id != null -> {
-                // La fiche reçoit une page à son titre : elle n'est pas une page de la barre.
-                val page = PageDeNavigation(ficheNature.orEmpty(), "", titreFiche, titreFiche, "")
-                fiche.ecran(ContexteDeMenu(page, session, etat.droits, sortie, apparence, barreDuHaut, ouvrir, parcours::relireDroits), id)
-            }
-            ouverte != null -> RegistreDesMenus.Ecran(ContexteDeMenu(ouverte, session, etat.droits, sortie, apparence, barreDuHaut, ouvrir, parcours::relireDroits))
-            else -> ListeDePlus(plus, ouvrir = { pageDePlus = it })
         }
-    }
-    if (residencesOuvertes) {
-        FeuilleResidences(session.installation, etat.roles, sortie, parcours::relireDroits) { residencesOuvertes = false }
-    }
-    if (clocheOuverte && notifications != null) {
-        FeuilleNotifications(
-            notifications,
-            contexte = { barre -> ContexteDeMenu(notifications, session, etat.droits, sortie, apparence, barre, ouvrir, parcours::relireDroits) },
-            fermer = { clocheOuverte = false },
-        )
+        if (residencesOuvertes) {
+            FeuilleResidences(session.installation, etat.roles, sortie, parcours::relireDroits) { residencesOuvertes = false }
+        }
+        if (clocheOuverte && notifications != null) {
+            FeuilleNotifications(
+                notifications,
+                contexte = { barre -> ContexteDeMenu(notifications, session, etat.droits, sortie, apparence, barre, ouvrir, parcours::relireDroits) },
+                fermer = { clocheOuverte = false },
+            )
+        }
     }
 }
 

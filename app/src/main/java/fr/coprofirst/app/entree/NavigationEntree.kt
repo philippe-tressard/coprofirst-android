@@ -112,7 +112,7 @@ private const val DUREE_MS = 220
 @Composable
 fun NavigationEntree(
     apparence: Apparence,
-    parcours: ParcoursEntree = viewModel(factory = ParcoursEntree.Fabrique),
+    parcours: ParcoursEntree = viewModel(factory = FabriqueParcoursEntree),
     /** La mesure d'audience (#144) : celle du processus ; un test passe la sienne, ou `null`. */
     mesure: MesureAudience? = AudienceDeLApp.mesure,
 ) {

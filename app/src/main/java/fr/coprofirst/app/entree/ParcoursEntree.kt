@@ -4,18 +4,12 @@
 package fr.coprofirst.app.entree
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import fr.coprofirst.app.commun.GestesDeSortie
 import fr.coprofirst.app.commun.ResidenceConnue
-import fr.coprofirst.app.commun.audience.AudienceDeLApp
 import fr.coprofirst.app.commun.pieces.PiecesLocales
-import android.os.Build
 import fr.coprofirst.app.navigation.LienDuSite
 import fr.coprofirst.app.session.AdresseInstallation
-import fr.coprofirst.app.session.CoffreKeystore
 import fr.coprofirst.app.session.Connexion
 import fr.coprofirst.app.session.Decouverte
 import fr.coprofirst.app.session.Deverrouillage
@@ -24,21 +18,14 @@ import fr.coprofirst.app.session.GardeHote
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.InstallationsConnues
 import fr.coprofirst.app.session.LectureDisponible
-import fr.coprofirst.app.session.LecturesGardees
 import fr.coprofirst.app.session.Reseau
-import fr.coprofirst.app.session.ReseauDuSysteme
-import fr.coprofirst.app.session.ChiffrementKeystore
 import fr.coprofirst.app.session.cleCoffre
-import java.io.File
 import fr.coprofirst.app.session.OrigineAdresse
 import fr.coprofirst.app.session.PreuveHote
 import fr.coprofirst.app.session.RepriseAnnulee
 import fr.coprofirst.app.session.ReprisePerdue
 import fr.coprofirst.app.session.SessionOuverte
-import fr.coprofirst.app.session.SessionsGardees
-import fr.coprofirst.app.session.SessionsGardeesKeystore
 import fr.coprofirst.app.session.SessionsParHote
-import fr.coprofirst.app.session.StockagePreferences
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -472,36 +459,5 @@ class ParcoursEntree(
     companion object {
         /** La pause de frappe avant de reconnaître : celle de l'iOS. */
         const val PAUSE_DE_FRAPPE_MS = 600L
-
-        val Fabrique = viewModelFactory {
-            initializer {
-                val application = this[APPLICATION_KEY]!!
-                val stockage = StockagePreferences(application)
-                // Garder une session demande Android 11 (le code de l'appareil y déverrouille
-                // une clé) : avant, la connexion seule (divergence déclarée, `SessionsGardeesKeystore`).
-                val gardees = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    SessionsGardeesKeystore(application)
-                } else {
-                    SessionsGardees.Indisponibles
-                }
-                // UNE session HTTP par hôte pour toute l'app : la connexion y pose ses
-                // cookies, les écrans des menus les y relisent.
-                // Les lectures gardées pour la consultation hors ligne (#28) : chiffrées, hors
-                // de toute sauvegarde, seulement pour une résidence dont la session est gardée.
-                val lectures = LecturesGardees(
-                    File(application.noBackupFilesDir, "lectures-gardees"),
-                    ChiffrementKeystore("fr.coprofirst.app.lectures"),
-                    sessionGardee = gardees::contient,
-                )
-                val sessions = SessionsParHote(gardees = gardees, lectures = lectures)
-                ParcoursEntree(
-                    Decouverte(), sessions, Connexion(sessions), InstallationsConnues(stockage, CoffreKeystore(application)),
-                    reseau = ReseauDuSysteme(application),
-                    effacerLesPieces = { PiecesLocales.effacer(application) },
-                    avantSortie = { AudienceDeLApp.mesure.vider() },
-                    apresSortie = { AudienceDeLApp.mesure.oublier(it.url) },
-                )
-            }
-        }
     }
 }
