@@ -16,6 +16,11 @@ import androidx.compose.ui.unit.dp
  * comme `FlowCapsules` de l'iOS : les `PastilleTeinte(…, compacte = true)` d'une carte
  * (type, état, rôles d'un compte ; type, spécialité, contrats d'un prestataire). `espace` :
  * 8 dp pour des `Pastille` touchables (`FlowEtiquettes` de l'iOS, `ChoixPerimetres`).
+ *
+ * Une pastille plus large que la rangée y prend une ligne à elle et passe à la ligne dans sa
+ * largeur, au plus grand texte compris : `FlowRow` borne chaque enfant à la largeur de la
+ * rangée (le défaut corrigé par coprofirst-ios#202 n'existe pas ici) — `FlowCapsulesInterfaceTest`
+ * le mesure (#61).
  */
 @Composable
 fun FlowCapsules(modifier: Modifier = Modifier, espace: Dp = ESPACE, contenu: @Composable FlowRowScope.() -> Unit) {
