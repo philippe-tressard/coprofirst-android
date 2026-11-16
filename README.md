@@ -197,7 +197,7 @@ sdkmanager "platform-tools" "platforms;android-37.2"
 ```
 
 ```bash
-./gradlew :app:assembleDebug :app:lintDebug :app:testDebugUnitTest :client-api:test
+bash scripts/pipeline.sh   # sous le verrou commun du poste
 ```
 
 `JAVA_HOME` et `ANDROID_HOME` (ou `local.properties`, `sdk.dir=…`) doivent désigner
