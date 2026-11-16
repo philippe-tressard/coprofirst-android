@@ -4,7 +4,12 @@
 package fr.coprofirst.app.fonctions.espacecs
 
 import fr.coprofirst.app.commun.TonAvis
-import fr.coprofirst.app.fonctions.monlot.TypeAcces
+import fr.coprofirst.app.commun.acces.TypeAcces
+import fr.coprofirst.app.commun.validations.AccueilArrivant
+import fr.coprofirst.app.commun.validations.EtatValidations
+import fr.coprofirst.app.commun.validations.ServiceValidationsApi
+import fr.coprofirst.app.commun.validations.codesSaisis
+import fr.coprofirst.app.commun.validations.file
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.test.runTest
 import org.junit.After

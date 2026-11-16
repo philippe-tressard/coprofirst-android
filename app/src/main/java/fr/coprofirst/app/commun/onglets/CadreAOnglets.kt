@@ -53,7 +53,7 @@ import fr.coprofirst.app.navigation.OngletDuSite
  * @Composable
  * fun EcranEspaceCS(contexte: ContexteDeMenu) = CadreAOnglets(
  *     contexte,
- *     PageAOnglets("espace-cs", mapOf("validations" to { OngletValidations(it) }), R.string.espacecs_reserve),
+ *     PageAOnglets("espace-cs", mapOf("validations" to { OngletComptesCS(it) }), R.string.espacecs_reserve),
  * )
  * ```
  * Une page réservée (`PagesOuvertes`) le redit si on l'atteint autrement que par la barre :

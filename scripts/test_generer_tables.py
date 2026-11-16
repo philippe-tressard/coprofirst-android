@@ -217,5 +217,33 @@ class Fichiers(unittest.TestCase):
                 g.kotlin_fichiers(**mauvais)
 
 
+
+class Acces(unittest.TestCase):
+    """`TablesAcces` : communes à « Mes lots & accès » et à l'Espace CS (#79)."""
+
+    def tables(self, **remplace):
+        base = {"statutsAcces": t([{"val": "actif", "label": "Actif", "badge": "badge-green"}]),
+                "typesAcces": t([{"val": "vigik", "label": "🏷️ Badge Vigik"}])}
+        base.update(remplace)
+        return base
+
+    def test_les_deux_tables(self):
+        texte = g.kotlin_acces(self.tables(), "test.json")
+        self.assertIn("package fr.coprofirst.app.commun.acces", texte)
+        self.assertIn('"actif" to LibelleTeinte("Actif", "badge-green"),', texte)
+        self.assertIn('"vigik" to "🏷️ Badge Vigik",', texte)
+
+    def test_ce_qui_change_de_forme_arrete(self):
+        for casse in ({"statutsAcces": t([{"val": "actif"}])}, {"typesAcces": t(None)}, {"typesAcces": t([{"val": "x"}])}):
+            with self.assertRaises(g.TableInattendue, msg=str(casse)):
+                g.kotlin_acces(self.tables(**casse), "t")
+
+    def test_le_plancher_se_genere(self):
+        publiees = json.loads((RACINE / "contrat" / "tables-clients.json").read_text(encoding="utf-8"))["tables"]
+        texte = g.kotlin_acces(publiees, "tables-clients.json")
+        for attendu in ('"perdu" to LibelleTeinte(', '"telecommande" to ', '"vigik" to '):
+            self.assertIn(attendu, texte)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1)

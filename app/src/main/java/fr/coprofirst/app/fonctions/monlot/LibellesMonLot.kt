@@ -8,13 +8,12 @@ import fr.coprofirst.app.commun.LibelleTeinte
 /**
  * Les libellés de « Mes lots & accès » : ceux des tables GÉNÉRÉES (`TablesMonLot`), et
  * ceux que le site écrit dans un composant (`ProvisoireMonLot`). Une valeur inconnue
- * s'affiche brute : un libellé manquant doit se voir.
+ * s'affiche brute : un libellé manquant doit se voir. Ceux d'un accès (type, état) sont
+ * communs : `LibellesAcces` (commun/acces).
  */
 object LibellesMonLot {
-    fun statutAcces(code: String): LibelleTeinte = TablesMonLot.statutsAcces[code] ?: LibelleTeinte.brut(code)
     fun statutBail(code: String): LibelleTeinte = TablesMonLot.statutsBail[code] ?: LibelleTeinte.brut(code)
     fun statutObjet(code: String): LibelleTeinte = ProvisoireMonLot.statutsObjet[code] ?: LibelleTeinte.brut(code)
-    fun typeAcces(code: String): String = TablesMonLot.typesAcces.firstOrNull { it.first == code }?.second ?: code
     fun typeObjet(code: String): String = ProvisoireMonLot.typesObjet[code] ?: code
 
     /** La gravité d'un constat ; inconnue, brute. */

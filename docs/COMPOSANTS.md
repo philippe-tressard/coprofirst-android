@@ -142,6 +142,8 @@ class ServiceProfilApi(private val session: SessionOuverte) : ServiceProfil {
 | `ChampRecherche(texte, changer, indication, repere)` | `ChampRecherche` | Le champ de recherche d'une liste, DANS la page (pas dans la barre) : loupe, indication, croix « Effacer la recherche ». Le filtre : `Recherche.contientTousLesMots`. |
 | `BoutonsFeuille(envoi, repere, annuler, libelle?, actif?) { envoyer }` | `BoutonsFeuille` | Le pied d'une feuille de saisie : « Enregistrer » (ou `libelle`) en `BoutonPlein`, « Enregistrement… » pendant l'envoi, puis « Annuler ». |
 | `FlowCapsules(espace?) { … }` | `FlowCapsules`, `FlowEtiquettes` | Des `PastilleTeinte(…, compacte = true)` côte à côte, qui passent à la ligne au bord (6 dp) ; `espace = 8.dp` pour des `Pastille` touchables. |
+| `Chiffre(valeur, libelle, modifier?, alerte?, style?, repere?)`, `AlerteChiffre` | `CompteurFile`, `Chiffre` | Un chiffre (`kpi-card` du site) : la valeur (`FormatsDuSite.nombre`) et ce qu'elle compte ; `alerte` le teinte — `Avertissement` (orange, une file à traiter), `Danger` (rouge, un retard). Les compteurs de la file de travail et du Reporting. |
+| `RangeeDeChiffres { m -> … }`, `GRANDE_ECHELLE` | `ViewThatFits` | Des chiffres côte à côte, de même largeur (`m` : leur `Modifier`) ; l'un sous l'autre dès l'échelle de texte `GRANDE_ECHELLE` (1,5 : les tailles d'accessibilité de l'iOS), que suit aussi tout ce qui va côte à côte. |
 
 ⚠️ Divergence déclarée : `BoutonsFeuille` est au pied de la feuille, sous le pouce — l'iOS
 les pose dans la barre de la feuille ; une feuille d'Android n'en a pas.
@@ -218,7 +220,7 @@ fun EcranEspaceCS(contexte: ContexteDeMenu) = CadreAOnglets(
     PageAOnglets(
         "espace-cs",
         mapOf(
-            "validations" to { onglet -> OngletValidations(onglet) },
+            "validations" to { onglet -> OngletComptesCS(onglet) }, // commun.validations
 
             "badges" to { onglet -> OngletBadges(onglet) },
         ),
@@ -227,9 +229,9 @@ fun EcranEspaceCS(contexte: ContexteDeMenu) = CadreAOnglets(
 )
 
 @Composable
-fun OngletValidations(contexte: ContexteOnglet) {
-    val service = remember(contexte.session) { ServiceEspaceCSApi(contexte.session) }
-    Chargement(charger = { service.aValider() }, cle = contexte.actualisation, squelette = { … }) { comptes, recharger ->
+fun OngletBadges(contexte: ContexteOnglet) {
+    val service = remember(contexte.session) { ServiceBadgesApi(contexte.session) }
+    Chargement(charger = { service.parc() }, cle = contexte.actualisation, squelette = { … }) { parc, recharger ->
         Column(verticalArrangement = Arrangement.spacedBy(Mise.ecart)) { … contexte.avis.dire(…) … }
     }
 }
@@ -427,6 +429,35 @@ SignalementAuConseil(signale, envoyer = { r, motif ->
 | `DetailSondage`, `OptionSondage`, `VoteSondage`, `CalculsSondage.pourcentage` | `DetailSondage`, `VoteSondage`… | Le modèle : `peutVoter`, `totalVotes` ; `VoteSondage.choisir(id)` (vide la précision), `manque(champLibre)` (`@StringRes`, l'ordre du site), `corps()` (les textes vides ne partent pas). |
 | `SondageSimule`, `FixturesSondage` (source `debug`) | `ServiceSimule`, `FixturesSondage` | Le serveur simulé et les fiches de l'iOS, pour les tests et les aperçus. |
 
+
+## Accès — `fr.coprofirst.app.commun.acces`
+
+Un badge ou une télécommande, nommés de même par Mes lots & accès et l'Espace CS (#79) :
+le contrat ne sert que des CODES, les libellés et les teintes viennent du site.
+
+| API | Pendant iOS | Usage |
+|---|---|---|
+| `TypeAcces` (`Vigik`, `Telecommande`), `.code`, `.libelle` | `TypeAcces` | Les deux familles d'accès et leur code servi (`vigik`, `telecommande`) ; `libelle` : celui du site. |
+| `LibellesAcces.typeAcces(code)` | `LibellesAcces.typeAcces` | Le libellé d'une famille (« 🏷️ Badge Vigik ») ; un code inconnu s'affiche brut. |
+| `LibellesAcces.statutAcces(code)` | `LibellesAcces.statutAcces` | L'état d'un accès, en `LibelleTeinte` (pour `PastilleTeinte`) ; inconnu, brut et gris. |
+| `TablesAcces.statutsAcces`, `TablesAcces.typesAcces` | `TablesAcces` | **Générées** (`scripts/generer_tables.py`, `kotlin_acces`) depuis `statutsAcces`, `typesAcces` de `tables-clients.json` (`types-acces.ts`). On les lit par `LibellesAcces`. |
+
+## File des validations — `fr.coprofirst.app.commun.validations`
+
+LA file de travail du conseil (`Commun/Validations` de l'iOS) — comptes à valider, demandes
+d'accès, leurs gestes —, que « Comptes & accès » de l'Espace CS et « À traiter » du
+Paramétrage (#26) ouvrent toutes deux (#79), par les routes `require_cs_or_admin`. Ses
+textes : `strings_validations.xml` (identifiants `espacecs_*` gardés).
+
+| API | Pendant iOS | Usage |
+|---|---|---|
+| `OngletComptesCS(contexte: ContexteOnglet)` | `OngletComptesCS` | La file, prête à poser dans une page à onglets : deux compteurs, les comptes, puis les demandes ; chaque ligne s'approuve ou se rejette. Signature STABLE : elle ne dépend que du contexte de l'onglet. |
+| `OngletComptesCS(service, avis, actualisation)` | — | La même file sur un service donné (un test, un aperçu). |
+| `ServiceValidations`, `ServiceValidationsApi(session)` | `ServiceComptesCS` | `comptesEnAttente()`, `commandesEnAttente()`, `traiterCompte(id, valider)` (rend l'annonce du serveur, avec son ton), `accueillir(id, accueil)`, `traiterCommande(id, codes?)` (`null` : refuser) ; `file()` : les deux lectures ensemble (`FileDeTravail`). |
+| `CompteEnAttente`, `CommandeEnAttente`, `AccueilArrivant`, `codesSaisis(saisie)` | `CompteEnAttente`… | Le modèle (noms servis, jamais composés ici) ; la saisie des codes découpée comme le site (virgules, points-virgules, espaces). |
+| `EtatValidations(service, file)` | `EtatComptesCS` | La file et ses quatre gestes (`valider`, `rejeter`, `traiter`) ; `enCours` : l'élément dont le geste attend. Un refus garde la file. |
+| `CarteDeFile(repere, enCours, approuver, rejeter) { contenu }` | `CarteDeFile` | La carte d'une ligne d'une file (comptes, commandes, demandes de profil du Paramétrage) : son contenu, puis « Approuver » et « Rejeter » ; repères `<repere>`, `<repere>.approuver`, `<repere>.rejeter`. ⚠️ Divergence déclarée : l'iOS teinte « Approuver » d'un aplat vert ; l'aplat s'écrit une fois (`BoutonPlein`) — ici, deux contours teintés. |
+| `ReperesValidations` | identifiants d'accessibilité | Les repères de la file (`cs.compteur.comptes`, `cs.compte.<id>`, `cs.commande.<id>`, `cs.rejet.confirmer`…), ceux de l'iOS. |
 
 ## Feuille pleine — `fr.coprofirst.app.commun`
 

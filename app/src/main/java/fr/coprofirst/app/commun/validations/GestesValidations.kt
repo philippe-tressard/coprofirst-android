@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Philippe TRESSARD
 // SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 
-package fr.coprofirst.app.fonctions.espacecs
+package fr.coprofirst.app.commun.validations
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
@@ -68,7 +68,7 @@ internal fun ConfirmationRejet(question: String, fermer: () -> Unit, rejeter: ()
                     fermer()
                     rejeter()
                 },
-                modifier = Modifier.testTag(ReperesEspaceCS.REJET_CONFIRMER),
+                modifier = Modifier.testTag(ReperesValidations.REJET_CONFIRMER),
             ) { Text(stringResource(R.string.espacecs_rejeter), color = LocalCouleurs.current.danger) }
         },
         dismissButton = { TextButton(onClick = fermer) { Text(stringResource(R.string.espacecs_annuler)) } },
@@ -92,7 +92,7 @@ internal fun AccepterCommande(fermer: () -> Unit, accepter: (String) -> Unit) {
                     placeholder = { Text(stringResource(R.string.espacecs_codes_indication)) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, autoCorrectEnabled = false),
-                    modifier = Modifier.fillMaxWidth().testTag(ReperesEspaceCS.COMMANDE_CODES),
+                    modifier = Modifier.fillMaxWidth().testTag(ReperesValidations.COMMANDE_CODES),
                 )
             }
         },
@@ -102,7 +102,7 @@ internal fun AccepterCommande(fermer: () -> Unit, accepter: (String) -> Unit) {
                     fermer()
                     accepter(codes)
                 },
-                modifier = Modifier.testTag(ReperesEspaceCS.COMMANDE_ACCEPTER),
+                modifier = Modifier.testTag(ReperesValidations.COMMANDE_ACCEPTER),
             ) { Text(stringResource(R.string.espacecs_accepter)) }
         },
         dismissButton = { TextButton(onClick = fermer) { Text(stringResource(R.string.espacecs_annuler)) } },
@@ -160,7 +160,7 @@ internal fun FeuilleValidationCompte(
                     .fillMaxWidth()
                     .heightIn(min = Mise.cible)
                     .toggleable(nouvelArrivant, enabled = !envoi, role = Role.Switch) { nouvelArrivant = it }
-                    .testTag(ReperesEspaceCS.NOUVEL_ARRIVANT),
+                    .testTag(ReperesValidations.NOUVEL_ARRIVANT),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
@@ -187,7 +187,7 @@ internal fun FeuilleValidationCompte(
             }
             BoutonsFeuille(
                 envoi = envoi,
-                repere = ReperesEspaceCS.VALIDATION_ENREGISTRER,
+                repere = ReperesValidations.VALIDATION_ENREGISTRER,
                 annuler = fermer,
                 libelle = R.string.espacecs_approuver,
                 envoyer = envoyer,

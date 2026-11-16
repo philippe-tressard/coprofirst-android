@@ -46,10 +46,10 @@ import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.EtatVide
 import fr.coprofirst.app.commun.Pastille
 import fr.coprofirst.app.commun.PastilleTeinte
+import fr.coprofirst.app.commun.acces.LibellesAcces
+import fr.coprofirst.app.commun.acces.TypeAcces
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.onglets.ContexteOnglet
-import fr.coprofirst.app.fonctions.monlot.LibellesMonLot
-import fr.coprofirst.app.fonctions.monlot.TypeAcces
 
 /**
  * « Badges & télécommandes » (onglet `badges`, `BadgesCopropriete.svelte`), comme l'iOS
@@ -132,7 +132,7 @@ private fun CarteAccesDuParc(acces: AccesDuParc) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp), itemVerticalAlignment = Alignment.CenterVertically) {
                 Text(acces.code, style = MaterialTheme.typography.titleMedium, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.SemiBold, color = c.text)
                 Text(acces.type.libelle, style = MaterialTheme.typography.bodyMedium, color = c.textMuted)
-                PastilleTeinte(LibellesMonLot.statutAcces(acces.statut), compacte = true)
+                PastilleTeinte(LibellesAcces.statutAcces(acces.statut), compacte = true)
             }
             if (acces.porteurNom.isNotEmpty()) Ligne(Icons.Outlined.Person, acces.porteurNom, c.text)
             acces.lotLibelle?.let { Ligne(Icons.Outlined.Home, it, c.textMuted) }

@@ -40,6 +40,8 @@ import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.PastilleTeinte
+import fr.coprofirst.app.commun.acces.LibellesAcces
+import fr.coprofirst.app.commun.acces.TypeAcces
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.launch
 
@@ -136,7 +138,7 @@ private fun LigneAcces(acces: AccesDetenu, signaler: () -> Unit) {
         itemVerticalAlignment = Alignment.CenterVertically,
     ) {
         SelectionContainer { Text(acces.code, fontFamily = FontFamily.Monospace, color = couleurs.text) }
-        PastilleTeinte(LibellesMonLot.statutAcces(acces.statut))
+        PastilleTeinte(LibellesAcces.statutAcces(acces.statut))
         Spacer(Modifier.weight(1f))
         if (acces.statut == DonneesAcces.STATUT_ACTIF) {
             TextButton(onClick = signaler, modifier = Modifier.heightIn(min = Mise.cible).testTag(ReperesMonLot.perdu(acces.id))) {
@@ -161,8 +163,8 @@ private fun AccesConfies(recus: List<AccesDetenu>) {
             recus.forEach { lu ->
                 Row(Modifier.semantics(mergeDescendants = true) {}, horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(lu.code, fontFamily = FontFamily.Monospace, color = couleurs.text)
-                    Text(LibellesMonLot.typeAcces(lu.type), style = MaterialTheme.typography.bodyMedium, color = couleurs.textMuted, modifier = Modifier.weight(1f))
-                    PastilleTeinte(LibellesMonLot.statutAcces(lu.statut), compacte = true)
+                    Text(LibellesAcces.typeAcces(lu.type), style = MaterialTheme.typography.bodyMedium, color = couleurs.textMuted, modifier = Modifier.weight(1f))
+                    PastilleTeinte(LibellesAcces.statutAcces(lu.statut), compacte = true)
                 }
             }
         }

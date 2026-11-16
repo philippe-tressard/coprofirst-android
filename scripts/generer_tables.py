@@ -30,7 +30,11 @@
   (`scripts/generateurs/charte.py`, `natures_du_fil` ; `affaires.py`, `natures`). Une
   teinte `var(--…)` devient le jeton de `Couleurs` qui la porte (`Couleurs::filRouge`),
   jamais une couleur : le nom de la propriété et la liste des jetons portés se lisent
-  dans `generer_charte.py`, écrits une fois.
+  dans `generer_charte.py`, écrits une fois ;
+- `TablesAcces` (paquet `commun.acces`) : l'état d'un badge ou d'une télécommande
+  (`statutsAcces`) et les deux familles d'accès (`typesAcces`, `types-acces.ts`), que
+  « Mes lots & accès » et l'Espace CS lisent tous deux (#79) — comme l'iOS
+  (`scripts/generateurs/acces_prestataires.py`).
 
 Une table qui change de forme, une réserve inconnue : la génération s'arrête — l'app
 doit l'apprendre, pas la deviner.
@@ -50,6 +54,7 @@ PAQUET = "fr.coprofirst.app.navigation"
 PAQUET_TEXTE = "fr.coprofirst.app.commun.texte"
 PAQUET_PIECES = "fr.coprofirst.app.commun.pieces"
 PAQUET_CHARTE = "fr.coprofirst.app.charte"
+PAQUET_ACCES = "fr.coprofirst.app.commun.acces"
 JETON = re.compile(r"^var\(--([a-z][a-z0-9-]*)\)$")
 # La couleur d'état d'une nature (`--nature-fort: var(--color-…)`) → la classe `badge-*` qui la
 # porte (`teintes` de PastilleTeinte.kt) — la table de l'iOS (`BADGE_PAR_COULEUR`, affaires.py).
@@ -87,6 +92,28 @@ def chaine(texte) -> str:
 def sans_picto(libelle) -> str:
     """Un libellé du site sans l'émoji qui le précède."""
     return re.sub(r"^[^\w«(]+", "", str(libelle or "")).strip()
+
+
+def valeur(tables: dict, nom: str):
+    """La valeur d'une table publiée ; absente, la génération s'arrête."""
+    v = tables.get(nom, {}).get("valeur")
+    if v is None:
+        raise TableInattendue(f"{nom} absente")
+    return v
+
+
+def texte(entree: dict, cle: str, table: str) -> str:
+    """Un champ texte d'une entrée de table ; manquant, la génération s'arrête."""
+    v = entree.get(cle)
+    if not isinstance(v, str):
+        raise TableInattendue(f"{table} : {cle} manquant ({entree})")
+    return v
+
+
+def teintes(nom: str, entrees: list[tuple[str, str, str]], doc: str) -> list[str]:
+    """Une table Kotlin code → `LibelleTeinte` (libellé, classe `badge-*`)."""
+    return [f"    /** {doc} */", f"    val {nom}: Map<String, LibelleTeinte> = mapOf("] + [
+        f"        {chaine(c)} to LibelleTeinte({chaine(l)}, {chaine(b)})," for c, l, b in entrees] + ["    )", ""]
 
 
 def liste(tables: dict, table: str, cle: str) -> list[str]:
@@ -399,6 +426,30 @@ def kotlin_natures(tables: dict, source: str) -> str:
     ])
 
 
+def kotlin_acces(tables: dict, source: str) -> str:
+    """`TablesAcces` : l'état d'un accès et ses deux familles, communs à deux menus (#79)."""
+    statuts = [(texte(s, "val", "statutsAcces"), texte(s, "label", "statutsAcces"), texte(s, "badge", "statutsAcces"))
+               for s in valeur(tables, "statutsAcces")]
+    types = [(texte(t, "val", "typesAcces"), texte(t, "label", "typesAcces")) for t in valeur(tables, "typesAcces")]
+    return "\n".join([
+        "// GÉNÉRÉ par scripts/generer_tables.py — NE PAS MODIFIER À LA MAIN.",
+        f"// Source : {source} (statutsAcces, typesAcces).",
+        f"package {PAQUET_ACCES}",
+        "",
+        "import fr.coprofirst.app.commun.LibelleTeinte",
+        "",
+        "/** Ce que le site écrit d'un badge ou d'une télécommande et que le contrat ne sert pas (`types-acces.ts`). */",
+        "object TablesAcces {",
+        *teintes("statutsAcces", statuts, "L'état d'un badge ou d'une télécommande (`STATUTS_ACCES`)."),
+        "    /** Les deux familles d'accès, dans l'ordre du site (`TYPES_ACCES`) : code → libellé. */",
+        "    val typesAcces: List<Pair<String, String>> = listOf(",
+        *[f"        {chaine(c)} to {chaine(lib)}," for c, lib in types],
+        "    )",
+        "}",
+        "",
+    ])
+
+
 def main(argv: list[str]) -> int:
     if len(argv) != 3:
         print(__doc__.strip().splitlines()[-1], file=sys.stderr)
@@ -413,6 +464,7 @@ def main(argv: list[str]) -> int:
             (PAQUET_TEXTE, "BalisesDuSite.kt"): kotlin_balises(tables, entree.name),
             (PAQUET_PIECES, "FichiersDuSite.kt"): kotlin_fichiers(),
             (PAQUET_CHARTE, "NaturesDuFil.kt"): kotlin_natures(tables, entree.name),
+            (PAQUET_ACCES, "TablesAcces.kt"): kotlin_acces(tables, entree.name),
         }
     except TableInattendue as e:
         print(f"❌ {entree.name} : {e}", file=sys.stderr)

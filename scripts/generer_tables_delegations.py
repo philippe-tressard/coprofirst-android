@@ -22,8 +22,7 @@ import pathlib
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-from generer_tables import TableInattendue, chaine  # noqa: E402
-from generer_tables_mon_lot import teintes, texte, valeur  # noqa: E402
+from generer_tables import TableInattendue, chaine, teintes, texte, valeur  # noqa: E402
 
 PAQUET = "fr.coprofirst.app.fonctions.delegations"
 
