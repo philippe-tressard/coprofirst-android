@@ -27,4 +27,7 @@ object LienDApplication {
         val port = if (uri.port in 1..65535) ":${uri.port}" else ""
         return AdresseInstallation.normaliser(hote + port)
     }
+
+    /** Le chemin du lien (`/tickets/12`), que la porte lit (`LienDuSite`) ; vide s'il n'en a pas. */
+    fun chemin(lien: String): String = runCatching { URI(lien.trim()).path }.getOrNull().orEmpty()
 }

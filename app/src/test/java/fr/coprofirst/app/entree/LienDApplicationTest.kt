@@ -17,6 +17,13 @@ class LienDApplicationTest {
     }
 
     @Test
+    fun leCheminDUnLienSansSonAncre() {
+        assertEquals("/tickets/12", LienDApplication.chemin("https://residence.exemple.test/tickets/12#msg-4"))
+        assertEquals("", LienDApplication.chemin("https://residence.exemple.test"))
+        assertEquals("", LienDApplication.chemin("pas un lien"))
+    }
+
+    @Test
     fun ceQuiNEstPasUnLienHttpsSurUnHoteNeDesigneRien() {
         assertNull(LienDApplication.adresse("http://residence.exemple.test/"))
         assertNull(LienDApplication.adresse("coprofirst://residence.exemple.test/"))

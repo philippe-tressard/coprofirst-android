@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.entree
 
+import fr.coprofirst.app.navigation.Destination
 import fr.coprofirst.app.session.Connexion
 import fr.coprofirst.app.session.Decouverte
 import fr.coprofirst.app.session.ErreurService
@@ -244,9 +245,36 @@ class ParcoursEntreeTest {
         advanceUntilIdle()
         assertEquals("seul GET /config est parti", 1, serveur.requestCount)
         assertEquals(PreuveHote.Declaree, parcours.etat.value.confirmation?.preuve)
+        // L'affaire visée attend l'ouverture de SA résidence, puis la porte la pose (#147).
+        ok()
+        parcours.confirmerHote()
+        advanceUntilIdle()
+        assertEquals(EcranEntree.Espace, parcours.etat.value.ecran)
+        assertEquals(Destination.Element("affaire", "12"), parcours.etat.value.lien?.destination)
+        parcours.lienSuivi()
+        assertNull(parcours.etat.value.lien)
     }
 
-    /** #7 : vers une résidence connue, la connexion habituelle ; vers celle qui est ouverte, rien. */
+    /** #147 : le lien d'une résidence tombe quand c'est une autre qui s'ouvre. */
+    @Test
+    fun leLienDUneAutreResidenceTombe() = test {
+        connues.retenir(Installation("https://connue.exemple.test", "Connue"))
+        residence("Les Glycines")
+        parcours.suivreLien("https://jamais-vu.exemple.test/tickets/12")
+        advanceUntilIdle()
+        residence("Connue")
+        parcours.saisir("connue.exemple.test")
+        advanceUntilIdle()
+        parcours.saisirEmail("a@exemple.test")
+        parcours.saisirMotDePasse("secret")
+        ok()
+        parcours.seConnecter()
+        advanceUntilIdle()
+        assertEquals(EcranEntree.Espace, parcours.etat.value.ecran)
+        assertNull(parcours.etat.value.lien)
+    }
+
+    /** #7 : vers une résidence connue, la connexion habituelle ; vers celle qui est ouverte, l'écran visé seul. */
     @Test
     fun unLienVersUneResidenceConnueOuOuverte() = test {
         connues.retenir(Installation("https://connue.exemple.test", "Connue"))
@@ -260,11 +288,16 @@ class ParcoursEntreeTest {
         parcours.seConnecter()
         advanceUntilIdle()
         assertEquals(EcranEntree.Espace, parcours.etat.value.ecran)
+        // « /actualites » : la page des affaires, posée par la porte à l'ouverture.
+        assertEquals("https://connue.exemple.test", parcours.etat.value.lien?.adresse?.url)
+        parcours.lienSuivi()
         val ouverte = parcours.etat.value
-        parcours.suivreLien("https://connue.exemple.test/tickets/4")
         parcours.suivreLien("http://autre.exemple.test/")
-        advanceUntilIdle()
         assertSame(ouverte, parcours.etat.value)
+        parcours.suivreLien("https://connue.exemple.test/tickets/4")
+        advanceUntilIdle()
+        assertEquals(ouverte.copy(lien = parcours.etat.value.lien), parcours.etat.value)
+        assertEquals(Destination.Element("affaire", "4"), parcours.etat.value.lien?.destination)
         assertEquals(2, serveur.requestCount)
     }
 
