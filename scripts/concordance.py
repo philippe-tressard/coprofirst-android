@@ -16,7 +16,9 @@ Deux verdicts, jamais confondus :
 2. `--montee` — une release publiée au-dessus du plancher : une INFORMATION (sortie 3),
    jamais un rouge. Le rapport dit ce que monter le plancher demanderait : la version du
    contrat, les routes que l'app appelle et qui disparaîtraient, les fichiers générés
-   qui changeraient ; et si les installations connues servent déjà ce contrat. Sortie 0
+   qui changeraient, les clés des tables et des constantes publiées au-dessus du plancher
+   (que les générateurs liront quand il montera ; d'ici là, leurs valeurs tenues, #169) ;
+   et si les installations connues servent déjà ce contrat. Sortie 0
    si la dernière release EST le plancher.
 
 Une release, une pièce ou une installation illisible : INCONNU (sortie 2), jamais vert.
@@ -162,6 +164,11 @@ def generes(tables: pathlib.Path, constantes: pathlib.Path, sortie: pathlib.Path
             for f in sorted(sortie.rglob("*.kt"))}
 
 
+def cles_neuves(ancien: dict, neuf: dict, rubrique: str) -> list[str]:
+    """Les clés d'une rubrique (`tables`, `constantes`) publiées au-dessus du plancher."""
+    return sorted(set(neuf.get(rubrique, {})) - set(ancien.get(rubrique, {})))
+
+
 def ce_que_monter_demande(ancien: dict, neuf: dict, source: str) -> list[str]:
     """Les routes que l'app appelle et que le nouveau contrat n'a plus."""
     avant, apres = operations(ancien), operations(neuf)
@@ -179,6 +186,10 @@ def verdict_montee() -> tuple[int, list[str]]:
         ancien = json.loads((RACINE / "contrat/openapi.json").read_text(encoding="utf-8"))
         neuf = json.loads((dossier / "openapi.json").read_text(encoding="utf-8"))
         cible = version(neuf.get("info", {}).get("version"))
+        neuves = [f"`{fichier}` › `{cle}`" for fichier, rubrique in (("tables-clients.json", "tables"),
+                                                                     ("constantes-clients.json", "constantes"))
+                  for cle in cles_neuves(json.loads((RACINE / "contrat" / fichier).read_text(encoding="utf-8")),
+                                         json.loads((dossier / fichier).read_text(encoding="utf-8")), rubrique)]
         avant = generes(RACINE / "contrat/tables-clients.json", RACINE / "contrat/constantes-clients.json", dossier / "avant")
         apres = generes(dossier / "tables-clients.json", dossier / "constantes-clients.json", dossier / "apres")
     if not avant or not apres:
@@ -190,6 +201,8 @@ def verdict_montee() -> tuple[int, list[str]]:
               f"{'.'.join(map(str, cible)) if cible else 'illisible'}.", "",
               "**Routes appelées par l'app qui disparaîtraient** :", *(f"- {d}" for d in disparues or ["aucune"]), "",
               "**Fichiers générés qui changeraient** :", *(f"- `{c}`" for c in changes or ["aucun"]), "",
+              "**Clés publiées au-dessus du plancher** (lues dès qu'il montera ; valeurs tenues d'ici là, #169) :",
+              *(f"- {n}" for n in neuves or ["aucune"]), "",
               "**Contrat servi par les installations connues** :"]
     lignes += [f"- {h} : {'.'.join(map(str, v)) if v else 'illisible'}" for h, v in servis.items()]
     possible = cible is not None and all(v is not None and v >= cible for v in servis.values())
@@ -212,6 +225,8 @@ def autotest() -> int:
     assert ce_que_monter_demande(ancien, neuf, "api { postYZ(corps) }") == ["postYZ (POST /y) disparaît"]
     assert ce_que_monter_demande(ancien, ancien, "api { postYZ(corps) }") == []
     assert version("v3.103.0") == (3, 103, 0) and version("x") is None
+    assert cles_neuves({"tables": {"a": 1}}, {"tables": {"a": 1, "b": 2}}, "tables") == ["b"]
+    assert cles_neuves({"tables": {"a": 1}}, {"tables": {"a": 1}}, "tables") == []
     print("✅ autotest : un écart posé exprès est vu, un cas zéro passe")
     return 0
 
