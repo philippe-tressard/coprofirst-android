@@ -76,8 +76,8 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   obligatoire). L'affaire ne s'ouvre pas encore dans l'app. Tirer la liste la relit ; un
   fil vide le dit.
 - **Profil** (Plus › Profil) : la résidence, le statut et les rôles du compte ; les
-  informations personnelles (une nouvelle adresse demande le mot de passe et ne vaut
-  qu'une fois confirmée) ; le mot de passe ; une demande de changement de profil ou de
+  informations personnelles (le nom tel qu'il sera affiché se lit sous la saisie ; une
+  nouvelle adresse demande le mot de passe et ne vaut qu'une fois confirmée) ; le mot de passe ; une demande de changement de profil ou de
   bâtiment au conseil syndical ; vos droits RGPD (politique de confidentialité, refus,
   export et effacement des statistiques de navigation) ; **la demande de suppression du
   compte** — ce qui sera effacé est dit d'abord, le mot de passe la confirme,

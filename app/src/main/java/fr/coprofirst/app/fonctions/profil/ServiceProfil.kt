@@ -12,15 +12,18 @@ import fr.coprofirst.api.modeles.MeUpdate
 import fr.coprofirst.api.modeles.OptOutTelemetrieBody
 import fr.coprofirst.api.modeles.UserRead
 import fr.coprofirst.api.routes.AuthApi
+import fr.coprofirst.app.commun.apercu.ServiceNoms
+import fr.coprofirst.app.commun.apercu.ServiceNomsApi
 import fr.coprofirst.app.session.SessionOuverte
 import kotlinx.serialization.json.Json
 
 /**
  * Ce que l'écran Profil demande à la résidence ouverte, comme l'iOS (`ServiceProfil`,
  * `ServiceSuppressionCompte`). Les mots de passe ne partent qu'à l'hôte de la session
- * ouverte — confirmé par la garde de l'hôte à la connexion.
+ * ouverte — confirmé par la garde de l'hôte à la connexion. Le nom tel qu'il sera affiché
+ * (`ServiceNoms`, POST /noms/affiche) se lit sous la saisie de l'identité.
  */
-interface ServiceProfil {
+interface ServiceProfil : ServiceNoms {
     /** GET /auth/me. */
     suspend fun moi(): UserRead
 
@@ -65,7 +68,7 @@ interface ServiceProfil {
 }
 
 /** Le Profil par le client GÉNÉRÉ, à travers la porte de la session ouverte. */
-class ServiceProfilApi(private val session: SessionOuverte) : ServiceProfil {
+class ServiceProfilApi(private val session: SessionOuverte) : ServiceProfil, ServiceNoms by ServiceNomsApi(session) {
     private suspend fun <R> auth(requete: AuthApi.() -> R): R = session.appeler { base, client -> AuthApi(base, client).requete() }
 
     override suspend fun moi(): UserRead = auth { getAuthMe() }
