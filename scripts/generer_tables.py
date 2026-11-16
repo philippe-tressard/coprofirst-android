@@ -367,7 +367,7 @@ def jetons_portes(tables: dict) -> tuple[set[str], object]:
     gc = _charte()
     try:
         palettes = gc.cascade(tables)
-    except (KeyError, TypeError, AttributeError) as e:
+    except (KeyError, TypeError, AttributeError, ValueError) as e:
         raise TableInattendue(f"jetons de la charte illisibles ({e})") from e
     gardes, _ = gc.portables(palettes[gc.CHARTE][0], palettes)
     return set(gardes), gc

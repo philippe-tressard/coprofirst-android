@@ -148,10 +148,10 @@ class Balises(unittest.TestCase):
 
 
 class Natures(unittest.TestCase):
-    # Une charte minimale : deux jetons portés, un écarté (color-mix), comme generer_charte les trie.
-    CHARTE = {"jetonsCharte": t({"--fil-rouge": "#aa0000", "--fil-rouge-fond": "var(--fil-rouge)",
-                                 "--color-primary": "#0000aa", "--color-mix": "color-mix(x)"}),
-              "jetonsCharteSombre": t({}), "palettesClaires": t({}), "palettesSombres": t({})}
+    # Une charte minimale, publiée résolue : trois jetons portés, un écarté (absent au
+    # sombre), comme generer_charte les trie.
+    _PORTES = {"--fil-rouge": "#aa0000", "--fil-rouge-fond": "#aa0000", "--color-primary": "#0000aa"}
+    CHARTE = {"palettesResolues": t({"seine": {"clair": {**_PORTES, "--color-mix": "#123456"}, "sombre": _PORTES}})}
 
     def tables(self, rubriques=None, natures=None, teintes=None):
         return {**self.CHARTE,
@@ -182,7 +182,7 @@ class Natures(unittest.TestCase):
             self.tables(natures=[{"val": "calendrier", "libelle": "Calendrier"}]),
             self.tables(teintes={}),
             self.tables(teintes={"calendrier": {"--nature-fort": "var(--color-rose)"}}),  # sans classe badge-*
-            {k: v for k, v in self.tables().items() if k != "jetonsCharte"},
+            {k: v for k, v in self.tables().items() if k != "palettesResolues"},
         ]
         for mauvaise in mauvaises:
             with self.assertRaises(g.TableInattendue, msg=repr(mauvaise)[:200]):
