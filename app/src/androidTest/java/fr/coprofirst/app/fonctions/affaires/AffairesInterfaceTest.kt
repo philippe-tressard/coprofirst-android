@@ -12,18 +12,21 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.longClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.commun.AvisEphemere
 import fr.coprofirst.app.commun.LocalSaisieAffaire
-import fr.coprofirst.app.commun.perimetres.Perimetre
+import fr.coprofirst.app.commun.amenerTag
+import fr.coprofirst.app.commun.apercu.SaisieLecture
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.lecture.Lecture
+import fr.coprofirst.app.commun.perimetres.Perimetre
 import fr.coprofirst.app.commun.toucher
 import fr.coprofirst.app.navigation.ActionsDeclarees
 import fr.coprofirst.app.navigation.BarreDuHaut
@@ -32,19 +35,28 @@ import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsParHote
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import kotlinx.coroutines.delay
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.time.Instant
-import java.time.temporal.ChronoUnit
 
 /**
  * Une résidence simulée, comme l'API simulée de l'iOS : des affaires inventées (aucune
  * personne), le conseil syndical qui les lit — il déplace au Kanban et archive.
  */
 private class AffairesSimulees : ServiceAffaires {
+    /** Les saisies dont « Qui la lira » a été demandé (#179). */
+    val lectures = mutableListOf<SaisieLecture>()
+    override suspend fun lecture(saisie: SaisieLecture): Lecture {
+        synchronized(lectures) { lectures += saisie }
+        return Lecture(
+            "coproprietaires", listOf("key-round"), "Copropriétaires", "Copropriétaires (occupants et bailleurs)", false,
+            "Lue par les copropriétaires, dans toute la copropriété.", "Pas les locataires.", false,
+        )
+    }
     val deplacements = mutableListOf<Pair<Int, String>>()
     val archivees = mutableListOf<Int>()
     private val maintenant = Instant.now()
@@ -351,6 +363,24 @@ class AffairesInterfaceTest {
         el(ReperesChamps.NOUVELLE.modeSaisie).assert(hasText("Saisie complète", substring = true))
         el(ReperesChamps.NOUVELLE.plusDeDetails).assertDoesNotExist()
         el(ReperesChamps.NOUVELLE.urgente).assertExists()
+    }
+
+    /**
+     * #179 : « Qui la lira » dit d'où viendra la règle avant la catégorie, puis la pastille et
+     * la phrase que le serveur rend pour la catégorie et le lieu saisis.
+     */
+    @Test
+    fun quiLaLiraSeDitDesLaCategorieChoisie() {
+        val service = ouvrir()
+        attendre(ReperesNouvelle.NOUVELLE)
+        el(ReperesNouvelle.NOUVELLE).toucher()
+        attendre(ReperesChamps.NOUVELLE.categorie("panne"))
+        ecran.amenerTag(ReperesNouvelle.QUI_LA_LIRA).assert(hasText("Elle se dit dès la catégorie choisie.", substring = true))
+        el(ReperesChamps.NOUVELLE.categorie("panne")).toucher()
+        ecran.waitUntil(DELAI_MS) {
+            ecran.onAllNodes(hasTestTag(ReperesNouvelle.QUI_LA_LIRA) and hasText("Lue par les copropriétaires", substring = true)).fetchSemanticsNodes().isNotEmpty()
+        }
+        assertEquals(SaisieLecture("panne", listOf("copro")), synchronized(service.lectures) { service.lectures.last() })
     }
 
     /** Une saisie entamée ne se perd pas : « Annuler » demande d'abord. */

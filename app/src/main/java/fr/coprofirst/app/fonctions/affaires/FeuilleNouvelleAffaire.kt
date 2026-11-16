@@ -57,12 +57,15 @@ import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.LocalSaisieAffaire
 import fr.coprofirst.app.commun.MessageErreur
+import fr.coprofirst.app.commun.apercu.QuiLaLira
+import fr.coprofirst.app.commun.apercu.SaisieLecture
 import fr.coprofirst.app.session.ErreurService
 
 /** Les repères de « Nouvelle affaire » et de « Modifier », ceux de l'iOS ; ceux des champs : `ReperesChamps`. */
 object ReperesNouvelle {
     const val NOUVELLE = "affaires.nouvelle"
     const val ENVOYER = "nouvelle.envoyer"
+    const val QUI_LA_LIRA = "nouvelle.quiLaLira"
     const val DEPUIS_LE_SITE = "nouvelle.depuisLeSite"
     const val ABANDONNER = "nouvelle.abandonner"
     const val MODIFIER_ENREGISTRER = "modifier.enregistrer"
@@ -75,8 +78,7 @@ object ReperesNouvelle {
  *
  * En saisie Essentielle, ce qui n'est pas essentiel pour la catégorie se range dans « Plus de
  * détails » (`FormeDeSaisie`, #178), ici comme dans « Modifier ».
- *
- * ⚠️ Divergence déclarée : « Qui la lira » se tait encore (#179).
+ * « Qui la lira » se dit dès la catégorie choisie (`QuiLaLira`, #179).
  */
 @Composable
 internal fun FeuilleNouvelleAffaire(
@@ -96,10 +98,15 @@ internal fun FeuilleNouvelleAffaire(
         retenue = saisie.entamee, demanderAbandon = { abandon = true },
     ) {
         when {
-            categories != null -> ChampsAffaire(
-                saisie, categories, service, ReperesChamps.NOUVELLE, poserLeDefaut = true,
-                forme = FormeDeSaisie.de(LocalSaisieAffaire.current, referentiels.categories),
-            ) { saisie = it }
+            categories != null -> {
+                ChampsAffaire(
+                    saisie, categories, service, ReperesChamps.NOUVELLE, poserLeDefaut = true,
+                    forme = FormeDeSaisie.de(LocalSaisieAffaire.current, referentiels.categories),
+                ) { saisie = it }
+                // Ce que la saisie dit de ses lecteurs : sa catégorie et son lieu (un bogue n'en a pas).
+                val aLire = saisie.categorie.takeIf { it.isNotEmpty() }?.let { SaisieLecture(it, listOfNotNull(saisie.perimetre.takeUnless { saisie.estBogue })) }
+                QuiLaLira(aLire, service, ReperesNouvelle.QUI_LA_LIRA)
+            }
             erreurReferentiels != null -> MessageErreur(erreurReferentiels)
             else -> {
                 val annonce = stringResource(R.string.nouvelle_chargement_categories)
