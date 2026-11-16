@@ -42,6 +42,7 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Carte
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.commun.formats.FormatsDuSite
@@ -140,19 +141,13 @@ fun PastilleNeutre(libelle: String) = PastilleTeinte(libelle, BADGE_NEUTRE, comp
 /** La classe neutre du site. */
 const val BADGE_NEUTRE = "badge-gray"
 
-/** Un libellé de champ, en petites capitales. */
-@Composable
-fun LibelleChamp(texte: String) {
-    Text(texte.uppercase(), style = Typo.libelle(), color = LocalCouleurs.current.textMuted)
-}
-
 /** Les annexes d'une fiche : chacune s'ouvre dans l'app de l'appareil. */
 @Composable
 fun ListeAnnexes(annexes: List<DocumentResidence>, ouvrir: (DocumentResidence) -> Unit) {
     if (annexes.isEmpty()) return
     val couleurs = LocalCouleurs.current
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        LibelleChamp(stringResource(R.string.residence_annexes))
+        Libelle(stringResource(R.string.residence_annexes))
         annexes.forEach { annexe ->
             Row(
                 Modifier.fillMaxWidth().heightIn(min = Mise.cible).cliquable(stringResource(R.string.residence_ouvrir_document)) { ouvrir(annexe) },

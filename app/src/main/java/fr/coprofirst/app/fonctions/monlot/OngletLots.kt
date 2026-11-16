@@ -38,6 +38,10 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Carte
+import fr.coprofirst.app.commun.Intertitre
+import fr.coprofirst.app.commun.Libelle
+import fr.coprofirst.app.commun.LigneFiche
+import fr.coprofirst.app.commun.NoteEnCarte
 import fr.coprofirst.app.commun.Pastille
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.annuaire.Coordonnees
@@ -51,7 +55,7 @@ import fr.coprofirst.app.commun.formats.FormatsDuSite
 fun OngletLots(donnees: DonneesMonLot) {
     val droits = donnees.droits
     when {
-        donnees.lots.isEmpty() && !droits.locataire -> NoteMonLot(
+        donnees.lots.isEmpty() && !droits.locataire -> NoteEnCarte(
             stringResource(R.string.monlot_aucun_lot_detail),
             stringResource(R.string.monlot_aucun_lot),
             Icons.Outlined.Home,
@@ -69,7 +73,7 @@ private fun LotsStandard(lots: List<LotDuCompte>) {
     val selection = lots.firstOrNull { it.id == choisi } ?: lots.firstOrNull()
     if (lots.size > 1) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(stringResource(R.string.monlot_lot_affiche).uppercase(), style = Typo.libelle(), color = LocalCouleurs.current.textMuted)
+            Libelle(stringResource(R.string.monlot_lot_affiche))
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 lots.forEach { lot ->
                     // « Bât. A / appartement - 15 » (`optionsLots` du site).
@@ -115,7 +119,7 @@ private fun LotsDuLocataire(bail: BailDuLocataire?, lots: List<LotDuCompte>) {
         Intertitre(stringResource(R.string.monlot_lot_loue))
         CarteDuBail(bail)
     } else if (loues.isEmpty()) {
-        NoteMonLot(stringResource(R.string.monlot_aucun_bail_actif_aide), stringResource(R.string.monlot_aucun_bail_actif), Icons.Outlined.Key)
+        NoteEnCarte(stringResource(R.string.monlot_aucun_bail_actif_aide), stringResource(R.string.monlot_aucun_bail_actif), Icons.Outlined.Key)
     }
     if (bail == null && loues.isNotEmpty()) {
         Intertitre(stringResource(R.string.monlot_lots_loues, loues.size))

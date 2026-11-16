@@ -45,8 +45,8 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
-import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.BoutonPlein
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 
 /**
@@ -74,7 +74,7 @@ internal fun FormulaireVote(sondage: DetailSondage, vote: VoteSondage, changer: 
             }
         }
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(stringResource(R.string.sondage_commentaire).uppercase(), style = Typo.libelle(), color = couleurs.textMuted)
+            Libelle(stringResource(R.string.sondage_commentaire))
             ChampVote(vote.commentaire, { changer(vote.copy(commentaire = it)) }, R.string.sondage_commentaire_invite,
                 R.string.sondage_commentaire, ReperesSondage.COMMENTAIRE, fond = couleurs.surface)
         }
@@ -206,12 +206,12 @@ private fun EnteteRequis(texte: String, vide: Boolean) {
     val couleurs = LocalCouleurs.current
     val requis = stringResource(R.string.sondage_requis)
     Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-        Text(texte.uppercase(), style = Typo.libelle(), color = couleurs.textMuted)
-        Text(
+        Libelle(texte)
+        Libelle(
             "*",
-            style = Typo.libelle().copy(fontWeight = FontWeight.Bold),
-            color = if (vide) couleurs.danger else couleurs.textMuted,
-            modifier = Modifier.semantics { contentDescription = requis },
+            Modifier.semantics { contentDescription = requis },
+            couleur = if (vide) couleurs.danger else couleurs.textMuted,
+            fort = true,
         )
     }
 }

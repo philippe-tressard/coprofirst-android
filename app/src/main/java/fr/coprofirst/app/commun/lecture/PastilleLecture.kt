@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Pictogrammes
-import fr.coprofirst.app.charte.Typo
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.teintes
 
 /** Ce que dit la bulle du site, et ce que lit le lecteur d'écran : « Qui la lit : CS. Lue par… » — « Qui le lit » pour un sondage. */
@@ -92,12 +92,7 @@ fun LectureDetaillee(lecture: Lecture?, modifier: Modifier = Modifier, masculin:
         modifier.semantics(mergeDescendants = true) {}.testTag("lecture.detail"),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Text(
-            stringResource(if (masculin) R.string.lecture_qui_le_lit else R.string.lecture_qui_la_lit).uppercase(),
-            style = Typo.libelle(),
-            color = couleurs.textMuted,
-            modifier = Modifier.semantics { heading() },
-        )
+        Libelle(stringResource(if (masculin) R.string.lecture_qui_le_lit else R.string.lecture_qui_la_lit), Modifier.semantics { heading() })
         PastilleLecture(montree, Modifier.clearAndSetSemantics {}, masculin)
         Text(montree.titre, style = MaterialTheme.typography.titleSmall, color = couleurs.text)
         Text(montree.phraseEntiere, style = MaterialTheme.typography.bodyMedium, color = couleurs.textMuted)

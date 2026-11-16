@@ -53,6 +53,7 @@ import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.EtatVide
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.PhraseAvis
 import fr.coprofirst.app.commun.Roles
@@ -318,7 +319,7 @@ private fun etatCommunaute(ban: BanCommunaute): String = when {
 @Composable
 private fun Section(titre: String, contenu: @Composable ColumnScope.() -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text(titre.uppercase(), style = Typo.libelle(), color = LocalCouleurs.current.textMuted)
+        Libelle(titre)
         Carte { Column(verticalArrangement = Arrangement.spacedBy(10.dp), content = contenu) }
     }
 }

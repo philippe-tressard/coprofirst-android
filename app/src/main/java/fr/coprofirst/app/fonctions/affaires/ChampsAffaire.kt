@@ -49,12 +49,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.perimetres.LieuDeLaSaisie
 import fr.coprofirst.app.commun.perimetres.Perimetre
@@ -116,7 +119,7 @@ internal fun ChampsAffaire(
         )
     }
     if (categories.isNotEmpty()) {
-        TitreSection(R.string.nouvelle_categorie)
+        Libelle(stringResource(R.string.nouvelle_categorie), Modifier.semantics { heading() })
         ChoixCategorie(categories, saisie.categorie, reperes, actif = !contenuFige) { code ->
             // Un bogue ne s'urge pas.
             changer(saisie.copy(categorie = code).let { if (it.estBogue) it.copy(urgente = false) else it })
@@ -132,7 +135,7 @@ internal fun ChampsAffaire(
         placeholder = { Text(stringResource(R.string.nouvelle_titre_indication)) }, singleLine = true,
     )
     if (descriptionFigee != null) {
-        TitreSection(R.string.nouvelle_description)
+        Libelle(stringResource(R.string.nouvelle_description), Modifier.semantics { heading() })
         Text(TexteDuSite.riche(descriptionFigee), style = MaterialTheme.typography.bodyMedium, color = c.textMuted)
         Text(TexteDuSite.MISE_EN_FORME_AU_SITE, style = MaterialTheme.typography.bodySmall, color = c.textMuted)
     } else {
@@ -143,7 +146,7 @@ internal fun ChampsAffaire(
             placeholder = { Text(stringResource(R.string.nouvelle_description_indication)) }, minLines = 4, maxLines = 12,
         )
     }
-    TitreSection(R.string.nouvelle_de_quoi)
+    Libelle(stringResource(R.string.nouvelle_de_quoi), Modifier.semantics { heading() })
     when {
         saisie.estBogue -> Text(stringResource(R.string.nouvelle_bogue), style = MaterialTheme.typography.bodySmall, color = c.textMuted)
         !lieuModifiable -> Text(stringResource(R.string.modifier_plusieurs_lieux), style = MaterialTheme.typography.bodySmall, color = c.textMuted)

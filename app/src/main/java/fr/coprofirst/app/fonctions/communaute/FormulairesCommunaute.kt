@@ -27,12 +27,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.layout.fillMaxWidth
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.AvisDuGeste
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.Pastille
 import fr.coprofirst.app.commun.texte.TexteDuSite
 
@@ -66,7 +69,7 @@ fun FormulaireAnnonce(avis: AvisDuGeste, service: ServiceCommunaute, fermer: () 
         ressources.getString(R.string.annonces_publiee)
     }) {
         ChampCommunaute(R.string.communaute_titre, saisie.titre, { saisie = saisie.copy(titre = it) }, R.string.annonces_titre_indication)
-        LibelleSection(R.string.annonces_objet)
+        Libelle(stringResource(R.string.annonces_objet), Modifier.semantics { heading() })
         RangeeFiltres {
             TablesCommunaute.typesAnnonce.forEach { (code, libelle) ->
                 Pastille(libelle, saisie.type == code) { saisie = saisie.copy(type = code) }

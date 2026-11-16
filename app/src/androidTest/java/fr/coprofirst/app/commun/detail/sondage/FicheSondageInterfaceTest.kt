@@ -88,16 +88,16 @@ class FicheSondageInterfaceTest {
         attendre(ReperesSondage.resultat(4), "Mon vote ✓")
         attendre(ReperesSondage.resultat(4), "Le 20 juin")
         attendre(ReperesSondage.TOTAL, "30 votes")
-        attendre(ReperesReponses.ENTETE, "Commentaires (4)")
+        attendre(ReperesReponses.ENTETE, "COMMENTAIRES (4)")
         attendreTexte("Vote enregistré")
     }
 
     @Test
     fun leFilDesCommentairesSeLitSeCompleteEtSeModere() {
-        attendre(ReperesReponses.ENTETE, "Commentaires (3)")
+        attendre(ReperesReponses.ENTETE, "COMMENTAIRES (3)")
         ecran.amenerTag(ReperesReponses.SAISIE).performTextInput("Je viendrai avec des chaises")
         ecran.toucherTag(ReperesReponses.ENVOYER)
-        attendre(ReperesReponses.ENTETE, "Commentaires (4)")
+        attendre(ReperesReponses.ENTETE, "COMMENTAIRES (4)")
         attendreTexte("Commentaire publié")
 
         // Mon commentaire (servi `peut_supprimer`) : supprimer, confirmer ; pas de « Signaler ».

@@ -48,6 +48,7 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.BoutonsFeuille
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.texte.TexteDuSite
 import fr.coprofirst.app.session.ErreurService
@@ -114,12 +115,6 @@ internal fun FeuilleDeSaisie(
     }
 }
 
-/** Le titre d'une section de feuille (`Section` de l'iOS). */
-@Composable
-internal fun TitreSection(@StringRes texte: Int) {
-    Text(stringResource(texte), Modifier.semantics { heading() }, style = Typo.libelle(), color = LocalCouleurs.current.textMuted)
-}
-
 /** « Répondre », comme l'iOS (`RepondreFeuille`) : un message du fil de l'affaire. */
 @Composable
 internal fun FeuilleRepondre(affaire: DetailAffaire, service: ServiceAffaires, fermer: () -> Unit, envoyee: () -> Unit) {
@@ -178,7 +173,7 @@ internal fun FeuilleSuite(
         },
     ) {
         if (etats.isNotEmpty()) {
-            TitreSection(R.string.suite_suivi)
+            Libelle(stringResource(R.string.suite_suivi), Modifier.semantics { heading() })
             Column(Modifier.selectableGroup()) {
                 etats.forEach { e ->
                     Row(
@@ -199,7 +194,7 @@ internal fun FeuilleSuite(
             }
             Text(stringResource(pied), style = MaterialTheme.typography.bodySmall, color = LocalCouleurs.current.textMuted)
         }
-        TitreSection(R.string.suite_commentaire)
+        Libelle(stringResource(R.string.suite_commentaire), Modifier.semantics { heading() })
         val fige = corrigee?.contenu?.takeIf { corrigee.contenuSaisi == null }
         if (fige != null) {
             // Un texte mis en forme sur le site : le réenregistrer le perdrait.

@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
@@ -34,9 +33,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.api.modeles.ReponseCommunauteRead
 import fr.coprofirst.app.LocalCouleurs
@@ -156,16 +153,3 @@ fun Etoiles(note: Int) {
 /** Le nombre d'étoiles montrées : celui du site. */
 const val NOTE_AFFICHEE = 5
 
-/**
- * L'intertitre d'une section, dit comme tel au lecteur d'écran. ⚠️ Provisoire : il passe au
- * libellé commun `Libelle` (#84, `.styleLibelle()` de l'iOS) dès sa fusion.
- */
-@Composable
-fun LibelleSection(@StringRes texte: Int, modifier: Modifier = Modifier) {
-    Text(
-        stringResource(texte),
-        style = MaterialTheme.typography.titleSmall,
-        color = LocalCouleurs.current.textMuted,
-        modifier = modifier.semantics { heading() },
-    )
-}

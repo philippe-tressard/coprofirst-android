@@ -23,11 +23,11 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
-import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.AlerteChiffre
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.Chiffre
 import fr.coprofirst.app.commun.EtatVide
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.RangeeDeChiffres
 import fr.coprofirst.app.commun.formats.FormatsDuSite
@@ -87,12 +87,7 @@ private fun SectionContrats(releve: Renouvellements) {
 @Composable
 private fun Groupe(titre: Int, contrats: List<ContratAEcheance>) {
     if (contrats.isEmpty()) return
-    Text(
-        stringResource(R.string.espacecs_renouvellements_groupe, stringResource(titre), contrats.size).uppercase(),
-        style = Typo.libelle(),
-        color = LocalCouleurs.current.textMuted,
-        modifier = Modifier.padding(top = 6.dp),
-    )
+    Libelle(stringResource(R.string.espacecs_renouvellements_groupe, stringResource(titre), contrats.size), Modifier.padding(top = 6.dp))
     contrats.forEach { LigneContrat(it, dansLAnnee = false) }
 }
 

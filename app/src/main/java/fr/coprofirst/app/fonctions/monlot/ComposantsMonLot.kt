@@ -29,53 +29,14 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Carte
+import fr.coprofirst.app.commun.LigneFiche
+import fr.coprofirst.app.commun.NoteEnCarte
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 
-/** Un intertitre de section, avec son compte déjà dans le texte (« 🏢 Lots possédés (3) »). */
-@Composable
-fun Intertitre(titre: String) {
-    Text(
-        titre,
-        style = Typo.titre(MaterialTheme.typography.titleLarge),
-        color = LocalCouleurs.current.text,
-        modifier = Modifier.fillMaxWidth().padding(top = 8.dp).semantics { heading() },
-    )
-}
-
-/** Une ligne « libellé — valeur » d'une fiche (le `<dl>` du site) ; la valeur passe dessous quand la place manque. */
-@Composable
-fun LigneFiche(libelle: String, valeur: String) {
-    val couleurs = LocalCouleurs.current
-    FlowRow(
-        modifier = Modifier.fillMaxWidth().semantics(mergeDescendants = true) {},
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Text(libelle, style = MaterialTheme.typography.bodyMedium, color = couleurs.textMuted, modifier = Modifier.widthIn(min = 110.dp))
-        SelectionContainer {
-            Text(valeur, style = MaterialTheme.typography.bodyLarge, color = couleurs.text)
-        }
-    }
-}
-
-/** Un état vide ou une note, dans une carte : un titre facultatif et son texte. */
-@Composable
-fun NoteMonLot(texte: String, titre: String? = null, icone: ImageVector = Icons.Outlined.Info) {
-    val couleurs = LocalCouleurs.current
-    Carte(Modifier.semantics(mergeDescendants = true) {}) {
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Icon(icone, contentDescription = null, tint = couleurs.textMuted)
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                if (titre != null) Text(titre, style = MaterialTheme.typography.titleMedium, color = couleurs.text)
-                Text(texte, style = MaterialTheme.typography.bodyMedium, color = couleurs.textMuted)
-            }
-        }
-    }
-}
-
 /** La note qui tient la place du tableau des charges (calculé dans le front du site). */
 @Composable
-fun ChargesSurLeSite() = NoteMonLot(stringResource(R.string.monlot_charges_sur_le_site), stringResource(R.string.monlot_charges))
+fun ChargesSurLeSite() = NoteEnCarte(stringResource(R.string.monlot_charges_sur_le_site), stringResource(R.string.monlot_charges))
 
 /**
  * Les caractéristiques d'un lot (`CaracteristiquesLot.svelte`), dans l'ordre du site : ce

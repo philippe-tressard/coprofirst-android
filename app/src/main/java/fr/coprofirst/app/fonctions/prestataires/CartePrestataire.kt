@@ -22,11 +22,11 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.FlowCapsules
+import fr.coprofirst.app.commun.LigneFiche
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.texte.TexteRiche
-import fr.coprofirst.app.fonctions.monlot.LigneFiche
 
 /**
  * La carte d'un prestataire (`CartePrestataire.svelte`), comme l'iOS : repliée, son en-tête

@@ -23,8 +23,8 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.ChampRecherche
 import fr.coprofirst.app.commun.EtatVide
-import fr.coprofirst.app.fonctions.monlot.Intertitre
-import fr.coprofirst.app.fonctions.monlot.NoteMonLot
+import fr.coprofirst.app.commun.Intertitre
+import fr.coprofirst.app.commun.NoteEnCarte
 import fr.coprofirst.app.session.ErreurService
 
 /**
@@ -71,7 +71,7 @@ internal fun OngletPrestataires(donnees: DonneesPrestataires, service: ServicePr
             return@Column
         }
         if (courants.isEmpty()) {
-            NoteMonLot(
+            NoteEnCarte(
                 stringResource(R.string.prestataires_archives_rangees),
                 stringResource(if (filtre) R.string.prestataires_aucun_actif_criteres else R.string.prestataires_aucun_actif),
             )

@@ -35,6 +35,7 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.Pastille
 import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.commun.formats.FormatsDuSite
@@ -140,7 +141,7 @@ private fun Contact(annonce: AnnonceRead) {
 @Composable
 private fun Suivi(annonce: AnnonceRead, changer: (String) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        LibelleSection(R.string.annonces_ou_en_est)
+        Libelle(stringResource(R.string.annonces_ou_en_est), Modifier.semantics { heading() })
         RangeeFiltres {
             TablesCommunaute.statutsAnnonce.forEach { (code, teinte) ->
                 Pastille(teinte.libelle, annonce.statut.value == code) { if (code != annonce.statut.value) changer(code) }

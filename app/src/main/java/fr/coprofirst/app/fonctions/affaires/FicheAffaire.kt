@@ -48,6 +48,7 @@ import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.commun.Chargement
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.lecture.EtiquetteLieu
@@ -180,7 +181,7 @@ private fun FilMessages(messages: List<MessageAffaire>, session: SessionOuverte)
     val c = LocalCouleurs.current
     val vous = stringResource(R.string.affaire_vous)
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(stringResource(R.string.affaire_messages), Modifier.semantics { heading() }, style = Typo.libelle(), color = c.textMuted)
+        Libelle(stringResource(R.string.affaire_messages), Modifier.semantics { heading() })
         messages.forEach { m ->
             val forme = RoundedCornerShape(Mise.rayon)
             val fond = when {

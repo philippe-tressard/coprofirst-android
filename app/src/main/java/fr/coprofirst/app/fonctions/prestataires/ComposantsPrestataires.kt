@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
-import fr.coprofirst.app.charte.Typo
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.Pastille
 import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.commun.formats.FormatsDuSite
@@ -112,7 +112,7 @@ internal fun FiltrePastilles(titre: String, options: List<Pair<String, String>>,
         choisir(v)
     }
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Libelle(titre)
+        Libelle(titre, Modifier.semantics { heading() })
         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Pastille(stringResource(R.string.prestataires_tous), retenue = valeur == null) { changer(null) }
             options.forEach { (code, libelle) ->
@@ -121,12 +121,6 @@ internal fun FiltrePastilles(titre: String, options: List<Pair<String, String>>,
             }
         }
     }
-}
-
-/** Le libellé d'une section (`.styleLibelle()` de l'iOS). */
-@Composable
-internal fun Libelle(texte: String, modifier: Modifier = Modifier) {
-    Text(texte.uppercase(), style = Typo.libelle(), color = LocalCouleurs.current.textMuted, modifier = modifier.semantics { heading() })
 }
 
 private const val DUREE_MS = 220

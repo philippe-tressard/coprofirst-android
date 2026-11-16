@@ -43,6 +43,7 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.Carte
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.pieces.PhotoProtegee
@@ -195,7 +196,7 @@ private fun mandat(date: Instant?, echu: Boolean): String {
 @Composable
 private fun Champ(libelle: String, modifier: Modifier = Modifier, valeur: @Composable () -> Unit) {
     Column(modifier.semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(3.dp)) {
-        LibelleChamp(libelle)
+        Libelle(libelle)
         valeur()
     }
 }
@@ -218,7 +219,7 @@ private fun CompositionBatiments(contenu: ContenuFiche) {
     }
     fun valeur(n: Int) = if (n > 0) FormatsDuSite.nombre(n) else FormatsDuSite.TIRET
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        LibelleChamp(stringResource(R.string.residence_composition))
+        Libelle(stringResource(R.string.residence_composition))
         LigneTableau(stringResource(R.string.residence_batiment), colonnes, entete = true)
         lignes.forEach { (nom, valeurs) -> LigneTableau(nom, valeurs.map(::valeur)) }
         HorizontalDivider(color = couleurs.border)

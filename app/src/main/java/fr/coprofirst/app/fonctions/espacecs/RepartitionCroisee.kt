@@ -38,9 +38,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.charte.Couleurs
-import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.GRANDE_ECHELLE
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 
 /**
@@ -60,7 +60,7 @@ internal fun RepartitionCroisee(titre: String, barres: List<Repartition>) {
     val grand = LocalDensity.current.fontScale >= GRANDE_ECHELLE
     Carte {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text(titre.uppercase(), style = Typo.libelle(), color = c.textMuted)
+            Libelle(titre)
             barres.forEach { barre ->
                 val lu = "${barre.libelle} : ${FormatsDuSite.nombre(barre.nombre)}" +
                     barre.tranches.joinToString("") { ", ${it.libelle} ${FormatsDuSite.nombre(it.nombre)}" }

@@ -27,6 +27,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -36,6 +37,8 @@ import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.EtatVide
+import fr.coprofirst.app.commun.Intertitre
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.Pastille
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.cliquable
@@ -45,7 +48,6 @@ import fr.coprofirst.app.commun.pieces.AvisOuverture
 import fr.coprofirst.app.commun.pieces.Ouverture
 import fr.coprofirst.app.commun.pieces.PhotoProtegee
 import fr.coprofirst.app.commun.pieces.rememberOuverture
-import fr.coprofirst.app.fonctions.monlot.Intertitre
 import fr.coprofirst.app.session.SessionOuverte
 
 /**
@@ -71,7 +73,7 @@ internal fun OngletConsommations(donnees: DonneesPrestataires, service: ServiceP
         var choisi by rememberSaveable { mutableStateOf(compteurs.first().typeCompteur) }
         val compteur = compteurs.firstOrNull { it.typeCompteur == choisi } ?: compteurs.first()
         Column(verticalArrangement = Arrangement.spacedBy(Mise.ecart)) {
-            Libelle(stringResource(R.string.prestataires_compteur))
+            Libelle(stringResource(R.string.prestataires_compteur), Modifier.semantics { heading() })
             ChoixCompteur(compteurs, compteur.typeCompteur) { choisi = it }
             if (conseil) {
                 val fournisseur = donnees.prestataire(compteur.prestataireId)

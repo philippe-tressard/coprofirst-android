@@ -31,6 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.setProgress
@@ -41,6 +42,7 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.AvisDuGeste
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.texte.TexteDuSite
 import kotlin.math.roundToInt
 
@@ -65,7 +67,7 @@ fun FormulaireAvis(avis: AvisDuGeste, service: ServiceCommunaute, existant: Avis
         ressources.getString(merci)
     }) {
         ChampCommunaute(R.string.communaute_titre, saisie.titre, { saisie = saisie.copy(titre = it) }, R.string.avis_titre_indication)
-        LibelleSection(R.string.avis_note)
+        Libelle(stringResource(R.string.avis_note), Modifier.semantics { heading() })
         ChoixEtoiles(saisie.note) { saisie = saisie.copy(note = it) }
         Etiquette(stringResource(R.string.avis_note_explication, TablesCommunaute.NOTE_PUBLIABLE))
         if (ReglesCommunaute.demandeRemarque(saisie.note)) {
@@ -124,7 +126,7 @@ private fun ChoixEtoiles(note: Int, choisir: (Int) -> Unit) {
 @Composable
 private fun Consentement(choix: Boolean?, choisir: (Boolean) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        LibelleSection(R.string.avis_diffusion)
+        Libelle(stringResource(R.string.avis_diffusion), Modifier.semantics { heading() })
         Text(stringResource(R.string.avis_diffusion_question), style = MaterialTheme.typography.bodyMedium, color = LocalCouleurs.current.text)
         Column(Modifier.selectableGroup()) {
             listOf(true to R.string.avis_oui, false to R.string.avis_non).forEach { (valeur, libelle) ->
