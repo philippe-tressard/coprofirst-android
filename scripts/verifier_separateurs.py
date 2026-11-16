@@ -40,7 +40,7 @@ import tempfile
 
 RACINE = pathlib.Path(__file__).resolve().parent.parent
 TABLE = RACINE / "contrat" / "tables-clients.json"
-DOSSIERS = ("app/src/main", "app/src/debug", "app/src/test", "app/src/androidTest", "partage/src/main", "partage/src/test",
+DOSSIERS = ("app/src/main", "app/src/debug", "app/src/test", "app/src/androidTest", "partage/src/main", "partage/src/test", "partage-android/src/main", "partage-android/src/test",
             "montre/src/main", "montre/src/test", "montre/src/androidTest", "tests-interface-communs")
 DISPENSES = (re.compile(r"^app/src/debug/.*/Fixtures[^/]*\.kt$"),)
 

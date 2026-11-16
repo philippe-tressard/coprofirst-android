@@ -30,6 +30,7 @@
 !/app/
 !/client-api/
 !/partage/
+!/partage-android/
 !/montre/
 !/ressources-communes/
 !/tests-interface-communs/
