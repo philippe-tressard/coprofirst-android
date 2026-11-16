@@ -58,9 +58,9 @@ import java.time.Instant
  * actualiser » ; un fil vide et une erreur dits. Un toucher ouvre le résumé, le document ou
  * la fiche d'un sondage ou d'une affaire, poussée par la porte (`DestinationDuFil`).
  *
- * ⚠️ Divergences déclarées : pas encore le logement de l'utilisateur dans la barre
- * (`PastilleLogement` de l'iOS, qui ouvre « Mes lots & accès », #181) ; une notification
- * touchée n'ouvre pas encore son élément (#23).
+ * En tête, le logement de l'utilisateur, qui ouvre « Mes lots & accès » (`LogementDuFil`).
+ *
+ * ⚠️ Divergence déclarée : une notification touchée n'ouvre pas encore son élément (#23).
  */
 @Composable
 fun EcranFil(contexte: ContexteDeMenu) {
@@ -69,7 +69,12 @@ fun EcranFil(contexte: ContexteDeMenu) {
         key = "fil@${System.identityHashCode(session)}",
         factory = viewModelFactory { initializer { ParcoursFil(ServiceFilApi(session)) } },
     )
-    PageHorsLigne { EcranFil(parcours, session, contexte.ouvrir) }
+    PageHorsLigne {
+        Column {
+            LogementDuFil(contexte.logement) { contexte.ouvrir(Destination.Page(PAGE_MES_LOTS)) }
+            EcranFil(parcours, session, contexte.ouvrir)
+        }
+    }
 }
 
 /** @param ouvrir la porte (`ContexteDeMenu.ouvrir`) : l'affaire et le sondage s'ouvrent par elle. */

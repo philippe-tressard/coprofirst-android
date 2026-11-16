@@ -30,6 +30,8 @@ data class ContexteDeMenu(
     val ouvrir: (Destination) -> Boolean = { false },
     /** Relit les droits du compte (un rôle changé) : la barre et les onglets suivent (#87). */
     val relireDroits: suspend () -> Unit = {},
+    /** Le logement du compte (`libelle_logement` servi, #181) ; `null` : sans lot, ou pas encore lu. */
+    val logement: String? = null,
 )
 
 /** L'écran d'une page de menu. */
