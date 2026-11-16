@@ -59,6 +59,7 @@ object ReperesSondage {
     const val VOTER = "sondage.voter"
     const val MANQUE = "sondage.manque"
     const val RESULTATS_MASQUES = "sondage.resultatsMasques"
+    const val RESULTATS_PROVISOIRES = "sondage.resultatsProvisoires"
 
     fun option(id: Int) = "sondage.option.$id"
     fun resultat(id: Int) = "sondage.resultat.$id"
@@ -130,6 +131,9 @@ private fun ContenuSondage(sondage: DetailSondage, service: ServiceSondage?, avi
         verticalArrangement = Arrangement.spacedBy(Mise.ecart),
     ) {
         Carte { EnteteSondage(sondage) }
+        // Visibles et le vote encore à faire : les résultats (provisoires) passent au-dessus
+        // du formulaire (5Hostachy #2803, coprofirst-ios#257).
+        if (sondage.resultatsAvantVote) ResultatsSondage(sondage)
         AnimatedContent(targetState = sondage.peutVoter, label = "vote") { ouvert ->
             if (ouvert) {
                 FormulaireVote(sondage, vote, { vote = it }, envoi) {

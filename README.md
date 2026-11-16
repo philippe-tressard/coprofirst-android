@@ -79,7 +79,8 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   jointes ; une urgence porte un liseré rouge. Un toucher ouvre le résumé (avec « Voir
   sur le site » quand le site a une page), le document, ou la fiche d'un sondage : voter
   (une réponse, sa précision si elle en demande une, un commentaire, sous la charte de
-  respect), les résultats quand le serveur les montre, puis les commentaires — en publier,
+  respect), les résultats quand le serveur les montre (avant le vote, au-dessus des choix,
+  « provisoires » tant que le sondage est ouvert), puis les commentaires — en publier,
   supprimer les siens (confirmé), signaler ceux des autres au conseil syndical (motif
   obligatoire). L'affaire ne s'ouvre pas encore dans l'app. Tirer la liste la relit ; un
   fil vide le dit.

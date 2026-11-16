@@ -35,6 +35,26 @@ class ModeleSondageTest {
         assertEquals(0, velos.totalVotes)
     }
 
+    /**
+     * Les résultats avant le vote (#218, 5Hostachy #2803, coprofirst-ios#257) : visibles avant
+     * la clôture, ils passent au-dessus du formulaire et se disent provisoires ; masqués, rien
+     * ne paraît ; clos, les barres sans la mention ; voté et encore ouvert, provisoires.
+     */
+    @Test
+    fun lesResultatsVisiblesPassentAvantLeVoteEtSeDisentProvisoires() {
+        val ouvert = fiches.getValue(12)
+        assertTrue(ouvert.peutVoter && ouvert.resultatsAvantVote && ouvert.resultatsProvisoires)
+        val masque = fiches.getValue(11)
+        assertTrue(masque.peutVoter)
+        assertFalse("masqués : aucun décompte avant la clôture", masque.resultatsAvantVote || masque.resultatsProvisoires)
+        val clos = fiches.getValue(9)
+        assertTrue(clos.resultatsVisibles)
+        assertFalse("clos : les barres, sans la mention", clos.resultatsAvantVote || clos.resultatsProvisoires)
+        val vote = ouvert.copy(monVote = 1)
+        assertFalse(vote.resultatsAvantVote)
+        assertTrue("voté, encore ouvert : provisoires", vote.resultatsProvisoires)
+    }
+
     @Test
     fun unSondageClotureOuDejaVoteNeSeVotePlus() {
         val horaires = fiches.getValue(9)
