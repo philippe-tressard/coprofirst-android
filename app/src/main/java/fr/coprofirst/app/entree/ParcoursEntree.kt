@@ -9,6 +9,7 @@ import fr.coprofirst.app.commun.GestesDeSortie
 import fr.coprofirst.app.commun.ResidenceConnue
 import fr.coprofirst.app.commun.pieces.PiecesLocales
 import fr.coprofirst.app.navigation.LienDuSite
+import fr.coprofirst.app.session.AbonnesSession
 import fr.coprofirst.app.session.AdresseInstallation
 import fr.coprofirst.app.session.Connexion
 import fr.coprofirst.app.session.Decouverte
@@ -31,6 +32,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -62,6 +66,8 @@ class ParcoursEntree(
     private val apresSortie: (Installation) -> Unit = {},
     /** L'appareil est-il en ligne ? (#28) : le bandeau, et la reprise au retour du réseau. */
     val reseau: Reseau = Reseau.Fige(),
+    /** Ce qui suit l'ouverture et la fermeture d'une résidence : le push, la montre (#150). */
+    private val abonnes: AbonnesSession = AbonnesSession.Aucun,
     private val lirePreuve: suspend (AdresseInstallation) -> PreuveHote = { PreuveHote.lire(it) },
 ) : ViewModel(), ActionsEntree, GestesDeSortie {
     private val _etat = MutableStateFlow(EtatEntree())
@@ -80,6 +86,10 @@ class ParcoursEntree(
 
     init {
         viewModelScope.launch { sessions.refusees.collect(::sessionRefusee) }
+        // Chaque résidence ouverte, par quelque chemin que ce soit, prévient ses abonnés (#150).
+        viewModelScope.launch {
+            etat.map { it.ouverte }.distinctUntilChangedBy { it?.url }.filterNotNull().collect { abonnes.ouverte(session(it)) }
+        }
         // Au lancement, comme l'iOS (`purgerLesLectures`) : rien ne reste d'une lecture
         // périmée, ni d'une résidence dont la session n'est plus gardée.
         sessions.lectures?.purger(
@@ -271,6 +281,7 @@ class ParcoursEntree(
 
     /** Quitter la résidence dont le serveur refuse la session : ce qui restait d'elle se jette. */
     private fun quitterLaSessionRefusee(installation: Installation) {
+        viewModelScope.launch { abonnes.fermee(session(installation)) }
         apresSortie(installation)
         effacerLesPieces()
         versLeMotDePasse(installation)
@@ -384,7 +395,9 @@ class ParcoursEntree(
     override fun renoncerHote() = _etat.update { it.copy(confirmation = null) }
 
     /** La session de la résidence ouverte, pour les écrans de ses menus — `null` hors session. */
-    fun sessionOuverte(): SessionOuverte? = _etat.value.ouverte?.let { SessionOuverte(it, sessions, baseApi = baseApi) }
+    fun sessionOuverte(): SessionOuverte? = _etat.value.ouverte?.let(::session)
+
+    private fun session(installation: Installation) = SessionOuverte(installation, sessions, baseApi = baseApi)
 
     override fun deconnecter() {
         val ouverte = _etat.value.ouverte ?: return
@@ -399,6 +412,7 @@ class ParcoursEntree(
         effacerLesPieces()
         viewModelScope.launch {
             avantSortie()
+            abonnes.fermee(session(ouverte))
             apresSortie(ouverte)
             if (!connexion.deconnecter(ouverte)) _etat.update { it.copy(avisSortie = AvisSortie.SessionInjoignable) }
         }
@@ -444,6 +458,7 @@ class ParcoursEntree(
             avantSortie()
             var injoignables = 0
             for (residence in residences) {
+                abonnes.fermee(session(residence))
                 apresSortie(residence)
                 if (!connexion.deconnecter(residence)) injoignables++
             }
