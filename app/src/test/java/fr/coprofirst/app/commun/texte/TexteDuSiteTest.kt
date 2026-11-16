@@ -4,6 +4,7 @@
 package fr.coprofirst.app.commun.texte
 
 import androidx.compose.ui.text.AnnotatedString
+import fr.coprofirst.app.commun.ConstantesDuServeur
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -99,7 +100,7 @@ class TexteDuSiteTest {
     fun uneBaliseHorsListeSeReduitASonTexte() {
         assertFalse("table" in BalisesDuSite.balises)
         assertEquals("a b", TexteDuSite.apercu("<table><tr><td>a</td><td>b</td></tr></table>"))
-        assertEquals(setOf("http", "https", "mailto"), BalisesDuSite.schemasDeLien)
+        assertEquals(setOf("http", "https", "mailto"), ConstantesDuServeur.schemasDeLien)
     }
 
     /** Une troncature du serveur (`contenu[:300]`) peut couper une balise en deux. */

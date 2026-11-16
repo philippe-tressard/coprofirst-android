@@ -130,13 +130,13 @@ class Balises(unittest.TestCase):
         return {"balisesAdmises": t(self.BALISES if balises is None else balises),
                 "attributsAdmis": t(["href", "alt"] if attributs is None else attributs)}
 
-    def test_liste_blanche_et_schemas(self):
+    def test_liste_blanche(self):
         texte = g.kotlin_balises(self.tables(), "test.json")
         self.assertIn('val balises: Set<String> = setOf("a", "b", "br", "em", "h1", "i", "li", "ol", "p", "s", '
                       '"strong", "u", "ul")', texte)
         self.assertIn('val attributs: Set<String> = setOf("alt", "href")', texte)
-        # Les schémas de l'iOS (`SCHEMAS_URL` de l'API) : ni javascript, ni data, ni tel.
-        self.assertIn('val schemasDeLien: Set<String> = setOf("http", "https", "mailto")', texte)
+        # Les schémas d'un lien sont des constantes du serveur (generer_constantes.py, #74).
+        self.assertNotIn("schemasDeLien", texte)
 
     def test_une_forme_inattendue_arrete(self):
         for mauvaise in (self.tables(balises="p"), self.tables(balises=["p", "br"]),
