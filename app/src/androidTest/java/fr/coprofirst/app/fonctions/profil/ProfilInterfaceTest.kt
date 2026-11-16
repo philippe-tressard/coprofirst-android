@@ -4,6 +4,7 @@
 package fr.coprofirst.app.fonctions.profil
 
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -43,6 +44,7 @@ class ProfilInterfaceTest {
     @Volatile
     private var demandeOuverte = false
     private val motsDePasseRecus = mutableListOf<String>()
+    private val saisies = mutableListOf<String>()
 
     private val residence = object : Dispatcher() {
         override fun dispatch(request: RecordedRequest): MockResponse {
@@ -50,7 +52,10 @@ class ProfilInterfaceTest {
             return when {
                 chemin.endsWith("/config") -> json(200, """{"site_nom": "Les Glycines"}""")
                 chemin.endsWith("/auth/login") || chemin.endsWith("/auth/logout") -> json(200, "{}")
-                chemin.endsWith("/auth/me") -> json(200, FixturesProfil.MOI)
+                chemin.endsWith("/auth/me") -> {
+                    if (request.method == "PATCH") synchronized(saisies) { saisies += request.body?.utf8().orEmpty() }
+                    json(200, FixturesProfil.MOI)
+                }
                 chemin.endsWith("/auth/demande-suppression") -> suppression(request)
                 else -> json(404, """{"detail": "Introuvable."}""")
             }
@@ -150,6 +155,14 @@ class ProfilInterfaceTest {
         ecran.onNodeWithTag("profil.motDePasse.nouveau").performTextInput("court")
         attendre("caractères au minimum")
         ecran.onNodeWithTag("profil.motDePasse.modifier").assertIsNotEnabled()
+    }
+
+    /** #47 : la saisie d'une affaire se choisit au Profil, part sur le compte, et la pastille suit. */
+    @Test
+    fun laSaisieDUneAffaireSeChoisitSurLeCompte() {
+        ecran.toucherTag("profil.saisie.complete")
+        ecran.waitUntil(DELAI_MS) { synchronized(saisies) { saisies.any { "\"saisie_affaire\":\"complete\"" in it.replace(" ", "") } } }
+        ecran.onNodeWithTag("profil.saisie.complete").assertIsSelected()
     }
 
     private companion object {

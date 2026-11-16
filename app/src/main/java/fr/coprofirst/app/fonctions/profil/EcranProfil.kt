@@ -87,6 +87,7 @@ fun EcranProfil(
                     SectionResidence(installation, compte) { feuille = Feuille.DemandeModification }
                     SectionIdentite(compte) { feuille = Feuille.Identite }
                     SectionSecurite { feuille = Feuille.MotDePasse }
+                    SectionSaisieAffaire(compte, service) { compte = it }
                     SectionApparence(apparence)
                     Note(stringResource(R.string.profil_au_site), Modifier.padding(horizontal = Mise.marge + 4.dp))
                     SectionDroits(compte, installation, service, relireDroits) { compte = it }

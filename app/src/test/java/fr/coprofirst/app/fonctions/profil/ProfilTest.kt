@@ -85,6 +85,16 @@ class ProfilTest {
         assertEquals("secret", avec["mot_de_passe_actuel"]!!.jsonPrimitive.content)
     }
 
+    /** #47 : la saisie d'une affaire part seule, sur le compte, à la forme de `MeUpdate`. */
+    @Test
+    fun laSaisieDUneAffairePartSeule() = runTest {
+        repondre(200, FixturesProfil.MOI)
+        service.choisirSaisie("complete")
+        val envoye = corps()
+        assertEquals("complete", envoye["saisie_affaire"]?.jsonPrimitive?.content)
+        assertEquals(setOf("saisie_affaire"), envoye.keys)
+    }
+
     @Test
     fun leMotDePasseAttendDansLOrdreDuSiteEtLeRefusPorteLaPhraseDuServeur() = runTest {
         val assez = "n".repeat(ConstantesDuServeur.LONGUEUR_MIN_MOT_DE_PASSE)
