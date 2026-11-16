@@ -157,6 +157,14 @@ class ServiceAffairesApiTest {
         assertEquals("PATCH /api/tickets/4 {\"titre\":\"Fuite d'eau\",\"perimetre_cible\":[]}", recues.single())
     }
 
+    /** #182 : les prestataires d'une affaire partent par `prestataire_ids`, dans l'ordre. */
+    @Test
+    fun lesPrestatairesPartentParLeursIdentifiants() = runTest {
+        routes("PATCH /api/tickets/4" to (200 to ticket(4)))
+        service.enregistrer(4, EditionAffaire(prestataires = listOf(5, 3)))
+        assertEquals("PATCH /api/tickets/4 {\"prestataire_ids\":[5,3]}", recues.single())
+    }
+
     @Test
     fun unRefusDuServeurDitSaPhrase() = runTest {
         routes("PATCH /api/tickets/4" to (403 to """{"detail": "Seul le conseil syndical peut archiver."}"""))

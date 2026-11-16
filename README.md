@@ -126,7 +126,8 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   partent), épingler ou marquer urgente, archiver.
   Chaque entrée de la suite se corrige ou se supprime (« ⋯ »), si le serveur le permet.
   « Nouvelle affaire » (le « + » du haut) : catégorie, titre, description, lieu, urgence —
-  les photos, les prestataires et ce que le conseil désigne se règlent sur le site.
+  les photos et ce que le conseil désigne se règlent sur le site. « Modifier » règle aussi
+  ses prestataires (ajouter, retirer, réordonner), selon le droit servi.
   En saisie Essentielle (Profil), ce qui n'est pas essentiel pour la catégorie se range
   dans « Plus de détails », replié — à la création comme à la modification.
 - **Ma résidence** : la Fiche (photo, immatriculation, lots, assurance et syndic — qui

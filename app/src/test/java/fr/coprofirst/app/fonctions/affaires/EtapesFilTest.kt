@@ -119,7 +119,7 @@ class EtapesFilTest {
 
     @Test
     fun lesIntervenantsPortentLeRythmeApresLeDernier() {
-        assertEquals(listOf("Ascenseurs du Parc · ↺ Mensuel"), affaire().copy(prestataires = listOf("Ascenseurs du Parc"), rythme = "↺ Mensuel").intervenants)
+        assertEquals(listOf("Ascenseurs du Parc · ↺ Mensuel"), affaire().copy(prestataires = listOf(PrestataireAffaire(3, "Ascenseurs du Parc")), rythme = "↺ Mensuel").intervenants)
         assertEquals(emptyList<String>(), affaire().copy(rythme = "↺ Mensuel").intervenants)
     }
 }

@@ -187,4 +187,14 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
         <item quantity="many">Plus de détails (%1$d sections)</item>
         <item quantity="other">Plus de détails (%1$d sections)</item>
     </plurals>
+    <!-- Les prestataires d'une affaire dans « Modifier » (#182), les mots de l'iOS (`TextesPrestatairesAffaire`). -->
+    <string name="prestataires_affaire_section">Prestataires</string>
+    <string name="prestataires_affaire_ajouter">Ajouter un prestataire</string>
+    <string name="prestataires_affaire_aucun">Aucun prestataire pour l\'instant.</string>
+    <string name="prestataires_affaire_tous_choisis">Tous les prestataires de la résidence sont déjà sur l\'affaire.</string>
+    <string name="prestataires_affaire_illisible">La liste des prestataires de la résidence n\'a pas pu être lue.</string>
+    <string name="prestataires_affaire_pied">Le premier est celui que montre le Kanban.</string>
+    <string name="prestataires_affaire_retirer">Retirer %1$s</string>
+    <string name="prestataires_affaire_monter">Monter</string>
+    <string name="prestataires_affaire_descendre">Descendre</string>
 </resources>

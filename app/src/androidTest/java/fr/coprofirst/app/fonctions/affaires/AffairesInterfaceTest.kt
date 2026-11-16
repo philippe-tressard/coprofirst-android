@@ -130,6 +130,7 @@ private class AffairesSimulees : ServiceAffaires {
         suites += id to suite
     }
     override suspend fun regler(id: Int, option: OptionAffaire, active: Boolean) = Unit
+    override suspend fun prestatairesDeLaResidence() = listOf(ASCENSEURS, PLOMBERIE)
     val editions = mutableListOf<EditionAffaire>()
     override suspend fun enregistrer(id: Int, edition: EditionAffaire) {
         editions += edition
@@ -156,9 +157,15 @@ private class AffairesSimulees : ServiceAffaires {
             ),
             messages = listOf(MessageAffaire(41, "<p>Merci pour le suivi.</p>", a.creeLe.plusSeconds(7200), true, null, null, false)),
             referentiels = referentielsLus,
-            droits = DroitsServisAffaire(repondre = true, changerEtat = true, modifier = true, corriger = true),
+            droits = DroitsServisAffaire(repondre = true, changerEtat = true, modifier = true, corriger = true, changerPrestataires = true),
             perimetres = listOf("copro"),
+            prestataires = listOf(ASCENSEURS),
         )
+    }
+
+    companion object {
+        val ASCENSEURS = PrestataireAffaire(3, "Ascenseurs du Parc")
+        val PLOMBERIE = PrestataireAffaire(5, "Plomberie Martin")
     }
 }
 
@@ -452,6 +459,27 @@ class AffairesInterfaceTest {
         el(ReperesNouvelle.MODIFIER_ENREGISTRER).toucher()
         attendreTexte("Affaire modifiée")
         assertEquals(listOf(EditionAffaire(titre = "Fuite au local vélos")), service.editions)
+    }
+
+    /**
+     * #182 : « Modifier » offre les prestataires selon le droit servi — en ajouter un de la
+     * résidence, le monter en tête, retirer l'autre ; seuls leurs identifiants partent.
+     */
+    @Test
+    fun lesPrestatairesDUneAffaireSeChoisissent() {
+        val service = ouvrirFiche(1)
+        attendre(repereGeste(GesteAffaire.Modifier))
+        el(repereGeste(GesteAffaire.Modifier)).toucher()
+        attendre(ReperesPrestatairesAffaire.ligne(AffairesSimulees.ASCENSEURS))
+        el(ReperesPrestatairesAffaire.AJOUTER).toucher()
+        attendre(ReperesPrestatairesAffaire.choix(AffairesSimulees.PLOMBERIE))
+        el(ReperesPrestatairesAffaire.choix(AffairesSimulees.PLOMBERIE)).toucher()
+        attendre(ReperesPrestatairesAffaire.ligne(AffairesSimulees.PLOMBERIE))
+        el(ReperesPrestatairesAffaire.retirer(AffairesSimulees.ASCENSEURS)).toucher()
+        disparait(ReperesPrestatairesAffaire.ligne(AffairesSimulees.ASCENSEURS))
+        el(ReperesNouvelle.MODIFIER_ENREGISTRER).toucher()
+        attendreTexte("Affaire modifiée")
+        assertEquals(listOf(EditionAffaire(prestataires = listOf(5))), service.editions)
     }
 
     private companion object {

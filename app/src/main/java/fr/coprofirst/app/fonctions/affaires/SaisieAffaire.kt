@@ -14,6 +14,8 @@ data class SaisieAffaire(
     val description: String = "",
     val urgente: Boolean = false,
     val perimetre: String? = null,
+    /** « Modifier » seul : les prestataires de l'affaire, dans l'ordre choisi (#182). */
+    val prestataires: List<PrestataireAffaire> = emptyList(),
 ) {
     /** Un bogue concerne le site : ni lieu ni urgence (`OPTIONS_TICKET` du site). */
     val estBogue: Boolean get() = categorie == CategorieTicket.BUG.value
@@ -31,7 +33,9 @@ data class SaisieAffaire(
     fun edition(affaire: DetailAffaire): EditionAffaire {
         val origine = modifiant(affaire)
         val urgence = urgente.takeIf { it != origine.urgente }
-        if (affaire.contenuFige) return EditionAffaire(urgente = urgence)
+        // Selon le droit servi seul, contenu figé ou non : leurs identifiants, dans l'ordre choisi.
+        val equipe = prestataires.takeIf { affaire.droits.changerPrestataires && it != origine.prestataires }?.mapNotNull { it.id }
+        if (affaire.contenuFige) return EditionAffaire(urgente = urgence, prestataires = equipe)
         val lieu = if (estBogue) null else perimetre
         return EditionAffaire(
             titre = titre.trim().takeIf { it != origine.titre.trim() },
@@ -39,6 +43,7 @@ data class SaisieAffaire(
             categorie = categorie.takeIf { it != origine.categorie },
             urgente = urgence,
             perimetres = if (affaire.lieuModifiable && lieu != origine.perimetre) listOfNotNull(lieu) else null,
+            prestataires = equipe,
         )
     }
 
@@ -50,6 +55,7 @@ data class SaisieAffaire(
         /** La saisie de « Modifier l'affaire » : l'affaire telle que le serveur la sert. */
         fun modifiant(affaire: DetailAffaire) = SaisieAffaire(
             affaire.categorie, affaire.titre, affaire.descriptionSaisie.orEmpty(), affaire.urgente, affaire.perimetres.firstOrNull(),
+            affaire.prestataires,
         )
     }
 }
@@ -65,6 +71,8 @@ data class EditionAffaire(
     val categorie: String? = null,
     val urgente: Boolean? = null,
     val perimetres: List<String>? = null,
+    /** Les identifiants des prestataires, dans l'ordre (`prestataire_ids`) ; vide : plus aucun. */
+    val prestataires: List<Int>? = null,
 ) {
     val vide: Boolean get() = this == EditionAffaire()
 }
