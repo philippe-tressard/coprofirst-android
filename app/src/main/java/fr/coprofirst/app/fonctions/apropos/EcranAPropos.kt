@@ -51,9 +51,9 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.MessageErreur
+import fr.coprofirst.app.commun.Section
 import fr.coprofirst.app.commun.cliquable
 // La section groupée du Profil, importée et non recopiée : elle monte dans commun/ par #138.
-import fr.coprofirst.app.fonctions.profil.SectionProfil
 import fr.coprofirst.app.navigation.ContexteDeMenu
 import fr.coprofirst.app.navigation.Destination
 import fr.coprofirst.app.session.ErreurService
@@ -120,11 +120,11 @@ internal fun EcranAPropos(service: ServiceAPropos, nomResidence: String, ouvrir:
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Column(Modifier.widthIn(max = 720.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(20.dp)) {
-            SectionProfil(titre = null) { Marque(nomResidence, AProposResidence.mention(lu, Year.now().value, version(ressources))) }
+            Section(titre = null) { Marque(nomResidence, AProposResidence.mention(lu, Year.now().value, version(ressources))) }
             AnimatedVisibility(erreur != null) {
                 erreur?.let { MessageErreur(it, Modifier.padding(horizontal = Mise.marge)) { essai++ } }
             }
-            SectionProfil(stringResource(R.string.apropos_informations_legales)) {
+            Section(stringResource(R.string.apropos_informations_legales)) {
                 val pret = lu != null
                 Ligne(TextesDuPied.mentions.libelle, ReperesAPropos.MENTIONS, Icons.Outlined.AccountBalance, actif = pret) {
                     ouvrir(Destination.Element(FichesAPropos.TEXTE_LEGAL, FichesAPropos.MENTIONS))
@@ -134,13 +134,13 @@ internal fun EcranAPropos(service: ServiceAPropos, nomResidence: String, ouvrir:
                     ouvrir(Destination.Element(FichesAPropos.TEXTE_LEGAL, FichesAPropos.CONFIDENTIALITE))
                 }
             }
-            SectionProfil(
+            Section(
                 titre = null,
                 note = stringResource(R.string.apropos_distribue, TextesDuPied.nomPlateforme, TextesDuPied.licenceNom),
             ) {
                 LiensDuCode()
             }
-            SectionProfil(stringResource(R.string.apropos_composants)) {
+            Section(stringResource(R.string.apropos_composants)) {
                 composants.forEachIndexed { i, composant ->
                     if (i > 0) Separateur()
                     Ligne(composant.nom, ReperesAPropos.composant(composant.nom), valeur = composant.licences.joinToString(", ")) {

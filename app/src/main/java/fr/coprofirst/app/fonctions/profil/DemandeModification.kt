@@ -37,7 +37,9 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.BoutonPlein
+import fr.coprofirst.app.commun.Note
 import fr.coprofirst.app.commun.Roles
+import fr.coprofirst.app.commun.Section
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.gesteEnLigne
 import fr.coprofirst.app.commun.phrase
@@ -70,7 +72,7 @@ fun FeuilleDemandeModification(service: ServiceProfil, fermer: () -> Unit) {
     FeuilleProfil(titre = stringResource(R.string.profil_titre_demande_modification), fermer = fermer) {
         val attente = demandes.firstOrNull { it.statutDemande == StatutDemandeProfil.EN_ATTENTE }
         when {
-            attente != null -> SectionProfil(stringResource(R.string.profil_demande_en_attente)) { Text(resume(attente)) }
+            attente != null -> Section(stringResource(R.string.profil_demande_en_attente)) { Text(resume(attente)) }
             charge -> FormulaireDemande(service, batiments) { lecture++ }
         }
         if (demandes.isNotEmpty()) Historique(demandes)
@@ -136,7 +138,7 @@ private fun FormulaireDemande(service: ServiceProfil, batiments: List<BatimentPu
 @Composable
 private fun Historique(demandes: List<DemandeModifRead>) {
     val couleurs = LocalCouleurs.current
-    SectionProfil(stringResource(R.string.profil_historique, demandes.size)) {
+    Section(stringResource(R.string.profil_historique, demandes.size)) {
         demandes.forEachIndexed { i, demande ->
             if (i > 0) HorizontalDivider(Modifier.padding(vertical = 8.dp), color = couleurs.border)
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {

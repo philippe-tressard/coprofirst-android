@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -34,11 +33,9 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.disabled
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -48,44 +45,10 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
-import fr.coprofirst.app.commun.Carte
-import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.commun.gesteEnLigne
 import fr.coprofirst.app.commun.phrase
 import fr.coprofirst.app.session.ErreurService
-
-/** Une section du Profil, comme une `Section` de l'iOS : son libellé, sa carte, sa note dessous. */
-@Composable
-fun SectionProfil(titre: String?, note: String? = null, contenu: @Composable ColumnScope.() -> Unit) {
-    val couleurs = LocalCouleurs.current
-    Column(Modifier.fillMaxWidth().padding(horizontal = Mise.marge), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        if (titre != null) {
-            Libelle(titre, Modifier.padding(start = 4.dp).semantics { heading() })
-        }
-        Carte(contenu = contenu)
-        if (note != null) Note(note, Modifier.padding(horizontal = 4.dp))
-    }
-}
-
-/** Une phrase discrète, sous une section ou dans une carte. */
-@Composable
-fun Note(texte: String, modifier: Modifier = Modifier, couleur: Color = LocalCouleurs.current.textMuted) =
-    Text(texte, style = MaterialTheme.typography.bodySmall, color = couleur, modifier = modifier)
-
-/** Une valeur et son libellé, sur une ligne (`LabeledContent` de l'iOS). */
-@Composable
-fun LigneValeur(libelle: String, valeur: String) {
-    val couleurs = LocalCouleurs.current
-    Row(
-        Modifier.fillMaxWidth().heightIn(min = Mise.cible).semantics(mergeDescendants = true) {},
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(libelle, color = couleurs.text, modifier = Modifier.weight(1f))
-        Text(valeur, color = couleurs.textMuted)
-    }
-}
 
 /**
  * Un geste en ligne : un texte touchable, en couleur primaire (en rouge s'il détruit) ;

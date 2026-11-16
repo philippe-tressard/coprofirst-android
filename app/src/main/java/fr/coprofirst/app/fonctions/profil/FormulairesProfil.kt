@@ -36,6 +36,7 @@ import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.BoutonPlein
 import fr.coprofirst.app.commun.ConstantesDuServeur
 import fr.coprofirst.app.commun.MessageErreur
+import fr.coprofirst.app.commun.Note
 import fr.coprofirst.app.commun.apercu.NomDeLaSaisie
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.launch
