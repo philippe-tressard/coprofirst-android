@@ -81,7 +81,7 @@ object LectureGardee {
  *
  * - **En ligne** : une lecture de la liste blanche qui réussit est gardée (si la session de
  *   l'hôte l'est) ; un 403 ou un 404 retire la lecture que ce compte ne peut plus ouvrir.
- *   Un renouvellement refusé efface tout de l'hôte (`rafraichir`).
+ *   Une session refusée efface tout de l'hôte (`oublierLaSession`).
  * - **En consultation** (entré sans réseau) : une lecture gardée est servie telle que le
  *   serveur l'avait servie ; TOUT le reste — une écriture, une lecture non gardée — est
  *   refusé ICI, avant de partir (`HorsLigneException` → `ErreurService.HorsLigne`) : sans
