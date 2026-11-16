@@ -75,12 +75,17 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   sans agir au nom de la personne aidée.
 - **Mes affaires** : Liste, Kanban (au conseil et aux copropriétaires) et Archives. La
   liste cherche au serveur (et propose les archives trouvées), se filtre par suivi, par
-  nature et par « ce qui me concerne » ; un appui long copie le numéro ou partage le
-  lien (archiver attend un correctif du client d'API, #99). Au Kanban, « Déplacer
+  nature et par « ce qui me concerne » ; un appui long copie le numéro, partage le lien
+  ou archive, si le serveur le permet. Au Kanban, « Déplacer
   vers… » change l'état — clore prévient quand des affaires liées pourraient être
   fusionnées, ce qui se fait sur le site. Les Archives se rangent par année. La fiche montre le fil de l'affaire (la
-  demande, la suite, les comptes rendus, la synthèse) et ses messages, en lecture ; la
-  saisie et les gestes de la fiche suivent (#16).
+  demande, la suite, les comptes rendus, la synthèse) et ses messages ; en bas, ses gestes
+  selon ce que le serveur ouvre au compte : copier ou partager le lien, Répondre, Ajouter
+  une suite (un commentaire ou un nouvel état), Modifier (seuls les champs changés
+  partent), épingler ou marquer urgente, archiver.
+  Chaque entrée de la suite se corrige ou se supprime (« ⋯ »), si le serveur le permet.
+  « Nouvelle affaire » (le « + » du haut) : catégorie, titre, description, lieu, urgence —
+  les photos, les prestataires et ce que le conseil désigne se règlent sur le site.
 - **Ma résidence** : la Fiche (photo, immatriculation, lots, assurance et syndic — qui
   ouvre l'annuaire du syndic —, composition par bâtiment ; règles, plans, règlement,
   comptes-rendus d'AG et diagnostics, chacun s'ouvrant dans l'app de l'appareil) ; aux

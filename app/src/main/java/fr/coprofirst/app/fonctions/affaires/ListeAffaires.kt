@@ -64,11 +64,11 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.NaturesAffaire
 import fr.coprofirst.app.charte.Pictogrammes
+import fr.coprofirst.app.commun.BoutonPlein
 import fr.coprofirst.app.commun.ChampRecherche
 import fr.coprofirst.app.commun.EtatVide
 import fr.coprofirst.app.commun.Pastille
 import fr.coprofirst.app.commun.formats.FormatsDuSite
-import fr.coprofirst.app.navigation.ActionsDeBarre
 import kotlinx.coroutines.launch
 import java.time.Instant
 
@@ -77,9 +77,8 @@ import java.time.Instant
  * recherche au serveur, filtre « Suivi », nature et portée (le filtre de la barre du haut) ;
  * un toucher ouvre l'affaire, un appui long ses gestes.
  *
- * ⚠️ Divergences déclarées : « Archiver » est dans les gestes de l'appui long — l'iOS l'offre
- * aussi au balayage de la carte, geste qu'une liste d'Android ne porte pas d'usage ; et il
- * attend #99 (`ReglesAffaires.GESTES_PAR_PATCH`).
+ * ⚠️ Divergence déclarée : « Archiver » est dans les gestes de l'appui long — l'iOS l'offre
+ * aussi au balayage de la carte, geste qu'une liste d'Android ne porte pas d'usage.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -88,7 +87,6 @@ internal fun ListeAffaires(ctx: ContexteAffaires) {
     val portee = rememberCoroutineScope()
     var rafraichit by remember { mutableStateOf(false) }
     LaunchedEffect(etat.recherche) { etat.chercher() }
-    MenuFiltres(ctx)
 
     PullToRefreshBox(
         isRefreshing = rafraichit,
@@ -118,7 +116,7 @@ internal fun ListeAffaires(ctx: ContexteAffaires) {
                 EtatAffaires.Phase.Pret -> {
                     val liste = etat.liste
                     items(liste, key = { it.id }) { affaire -> LigneAffaire(affaire, ctx) }
-                    if (liste.isEmpty()) item(key = "vide") { ListeVide(etat) }
+                    if (liste.isEmpty()) item(key = "vide") { ListeVide(etat, ctx.nouvelle) }
                 }
             }
         }
@@ -158,7 +156,7 @@ private fun LigneAffaire(affaire: Affaire, ctx: ContexteAffaires) {
                 )
             }
             // Ce que le serveur permet à CE lecteur (`peut_archiver`) ; archiver, jamais supprimer.
-            if (ReglesAffaires.GESTES_PAR_PATCH && affaire.peutArchiver && !affaire.archivee) {
+            if (affaire.peutArchiver && !affaire.archivee) {
                 HorizontalDivider()
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.affaires_archiver)) },
@@ -212,16 +210,16 @@ private fun InclureArchives(etat: EtatAffaires) {
 }
 
 @Composable
-private fun ListeVide(etat: EtatAffaires) {
+private fun ListeVide(etat: EtatAffaires, nouvelle: () -> Unit) {
     when {
         etat.trouvees != null -> EtatVide(
             stringResource(R.string.affaires_aucune_trouvee), icone = Icons.Outlined.Search,
             explication = stringResource(R.string.affaires_aucune_trouvee_aide),
         )
-        !etat.rechercheEnCours -> EtatVide(
-            stringResource(R.string.affaires_aucune), icone = Icons.Outlined.Inbox,
-            explication = stringResource(R.string.affaires_aucune_aide),
-        )
+        !etat.rechercheEnCours -> Column(verticalArrangement = Arrangement.spacedBy(Mise.ecart)) {
+            EtatVide(stringResource(R.string.affaires_aucune), icone = Icons.Outlined.Inbox, explication = stringResource(R.string.affaires_aucune_aide))
+            BoutonPlein(R.string.nouvelle_titre, onClick = nouvelle)
+        }
     }
 }
 
@@ -230,45 +228,42 @@ private fun ListeVide(etat: EtatAffaires) {
  * le pictogramme se remplit quand un filtre est retenu, et le lecteur d'écran dit combien.
  */
 @Composable
-private fun MenuFiltres(ctx: ContexteAffaires) {
-    val etat = ctx.etat
-    ActionsDeBarre(ctx.barre) {
-        var ouvert by remember { mutableStateOf(false) }
-        val actifs = etat.filtres.actifs
-        val valeur = if (actifs > 0) pluralStringResource(R.plurals.affaires_filtres_retenus, actifs, actifs) else stringResource(R.string.affaires_aucun_filtre)
-        val libelle = stringResource(R.string.affaires_filtrer)
-        Box {
-            IconButton(
-                onClick = { ouvert = true },
-                modifier = Modifier.testTag(ReperesAffaires.FILTRES).semantics { stateDescription = valeur },
-            ) {
-                Icon(if (actifs > 0) Icons.Filled.FilterList else Icons.Outlined.FilterList, contentDescription = libelle, tint = LocalCouleurs.current.primary)
-            }
-            DropdownMenu(ouvert, { ouvert = false }) {
-                Text(
-                    stringResource(R.string.affaires_nature), Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                    style = MaterialTheme.typography.labelMedium, color = LocalCouleurs.current.textMuted,
+internal fun MenuFiltres(etat: EtatAffaires) {
+    var ouvert by remember { mutableStateOf(false) }
+    val actifs = etat.filtres.actifs
+    val valeur = if (actifs > 0) pluralStringResource(R.plurals.affaires_filtres_retenus, actifs, actifs) else stringResource(R.string.affaires_aucun_filtre)
+    val libelle = stringResource(R.string.affaires_filtrer)
+    Box {
+        IconButton(
+            onClick = { ouvert = true },
+            modifier = Modifier.testTag(ReperesAffaires.FILTRES).semantics { stateDescription = valeur },
+        ) {
+            Icon(if (actifs > 0) Icons.Filled.FilterList else Icons.Outlined.FilterList, contentDescription = libelle, tint = LocalCouleurs.current.primary)
+        }
+        DropdownMenu(ouvert, { ouvert = false }) {
+            Text(
+                stringResource(R.string.affaires_nature), Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                style = MaterialTheme.typography.labelMedium, color = LocalCouleurs.current.textMuted,
+            )
+            val natures = listOf<Triple<String?, String, String?>>(Triple(null, stringResource(R.string.affaires_toutes_natures), null)) +
+                NaturesAffaire.toutes.map { Triple(it.code, it.libelle, it.icone) }
+            natures.forEach { (code, texte, icone) ->
+                DropdownMenuItem(
+                    text = { Text(texte) },
+                    leadingIcon = { RadioButton(etat.filtres.nature == code, onClick = null) },
+                    trailingIcon = icone?.let { { Icon(Pictogrammes.icone(it), contentDescription = null) } },
+                    onClick = { etat.filtres = etat.filtres.copy(nature = code) },
+                    modifier = Modifier.testTag(ReperesAffaires.nature(code)),
                 )
-                val natures = listOf<Triple<String?, String, String?>>(Triple(null, stringResource(R.string.affaires_toutes_natures), null)) +
-                    NaturesAffaire.toutes.map { Triple(it.code, it.libelle, it.icone) }
-                natures.forEach { (code, texte, icone) ->
-                    DropdownMenuItem(
-                        text = { Text(texte) },
-                        leadingIcon = { RadioButton(etat.filtres.nature == code, onClick = null) },
-                        trailingIcon = icone?.let { { Icon(Pictogrammes.icone(it), contentDescription = null) } },
-                        onClick = { etat.filtres = etat.filtres.copy(nature = code) },
-                        modifier = Modifier.testTag(ReperesAffaires.nature(code)),
-                    )
-                }
-                if (etat.offrirMeConcerne) {
-                    HorizontalDivider()
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.affaires_me_concerne)) },
-                        leadingIcon = { Checkbox(etat.filtres.meConcerne, onCheckedChange = null) },
-                        onClick = { etat.filtres = etat.filtres.copy(meConcerne = !etat.filtres.meConcerne) },
-                        modifier = Modifier.testTag(ReperesAffaires.ME_CONCERNE),
-                    )
-                }
+            }
+            if (etat.offrirMeConcerne) {
+                HorizontalDivider()
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.affaires_me_concerne)) },
+                    leadingIcon = { Checkbox(etat.filtres.meConcerne, onCheckedChange = null) },
+                    onClick = { etat.filtres = etat.filtres.copy(meConcerne = !etat.filtres.meConcerne) },
+                    modifier = Modifier.testTag(ReperesAffaires.ME_CONCERNE),
+                )
             }
         }
     }
