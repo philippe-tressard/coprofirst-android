@@ -14,12 +14,12 @@ package fr.coprofirst.app.fonctions.monlot
  * refuse toute réponse à laquelle manque un champ requis.
  *
  * Tout est inventé : aucun nom de personne, des numéros de la plage réservée à la fiction
- * (01 99 00 …), des adresses `exemple.fr`. Dans le build de débogage seulement.
+ * (01 99 00 …), des adresses `exemple.test`. Dans le build de débogage seulement.
  */
 object FixturesMonLot {
     /** GET /auth/me : `statut`, `role`, `est_moderateur` disent ce que le compte EST. */
     fun moi(statut: String, role: String, moderateur: Boolean = false) = """
-        {"id": 7, "nom": "Exemple", "prenom": "Compte", "email": "compte@exemple.fr", "statut": "$statut",
+        {"id": 7, "nom": "Exemple", "prenom": "Compte", "email": "compte@exemple.test", "statut": "$statut",
          "role": "$role", "roles": ["$role"], "est_moderateur": $moderateur, "actif": true,
          "onboarding_complete": true, "onboarding_etape": 0, "preferences_notifications": "{}",
          "cree_le": "2025-01-01T09:00:00", "nom_affiche": "Compte EXEMPLE", "nom_aide_affiche": ""}
@@ -90,7 +90,7 @@ object FixturesMonLot {
     const val BAUX = """
         [
           {"id": 3, "lot_id": 15, "bailleur_id": 70, "locataire_id": 81, "locataire_nom": "du lot 15",
-           "locataire_prenom": "Locataire", "locataire_email": "locataire.15@exemple.fr",
+           "locataire_prenom": "Locataire", "locataire_email": "locataire.15@exemple.test",
            "locataire_nom_affiche": "Locataire DU LOT 15",
            "locataire_telephone": "01 99 00 00 15", "date_entree": "2025-09-01", "date_sortie_prevue": null,
            "date_sortie_reelle": null, "statut": "actif",
@@ -127,7 +127,7 @@ object FixturesMonLot {
          "lot_type": "appartement", "lot_type_appartement": "T3", "lot_etage": 2, "lot_etage_libelle": "2ème",
          "lot_superficie": 64.5, "date_entree": "2025-09-01", "date_sortie_prevue": null,
          "bailleur_prenom": "Sacha", "bailleur_nom": "Exemple", "bailleur_nom_affiche": "Sacha EXEMPLE",
-         "bailleur_email": "bailleur@exemple.fr", "bailleur_telephone": "01 99 00 00 70", "acces": []}
+         "bailleur_email": "bailleur@exemple.test", "bailleur_telephone": "01 99 00 00 70", "acces": []}
     """
 
     /** POST /acces/commandes → `CommandeAccesRead`. */

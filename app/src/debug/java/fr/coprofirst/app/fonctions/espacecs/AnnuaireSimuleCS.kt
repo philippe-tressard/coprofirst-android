@@ -110,10 +110,10 @@ class AnnuaireSimuleCS {
         /** GET /admin/annuaire/syndic → `InfoSyndicAdmin`. */
         const val SYNDIC = """
             {"nom_syndic": "Cabinet Exemple", "nom_syndic_source": "saisie", "adresse": "1 rue de l'Exemple, 75000 Paris",
-             "site_web": "https://exemple.fr",
+             "site_web": "https://exemple.test",
              "membres": [
                {"id": 11, "genre": "Mme", "prenom": "Dominique", "nom": "Modèle", "nom_affiche": "Dominique MODÈLE",
-                "fonction": "Gestionnaire", "email": "gestion@exemple.fr", "telephone": "01 99 00 00 01",
+                "fonction": "Gestionnaire", "email": "gestion@exemple.test", "telephone": "01 99 00 00 01",
                 "telephones": ["01 99 00 00 01"], "est_principal": true, "ordre": 0, "user_id": null},
                {"id": 12, "genre": "Mr", "prenom": "Sacha", "nom": "Essai", "nom_affiche": "Sacha ESSAI",
                 "fonction": "Comptable", "email": null, "telephone": null, "telephones": [], "est_principal": false,

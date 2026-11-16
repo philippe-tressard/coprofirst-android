@@ -18,7 +18,7 @@
 #   7 bis. aucun format de date ou de nombre hors de FormatsDuSite ;
 #   7 ter. aucun HTML rendu par une vue web ou le lecteur HTML d'Android : TexteDuSite ;
 #   7 quater. aucune version écrite à la main (elle se déduit de git) ;
-#   7 quinquies. aucun hôte fictif sur un vrai domaine (exemple.fr…), libellés compris ;
+#   7 quinquies. aucun hôte fictif sur un vrai domaine (exemple.fr…), libellés et API simulée (debug) compris ;
 #   7 sexies. aucun `performClick` dans les tests d'interface hors du geste commun ;
 #   7 septies. la règle des tests d'interface est la v2 (junit4.v2), jamais la v1 ;
 #   8. un seul bouton plein, `BoutonPlein` (commun/Boutons.kt) ;
@@ -236,7 +236,7 @@ while IFS= read -r f; do
   [ -f "$f" ] || continue
   motif=$(premier_motif "$HOTE_REEL" "$f")
   [ -z "$motif" ] || echec "$f : hôte fictif sur un VRAI domaine ($motif) — un nom réservé (.test, .invalid)"
-done < <(grep -E '^(app/src/(main|test|androidTest)|client-api/src/test)/.*\.(kt|xml)$' <<< "$FICHIERS")
+done < <(grep -E '^(app/src/(main|debug|test|androidTest)|client-api/src/test)/.*\.(kt|xml)$' <<< "$FICHIERS")
 
 # Les générateurs du build (palettes, logo) : leurs tests, dont la génération des
 # fichiers recopiés. Chaque `scripts/test_*.py` versionné est joué.

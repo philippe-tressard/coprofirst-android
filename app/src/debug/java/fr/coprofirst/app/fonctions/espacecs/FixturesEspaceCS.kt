@@ -9,12 +9,12 @@ package fr.coprofirst.app.fonctions.espacecs
  * par le MÊME branchement que l'app (`lu()`), comme l'iOS (`FixturesComptesCS`,
  * `FixturesBadgesCS`). Un champ requis qui manque fait échouer le décodeur généré.
  *
- * Tout est inventé : aucun nom de personne réelle, des adresses `exemple.fr`. Dans le
+ * Tout est inventé : aucun nom de personne réelle, des adresses `exemple.test`. Dans le
  * build de débogage seulement.
  */
 object FixturesEspaceCS {
     private fun compte(id: Int, prenom: String, nom: String, statut: String, role: String, cree: String, extra: String = "", aide: String = "") = """
-        {"id": $id, "prenom": "$prenom", "nom": "$nom", "email": "${prenom.lowercase()}@exemple.fr", "actif": false,
+        {"id": $id, "prenom": "$prenom", "nom": "$nom", "email": "${prenom.lowercase()}@exemple.test", "actif": false,
          "nom_affiche": "$prenom ${nom.uppercase()}", "nom_aide_affiche": "$aide", "est_moderateur": false,
          "role": "$role", "statut": "$statut", "cree_le": "$cree", "onboarding_complete": false,
          "onboarding_etape": 1, "preferences_notifications": "{}"$extra}
