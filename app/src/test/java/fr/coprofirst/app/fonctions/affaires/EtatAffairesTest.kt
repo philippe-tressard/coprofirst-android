@@ -15,6 +15,7 @@ import java.time.Instant
 /** L'état partagé des trois onglets : un geste refusé ramène la carte où elle était, et se dit. */
 class EtatAffairesTest {
     private class Simule(var refuser: Boolean = false) : ServiceAffaires {
+        override suspend fun prestatairesDeLaResidence(): List<PrestataireAffaire> = error("le choix des prestataires n'est pas du ressort de la liste")
         val deplacements = mutableListOf<Pair<Int, String>>()
         var affaires = listOf(
             affaire(1, "ouvert", "cs"), affaire(2, "en_cours", "syndic"),

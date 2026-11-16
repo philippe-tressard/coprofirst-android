@@ -12,6 +12,7 @@ import fr.coprofirst.api.modeles.TicketEvolutionUpdate
 import fr.coprofirst.api.modeles.TicketUpdate
 import fr.coprofirst.api.routes.LotsApi
 import fr.coprofirst.api.routes.PointsConseilApi
+import fr.coprofirst.api.routes.PrestatairesApi
 import fr.coprofirst.api.routes.TicketsApi
 import fr.coprofirst.app.commun.perimetres.ServicePerimetres
 import fr.coprofirst.app.commun.perimetres.ServicePerimetresApi
@@ -31,6 +32,9 @@ interface ServiceAffaires : ServicePerimetres {
 
     /** GET /tickets/referentiels : colonnes du Kanban, états, catégories — servis. */
     suspend fun referentiels(): ReferentielsAffaires
+
+    /** GET /prestataires : ceux de la résidence, non archivés — le choix de « Modifier » (#182). */
+    suspend fun prestatairesDeLaResidence(): List<PrestataireAffaire>
 
     /** GET /tickets/recherche : les identifiants trouvés, dans l'ordre de pertinence, sans doublon. */
     suspend fun rechercher(terme: String): List<Int>
@@ -81,6 +85,10 @@ class ServiceAffairesApi(private val session: SessionOuverte) : ServiceAffaires,
 
     override suspend fun referentiels() = tickets { ReferentielsAffaires.depuis(getTicketsReferentiels()) }
 
+    override suspend fun prestatairesDeLaResidence() = session.appeler { base, client ->
+        PrestatairesApi(base, client).getPrestataires().filterNot { it.archivee == true }.map { PrestataireAffaire(it.id, it.nom) }
+    }
+
     override suspend fun rechercher(terme: String) = tickets { getTicketsRecherche(terme).map { it.ticketId }.distinct() }
 
     override suspend fun offrirMeConcerne(): Boolean = try {
@@ -127,7 +135,7 @@ class ServiceAffairesApi(private val session: SessionOuverte) : ServiceAffaires,
     override suspend fun enregistrer(id: Int, edition: EditionAffaire) {
         val corps = TicketUpdate(
             titre = edition.titre, description = edition.descriptionHtml, categorie = edition.categorie,
-            urgente = edition.urgente, perimetreCible = edition.perimetres,
+            urgente = edition.urgente, perimetreCible = edition.perimetres, prestataireIds = edition.prestataires,
         )
         tickets { patchTicketsTicketId(id, corps) }
     }

@@ -145,9 +145,8 @@ private fun DepuisLeSite(poseLesReservees: Boolean) {
  * champs que la Création, partis de l'affaire servie ; n'envoie que ce qui a changé
  * (`EditionAffaire`). Les catégories offertes sont celles que le serveur PERMET
  * (`permises(enModifiant)`).
- *
- * ⚠️ Divergence déclarée : les prestataires de l'affaire (`peut_changer_prestataires`) se
- * règlent sur le site — l'iOS les choisit dans le catalogue de la résidence.
+ * Ses prestataires, selon le droit servi (`peut_changer_prestataires`) : ajouter, retirer,
+ * réordonner (`SectionPrestataires`, #182).
  */
 @Composable
 internal fun FeuilleModifierAffaire(affaire: DetailAffaire, service: ServiceAffaires, fermer: () -> Unit, enregistree: () -> Unit) {
@@ -167,5 +166,8 @@ internal fun FeuilleModifierAffaire(affaire: DetailAffaire, service: ServiceAffa
             lieuModifiable = affaire.lieuModifiable, contenuFige = affaire.contenuFige,
             forme = FormeDeSaisie.de(LocalSaisieAffaire.current, affaire.referentiels.categories),
         ) { saisie = it }
+        if (affaire.droits.changerPrestataires) {
+            SectionPrestataires(saisie.prestataires, service) { saisie = saisie.copy(prestataires = it) }
+        }
     }
 }

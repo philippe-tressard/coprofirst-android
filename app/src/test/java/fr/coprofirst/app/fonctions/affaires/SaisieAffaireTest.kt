@@ -138,6 +138,25 @@ class SaisieAffaireTest {
         assertEquals(EditionAffaire(perimetres = emptyList()), depart.copy(perimetre = null).edition(f))
     }
 
+    /**
+     * #182 : les prestataires partent par leurs identifiants, dans l'ordre choisi — seulement
+     * s'ils ont changé, et selon le droit servi seul (`peut_changer_prestataires`), contenu
+     * figé ou non.
+     */
+    @Test
+    fun lesPrestatairesPartentSeulementSIlsOntChange() {
+        val ascenseurs = PrestataireAffaire(3, "Ascenseurs du Parc")
+        val plombier = PrestataireAffaire(5, "Plomberie Martin")
+        val f = fiche(DroitsServisAffaire(corriger = true, changerPrestataires = true)).copy(titre = "Fuite", prestataires = listOf(ascenseurs))
+        val depart = SaisieAffaire.modifiant(f)
+        assertEquals(listOf(ascenseurs), depart.prestataires)
+        assertTrue(depart.edition(f).vide)
+        assertEquals(EditionAffaire(prestataires = listOf(5, 3)), depart.copy(prestataires = listOf(plombier, ascenseurs)).edition(f))
+        assertEquals("tous retirés : une liste vide", EditionAffaire(prestataires = emptyList()), depart.copy(prestataires = emptyList()).edition(f))
+        val sansDroit = f.copy(droits = DroitsServisAffaire(corriger = true))
+        assertTrue(SaisieAffaire.modifiant(sansDroit).copy(prestataires = listOf(plombier)).edition(sansDroit).vide)
+    }
+
     @Test
     fun unContenuFigeNeLaissePartirQueLUrgence() {
         val f = fiche(DroitsServisAffaire(corriger = true)).copy(titre = "Fuite", description = "<p>x</p>")

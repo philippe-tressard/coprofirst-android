@@ -48,7 +48,8 @@ data class DetailAffaire(
     /** Le suivi d'une actualité (`suivi_actualite`) et son libellé servi ; vide sans suivi. */
     val suiviActualite: String? = null,
     val suiviActualiteLibelle: String? = null,
-    val prestataires: List<String> = emptyList(),
+    /** Ses prestataires, dans l'ordre servi (`prestataires`) : le premier est celui du Kanban. */
+    val prestataires: List<PrestataireAffaire> = emptyList(),
     /** Le rythme SERVI (`frequence_libelle`) : celui du contrat sous contrat, celui de l'affaire sinon. */
     val rythme: String? = null,
     /** Close au sens du SERVEUR (`TicketRead.close`). */
@@ -67,7 +68,7 @@ data class DetailAffaire(
     /** Une ligne par prestataire, le rythme après le dernier — rien sans prestataire. */
     val intervenants: List<String>
         get() {
-            val noms = prestataires.filter { it.isNotBlank() }
+            val noms = prestataires.map { it.nom }.filter { it.isNotBlank() }
             if (noms.isEmpty()) return emptyList()
             val dernier = listOfNotNull(noms.last(), rythme?.takeIf { it.isNotBlank() }).joinToString(" · ")
             return noms.dropLast(1) + dernier
@@ -97,11 +98,12 @@ data class DetailAffaire(
                 repondre = t.peutRepondre ?: false, changerEtat = t.peutChangerEtat ?: false,
                 modifier = t.peutModifier ?: false, archiver = t.peutArchiver ?: false,
                 corriger = t.peutCorriger ?: (t.peutModifier ?: false),
+                changerPrestataires = t.peutChangerPrestataires ?: false,
             ),
             epingle = t.epingle ?: false, archivee = t.archivee ?: false, fusionnee = t.fusionnee ?: false,
             perimetres = t.perimetreCible.orEmpty(), suiviActualite = t.suiviActualite,
             suiviActualiteLibelle = t.suiviActualiteLibelle,
-            prestataires = t.prestataires.orEmpty().map { it.nom },
+            prestataires = t.prestataires.orEmpty().map { PrestataireAffaire(it.id, it.nom) },
             rythme = t.contrat?.frequenceLibelle ?: t.frequenceLibelle, close = t.close,
             lecture = t.lecture?.let(Lecture::depuis),
         )
@@ -118,7 +120,12 @@ data class DroitsServisAffaire(
     val modifier: Boolean = false,
     val archiver: Boolean = false,
     val corriger: Boolean = false,
+    /** Ajouter, retirer, réordonner ses prestataires (`peut_changer_prestataires`, #182) — le droit SERVI seul. */
+    val changerPrestataires: Boolean = false,
 )
+
+/** Un prestataire d'une affaire, tel que servi (`PrestataireDeLAffaire`, comme l'iOS `PrestataireAffaire`). */
+data class PrestataireAffaire(val id: Int?, val nom: String)
 
 /** Une entrée de la suite : une suite écrite, ou un changement d'état. */
 data class SuiteAffaire(
