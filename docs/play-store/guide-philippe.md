@@ -13,13 +13,17 @@ développeur personnels ») au moment de chaque étape.
 
 ## 1. Le compte (une fois, ~1 h, puis quelques jours de vérification)
 
-1. <https://play.google.com/console/signup> avec le compte Google de Philippe ; type
-   **« Pour vous-même »** (personnel) ; frais d'inscription uniques (25 $).
-2. **Vérifications d'identité** demandées par Google : pièce d'identité officielle, nom
+1. D'abord, sur le compte Google dédié à CoproFirst (créé le 16/11/2026) :
+   **activer la validation en deux étapes**, avant toute inscription. Son adresse
+   ne sert qu'à se connecter à la console et ne s'écrit pas dans ce dépôt.
+2. <https://play.google.com/console/signup> avec **ce compte** ; type
+   **« Pour vous-même »** (personnel) ; frais d'inscription uniques (25 $). Le contact
+   affiché sur la fiche est une autre adresse, celle du site (`fiche.md`, « Coordonnées »).
+3. **Vérifications d'identité** demandées par Google : pièce d'identité officielle, nom
    et adresse identiques à ceux de la pièce, adresse e-mail et téléphone de contact
    vérifiés, et un **appareil Android** : l'app Play Console installée, avec le même
    compte, pour vérifier l'accès à un vrai téléphone.
-3. Nom du développeur affiché sur la fiche : à choisir (la fiche de l'App Store dit
+4. Nom du développeur affiché sur la fiche : à choisir (la fiche de l'App Store dit
    « Philippe TRESSARD »).
 
 ## 2. L'app dans la console
