@@ -41,6 +41,9 @@ internal fun CartePrestataire(
     service: ServicePrestataires,
     compacte: Boolean,
     deplie: Boolean,
+    /** Une fiche des Archives : on n'y note plus (`!archive` du site). */
+    archive: Boolean,
+    gestes: GestesAvis,
     basculer: () -> Unit,
 ) {
     val contrats = donnees.contrats(prestataire)
@@ -68,7 +71,7 @@ internal fun CartePrestataire(
                 prestataire.description?.takeIf { it.isNotBlank() }?.let {
                     TexteRiche(it, style = MaterialTheme.typography.bodyMedium)
                 }
-                RecapitulatifAvis(prestataire, service)
+                RecapitulatifAvis(prestataire, service, archive, gestes)
             }
         }
     }

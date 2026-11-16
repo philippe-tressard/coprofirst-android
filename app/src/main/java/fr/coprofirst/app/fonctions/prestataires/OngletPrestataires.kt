@@ -33,7 +33,7 @@ import fr.coprofirst.app.session.ErreurService
  * les archives repliées en bas.
  */
 @Composable
-internal fun OngletPrestataires(donnees: DonneesPrestataires, service: ServicePrestataires) {
+internal fun OngletPrestataires(donnees: DonneesPrestataires, service: ServicePrestataires, gestes: GestesAvis) {
     var recherche by rememberSaveable { mutableStateOf("") }
     var categorie by rememberSaveable { mutableStateOf<String?>(null) }
     var contrat by rememberSaveable { mutableStateOf<String?>(null) }
@@ -51,8 +51,8 @@ internal fun OngletPrestataires(donnees: DonneesPrestataires, service: ServicePr
     val archivees = ReglesPrestataires.filtrer(archives, donnees, categorie, contrat, recherche)
     val filtre = recherche.isNotBlank() || categorie != null || contrat != null
     val compacte = courants.size > SEUIL_COMPACT
-    val carte: @Composable (Prestataire, Boolean) -> Unit = { p, compact ->
-        CartePrestataire(p, donnees, service, compact, deplie == p.id) { deplie = if (deplie == p.id) null else p.id }
+    val carte: @Composable (Prestataire, Boolean, Boolean) -> Unit = { p, compact, archive ->
+        CartePrestataire(p, donnees, service, compact, deplie == p.id, archive, gestes) { deplie = if (deplie == p.id) null else p.id }
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(Mise.ecart)) {
@@ -84,9 +84,9 @@ internal fun OngletPrestataires(donnees: DonneesPrestataires, service: ServicePr
                     Text(type.description, style = MaterialTheme.typography.bodyMedium, color = LocalCouleurs.current.textMuted)
                 }
             }
-            groupe.forEach { carte(it, compacte) }
+            groupe.forEach { carte(it, compacte, false) }
         }
-        GroupeArchives(archivees.size) { archivees.forEach { carte(it, true) } }
+        GroupeArchives(archivees.size) { archivees.forEach { carte(it, true, true) } }
     }
 }
 

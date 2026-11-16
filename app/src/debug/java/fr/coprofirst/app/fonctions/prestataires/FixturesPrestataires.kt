@@ -159,6 +159,31 @@ object FixturesPrestataires {
            "index": 41020}
         ]
     """
+    /**
+     * GET /prestataires/affaires-a-noter?prestataire_id=1 → `[AffaireAvis]` : celles où il
+     * intervient d'abord, puis les autres (servies triées).
+     */
+    const val AFFAIRES_A_NOTER = """
+        [
+          {"id": 45, "numero": "A-0045", "titre": "Contrôle annuel de l'ascenseur", "statut": "resolu",
+           "intervient": true, "intervenants": "Ascenseurs du Parc (fictif)"},
+          {"id": 38, "numero": "A-0038", "titre": "Cabine bloquée au 3e étage", "statut": "resolu",
+           "intervient": true, "intervenants": "Ascenseurs du Parc (fictif)"},
+          {"id": 52, "numero": "A-0052", "titre": "Fuite en toiture", "statut": "en_cours",
+           "intervient": false, "intervenants": ""}
+        ]
+    """
+
+    /** GET /tickets/recherche?q=toiture → `[CorrespondanceAffaire]`. */
+    const val RECHERCHE_TOITURE = """
+        [{"ticket_id": 52, "ou": "description", "extrait": []}]
+    """
+
+    /** POST et PATCH /prestataires/notations → `NotationRead`. */
+    const val NOTATION = """
+        {"id": 20, "prestataire_id": 1, "note": 5, "etat": "excellent", "cree_le": "2026-11-16T10:00:00",
+         "peut_modifier": true, "auteur_nom": "Conseil syndical"}
+    """
 }
 
 /**
@@ -170,9 +195,13 @@ class PrestatairesSimules {
     /** Les requêtes reçues : « MÉTHODE /chemin?requête ». */
     val recues = mutableListOf<String>()
 
+    /** Les corps des gestes reçus (« MÉTHODE /chemin » → le JSON envoyé). */
+    val corps = mutableMapOf<String, String>()
+
     @Synchronized
-    fun repondre(methode: String, chemin: String): Pair<Int, String> {
+    fun repondre(methode: String, chemin: String, envoye: String = ""): Pair<Int, String> {
         recues += "$methode $chemin"
+        if (envoye.isNotEmpty()) corps["$methode ${chemin.removePrefix("/api")}"] = envoye
         return when ("$methode ${chemin.removePrefix("/api")}") {
             "GET /prestataires" -> 200 to FixturesPrestataires.PRESTATAIRES
             "GET /prestataires/archives" -> 200 to FixturesPrestataires.ARCHIVES
@@ -183,7 +212,16 @@ class PrestatairesSimules {
             "GET /documents?contrat_id=1" -> 200 to FixturesPrestataires.DOCUMENTS
             "GET /prestataires/compteurs-config" -> 200 to FixturesPrestataires.COMPTEURS
             "GET /prestataires/releves?type_compteur=eau_froide" -> 200 to FixturesPrestataires.RELEVES_EAU_FROIDE
-            else -> if (chemin.contains("/documents?") || chemin.contains("/releves?") || chemin.endsWith("/interventions")) 200 to "[]" else 404 to """{"detail": "Not Found"}"""
+            "GET /prestataires/affaires-a-noter?prestataire_id=1" -> 200 to FixturesPrestataires.AFFAIRES_A_NOTER
+            "GET /tickets/recherche?q=toiture" -> 200 to FixturesPrestataires.RECHERCHE_TOITURE
+            "POST /prestataires/notations" -> 201 to FixturesPrestataires.NOTATION
+            "PATCH /prestataires/notations/12" -> 200 to FixturesPrestataires.NOTATION
+            "DELETE /prestataires/notations/12" -> 204 to ""
+            else -> if (listOf("/documents?", "/releves?", "/affaires-a-noter?", "/tickets/recherche?").any(chemin::contains) || chemin.endsWith("/interventions")) {
+                200 to "[]"
+            } else {
+                404 to """{"detail": "Not Found"}"""
+            }
         }
     }
 }
