@@ -5,7 +5,6 @@ package fr.coprofirst.app.fonctions.apropos
 
 import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -42,7 +41,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -50,6 +48,7 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
+import fr.coprofirst.app.commun.LogoResidence
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.Section
 import fr.coprofirst.app.commun.cliquable
@@ -57,6 +56,7 @@ import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.navigation.ContexteDeMenu
 import fr.coprofirst.app.navigation.Destination
 import fr.coprofirst.app.session.ErreurService
+import fr.coprofirst.app.session.Installation
 import java.time.Year
 
 /** Les repères des tests d'interface : les identifiants d'accessibilité de l'iOS. */
@@ -88,20 +88,17 @@ const val DEPOT_APP = "https://github.com/philippe-tressard/coprofirst-android"
  * « Logiciel libre », « Mentions légales » et « Confidentialité ». Les deux derniers sont
  * verrouillés sur le site (LCEN art. 6, RGPD art. 13) : l'app les rend lisibles ici, sans
  * passer par le navigateur. Les liens du code source ne dépendent d'aucune lecture : ils
- * restent là quand la résidence ne répond pas.
- *
- * ⚠️ Divergence déclarée : l'iOS montre le logo de la RÉSIDENCE (`LogoResidence`), que
- * l'app Android ne lit pas encore — le logo de CoproFirst, son repli, en tient la place
- * (ticket #137).
+ * restent là quand la résidence ne répond pas. En tête, le logo de la résidence
+ * (`LogoResidence`, #137).
  */
 @Composable
 fun EcranAPropos(contexte: ContexteDeMenu) {
     val service = remember(contexte.session) { ServiceAProposApi(contexte.session) }
-    EcranAPropos(service, contexte.session.installation.nom) { contexte.ouvrir(it) }
+    EcranAPropos(service, contexte.session.installation.nom, contexte.session.installation) { contexte.ouvrir(it) }
 }
 
 @Composable
-internal fun EcranAPropos(service: ServiceAPropos, nomResidence: String, ouvrir: (Destination) -> Boolean) {
+internal fun EcranAPropos(service: ServiceAPropos, nomResidence: String, residence: Installation? = null, ouvrir: (Destination) -> Boolean) {
     val ressources = LocalContext.current
     var lu by remember { mutableStateOf<AProposResidence?>(null) }
     var erreur by remember { mutableStateOf<ErreurService?>(null) }
@@ -120,7 +117,7 @@ internal fun EcranAPropos(service: ServiceAPropos, nomResidence: String, ouvrir:
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Column(Modifier.widthIn(max = 720.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(20.dp)) {
-            Section(titre = null) { Marque(nomResidence, AProposResidence.mention(lu, Year.now().value, version(ressources))) }
+            Section(titre = null) { Marque(nomResidence, AProposResidence.mention(lu, Year.now().value, version(ressources)), residence) }
             AnimatedVisibility(erreur != null) {
                 erreur?.let { MessageErreur(it, Modifier.padding(horizontal = Mise.marge)) { essai++ } }
             }
@@ -154,14 +151,14 @@ internal fun EcranAPropos(service: ServiceAPropos, nomResidence: String, ouvrir:
 
 /** Le logo et le nom, puis la mention : « © 2025–2026 · texte libre · app 0.8.13 ». */
 @Composable
-private fun Marque(nom: String, mention: String) {
+private fun Marque(nom: String, mention: String, residence: Installation?) {
     val couleurs = LocalCouleurs.current
     Row(
         Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}.testTag(ReperesAPropos.MENTION),
         horizontalArrangement = Arrangement.spacedBy(14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Image(painterResource(R.drawable.logo), contentDescription = null, modifier = Modifier.size(44.dp))
+        LogoResidence(residence, Modifier.size(44.dp))
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(nom, style = Typo.titre(MaterialTheme.typography.titleMedium), color = couleurs.text)
             Text(mention, style = MaterialTheme.typography.bodySmall, color = couleurs.textMuted)

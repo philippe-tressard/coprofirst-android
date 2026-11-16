@@ -18,6 +18,9 @@ import fr.coprofirst.app.charte.Palettes
 /** Les couleurs de la charte en cours (clair ou sombre), pour ce que Material ne nomme pas. */
 val LocalCouleurs = staticCompositionLocalOf { Palettes.pour(null).clair }
 
+/** Le thème en cours est-il sombre ? Ce qui en dépend hors des couleurs : le logo de la résidence (#137). */
+val LocalSombre = staticCompositionLocalOf { false }
+
 /**
  * Le thème de l'app : la palette de CoproFirst, GÉNÉRÉE depuis la charte du site — la
  * charte (`seine`) par défaut, celle de la résidence dès qu'elle est connue, comme
@@ -30,7 +33,7 @@ fun ThemeCoproFirst(
     contenu: @Composable () -> Unit,
 ) {
     val couleurs = if (sombre) palette.sombre else palette.clair
-    CompositionLocalProvider(LocalCouleurs provides couleurs) {
+    CompositionLocalProvider(LocalCouleurs provides couleurs, LocalSombre provides sombre) {
         MaterialTheme(colorScheme = schema(couleurs, sombre), content = contenu)
     }
 }

@@ -147,7 +147,8 @@ autotest_motif "routes en dur" "$REQUETE_MAIN" 'val u = "https://" + hote + "/ap
 #   (PreuveAASA.swift) ;
 # - les fichiers protégés (photos, pièces jointes de /uploads/) sont servis derrière la
 #   session, hors du contrat — comme l'iOS (fichierProtege) : la porte n'accepte que
-#   l'hôte de la session (commun/pieces/FichierProtege.kt) ;
+#   l'hôte de la session (commun/pieces/FichierProtege.kt) — et le logo d'une résidence,
+#   dont le client généré type l'image en JSON (adresse tirée de sa configuration, #137) ;
 # - le contenu public de la vitrine, coprofirst.fr/contenu.json, relu une fois par
 #   lancement, sans cookie ni donnée de l'utilisateur — comme l'iOS (Vitrine.actualiser,
 #   #153) : son adresse est une constante, jamais une saisie (entree/vitrine/VitrineDuSite.kt).

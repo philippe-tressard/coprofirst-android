@@ -3,7 +3,6 @@
 
 package fr.coprofirst.app.navigation
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,7 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
@@ -50,6 +48,7 @@ import fr.coprofirst.app.commun.FlowCapsules
 import fr.coprofirst.app.commun.GesteDeSortie
 import fr.coprofirst.app.commun.GestesDeSortie
 import fr.coprofirst.app.commun.Libelle
+import fr.coprofirst.app.commun.LogoResidence
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.Roles
 import fr.coprofirst.app.commun.Section
@@ -61,10 +60,7 @@ import fr.coprofirst.app.session.RolesConnus
  * « Où suis-je », en haut à droite de chaque écran de la résidence, comme l'iOS
  * (`PastilleOuSuisJe`, #180) : le logo et le nom de la résidence, un toucher pour en changer.
  * Aux grandes tailles de texte, le logo seul — le nom, tronqué de toute façon, prendrait la
- * place du titre ; le lecteur d'écran le dit.
- *
- * ⚠️ Divergence déclarée : l'iOS montre le logo de la RÉSIDENCE (`LogoResidence`) ; il n'est
- * pas encore porté (#137) — celui de CoproFirst tient sa place.
+ * place du titre ; le lecteur d'écran le dit. Le logo est celui de la résidence (`LogoResidence`).
  */
 @Composable
 internal fun PastilleResidence(installation: Installation, ouvrir: () -> Unit) {
@@ -78,7 +74,7 @@ internal fun PastilleResidence(installation: Installation, ouvrir: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Image(painterResource(R.drawable.logo), contentDescription = null, modifier = Modifier.size(22.dp))
+        LogoResidence(installation, Modifier.size(22.dp))
         if (!logoSeul) {
             Text(
                 installation.nom,
@@ -161,7 +157,7 @@ internal fun FeuilleResidences(
 private fun LigneResidence(installation: Installation, grand: Boolean) {
     val couleurs = LocalCouleurs.current
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Image(painterResource(R.drawable.logo), contentDescription = null, modifier = Modifier.size(if (grand) 44.dp else 32.dp))
+        LogoResidence(installation, Modifier.size(if (grand) 44.dp else 32.dp))
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(installation.nom, style = MaterialTheme.typography.titleMedium, color = couleurs.text)
             installation.adresse?.enSaisie?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = couleurs.textMuted) }

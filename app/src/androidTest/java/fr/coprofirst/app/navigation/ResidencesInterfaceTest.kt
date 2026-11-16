@@ -3,6 +3,9 @@
 
 package fr.coprofirst.app.navigation
 
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
@@ -10,6 +13,11 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import fr.coprofirst.app.commun.LocalLogos
+import fr.coprofirst.app.commun.LogosEnMemoire
+import fr.coprofirst.app.commun.REPERE_LOGO_MARQUE
+import fr.coprofirst.app.commun.REPERE_LOGO_SERVI
+import fr.coprofirst.app.commun.attendre
 import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.entree.NavigationEntree
@@ -40,11 +48,15 @@ class ResidencesInterfaceTest {
     private val tilleuls = Installation("https://tilleuls.exemple.test", "Les Tilleuls")
     private val sorties = mutableListOf<String>()
 
+    /** Les logos demandés (#137) : l'adresse que l'app calcule, servie ici par une image de test. */
+    private val logosDemandes = mutableListOf<String>()
+    private val logos = LogosEnMemoire { adresse -> synchronized(logosDemandes) { logosDemandes += adresse }; ImageBitmap(8, 8) }
+
     private val residence = object : Dispatcher() {
         override fun dispatch(request: RecordedRequest): MockResponse {
             val chemin = request.url.encodedPath
             return when {
-                chemin.endsWith("/config") -> json("""{"site_nom": "Les Glycines"}""")
+                chemin.endsWith("/config") -> json("""{"site_nom": "Les Glycines", "site_logo": "/uploads/logo.png"}""")
                 chemin.endsWith("/auth/logout") -> json("{}").also { synchronized(sorties) { sorties += chemin } }
                 chemin.endsWith("/auth/login") -> json("{}")
                 chemin.endsWith("/auth/me") -> json(FixturesProfil.MOI)
@@ -61,7 +73,7 @@ class ResidencesInterfaceTest {
         serveur.serveur.dispatcher = residence
         val connues = serveur.residencesEnMemoire()
         val parcours = serveur.parcours(connues = connues)
-        ecran.setContent { NavigationEntree(serveur.apparence(), parcours) }
+        ecran.setContent { CompositionLocalProvider(LocalLogos provides logos) { NavigationEntree(serveur.apparence(), parcours) } }
         ecran.entrerDansLaResidence("residence.exemple.test", "Les Glycines")
         ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(REPERE_PASTILLE)).fetchSemanticsNodes().isNotEmpty() }
         // Une autre résidence, ouverte un autre jour : connue de l'appareil, avec ses rôles.
@@ -87,6 +99,15 @@ class ResidencesInterfaceTest {
         ecran.onNodeWithTag(REPERE_UNE_AUTRE).assertIsDisplayed()
     }
 
+    /** #137 : la résidence qui sert son logo le montre dans la pastille, au lieu de celui de CoproFirst. */
+    @Test
+    fun laPastilleMontreLeLogoDeLaResidence() {
+        // Le logo est décoratif, dans la pastille qui fusionne ses enfants : on le lit dans l'arbre non fusionné.
+        ecran.attendre(hasTestTag(REPERE_LOGO_SERVI), useUnmergedTree = true)
+        ecran.onAllNodes(hasTestTag(REPERE_LOGO_MARQUE), useUnmergedTree = true).assertCountEquals(0)
+        assertTrue(synchronized(logosDemandes) { logosDemandes.toList() }.toString(), synchronized(logosDemandes) { "https://residence.exemple.test/api/config/logo.png" in logosDemandes })
+    }
+
     /** #181 : le logement servi en tête du fil ; un toucher ouvre « Mes lots & accès ». */
     @Test
     fun leLogementEnTeteDuFilOuvreMesLots() {
@@ -110,5 +131,6 @@ class ResidencesInterfaceTest {
 
     private companion object {
         const val DELAI_MS = 10_000L
+
     }
 }
