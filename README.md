@@ -195,7 +195,8 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   téléphone pour relier la montre ». Écrans prêts derrière la liaison : la cloche (le nom
   de la résidence ; les non lues, urgentes devant ; « Déjà lues », repliée ; chaque ligne
   avec son titre sur deux lignes et son âge relatif ; « Aucune alerte ») et le détail
-  (titre, date ; le corps vient avec le rendu partagé du texte du site, #206). La tuile dit
+  (titre, date, « Continuer sur le téléphone » quand l'alerte vise une page : la page
+  s'ouvre sur le téléphone ; le corps vient avec le rendu partagé du texte du site, #206). La tuile dit
   « 2 nouvelles alertes · dont 1 urgente », sans titre ni résidence, et ouvre la cloche.
   Ce que la montre partage avec le téléphone vit dans
   `partage/` (#206) : le client HTTP, les formats du site, l'alerte reçue, le découpage du
@@ -236,6 +237,9 @@ plancher — pièces identiques, contrat servi par chaque installation connue
 
 ## Licence
 
-AGPL-3.0-or-later, avec une permission additionnelle (article 7) qui autorise la
-distribution par les magasins d'applications Android : voir `LICENSE` et `LICENSES/`.
+AGPL-3.0-or-later, avec des permissions additionnelles (article 7) : la distribution par
+les magasins d'applications Android, et la liaison avec deux bibliothèques de Google Play
+services, nommées, et elles seules — Firebase Cloud Messaging (notifications) et Wearable
+(lien avec la montre), décision du 16/11/2026. Voir `LICENSE` et `LICENSES/` ;
+`scripts/verifier_dependances_google.py` refuse toute autre bibliothèque de ces familles.
 Conformité [REUSE](https://reuse.software) : `reuse lint`.

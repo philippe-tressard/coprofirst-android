@@ -35,14 +35,14 @@ class ClocheInterfaceTest {
 
     private val maintenant = Instant.now()
 
-    private fun alerte(id: Int, titre: String, lue: Boolean = false, urgente: Boolean = false) =
-        NotificationRecue(id, "system", titre, "", lue, urgente, maintenant.minusSeconds(id * 600L))
+    private fun alerte(id: Int, titre: String, lue: Boolean = false, urgente: Boolean = false, lien: String? = null) =
+        NotificationRecue(id, "system", titre, "", lue, urgente, maintenant.minusSeconds(id * 600L), lien)
 
     private fun montrer(etat: EtatMontre, alertes: List<NotificationRecue> = emptyList()) = ecran.setContent {
         MaterialTheme { AppScaffold { EcranMontre(etat, LectureCloche.Lue(Cloche.de(alertes))) } }
     }
 
-    private val reliee = EtatMontre.Reliee("Les Tilleuls")
+    private val reliee = EtatMontre.Reliee("https://residence.exemple.test", "Les Tilleuls")
 
     @Test
     fun nonRelieeDitDeRelierParLeTelephone() {
@@ -84,5 +84,22 @@ class ClocheInterfaceTest {
         ecran.toucherTag("montre.alerte.7")
         ecran.attendreTag("montre.detail.7")
         ecran.onNodeWithText("Coupure d'eau jeudi").assertIsDisplayed()
+    }
+
+    @Test
+    fun continuerSurLeTelephone_seulementQuandLAlerteViseUnePage() {
+        montrer(reliee, listOf(alerte(7, "Votre affaire avance", lien = "/tickets/12"), alerte(8, "Bienvenue")))
+        ecran.toucherTag("montre.alerte.7")
+        ecran.attendreTag("montre.detail.7")
+        ecran.amenerTag("montre.continuer")
+        ecran.onNodeWithText("Continuer sur le téléphone").assertIsDisplayed()
+    }
+
+    @Test
+    fun sansLien_pasDeContinuer() {
+        montrer(reliee, listOf(alerte(8, "Bienvenue")))
+        ecran.toucherTag("montre.alerte.8")
+        ecran.attendreTag("montre.detail.8")
+        ecran.onNodeWithTag("montre.continuer").assertDoesNotExist()
     }
 }

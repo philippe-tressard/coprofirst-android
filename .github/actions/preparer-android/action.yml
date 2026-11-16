@@ -1,0 +1,72 @@
+# SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+# SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+#
+# La préparation commune des jobs Android de la CI, écrite UNE fois (#232) : Java,
+# Gradle et son cache, la plateforme de compileSdk — et, pour un job d'émulateur,
+# l'accélération KVM et l'image système, restaurée du cache ou téléchargée avec un
+# réessai borné (scripts/installer-sdk.sh). Chaque job Gradle de ci.yml l'appelle ;
+# scripts/verifier_ci.py le tient.
+#
+# L'image système se met en cache sur main seulement : une entrée par PR dupliquerait
+# ~1 Go par branche dans un quota de 10 Go partagé avec Gradle ; une PR lit celle de main.
+# L'AVD ne se met pas en cache : il se crée sur place, sans réseau (avdmanager), et seul
+# un instantané ferait gagner du temps — au prix de plusieurs Go par profil.
+name: Préparer Android
+description: Java 21, Gradle, plateforme de compileSdk ; KVM et image système pour un émulateur.
+inputs:
+  emulateur:
+    description: >-
+      « oui » pour un job d'émulateur : KVM et image système, nommée par IMAGE_API,
+      IMAGE_CIBLE et IMAGE_ARCH de l'environnement du job — les mêmes que l'émulateur lit.
+    default: "non"
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+      with:
+        distribution: temurin
+        java-version: "21"
+    - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+    - name: Plateforme Android de compileSdk (celle de build.gradle.kts, verifier_ci.py)
+      shell: bash
+      run: bash scripts/installer-sdk.sh "platforms;android-37.2"
+    - name: Accélération matérielle de l'émulateur (KVM)
+      if: inputs.emulateur == 'oui'
+      shell: bash
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
+    - name: Image système de l'émulateur — paquet, dossier, clé de cache
+      id: image
+      if: inputs.emulateur == 'oui'
+      shell: bash
+      run: |
+        : "${IMAGE_API:?manque au job}" "${IMAGE_CIBLE:?manque au job}" "${IMAGE_ARCH:?manque au job}"
+        paquet="system-images;android-$IMAGE_API;$IMAGE_CIBLE;$IMAGE_ARCH"
+        {
+          echo "paquet=$paquet"
+          echo "dossier=$ANDROID_HOME/${paquet//;//}"
+          echo "cle=image-systeme-v1-android-$IMAGE_API-$IMAGE_CIBLE-$IMAGE_ARCH"
+        } >> "$GITHUB_OUTPUT"
+    - name: Image système — restaurée du cache
+      id: cache-image
+      if: inputs.emulateur == 'oui'
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.image.outputs.dossier }}
+        key: ${{ steps.image.outputs.cle }}
+    - name: Image système, émulateur et plateforme de l'image — réessai borné
+      if: inputs.emulateur == 'oui'
+      shell: bash
+      env:
+        PAQUET: ${{ steps.image.outputs.paquet }}
+      run: bash scripts/installer-sdk.sh "$PAQUET" emulator "platforms;android-$IMAGE_API"
+    - name: Image système — mise en cache (main seulement)
+      if: >-
+        inputs.emulateur == 'oui' && steps.cache-image.outputs.cache-hit != 'true'
+        && github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.image.outputs.dossier }}
+        key: ${{ steps.image.outputs.cle }}

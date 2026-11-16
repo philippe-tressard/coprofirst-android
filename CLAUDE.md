@@ -48,8 +48,10 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
 
 ## Ce qui est propre à ce projet
 
-- **Licence** : AGPL-3.0-or-later **avec une permission additionnelle** (GPL §7)
-  pour les magasins Android — `LICENSES/LicenseRef-CoproFirst-Magasins.txt`. Chaque
+- **Licence** : AGPL-3.0-or-later **avec des permissions additionnelles** (GPL §7) —
+  les magasins Android, et la liaison avec Firebase Messaging et Wearable seulement
+  (point 4, 16/11/2026 ; `verifier_dependances_google.py` refuse toute autre bibliothèque
+  `com.google.android.gms`/`com.google.firebase`) — `LICENSES/LicenseRef-CoproFirst-Magasins.txt`. Chaque
   fichier se déclare `AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins`.
   `LICENSE` se réassemble par `bash scripts/verifier-depot.sh --ecrire-licence`.
 - **Le logo** de CoproFirst est intégré (icône adaptative, médaillon de l'accueil)
@@ -100,4 +102,6 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   (pas d'émulateur pendant une suite xcodebuild ou un autre émulateur), émulateur
   arrêté à la fin. Le poste est partagé : Gradle y tourne à deux workers et sur un
   démon commun aux worktrees (`gradle.properties`) — jamais `--no-daemon` au poste ;
-  la CI relève la borne (`--max-workers=4`).
+  la CI relève la borne (`--max-workers=4`). Chaque job Gradle de la CI se prépare par
+  `.github/actions/preparer-android` (image d'émulateur en cache, téléchargements réessayés,
+  #232 ; `scripts/verifier_ci.py` le tient).

@@ -13,18 +13,19 @@ import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
 import fr.coprofirst.montre.cloche.EcranAlerte
 import fr.coprofirst.montre.cloche.EcranCloche
 import fr.coprofirst.montre.cloche.LectureCloche
+import fr.coprofirst.montre.telephone.LienSurLeTelephone
 
 /** Deux écrans : la cloche, et le détail d'une alerte (un balayage vers la droite y revient). */
 @Composable
-fun NavigationMontre(residence: String, lecture: LectureCloche) {
+fun NavigationMontre(liaison: EtatMontre.Reliee, lecture: LectureCloche) {
     val navigation = rememberSwipeDismissableNavController()
     SwipeDismissableNavHost(navController = navigation, startDestination = CLOCHE) {
-        composable(CLOCHE) { EcranCloche(residence, lecture) { id -> navigation.navigate("$ALERTE/$id") } }
+        composable(CLOCHE) { EcranCloche(liaison.residence, lecture) { id -> navigation.navigate("$ALERTE/$id") } }
         composable("$ALERTE/{id}", arguments = listOf(navArgument("id") { type = NavType.IntType })) { entree ->
             val id = entree.arguments?.getInt("id")
             // L'alerte se relit dans la cloche courante ; sortie de la cloche, l'écran se ferme.
             val alerte = (lecture as? LectureCloche.Lue)?.cloche?.alerte(id ?: -1)
-            if (alerte != null) EcranAlerte(alerte) else LaunchedEffect(id) { navigation.popBackStack() }
+            if (alerte != null) EcranAlerte(alerte, LienSurLeTelephone.url(liaison.adresse, alerte.lien)) else LaunchedEffect(id) { navigation.popBackStack() }
         }
     }
 }

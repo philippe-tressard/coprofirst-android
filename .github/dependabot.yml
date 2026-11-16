@@ -10,6 +10,7 @@ updates:
       gradle:
         patterns: ["*"]
   - package-ecosystem: github-actions
-    directory: /
+    # L'action commune de la CI épingle ses propres actions (#232) : elle se suit aussi.
+    directories: ["/", "/.github/actions/*"]
     schedule:
       interval: weekly
