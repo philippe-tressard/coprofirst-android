@@ -27,13 +27,37 @@ class MesureAudienceTest {
         ResidenceMesuree(SessionOuverte(Installation("https://$hote", "Résidence", versionContrat = contrat), sessions), refus)
 
     /** Ce qui est parti : (hôte, pages), dans l'ordre. */
-    private class Releve(var echoue: Boolean = false) : ServiceAudience {
+    private class Releve(var echoue: Boolean = false, var refus: ErreurService = ErreurService.Injoignable) : ServiceAudience {
         val envois = mutableListOf<Pair<String, List<String>>>()
 
         override suspend fun envoyer(pages: List<String>, session: SessionOuverte) {
             envois += session.installation.url to pages
-            if (echoue) throw ErreurService.Injoignable
+            if (echoue) throw refus
         }
+    }
+
+    /** #162 : la session de SA résidence refusée pour de bon, la file se jette ; celle d'une autre résidence, non. */
+    @Test
+    fun uneSessionRefuseeJetteLaFileDeSaResidenceSeulement() = runTest {
+        val glycines = residence("glycines.exemple.test")
+        val m = mesure(Releve()) { glycines }
+        m.noter("/tableau-de-bord")
+        m.oublier("https://tilleuls.exemple.test")
+        assertEquals(listOf("/tableau-de-bord"), m.file)
+        m.oublier(glycines.adresse)
+        assertTrue(m.file.isEmpty())
+    }
+
+    /** #162 : un envoi refusé faute de session n'en fait pas partir d'autres avec elle. */
+    @Test
+    fun unEnvoiSansSessionArreteLesLotsSuivants() = runTest {
+        val releve = Releve(echoue = true, refus = ErreurService.SessionExpiree)
+        val m = mesure(releve) { residence("glycines.exemple.test") }
+        // Deux lots notés avant que l'envoi parte : le premier refusé, le second ne part pas.
+        repeat(2 * LimitesAudience.EVENEMENTS_PAR_LOT) { m.noter("/page/$it") }
+        runCurrent()
+        assertEquals("le premier lot est parti, le second non", 1, releve.envois.size)
+        assertTrue(m.file.isEmpty())
     }
 
     private fun TestScope.mesure(releve: Releve, ouverte: () -> ResidenceMesuree?) =

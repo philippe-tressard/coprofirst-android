@@ -67,6 +67,11 @@ class ParcoursEntree(
     private val baseApi: (AdresseInstallation) -> String = { it.baseApi },
     /** Avant de fermer une session : ce qui doit encore partir chez elle (la mesure d'audience, #144). */
     private val avantSortie: suspend () -> Unit = {},
+    /**
+     * La session de cette résidence est close — déconnectée, ou refusée pour de bon par le
+     * serveur : ce qui se noterait encore pour elle se jette (la mesure d'audience, #162).
+     */
+    private val apresSortie: (Installation) -> Unit = {},
     /** L'appareil est-il en ligne ? (#28) : le bandeau, et la reprise au retour du réseau. */
     val reseau: Reseau = Reseau.Fige(),
     private val lirePreuve: suspend (AdresseInstallation) -> PreuveHote = { PreuveHote.lire(it) },
@@ -215,6 +220,7 @@ class ParcoursEntree(
                 _etat.update { it.copy(repriseEnCours = false) }
             } catch (_: ReprisePerdue) {
                 // Le serveur a refusé le jeton, ou la biométrie a changé : le mot de passe.
+                apresSortie(installation)
                 versLeMotDePasse(installation)
                 _etat.update { it.copy(repriseEnCours = false, erreurConnexion = ErreurService.SessionExpiree) }
             } catch (erreur: ErreurService) {
@@ -254,6 +260,7 @@ class ParcoursEntree(
                 _etat.update { if (it.ouverte == ouverte) it.copy(consultation = null) else it }
             } catch (_: ReprisePerdue) {
                 if (_etat.value.ouverte == ouverte) {
+                    apresSortie(ouverte)
                     effacerLesPieces()
                     versLeMotDePasse(ouverte)
                     _etat.update { it.copy(ouverte = null, consultation = null, erreurConnexion = ErreurService.SessionExpiree) }
@@ -383,6 +390,7 @@ class ParcoursEntree(
         effacerLesPieces()
         viewModelScope.launch {
             avantSortie()
+            apresSortie(ouverte)
             connexion.deconnecter(ouverte)
         }
     }
@@ -458,6 +466,7 @@ class ParcoursEntree(
                     reseau = ReseauDuSysteme(application),
                     effacerLesPieces = { PiecesLocales.effacer(application) },
                     avantSortie = { AudienceDeLApp.mesure.vider() },
+                    apresSortie = { AudienceDeLApp.mesure.oublier(it.url) },
                 )
             }
         }

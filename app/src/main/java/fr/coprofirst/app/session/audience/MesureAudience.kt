@@ -105,8 +105,13 @@ class MesureAudience(
         portee.launch { vider() }
     }
 
-    /** La session est close sans pouvoir rien envoyer : la file se jette. */
-    fun oublier() {
+    /**
+     * La session est close sans pouvoir rien envoyer — refusée pour de bon, ou fermée après
+     * l'envoi de ce qui restait : la file se jette (`Parcours.revenirALaConnexion` de l'iOS,
+     * #162). `adresse` : celle de la résidence close — la file d'une autre résidence reste.
+     */
+    fun oublier(adresse: String? = null) {
+        if (adresse != null && destinataire?.adresse != adresse) return
         minuterie?.cancel()
         minuterie = null
         _file.clear()
@@ -117,6 +122,10 @@ class MesureAudience(
         for (lot in pages.chunked(LimitesAudience.EVENEMENTS_PAR_LOT)) {
             try {
                 service.envoyer(lot, session)
+            } catch (_: ErreurService.SessionExpiree) {
+                // La session est refusée pour de bon (#162) : rien d'autre ne part avec elle.
+                oublier(session.installation.url)
+                return
             } catch (_: ErreurService) {
                 // Un échec ne se dit ni ne se rejoue : la mesure ne gêne jamais l'usage.
             }
