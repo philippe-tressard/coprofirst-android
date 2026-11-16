@@ -8,5 +8,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="hors_ligne_a_jour">Hors ligne — à jour au %1$s à %2$s</string>
     <string name="hors_ligne_consultation">Consultation seule : les gestes reviennent avec le réseau.</string>
     <string name="hors_ligne_peut_dater">Hors ligne — ce qui est affiché peut dater.</string>
-    <string name="hors_ligne_perimee">Vous êtes hors ligne, et la dernière lecture gardée sur cet appareil datait de plus de %1$d jours : elle a été effacée. Retrouvez du réseau pour rouvrir votre espace.</string>
+    <plurals name="hors_ligne_perimee">
+        <item quantity="one">Vous êtes hors ligne, et la dernière lecture gardée sur cet appareil datait de plus de %1$d jour : elle a été effacée. Retrouvez du réseau pour rouvrir votre espace.</item>
+        <item quantity="many">Vous êtes hors ligne, et la dernière lecture gardée sur cet appareil datait de plus de %1$d jours : elle a été effacée. Retrouvez du réseau pour rouvrir votre espace.</item>
+        <item quantity="other">Vous êtes hors ligne, et la dernière lecture gardée sur cet appareil datait de plus de %1$d jours : elle a été effacée. Retrouvez du réseau pour rouvrir votre espace.</item>
+    </plurals>
 </resources>
