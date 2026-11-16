@@ -26,8 +26,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -106,7 +106,7 @@ internal fun ConfirmationRetrait(
     retire: () -> Unit,
 ) {
     val portee = rememberCoroutineScope()
-    val contexte = LocalContext.current
+    val ressources = LocalResources.current
     val dit = stringResource(R.string.notation_retire)
     val auteur = avis.auteurNom ?: stringResource(R.string.notation_un_membre)
     val message = stringResource(R.string.notation_retrait_etat, EtatAvis.teinte(avis.etat).libelle, auteur) +
@@ -127,7 +127,7 @@ internal fun ConfirmationRetrait(
                             retire()
                             gestes.apres()
                         } catch (e: ErreurService) {
-                            gestes.avis.dire(e.phrase(contexte.resources), TonAvis.Erreur)
+                            gestes.avis.dire(e.phrase(ressources), TonAvis.Erreur)
                         }
                     }
                 },
