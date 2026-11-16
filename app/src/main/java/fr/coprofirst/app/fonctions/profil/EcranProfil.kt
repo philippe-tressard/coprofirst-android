@@ -88,7 +88,7 @@ fun EcranProfil(
                     SectionResidence(installation, compte) { feuille = Feuille.DemandeModification }
                     SectionIdentite(compte) { feuille = Feuille.Identite }
                     SectionSecurite { feuille = Feuille.MotDePasse }
-                    SectionSaisieAffaire(compte, service) { compte = it }
+                    SectionSaisieAffaire(compte, service, relireDroits) { compte = it }
                     SectionApparence(apparence)
                     SectionProfil(null) {
                         LigneAction(stringResource(R.string.profil_preferences), ReperesPreferences.OUVRIR) { feuille = Feuille.Preferences }

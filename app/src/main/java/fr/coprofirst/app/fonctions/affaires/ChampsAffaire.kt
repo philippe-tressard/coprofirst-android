@@ -72,6 +72,8 @@ class ReperesChamps(prefixe: String) {
     val lieuServi = "$prefixe.lieuServi"
     val urgente = "$prefixe.urgente"
     val contenuFige = "$prefixe.contenuFige"
+    val modeSaisie = "$prefixe.modeSaisie"
+    val plusDeDetails = "$prefixe.plusDeDetails"
     private val categorie = "$prefixe.categorie"
     fun categorie(code: String) = "$categorie.$code"
 
@@ -90,6 +92,10 @@ class ReperesChamps(prefixe: String) {
  * (`lieuModifiable`). `contenuFige` : le serveur ne laisse plus corriger le contenu
  * (`peut_modifier`) — l'urgence reste. `poserLeDefaut` (Création) : le lieu que le serveur
  * désigne par défaut est choisi d'avance.
+ *
+ * Selon la saisie du compte (`forme`, #178) : en Essentielle, ce qui n'est pas essentiel pour
+ * la catégorie se range dans « Plus de détails », en fin de formulaire — le serveur dit quoi
+ * (`FormeDeSaisie`), la vue ne décide rien. `null` : tout à son rang, sans phrase.
  */
 @Composable
 internal fun ChampsAffaire(
@@ -101,17 +107,24 @@ internal fun ChampsAffaire(
     descriptionFigee: String? = null,
     lieuModifiable: Boolean = true,
     contenuFige: Boolean = false,
+    forme: FormeDeSaisie? = null,
     changer: (SaisieAffaire) -> Unit,
 ) {
     val c = LocalCouleurs.current
     val actuelle by rememberUpdatedState(saisie)
     var perimetres by remember { mutableStateOf<List<Perimetre>>(emptyList()) }
+    var lieuParDefaut by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(service) {
         // Un échec tait le choix du lieu : le serveur pose alors celui qu'il désigne par défaut.
         val lus = try { Perimetre.aSaisir(service.perimetres(), garder = actuelle.perimetre) } catch (_: ErreurService) { emptyList() }
         perimetres = lus
+        lieuParDefaut = Perimetre.codeParDefaut(lus)
         if (poserLeDefaut && actuelle.perimetre == null) changer(actuelle.copy(perimetre = Perimetre.codeParDefaut(lus)))
     }
+    // Un bogue n'a ni lieu à choisir ni urgence : rien de lui ne se range.
+    val eteintes = if (saisie.estBogue) setOf(SectionAffaire.Perimetre, SectionAffaire.MiseEnAvant) else emptySet()
+    val rangees = forme?.rangees(saisie.categorie, eteintes).orEmpty()
+    if (forme != null) PhraseDeLaSaisie(forme, rangees.size, reperes.modeSaisie)
     if (contenuFige) {
         Text(
             stringResource(R.string.modifier_contenu_fige), Modifier.testTag(reperes.contenuFige),
@@ -146,17 +159,19 @@ internal fun ChampsAffaire(
             placeholder = { Text(stringResource(R.string.nouvelle_description_indication)) }, minLines = 4, maxLines = 12,
         )
     }
-    Libelle(stringResource(R.string.nouvelle_de_quoi), Modifier.semantics { heading() })
-    when {
-        saisie.estBogue -> Text(stringResource(R.string.nouvelle_bogue), style = MaterialTheme.typography.bodySmall, color = c.textMuted)
-        !lieuModifiable -> Text(stringResource(R.string.modifier_plusieurs_lieux), style = MaterialTheme.typography.bodySmall, color = c.textMuted)
-        perimetres.isNotEmpty() -> {
-            ChoixLieu(saisie.perimetre, perimetres, reperes, actif = !contenuFige) { changer(saisie.copy(perimetre = it)) }
-            // Le lieu choisi en clair, nommé par le serveur : le choix ne montre que le nom du nœud.
-            saisie.perimetre?.let { LieuDeLaSaisie(setOf(it), service, reperes.lieuServi) }
+    val lieu: @Composable () -> Unit = {
+        Libelle(stringResource(R.string.nouvelle_de_quoi), Modifier.semantics { heading() })
+        when {
+            saisie.estBogue -> Text(stringResource(R.string.nouvelle_bogue), style = MaterialTheme.typography.bodySmall, color = c.textMuted)
+            !lieuModifiable -> Text(stringResource(R.string.modifier_plusieurs_lieux), style = MaterialTheme.typography.bodySmall, color = c.textMuted)
+            perimetres.isNotEmpty() -> {
+                ChoixLieu(saisie.perimetre, perimetres, reperes, actif = !contenuFige) { changer(saisie.copy(perimetre = it)) }
+                // Le lieu choisi en clair, nommé par le serveur : le choix ne montre que le nom du nœud.
+                saisie.perimetre?.let { LieuDeLaSaisie(setOf(it), service, reperes.lieuServi) }
+            }
         }
     }
-    if (!saisie.estBogue) {
+    val urgence: @Composable () -> Unit = {
         Row(
             Modifier.fillMaxWidth().testTag(reperes.urgente),
             verticalAlignment = Alignment.CenterVertically,
@@ -166,6 +181,26 @@ internal fun ChampsAffaire(
         }
         // Ce que dit l'avertissement du site : l'app trace, elle n'alerte pas.
         if (saisie.urgente) Text(stringResource(R.string.nouvelle_urgente_avertissement), style = MaterialTheme.typography.bodySmall, color = c.danger)
+    }
+    if (SectionAffaire.Perimetre !in rangees) lieu()
+    if (!saisie.estBogue && SectionAffaire.MiseEnAvant !in rangees) urgence()
+    if (rangees.isNotEmpty()) {
+        // Une correction ne cache jamais ce qui a été saisi : le groupe s'ouvre d'office si
+        // une section rangée porte autre chose que sa valeur par défaut.
+        val renseignee = rangees.any {
+            when (it) {
+                SectionAffaire.MiseEnAvant -> saisie.urgente
+                SectionAffaire.Perimetre -> saisie.perimetre != lieuParDefaut
+            }
+        }
+        PlusDeDetails(rangees.size, ouvrirDOffice = renseignee, repere = reperes.plusDeDetails) {
+            rangees.forEach { section ->
+                when (section) {
+                    SectionAffaire.Perimetre -> lieu()
+                    SectionAffaire.MiseEnAvant -> urgence()
+                }
+            }
+        }
     }
 }
 

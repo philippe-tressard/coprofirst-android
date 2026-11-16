@@ -5,26 +5,28 @@ package fr.coprofirst.app.fonctions.affaires
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.longClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.commun.AvisEphemere
+import fr.coprofirst.app.commun.LocalSaisieAffaire
 import fr.coprofirst.app.commun.amenerTag
 import fr.coprofirst.app.commun.apercu.SaisieLecture
+import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.lecture.Lecture
 import fr.coprofirst.app.commun.perimetres.Perimetre
-import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.toucher
 import fr.coprofirst.app.navigation.ActionsDeclarees
 import fr.coprofirst.app.navigation.BarreDuHaut
@@ -33,13 +35,13 @@ import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsParHote
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import kotlinx.coroutines.delay
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.time.Instant
-import java.time.temporal.ChronoUnit
 
 /**
  * Une résidence simulée, comme l'API simulée de l'iOS : des affaires inventées (aucune
@@ -93,8 +95,11 @@ private class AffairesSimulees : ServiceAffaires {
             ReferentielsAffaires.Statut("publie", "Publiée", false, null, false),
         ),
         listOf(
-            ReferentielsAffaires.Categorie("panne", "Panne", "🛠️", "Ascenseur, chauffage, éclairage", carnet = true, permise = true),
-            ReferentielsAffaires.Categorie("question", "Question", "❓", "Une question au conseil", permise = true),
+            ReferentielsAffaires.Categorie(
+                "panne", "Panne", "🛠️", "Ascenseur, chauffage, éclairage", carnet = true, permise = true,
+                sectionsEssentielles = listOf("titre", "description", "perimetre"),
+            ),
+            ReferentielsAffaires.Categorie("question", "Question", "❓", "Une question au conseil", permise = true, sectionsEssentielles = listOf("titre", "description")),
         ),
     )
     override suspend fun rechercher(terme: String) = affaires.filter { terme.lowercase() in it.titre.lowercase() }.map { it.id }
@@ -167,14 +172,16 @@ class AffairesInterfaceTest {
     private val fiches = mutableListOf<Int>()
     private val session = SessionOuverte(Installation("https://residence.exemple.test", "Les Glycines"), SessionsParHote())
 
-    private fun ouvrir(droits: DroitsOnglet = DroitsOnglet(cs = true, proprioOuCS = true)): AffairesSimulees {
+    private fun ouvrir(droits: DroitsOnglet = DroitsOnglet(cs = true, proprioOuCS = true), saisie: String? = null): AffairesSimulees {
         val service = AffairesSimulees()
         val barre = BarreDuHaut()
         ecran.setContent {
             ThemeCoproFirst {
-                Column {
-                    Row { ActionsDeclarees(barre) }
-                    EcranAffaires(service, barre, droits, { "https://residence.exemple.test/tickets/$it" }) { fiches += it }
+                CompositionLocalProvider(LocalSaisieAffaire provides saisie) {
+                    Column {
+                        Row { ActionsDeclarees(barre) }
+                        EcranAffaires(service, barre, droits, { "https://residence.exemple.test/tickets/$it" }) { fiches += it }
+                    }
                 }
             }
         }
@@ -317,6 +324,45 @@ class AffairesInterfaceTest {
         attendre(ReperesAffaires.carte("A-0009"))
         assertEquals("copro", service.creees.single().perimetre)
         assertEquals("panne", service.creees.single().categorie)
+    }
+
+    /**
+     * #178 : en saisie Essentielle, ce qui n'est pas essentiel pour la catégorie se range dans
+     * « Plus de détails », plié ; la phrase le dit ; ce qui part ne change pas.
+     */
+    @Test
+    fun enSaisieEssentielleCeQuiNEstPasEssentielSeRange() {
+        val service = ouvrir(saisie = "essentielle")
+        attendre(ReperesNouvelle.NOUVELLE)
+        el(ReperesNouvelle.NOUVELLE).toucher()
+        attendre(ReperesChamps.NOUVELLE.categorie("panne"))
+        el(ReperesChamps.NOUVELLE.categorie("panne")).toucher()
+        el(ReperesChamps.NOUVELLE.modeSaisie).assertExists()
+        ecran.onNodeWithTag(ReperesChamps.NOUVELLE.plusDeDetails).assert(hasText("Plus de détails (1 section)", substring = true))
+        el(ReperesChamps.NOUVELLE.urgente).assertDoesNotExist()
+        el(ReperesChamps.NOUVELLE.lieu).assertExists()
+        el(ReperesChamps.NOUVELLE.plusDeDetails).toucher()
+        attendre(ReperesChamps.NOUVELLE.urgente)
+        el(ReperesChamps.NOUVELLE.categorie("question")).toucher()
+        ecran.onNodeWithTag(ReperesChamps.NOUVELLE.plusDeDetails).assert(hasText("Plus de détails (2 sections)", substring = true))
+        el(ReperesChamps.NOUVELLE.titre).performTextInput("Horaires du local vélos")
+        el(ReperesChamps.NOUVELLE.description).performTextInput("Le local ferme-t-il la nuit ?")
+        el(ReperesNouvelle.ENVOYER).toucher()
+        attendre(ReperesAffaires.carte("A-0009"))
+        assertEquals("le lieu rangé part à son défaut", "copro", service.creees.single().perimetre)
+    }
+
+    /** #178 : en saisie Complète, tout reste à son rang, et la phrase dit la saisie. */
+    @Test
+    fun enSaisieCompleteToutResteASonRang() {
+        ouvrir(saisie = "complete")
+        attendre(ReperesNouvelle.NOUVELLE)
+        el(ReperesNouvelle.NOUVELLE).toucher()
+        attendre(ReperesChamps.NOUVELLE.categorie("question"))
+        el(ReperesChamps.NOUVELLE.categorie("question")).toucher()
+        el(ReperesChamps.NOUVELLE.modeSaisie).assert(hasText("Saisie complète", substring = true))
+        el(ReperesChamps.NOUVELLE.plusDeDetails).assertDoesNotExist()
+        el(ReperesChamps.NOUVELLE.urgente).assertExists()
     }
 
     /**

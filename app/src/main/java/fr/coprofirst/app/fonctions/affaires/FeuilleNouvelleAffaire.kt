@@ -55,6 +55,7 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.Libelle
+import fr.coprofirst.app.commun.LocalSaisieAffaire
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.apercu.QuiLaLira
 import fr.coprofirst.app.commun.apercu.SaisieLecture
@@ -75,9 +76,9 @@ object ReperesNouvelle {
  * titre, description, lieu, urgence. Ce que l'app ne pose pas est dit, jamais caché : les
  * pièces jointes et les sections que le conseil remplit restent au site.
  *
- * ⚠️ Divergences déclarées : toutes les sections sont à leur rang — la saisie Essentielle
- * (« Plus de détails ») attend les tables de la saisie que coprofirst ne publie pas encore
- * (#47).
+ * En saisie Essentielle, ce qui n'est pas essentiel pour la catégorie se range dans « Plus de
+ * détails » (`FormeDeSaisie`, #178), ici comme dans « Modifier ».
+ * « Qui la lira » se dit dès la catégorie choisie (`QuiLaLira`, #179).
  */
 @Composable
 internal fun FeuilleNouvelleAffaire(
@@ -98,7 +99,10 @@ internal fun FeuilleNouvelleAffaire(
     ) {
         when {
             categories != null -> {
-                ChampsAffaire(saisie, categories, service, ReperesChamps.NOUVELLE, poserLeDefaut = true) { saisie = it }
+                ChampsAffaire(
+                    saisie, categories, service, ReperesChamps.NOUVELLE, poserLeDefaut = true,
+                    forme = FormeDeSaisie.de(LocalSaisieAffaire.current, referentiels.categories),
+                ) { saisie = it }
                 // Ce que la saisie dit de ses lecteurs : sa catégorie et son lieu (un bogue n'en a pas).
                 val aLire = saisie.categorie.takeIf { it.isNotEmpty() }?.let { SaisieLecture(it, listOfNotNull(saisie.perimetre.takeUnless { saisie.estBogue })) }
                 QuiLaLira(aLire, service, ReperesNouvelle.QUI_LA_LIRA)
@@ -168,6 +172,7 @@ internal fun FeuilleModifierAffaire(affaire: DetailAffaire, service: ServiceAffa
             saisie, affaire.referentiels.permises(enModifiant = affaire.categorie), service, ReperesChamps.MODIFIER,
             descriptionFigee = if (affaire.descriptionSaisie == null) affaire.description else null,
             lieuModifiable = affaire.lieuModifiable, contenuFige = affaire.contenuFige,
+            forme = FormeDeSaisie.de(LocalSaisieAffaire.current, affaire.referentiels.categories),
         ) { saisie = it }
     }
 }
