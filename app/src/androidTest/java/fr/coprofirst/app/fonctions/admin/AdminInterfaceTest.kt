@@ -136,7 +136,7 @@ class AdminInterfaceTest {
         ouvrir(administrateur)
         ecran.onNodeWithTag(ReperesOnglets.onglet("telemetry")).toucher()
         ecran.attendreQue("le premier tableau", contexte = vuesDemandees) { existe(ReperesAdmin.GRAPHE) }
-        ecran.amenerTag(ReperesAdmin.acces("android")).assert(hasText("36 vues · 25 %", substring = true))
+        ecran.amenerTag(ReperesAdmin.acces("android")).assert(hasText("36 vues ·\u00A025 %", substring = true))
         ecran.amenerTag(ReperesAdmin.acces("web")).assert(hasText("18 utilisateurs", substring = true))
         ecran.attendreTexte("App Android\u00A018")
     }

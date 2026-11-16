@@ -30,7 +30,7 @@ class ReglesAdminTest {
         assertTrue(LibellesMaintenance.aide("erreur").orEmpty().isNotBlank())
         assertEquals("NŒUD-B", LibellesMaintenance.noeud("nœud-b"))
         val anomalie = SanteTaches.Anomalie("telemetrie", "nœud-a", null, "x")
-        assertEquals("Agrégation télémétrie · nœud-a", LibellesMaintenance.anomalie(anomalie))
+        assertEquals("Agrégation télémétrie ·\u00A0nœud-a", LibellesMaintenance.anomalie(anomalie))
     }
 
     @Test
@@ -81,7 +81,7 @@ class ReglesAdminTest {
         assertEquals(listOf(0, 500, 1000, 1500), Graduations.de(1201))
         for (maximum in listOf(3, 7, 99, 101, 999, 12345)) {
             val g = Graduations.de(maximum)
-            assertTrue("$maximum → $g", g.last() >= maximum && g.size in 2..6)
+            assertTrue("$maximum →\u00A0$g", g.last() >= maximum && g.size in 2..6)
         }
     }
 

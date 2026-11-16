@@ -21,6 +21,10 @@
   avant (`rolesMisEnAvant`), les statuts qu'un compte peut demander
   (`statutsDemandables`), les options du thème de l'appareil (`optionsTheme`,
   `themeParDefaut`, `cookieTheme`) ;
+- `Separateur` (paquet `commun.texte`) : les trois séparateurs du site (`separateurs`,
+  `SEPARATEUR` de front/src/lib/separateurs.ts) — une espace sécable avant, insécable
+  après : la ligne se coupe devant, jamais après (#117), comme l'iOS
+  (`generateurs/separateurs.py`) ;
 - `NaturesDuFil` et `NaturesAffaire` (paquet `charte`) : ce que le fil montre de chaque
   type d'élément (`naturesDuFil` : libellé, teinte, pictogramme) et les natures d'une
   affaire (`naturesAffaire`, teinte `teinteNature`), comme l'iOS
@@ -365,6 +369,37 @@ def kotlin_natures(tables: dict, source: str) -> str:
     ])
 
 
+def kotlin_separateurs(tables: dict, source: str) -> str:
+    """`Separateur` : point, tiret, flèche, tels que le site les écrit."""
+    valeur = tables.get("separateurs", {}).get("valeur")
+    noms = ("point", "tiret", "fleche")
+    if not isinstance(valeur, dict) or set(valeur) != set(noms):
+        raise TableInattendue(f"separateurs : forme inattendue ({valeur!r})")
+    for nom in noms:
+        v = valeur[nom]
+        if not (isinstance(v, str) and len(v) == 3 and v[0] == " " and v[2] == "\u00a0" and not v[1].isspace()):
+            raise TableInattendue(f"separateurs.{nom} : ni espace sécable avant, ni insécable après ({v!r})")
+    # L'espace insécable s'écrit échappée : invisible, elle se perdrait à la relecture.
+    def litteral(v: str) -> str:
+        return chaine(v).replace("\u00a0", "\\u00A0")
+    return "\n".join([
+        "// GÉNÉRÉ par scripts/generer_tables.py — NE PAS MODIFIER À LA MAIN.",
+        f"// Source : {source} (separateurs).",
+        f"package {PAQUET_TEXTE}",
+        "",
+        "/**",
+        " * Les séparateurs du site (`SEPARATEUR`) : une espace sécable avant, insécable après —",
+        " * la ligne se coupe devant le séparateur, qui ouvre la suivante, jamais après.",
+        " */",
+        "object Separateur {",
+        f"    const val point = {litteral(valeur['point'])}",
+        f"    const val tiret = {litteral(valeur['tiret'])}",
+        f"    const val fleche = {litteral(valeur['fleche'])}",
+        "}",
+        "",
+    ])
+
+
 def main(argv: list[str]) -> int:
     if len(argv) != 3:
         print(__doc__.strip().splitlines()[-1], file=sys.stderr)
@@ -381,6 +416,7 @@ def main(argv: list[str]) -> int:
             ("fr.coprofirst.app.commun", "TablesCommunes.kt"): kotlin_commun(tables, entree.name),
             ("fr.coprofirst.app.commun", "AvisDuSite.kt"): kotlin_avis(tables, entree.name),
             (PAQUET_TEXTE, "BalisesDuSite.kt"): kotlin_balises(tables, entree.name),
+            (PAQUET_TEXTE, "Separateur.kt"): kotlin_separateurs(tables, entree.name),
             (PAQUET_CHARTE, "NaturesDuFil.kt"): kotlin_natures(tables, entree.name),
             (tc.PAQUET_ACCES, "TablesAcces.kt"): tc.kotlin_acces(tables, entree.name),
             ("fr.coprofirst.app.commun", "StatutsAffaire.kt"): tc.kotlin_statuts_affaire(tables, entree.name),

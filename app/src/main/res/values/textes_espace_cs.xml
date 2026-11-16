@@ -39,7 +39,7 @@ strings_validations.xml.
     <string name="espacecs_courriels_deplier">Montre l’expéditeur et le motif</string>
     <string name="espacecs_courriels_replier">Replie le message</string>
     <string name="espacecs_courriels_aide">Les %1$s derniers messages reçus à l\'adresse des affaires, du plus récent au plus ancien. Un message refusé n\'est pas perdu : corrigez ce que le motif indique (le plus souvent le numéro d\'affaire dans l\'objet), puis transférez-le de nouveau.</string>
-    <string name="espacecs_courriels_envoye">%1$s · envoyé le %2$s</string>
+    <string name="espacecs_courriels_envoye">%1$s ·\u00A0envoyé le %2$s</string>
     <string name="espacecs_courriels_affaire">Affaire #%1$s</string>
 
     <!-- Annonces Hall (OngletAnnoncesHall, HistoriqueAnnoncesHall, FormulaireAnnonceHall) -->
@@ -142,7 +142,7 @@ strings_validations.xml.
     <string name="espacecs_renouvellements_contrats_titre">Contrats prestataires — échéances %1$s</string>
     <string name="espacecs_renouvellements_contrats_intro">Contrats dont la fin ou le préavis tombe en %1$s. Préavis de %2$s mois.</string>
     <string name="espacecs_renouvellements_aucune_echeance">Aucune échéance de contrat en %1$s</string>
-    <string name="espacecs_renouvellements_diagnostics_titre">Diagnostics et Contrôles Réglementaires — %1$s–%2$s</string>
+    <string name="espacecs_renouvellements_diagnostics_titre">Diagnostics et Contrôles Réglementaires —\u00A0%1$s–%2$s</string>
     <string name="espacecs_renouvellements_a_faire_en">À faire en %1$s</string>
     <plurals name="espacecs_renouvellements_audits">
         <item quantity="one">%1$d audit</item>
@@ -150,7 +150,7 @@ strings_validations.xml.
         <item quantity="other">%1$d audits</item>
     </plurals>
     <string name="espacecs_renouvellements_groupe">%1$s (%2$d)</string>
-    <string name="espacecs_renouvellements_preavis_des">%1$s · préavis dès %2$s</string>
+    <string name="espacecs_renouvellements_preavis_des">%1$s ·\u00A0préavis dès %2$s</string>
     <string name="espacecs_renouvellements_numero">N° %1$s</string>
     <string name="espacecs_renouvellements_note">★ %1$s (%2$s avis)</string>
     <string name="espacecs_renouvellements_dernier_rapport">Dernier rapport : %1$s</string>
@@ -182,7 +182,7 @@ strings_validations.xml.
     <string name="espacecs_annuaire_nom_syndic">Nom du syndic</string>
     <string name="espacecs_annuaire_nom_syndic_indication">ex. Cabinet Bertrand</string>
     <string name="espacecs_annuaire_nom_syndic_absent">Nom du syndic non renseigné</string>
-    <string name="espacecs_annuaire_nom_du_contrat">Vient du contrat de syndic — se change dans Prestataires → Contrats.</string>
+    <string name="espacecs_annuaire_nom_du_contrat">Vient du contrat de syndic — se change dans Prestataires →\u00A0Contrats.</string>
     <string name="espacecs_annuaire_nom_saisi">Aucun contrat désigné : cette saisie s\'affiche.</string>
     <string name="espacecs_annuaire_adresse">Adresse</string>
     <string name="espacecs_annuaire_adresse_indication">ex. 12 rue des Lilas, 75015 Paris</string>

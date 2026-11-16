@@ -26,6 +26,7 @@ import fr.coprofirst.app.commun.LigneFiche
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.texte.Separateur
 import fr.coprofirst.app.commun.texte.TexteRiche
 
 /**
@@ -82,7 +83,7 @@ private fun ApercuContacts(prestataire: Prestataire) {
     Column {
         if (prestataire.contacts.isNotEmpty()) {
             prestataire.contacts.forEach { contact ->
-                val nom = contact.nomAffiche?.let { n -> " — $n" + (contact.fonction?.let { " ($it)" } ?: "") } ?: ""
+                val nom = contact.nomAffiche?.let { n -> "${Separateur.tiret}$n" + (contact.fonction?.let { " ($it)" } ?: "") } ?: ""
                 Lien("📞 ${contact.telephone ?: FormatsDuSite.TIRET}$nom", ReglesPrestataires.numeroAppel(contact.telephone)?.let { "tel:$it" })
             }
         } else {

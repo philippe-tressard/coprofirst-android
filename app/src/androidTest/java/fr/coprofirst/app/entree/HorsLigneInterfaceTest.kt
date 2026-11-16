@@ -63,7 +63,7 @@ class HorsLigneInterfaceTest {
         ecran.attendreTexte("Rien de neuf")
         ecran.attendreTexte("Consultation seule : les gestes reviennent avec le réseau.")
         ecran.onNodeWithTag(REPERE_BANDEAU).assertExists()
-        ecran.attendreTexte("Hors ligne — à jour au")
+        ecran.attendreTexte("Hors ligne —\u00A0à jour au")
     }
 
     /**

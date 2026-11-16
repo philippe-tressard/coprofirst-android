@@ -51,6 +51,7 @@ import fr.coprofirst.app.commun.Pastille
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.onglets.ContexteOnglet
+import fr.coprofirst.app.commun.texte.Separateur
 import fr.coprofirst.app.commun.texte.TexteRiche
 
 /** Ce que la feuille de l'avis ouvre : un nouvel avis, ou la correction du sien. */
@@ -146,7 +147,7 @@ private fun CarteAvis(avis: AvisRead, gestes: GestesAvis?) {
                 if (avis.luDeTous != true) PastilleTeinte(stringResource(R.string.avis_auteur_et_conseil), "badge-gray", compacte = true)
                 if (avis.publicationValidee == true) PastilleTeinte(stringResource(R.string.avis_retenu), "badge-green", compacte = true)
                 listOfNotNull(avis.auteurNom?.takeIf { it.isNotBlank() }, avis.auteurRole?.takeIf { it.isNotBlank() })
-                    .joinToString(" · ").takeIf { it.isNotEmpty() }?.let { Etiquette(it) }
+                    .joinToString(Separateur.point).takeIf { it.isNotEmpty() }?.let { Etiquette(it) }
                 Etiquette(FormatsDuSite.dateCourte(avis.creeLe.toInstant()))
             }
             TexteRiche(avis.description, style = MaterialTheme.typography.bodyMedium)

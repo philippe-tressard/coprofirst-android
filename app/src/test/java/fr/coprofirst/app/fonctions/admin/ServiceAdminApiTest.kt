@@ -100,7 +100,7 @@ class ServiceAdminApiTest {
         val page = tableau.pages.single()
         assertEquals(listOf(TableauTelemetrie.VuesCanal("web", "Site web", 40), TableauTelemetrie.VuesCanal("android", "App Android", 18)), page.canaux)
         assertTrue(tableau.plusieursCanauxParPage)
-        assertEquals("Site web\u00A040 · App Android\u00A018", LecturesTelemetrie.accesDe(page))
+        assertEquals("Site web\u00A040 ·\u00A0App Android\u00A018", LecturesTelemetrie.accesDe(page))
     }
 
     /** Un serveur sans la répartition (contrat < 1.31.0) : aucun bloc, aucune colonne. */
