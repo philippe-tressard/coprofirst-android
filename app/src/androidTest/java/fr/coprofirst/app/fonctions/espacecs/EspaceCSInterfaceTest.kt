@@ -237,7 +237,6 @@ class EspaceCSInterfaceTest {
         ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_FORMATS).performScrollTo()
         retenir(ReperesEspaceCS.nouvelleFormat("a5"))
         retenir("${ReperesEspaceCS.NOUVELLE_PERIMETRE}.bat_a")
-        attendre("Bâtiment A ›")
         toucher(ReperesEspaceCS.NOUVELLE_TITRE)
         ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_TITRE).performTextInput("Ascenseur à l'arrêt")
         ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_MESSAGE).performTextInput("Lundi matin.")
