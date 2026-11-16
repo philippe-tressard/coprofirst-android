@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.commun.LogoResidence
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.entree.vitrine.ContenuVitrine
@@ -211,11 +212,15 @@ private fun AideDemo(role: String) {
 private fun NomReconnu(reconnue: Installation?) {
     val nom = reconnue?.nom.orEmpty()
     val annonce = stringResource(R.string.connexion_reconnue, nom)
-    Text(
-        nom,
-        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-        modifier = Modifier.semantics { contentDescription = annonce },
-    )
+    // Le logo de la résidence reconnue devant son nom, comme l'iOS (`ChampResidence`, #137).
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        LogoResidence(reconnue, Modifier.size(20.dp))
+        Text(
+            nom,
+            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+            modifier = Modifier.semantics { contentDescription = annonce },
+        )
+    }
 }
 
 @Composable

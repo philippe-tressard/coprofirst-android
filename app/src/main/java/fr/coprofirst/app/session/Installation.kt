@@ -27,6 +27,10 @@ data class Installation(
     val ordrePages: List<String>? = null,
     /** Ce que l'administration a écrit pour chaque page (`page_config_<id>`). */
     val surchargesPages: Map<String, SurchargePage> = emptyMap(),
+    /** Elle a téléversé un logo (`site_logo` servi) ; sinon, celui de CoproFirst (#137). */
+    val aUnLogo: Boolean = false,
+    /** Et sa variante pour le fond sombre (`site_logo_sombre`). */
+    val aUnLogoSombre: Boolean = false,
 ) {
     val adresse: AdresseInstallation? get() = AdresseInstallation.relire(url)
     val contrat: VersionContrat? get() = VersionContrat.lire(versionContrat)
@@ -59,6 +63,8 @@ data class Installation(
                 codePalette = cles["site_palette"]?.takeIf { it.isNotBlank() },
                 ordrePages = OrdrePages.lire(cles["pages_order"]),
                 surchargesPages = surcharges,
+                aUnLogo = !cles["site_logo"].isNullOrBlank(),
+                aUnLogoSombre = !cles["site_logo_sombre"].isNullOrBlank(),
             )
             val contrat = installation.contrat
             if (contrat != null && contrat < VersionContrat.PLANCHER) throw ErreurService.ResidenceAMettreAJour

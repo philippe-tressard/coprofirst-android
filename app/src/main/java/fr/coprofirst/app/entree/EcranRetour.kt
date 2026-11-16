@@ -3,7 +3,6 @@
 
 package fr.coprofirst.app.entree
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -25,7 +24,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
@@ -39,6 +37,7 @@ import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.BoutonPlein
+import fr.coprofirst.app.commun.LogoResidence
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.LecturesGardees
@@ -47,10 +46,8 @@ import fr.coprofirst.app.session.LecturesGardees
  * Le retour d'un habitué dont la session est gardée, comme l'iOS (`RetourView`) : la
  * résidence, et la biométrie demandée dès l'arrivée — puis le fil. Annulée, elle se
  * redemande d'un toucher ; le mot de passe reste à côté. Une session que le serveur ne
- * reconnaît plus mène à la connexion, adresse et courriel pré-remplis.
- *
- * ⚠️ Divergence déclarée : le logo de CoproFirst, pas celui de la résidence — il vient avec
- * #137, comme sur « À propos ».
+ * reconnaît plus mène à la connexion, adresse et courriel pré-remplis. En tête, le logo de la
+ * résidence (`LogoResidence`, #137).
  */
 @Composable
 fun EcranRetour(etat: EtatEntree, parcours: ActionsEntree) {
@@ -66,7 +63,7 @@ fun EcranRetour(etat: EtatEntree, parcours: ActionsEntree) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(Modifier.weight(1f))
-        Image(painterResource(R.drawable.logo), contentDescription = null, modifier = Modifier.size(96.dp))
+        LogoResidence(residence, Modifier.size(96.dp))
         Spacer(Modifier.height(16.dp))
         Text(
             residence.nom,

@@ -31,6 +31,10 @@ import okhttp3.Request
  *
  * Les documents servis par une route (`/documents/{id}/télécharger`) passent, eux, par le
  * client généré (`PiecesLocales.document`).
+ *
+ * Elle lit aussi le logo d'une résidence (`LogosEnMemoire`, #137) : sa route est au contrat
+ * (GET /config/logo.png), mais le client généré type une image en JSON — l'adresse se tire de
+ * sa configuration générée, et le fichier se lit ici, à l'hôte de l'installation seul.
  */
 object FichierProtege {
     /**
