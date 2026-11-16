@@ -11,6 +11,7 @@ Les textes de la FAQ, écrits une fois — ceux du site (`faq/+page.svelte`) et 
     <string name="faq_general">Général</string>
     <string name="faq_pas_trouve">Vous ne trouvez pas la réponse ?</string>
     <string name="faq_pas_trouve_texte">Créez une affaire via la rubrique Affaires et le conseil syndical vous répondra dans les meilleurs délais.</string>
+    <string name="faq_nouvelle_affaire">Créer une affaire</string>
     <string name="faq_ouvrir_manuel">Ouvrir le Manuel utilisateur</string>
     <string name="faq_partager_lien">Partager le lien</string>
     <string name="faq_redaction_au_site">Rédiger, masquer ou réorganiser les questions se fait sur le site.</string>

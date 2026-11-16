@@ -58,7 +58,7 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   définitive. Balayer vers la droite marque lu, vers la gauche supprime. Tirer la liste
   la relit. La cloche de chaque écran et les notifications push viendront ensuite.
 - **FAQ** : les questions de la résidence par catégorie, une réponse dépliée à la fois ;
-  « Partager le lien » d'une question ; le Manuel utilisateur. La rédaction reste au site,
+  « Partager le lien » d'une question ; « Créer une affaire » et le Manuel utilisateur. La rédaction reste au site,
   et l'écran ne le dit qu'à qui le serveur l'ouvre.
 - **Mes lots & accès** (onglet « Accès ») : ses lots et leurs caractéristiques (vue du
   locataire, du bailleur, ou de tous les autres) ; ses badges Vigik et télécommandes,
@@ -92,14 +92,16 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   écrit.
 - **Communauté** : les rubriques que le site ouvre au compte (un gestionnaire n'a que
   l'Avis ; un compte suspendu lit le motif du serveur). **Sondages** en cours puis
-  archivés — le vote et les résultats s'ouvrent sur le site pour l'instant (#70) ; « Créer,
+  archivés, chacun ouvrant sa fiche (vote, résultats, commentaires) ; « Créer,
   modifier ou stopper un sondage se fait sur le site » ne se dit qu'à qui le serveur le
   permet. **Boîte à idées** : les plus soutenues d'abord, un filtre par état, le cœur pour
   voter, « + » pour proposer une idée. **Petites annonces** : type, catégorie, tri ;
   l'annonce ouverte (photos, contact, état pour son auteur, suppression à qui le serveur
   l'ouvre), « + » pour en déposer une — les photos s'ajoutent sur le site. **Avis** sur
   l'application : filtre par note, réponse de l'équipe ; donner son avis, le corriger,
-  l'archiver ou le restaurer. Répondre et signaler se font encore sur le site (#70).
+  l'archiver ou le restaurer. Une idée ou une annonce ouverte porte le fil des réponses
+  (répondre, supprimer la sienne, signaler celles des autres) et « Signaler » au conseil
+  syndical ; chaque contenu dit qui le lit et où.
 - **Paramétrage** (administration et opérateur de la plateforme), en partie :
   **À traiter** (la file des comptes et des commandes d'accès, celle de l'Espace CS, puis
   les demandes de changement de profil : approuver, ou rejeter avec un motif facultatif),
