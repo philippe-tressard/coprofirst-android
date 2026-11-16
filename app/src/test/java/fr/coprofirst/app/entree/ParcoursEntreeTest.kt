@@ -229,6 +229,45 @@ class ParcoursEntreeTest {
         assertEquals(EcranEntree.Espace, parcours.etat.value.ecran)
     }
 
+    /** #7 : un lien vers un hôte jamais vu ouvre la connexion à son adresse, et se confirme. */
+    @Test
+    fun unLienVersUnHoteJamaisVuSeConfirme() = test {
+        residence("Les Glycines")
+        parcours.suivreLien("https://jamais-vu.exemple.test/tickets/12#msg-3")
+        advanceUntilIdle()
+        assertEquals(EcranEntree.Connexion, parcours.etat.value.ecran)
+        assertEquals("jamais-vu.exemple.test", parcours.etat.value.saisie)
+        assertEquals("Les Glycines", parcours.etat.value.reconnue?.nom)
+        parcours.saisirEmail("a@exemple.test")
+        parcours.saisirMotDePasse("secret")
+        parcours.seConnecter()
+        advanceUntilIdle()
+        assertEquals("seul GET /config est parti", 1, serveur.requestCount)
+        assertEquals(PreuveHote.Declaree, parcours.etat.value.confirmation?.preuve)
+    }
+
+    /** #7 : vers une résidence connue, la connexion habituelle ; vers celle qui est ouverte, rien. */
+    @Test
+    fun unLienVersUneResidenceConnueOuOuverte() = test {
+        connues.retenir(Installation("https://connue.exemple.test", "Connue"))
+        residence("Connue")
+        parcours.suivreLien("https://connue.exemple.test/actualites")
+        advanceUntilIdle()
+        assertEquals("connue.exemple.test", parcours.etat.value.saisie)
+        parcours.saisirEmail("a@exemple.test")
+        parcours.saisirMotDePasse("secret")
+        ok()
+        parcours.seConnecter()
+        advanceUntilIdle()
+        assertEquals(EcranEntree.Espace, parcours.etat.value.ecran)
+        val ouverte = parcours.etat.value
+        parcours.suivreLien("https://connue.exemple.test/tickets/4")
+        parcours.suivreLien("http://autre.exemple.test/")
+        advanceUntilIdle()
+        assertSame(ouverte, parcours.etat.value)
+        assertEquals(2, serveur.requestCount)
+    }
+
     @Test
     fun identifiantsRefusesSansQuitterLEcran() = test {
         connues.retenir(Installation("https://connue.exemple.test", "Connue"))

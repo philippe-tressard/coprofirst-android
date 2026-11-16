@@ -65,15 +65,42 @@ class ParcoursEntree(
 
     override fun saisir(texte: String) = saisir(texte, pause = true)
 
-    override fun lireQR(texte: String) = recevoir(texte, OrigineAdresse.Scan)
+    override fun lireQR(texte: String) {
+        AdresseInstallation.normaliser(texte)?.let { recevoir(it, OrigineAdresse.Scan) }
+    }
+
+    /**
+     * Un lien d'application (#7), comme `Parcours.suivre` de l'iOS. Vers la résidence
+     * ouverte : elle reste. Vers une autre : la connexion, à son adresse — la session
+     * ouverte est quittée sans être fermée (`changer` de l'iOS). Une résidence connue s'y
+     * reprend comme d'habitude ; un hôte jamais vu se découvre puis se confirme TOUJOURS
+     * avant le premier mot de passe (`OrigineAdresse.Lien`). Rien ne part de plus.
+     *
+     * ⚠️ L'écran que le lien vise (une affaire, une page) n'est pas encore ouvert : la
+     * porte de la résidence ne prend pas de destination venue de l'entrée (#147).
+     */
+    fun suivreLien(lien: String) {
+        val adresse = LienDApplication.adresse(lien) ?: return
+        val etat = _etat.value
+        if (etat.ouverte?.adresse == adresse) return
+        if (etat.ecran == EcranEntree.Connexion && etat.reconnue?.adresse == adresse) return
+        reconnaissance?.cancel()
+        _etat.update {
+            it.copy(
+                ecran = EcranEntree.Connexion, ouverte = null, confirmation = null, venue = null,
+                motDePasse = "", connexionEnCours = false, erreurConnexion = null,
+            )
+        }
+        if (connues.liste.any { it.adresse == adresse }) saisir(adresse.enSaisie, pause = false)
+        else recevoir(adresse, OrigineAdresse.Lien)
+    }
 
     /**
      * Une adresse que l'utilisateur n'a pas écrite : elle remplit le champ et se reconnaît
      * sans attendre, et son origine suit jusqu'à « Se connecter » — où la garde exige
      * toujours la confirmation de l'hôte, résidence connue ou démonstration comprise.
      */
-    private fun recevoir(texte: String, origine: OrigineAdresse) {
-        val adresse = AdresseInstallation.normaliser(texte) ?: return
+    private fun recevoir(adresse: AdresseInstallation, origine: OrigineAdresse) {
         _etat.update { it.copy(venue = AdresseVenue(adresse, origine)) }
         saisir(adresse.enSaisie, pause = false)
     }
