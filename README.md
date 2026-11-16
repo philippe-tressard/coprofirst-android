@@ -49,7 +49,9 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   la protège vraiment (biométrie, verrouillage de l'appareil, ou rien). Au lancement
   suivant, l'écran de retour rouvre la dernière résidence par la biométrie, le mot de
   passe à côté. Une session expirée se renouvelle d'elle-même (POST /auth/refresh, un
-  seul à la fois par hôte). Se déconnecter ferme la session sur le serveur et efface la session
+  seul à la fois par hôte) ; si le serveur refuse aussi le renouvellement, l'app quitte la
+  résidence une fois et ouvre la connexion pré-remplie, « Votre session a expiré.
+  Connectez-vous de nouveau. », la session gardée effacée. Se déconnecter ferme la session sur le serveur et efface la session
   gardée ; « Oublier toutes les résidences » ferme celle de chacune et efface tout — une
   résidence qui ne répond pas est dite sur l'écran de connexion.
 - **Hors ligne** : pour une résidence dont la session est gardée, la dernière lecture du

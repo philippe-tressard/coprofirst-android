@@ -23,6 +23,7 @@
 #      d'attente recopiée hors des attentes communes (#139) ;
 #   7 septies. la règle des tests d'interface est la v2 (junit4.v2), jamais la v1 ;
 #   7 octies. aucun séparateur du site (· — →) suivi d'une espace sécable ni recopié (#117) ;
+#   7 nonies. aucune version de contrat écrite dans les tests ni l'API simulée (#203) ;
 #   8. un seul bouton plein, `BoutonPlein` (commun/Boutons.kt) ;
 #   9. les générateurs du build passent leurs tests (scripts/test_*.py) ;
 #  10. aucun chemin de .claude/worktrees/ suivi.
@@ -238,6 +239,14 @@ VERSION_ECRITE='^[[:space:]]*version(Code|Name)[[:space:]]*=[[:space:]]*("|[0-9]
 autotest_motif "version écrite" "$VERSION_ECRITE" '        versionCode = 9' '        versionCode = versionDeGit.code'
 motif=$(premier_motif "$VERSION_ECRITE" app/build.gradle.kts)
 [ -z "$motif" ] || echec "app/build.gradle.kts : version écrite à la main ($motif) — elle se déduit de git"
+
+# Une version de contrat ÉCRITE dans un test ou l'API simulée vieillit au premier plancher
+# qui monte : l'installation simulée ne s'ouvre plus (#203, Audience). Elle se lit dans
+# VERSION_CONTRAT_PLANCHER ; seule une version « à venir » (99.x) s'écrit.
+CONTRAT_ECRIT='(version_contrat"?[[:space:]]*:[[:space:]]*|"version_contrat"[[:space:]]+to[[:space:]]+|versionContrat[[:space:]]*=[[:space:]]*|contrat: String\?[[:space:]]*=[[:space:]]*)"([0-8][0-9]?|9[0-8]?)\.[0-9]+\.[0-9]+"'
+autotest_motif "contrat écrit" "$CONTRAT_ECRIT" '    """{"site_nom": "G", "version_contrat": "2.0.0"}"""' '    """{"site_nom": "G", "version_contrat": "$VERSION_CONTRAT_PLANCHER"}"""'
+autotest_motif "contrat écrit (Installation)" "$CONTRAT_ECRIT" '    Installation(a, "G", versionContrat = "2.1.0")' '    mapOf("version_contrat" to "99.0.0")'
+interdire "$CONTRAT_ECRIT" "version de contrat écrite à la main — VERSION_CONTRAT_PLANCHER" "" '^app/src/(test|androidTest|debug)/.*\.kt$'
 
 # Les hôtes FICTIFS sont des noms réservés (RFC 2606/6761 : `.test`, `.invalid`,
 # `example.com`), jamais `exemple.fr` ni `exemple.org`, qui sont de VRAIS domaines : un

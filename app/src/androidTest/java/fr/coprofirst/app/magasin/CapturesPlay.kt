@@ -14,6 +14,7 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.core.content.ContextCompat
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import fr.coprofirst.api.VERSION_CONTRAT_PLANCHER
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Palettes
 import fr.coprofirst.app.commun.attendreTexte
@@ -25,6 +26,8 @@ import fr.coprofirst.app.entree.entrerDansLaResidence
 import fr.coprofirst.app.fonctions.fil.FilInterfaceTest
 import fr.coprofirst.app.fonctions.monlot.FixturesMonLot
 import fr.coprofirst.app.fonctions.profil.FixturesProfil
+import java.io.File
+import java.time.Instant
 import mockwebserver3.Dispatcher
 import mockwebserver3.MockResponse
 import mockwebserver3.RecordedRequest
@@ -34,8 +37,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.io.File
-import java.time.Instant
 
 /**
  * Les visuels de la fiche du Play Store (#31), produits par l'app elle-même, comme
@@ -141,7 +142,7 @@ class CapturesPlay {
     /** La résidence fictive : chaque route répond par sa fixture ; une liste inconnue est vide. */
     private val residence = object : Dispatcher() {
         private val routes = mapOf(
-            "/config" to """{"site_nom": "Les Glycines", "version_contrat": "2.0.0"}""",
+            "/config" to """{"site_nom": "Les Glycines", "version_contrat": "$VERSION_CONTRAT_PLANCHER"}""",
             "/auth/login" to "{}",
             "/auth/me" to FixturesProfil.MOI,
             "/flux" to FilInterfaceTest.fil(Instant.now()),

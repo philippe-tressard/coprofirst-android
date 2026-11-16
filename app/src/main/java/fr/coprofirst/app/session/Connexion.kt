@@ -86,11 +86,8 @@ class Connexion(
                 throw ErreurService.depuis(erreur)
             }
         }
-        if (!renouvelee) {
-            sessions.oublier(adresse)
-            oublierCeQuiEstGarde(adresse)
-            throw ReprisePerdue
-        }
+        // Refusée : `rafraichir` a déjà tout effacé.
+        if (!renouvelee) throw ReprisePerdue
     }
 
     /**
@@ -120,22 +117,8 @@ class Connexion(
                 throw ErreurService.depuis(erreur)
             }
         }
-        if (!renouvelee) {
-            sessions.oublier(adresse)
-            oublierCeQuiEstGarde(adresse)
-            throw ReprisePerdue
-        }
+        if (!renouvelee) throw ReprisePerdue
         sessions.lectures?.quitterLaConsultation(adresse.cleCoffre)
-    }
-
-    /**
-     * LA porte de l'effacement de ce qu'une session laisse sur l'appareil — le jeton gardé
-     * et les lectures gardées, jamais l'un sans l'autre : la déconnexion, une session que le
-     * serveur refuse. Comme `oublierCeQuiEstGarde` de l'iOS.
-     */
-    private fun oublierCeQuiEstGarde(adresse: AdresseInstallation) {
-        sessions.gardees.supprimer(adresse.cleCoffre)
-        sessions.lectures?.effacer(adresse.cleCoffre)
     }
 
     /**
@@ -158,8 +141,7 @@ class Connexion(
             } catch (_: Exception) {
                 false
             }
-            oublierCeQuiEstGarde(adresse)
-            sessions.oublier(adresse)
+            sessions.oublierLaSession(adresse)
             atteint
         }
     }

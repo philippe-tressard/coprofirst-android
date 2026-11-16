@@ -114,11 +114,14 @@ class RenouvellementTest {
 
     @Test
     fun unRenouvellementRefuseDitLaSessionExpiree() = runTest {
+        gardees.garder("residence.exemple.test", "r1")
         repondre(401)
         repondre(401, """{"detail": "Session expirée. Reconnectez-vous."}""")
         val erreur = runCatching { session.appeler { b, c -> ConfigApi(b, c).getConfig() } }.exceptionOrNull()
         assertEquals(ErreurService.SessionExpiree, erreur)
         assertEquals(2, serveur.requestCount)
+        // Effacée de l'appareil (#201) : l'écran de retour ne propose plus l'empreinte.
+        assertFalse(gardees.contient("residence.exemple.test"))
     }
 
     @Test
