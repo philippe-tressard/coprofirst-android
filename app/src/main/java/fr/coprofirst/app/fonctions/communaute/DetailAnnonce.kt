@@ -27,6 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.api.modeles.AnnonceRead
 import fr.coprofirst.app.LocalCouleurs
@@ -46,27 +48,35 @@ import fr.coprofirst.app.commun.texte.TexteRiche
  * Une annonce ouverte, comme l'iOS (`DetailAnnonce`) : la description entière, les photos,
  * le contact, « Où en est cette annonce ? » pour son auteur, puis le fil des réponses.
  * Supprimer suit `peut_supprimer` SERVI (l'auteur ou le conseil). Corriger le texte ou les
- * photos se fait sur le site. ⚠️ Divergence déclarée : « Signaler l'annonce » attend le
- * signalement commun (#70).
+ * photos se fait sur le site. « Signaler l'annonce » à qui ne l'a pas déposée.
  */
 @Composable
-fun DetailAnnonce(annonce: AnnonceRead?, contexte: ContexteOnglet, service: ServiceCommunaute, recharger: () -> Unit, fermer: () -> Unit) {
-    val gestes = rememberGestes(contexte.avis)
+fun DetailAnnonce(
+    annonce: AnnonceRead?,
+    contexte: ContexteOnglet,
+    service: ServiceCommunaute,
+    moi: Int,
+    recharger: () -> Unit,
+    fermer: () -> Unit,
+) {
+    // La suppression ferme l'annonce : sa phrase se dit sur la liste.
+    val gestesDeLaListe = rememberGestes(contexte.avis)
     var aSupprimer by remember { mutableStateOf(false) }
-    FeuilleDetail(R.string.annonces_titre_detail, fermer, actions = {
+    val signaler = annonce?.takeIf { it.estAuteur != true }?.let { FilCommunaute.Annonce(it.id) to R.string.annonces_signaler }
+    DetailCommunaute(R.string.annonces_titre_detail, fermer, service, signaler, actions = {
         if (annonce?.peutSupprimer == true) {
             IconButton(onClick = { aSupprimer = true }, modifier = Modifier.testTag(ReperesCommunaute.ANNONCE_SUPPRIMER)) {
                 Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.annonces_supprimer), tint = LocalCouleurs.current.danger)
             }
         }
-    }) {
+    }) { gestes ->
         if (annonce == null) {
             Etiquette(stringResource(R.string.annonces_introuvable))
-            return@FeuilleDetail
+            return@DetailCommunaute
         }
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             TypeAnnonce(annonce)
-            Text(annonce.titre, style = Typo.titre(), color = LocalCouleurs.current.text)
+            Text(annonce.titre, style = Typo.titre(), color = LocalCouleurs.current.text, modifier = Modifier.semantics { heading() })
             EtiquettesAnnonce(annonce)
             Etiquette(FormatsDuSite.dateCourte(annonce.creeLe.toInstant()))
         }
@@ -81,7 +91,10 @@ fun DetailAnnonce(annonce: AnnonceRead?, contexte: ContexteOnglet, service: Serv
                 }
             }
         }
-        ReponsesEnLecture(annonce.reponses.orEmpty())
+        FilDuContenu(
+            FilCommunaute.Annonce(annonce.id), annonce.reponses.orEmpty(), moi, service, gestes, recharger,
+            invite = stringResource(R.string.annonces_question),
+        )
     }
     if (aSupprimer && annonce != null) {
         AlertDialog(
@@ -92,7 +105,7 @@ fun DetailAnnonce(annonce: AnnonceRead?, contexte: ContexteOnglet, service: Serv
                 TextButton(
                     onClick = {
                         aSupprimer = false
-                        gestes.agir(R.string.annonces_supprimee, apres = { reussi -> if (reussi) { fermer(); recharger() } }) {
+                        gestesDeLaListe.agir(R.string.annonces_supprimee, apres = { reussi -> if (reussi) { fermer(); recharger() } }) {
                             service.supprimerAnnonce(annonce.id)
                             null
                         }

@@ -53,6 +53,7 @@ import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.onglets.OngletsSurLeSite
+import fr.coprofirst.app.commun.perimetres.Perimetre
 import fr.coprofirst.app.commun.texte.TexteDuSite
 import fr.coprofirst.app.navigation.Destination
 

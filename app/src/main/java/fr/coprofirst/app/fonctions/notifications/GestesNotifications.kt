@@ -53,7 +53,7 @@ import fr.coprofirst.app.navigation.BarreDuHaut
  * libellés y effaceraient le titre sur un téléphone étroit — « Tout marquer lu » et « Tout
  * sélectionner » y sont des icônes, leur libellé dit au lecteur d'écran (avec le nombre
  * de non lues, comme l'indice VoiceOver de l'iOS). Le nombre visible, que l'iOS met sous
- * le titre, va en tête de la liste (`NombreNonLues`) : la barre n'a pas de sous-titre (#42).
+ * le titre, va en tête de la liste (`NombreNonLues`) : la barre n'a pas de sous-titre (#120).
  */
 @Composable
 fun ActionsNotifications(
@@ -132,7 +132,7 @@ fun GesteSurLesLues(actif: Boolean, demander: () -> Unit) {
 /**
  * En édition : supprimer la sélection, au bas de l'écran, au-dessus de la barre de la
  * résidence. ⚠️ Divergence déclarée : l'iOS en fait un bouton plein rouge ; la couche
- * commune n'a pas encore de bouton destructif plein (#42) — un bouton texte rouge d'ici là.
+ * commune n'a pas encore de bouton destructif plein (#120) — un bouton texte rouge d'ici là.
  */
 @Composable
 fun BarreDeSuppression(nombre: Int, demander: () -> Unit) {

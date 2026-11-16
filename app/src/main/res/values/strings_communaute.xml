@@ -11,8 +11,9 @@ Les textes de la Communauté, écrits une fois — ceux du site et de l'iOS
     <string name="communaute_ferme">⛔ %1$s</string>
     <string name="communaute_archives">📁 Archives (%1$d)</string>
     <string name="communaute_plus_actions">Plus d\'actions</string>
-    <string name="communaute_fermer">Fermer</string>
     <string name="communaute_vote_enregistre">Vote enregistré</string>
+    <string name="communaute_reponse_publiee">Réponse publiée</string>
+    <string name="communaute_reponse_supprimee">Réponse supprimée</string>
     <string name="communaute_statut_mis_a_jour">Statut mis à jour</string>
 
     <!-- Sondages -->
@@ -29,7 +30,6 @@ Les textes de la Communauté, écrits une fois — ceux du site et de l'iOS
         <item quantity="many">%1$d votants</item>
         <item quantity="other">%1$d votants</item>
     </plurals>
-    <string name="sondages_ouvrir_sur_le_site">Voter ou voir les résultats sur le site</string>
 
     <!-- Idées -->
     <string name="idees_vide">Aucune idée pour l\'instant</string>
@@ -51,6 +51,7 @@ Les textes de la Communauté, écrits une fois — ceux du site et de l'iOS
     </plurals>
     <string name="idees_titre_detail">Idée</string>
     <string name="idees_introuvable">Idée introuvable</string>
+    <string name="idees_signaler">Signaler cette idée au conseil syndical</string>
     <string name="idees_nouvelle">Nouvelle idée</string>
     <string name="idees_soumise">Idée soumise !</string>
     <string name="idees_titre_indication">Ex. Vélos électriques en libre-service</string>
@@ -72,6 +73,8 @@ Les textes de la Communauté, écrits une fois — ceux du site et de l'iOS
     <string name="annonces_supprimer_titre">Supprimer définitivement</string>
     <string name="annonces_supprimer_message">L\'annonce « %1$s »\n\nCette action est irréversible.</string>
     <string name="annonces_supprimee">Annonce supprimée</string>
+    <string name="annonces_signaler">Signaler l\'annonce</string>
+    <string name="annonces_question">Une question sur cette annonce ?</string>
     <string name="annonces_deposer">Déposer une annonce</string>
     <string name="annonces_publiee">Annonce publiée !</string>
     <string name="annonces_titre_indication">Ex. Lave-linge presque neuf</string>
@@ -128,5 +131,4 @@ Les textes de la Communauté, écrits une fois — ceux du site et de l'iOS
     <!-- Formulaires -->
     <string name="communaute_titre">Titre</string>
     <string name="communaute_description">Description</string>
-    <string name="communaute_reponses_sur_le_site">Répondre ou signaler se fait sur le site, pour l\'instant.</string>
 </resources>

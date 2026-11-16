@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.fonctions.annuaire
 
+import fr.coprofirst.app.commun.annuaire.Annuaire
 import fr.coprofirst.app.session.AdresseInstallation
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.SessionOuverte

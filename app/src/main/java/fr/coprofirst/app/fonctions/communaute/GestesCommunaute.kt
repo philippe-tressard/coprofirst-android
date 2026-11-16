@@ -11,6 +11,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalResources
 import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.commun.TonAvis
+import fr.coprofirst.app.commun.phrase
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -26,20 +27,17 @@ class GestesCommunaute(private val avis: AvisDuGeste, private val ressources: Re
      * dans tous les cas : relire, ou défaire ce qui se voyait d'avance.
      */
     fun agir(@StringRes reussite: Int, apres: (reussi: Boolean) -> Unit = {}, geste: suspend () -> String?) {
-        portee.launch {
-            val reussi = try {
-                avis.dire(geste() ?: ressources.getString(reussite))
-                true
-            } catch (e: ErreurService) {
-                avis.dire(e.texte(ressources), TonAvis.Erreur)
-                false
-            }
-            apres(reussi)
-        }
+        portee.launch { apres(tenter(reussite, geste)) }
     }
 
-    /** La chaîne d'une ressource, pour une phrase dite hors composition. */
-    fun texte(@StringRes id: Int): String = ressources.getString(id)
+    /** Le même, attendu : rend `true` si le serveur l'a retenu (le fil garde sinon la saisie). */
+    suspend fun tenter(@StringRes reussite: Int, geste: suspend () -> String?): Boolean = try {
+        avis.dire(geste() ?: ressources.getString(reussite))
+        true
+    } catch (e: ErreurService) {
+        avis.dire(e.phrase(ressources), TonAvis.Erreur)
+        false
+    }
 }
 
 @Composable
@@ -48,7 +46,3 @@ fun rememberGestes(avis: AvisDuGeste): GestesCommunaute {
     val portee = rememberCoroutineScope()
     return remember(avis, ressources, portee) { GestesCommunaute(avis, ressources, portee) }
 }
-
-/** La phrase d'une erreur hors composition : celle du serveur s'il en donne une. */
-fun ErreurService.texte(ressources: Resources): String =
-    (this as? ErreurService.Refus)?.phraseServie ?: ressources.getString(phraseRes)

@@ -51,17 +51,17 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Chargement
+import fr.coprofirst.app.commun.annuaire.Annuaire
+import fr.coprofirst.app.commun.annuaire.CarteContact
+import fr.coprofirst.app.commun.annuaire.Coordonnees
+import fr.coprofirst.app.commun.annuaire.medaillonsDuConseil
+import fr.coprofirst.app.commun.annuaire.medaillonsDuSyndic
 import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.texte.TexteDuSite
 import fr.coprofirst.app.navigation.ContexteDeMenu
 import fr.coprofirst.app.session.SessionOuverte
 
-/** Les repères des tests d'interface : les identifiants d'accessibilité de l'iOS. */
-object ReperesAnnuaire {
-    const val APPELER = "annuaire.appeler"
-    const val COURRIEL = "annuaire.courriel"
-}
 
 /** Où l'annuaire s'ouvre : en tête, ou sur le syndic (« Syndic » de la Fiche). */
 enum class AncreAnnuaire { Syndic }
