@@ -25,6 +25,7 @@ import fr.coprofirst.app.commun.GestesDeSortie
 import fr.coprofirst.app.commun.PhraseAvis
 import fr.coprofirst.app.commun.StockageApparence
 import fr.coprofirst.app.commun.TonAvis
+import fr.coprofirst.app.commun.attendreQue
 import fr.coprofirst.app.commun.onglets.CadreAOnglets
 import fr.coprofirst.app.commun.onglets.OngletsSurLeSite
 import fr.coprofirst.app.commun.onglets.ReperesOnglets
@@ -113,16 +114,16 @@ class AdminInterfaceTest {
         ecran.onNodeWithTag(ReperesOnglets.onglet("telemetry")).toucher()
         // La page bouge à l'arrivée du tableau (filtre, graphe) : on ne touche qu'une fois
         // le graphe affiché, puis jusqu'à voir la pastille retenue, essais bornés (#112).
-        attendre("le premier tableau") { existe(ReperesAdmin.GRAPHE) }
+        ecran.attendreQue("le premier tableau", contexte = vuesDemandees) { existe(ReperesAdmin.GRAPHE) }
         toucherJusquA("la pastille « Mois » retenue", ReperesAdmin.vue(PorteeTelemetrie.Mois)) {
             ecran.onAllNodes(hasTestTag(ReperesAdmin.vue(PorteeTelemetrie.Mois)) and isSelected()).fetchSemanticsNodes().isNotEmpty()
         }
-        attendre("la relecture « Mois »") { service.portees.lastOrNull() == PorteeTelemetrie.Mois && existe(ReperesAdmin.GRAPHE) }
+        ecran.attendreQue("la relecture « Mois »", contexte = vuesDemandees) { service.portees.lastOrNull() == PorteeTelemetrie.Mois && existe(ReperesAdmin.GRAPHE) }
         // Le filtre est une bascule : on juge l'écran (activé), pas la relecture, pour ne pas le rebasculer.
         toucherJusquA("le filtre activé", ReperesAdmin.FILTRE) {
             ecran.onAllNodes(hasTestTag(ReperesAdmin.FILTRE) and isOn()).fetchSemanticsNodes().isNotEmpty()
         }
-        attendre("la relecture sans le gestionnaire") { service.sans.lastOrNull() == true }
+        ecran.attendreQue("la relecture sans le gestionnaire", contexte = vuesDemandees) { service.sans.lastOrNull() == true }
     }
 
     @Test
@@ -179,18 +180,11 @@ class AdminInterfaceTest {
             ecran.waitForIdle()
             if (runCatching { ecran.waitUntil(DELAI_MS / ESSAIS, vu) }.isSuccess) return
         }
-        attendre(quoi, vu)
+        ecran.attendreQue(quoi, contexte = vuesDemandees, condition = vu)
     }
 
-    /** Attendre, et sur un échec dire ce que l'écran montrait (le rapport de la CI le garde). */
-    private fun attendre(quoi: String, condition: () -> Boolean) {
-        try {
-            ecran.waitUntil(DELAI_MS, condition)
-        } catch (e: ComposeTimeoutException) {
-            val arbre = ecran.onRoot().printToString(maxDepth = Int.MAX_VALUE)
-            throw AssertionError("$quoi : non vu en $DELAI_MS ms ; vues demandées ${service.portees}\n$arbre", e)
-        }
-    }
+    /** Ce qu'un échec d'attente dit en plus de l'écran : les vues demandées au service. */
+    private val vuesDemandees = { "vues demandées ${service.portees}" }
 
     private companion object {
         /** L'émulateur de la CI est lent : le délai des autres tests d'interface. */

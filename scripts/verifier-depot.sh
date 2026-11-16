@@ -19,7 +19,8 @@
 #   7 ter. aucun HTML rendu par une vue web ou le lecteur HTML d'Android : TexteDuSite ;
 #   7 quater. aucune version écrite à la main (elle se déduit de git) ;
 #   7 quinquies. aucun hôte fictif sur un vrai domaine (exemple.fr…), libellés et API simulée (debug) compris ;
-#   7 sexies. aucun `performClick` dans les tests d'interface hors du geste commun ;
+#   7 sexies. aucun `performClick` dans les tests d'interface hors du geste commun, ni
+#      d'attente recopiée hors des attentes communes (#139) ;
 #   7 septies. la règle des tests d'interface est la v2 (junit4.v2), jamais la v1 ;
 #   8. un seul bouton plein, `BoutonPlein` (commun/Boutons.kt) ;
 #   9. les générateurs du build passent leurs tests (scripts/test_*.py) ;
@@ -208,6 +209,14 @@ CLIC_DIRECT='\.performClick\('
 autotest_motif "toucher hors du geste commun" "$CLIC_DIRECT" '        ecran.onNodeWithTag(r).performClick()' '        ecran.toucherTag(r)'
 interdire "$CLIC_DIRECT" "toucher écrit à la main dans un test d'interface — passer par toucher (commun/Gestes.kt)" \
   '^app/src/androidTest/java/fr/coprofirst/app/commun/Gestes\.kt$' '^app/src/androidTest/.*\.kt$'
+
+# Les tests d'interface ATTENDENT par les attentes communes (commun/Gestes.kt : attendre,
+# attendreTag, attendreTexte, attendreDisparition…, attendreQue) : 24 aides privées les
+# recopiaient — chacune son délai, son arbre fusionné ou non, son message (#139).
+ATTENTE_PRIVEE='private fun (attendre|disparait|disparu|absent)[A-Za-z]*\('
+autotest_motif "attente recopiée" "$ATTENTE_PRIVEE" '    private fun attendre(tag: String) = ecran.waitUntil(DELAI_MS) {' '        ecran.attendreTag(tag)'
+interdire "$ATTENTE_PRIVEE" "attente écrite à la main dans un test d'interface — passer par les attentes de commun/Gestes.kt" \
+  "" '^app/src/androidTest/.*\.kt$'
 
 # La règle des tests d'interface est la v2 (`junit4.v2.createComposeRule`) : ses effets
 # tournent sur un `StandardTestDispatcher`, au fil principal. La v1 (dépréciée) les menait

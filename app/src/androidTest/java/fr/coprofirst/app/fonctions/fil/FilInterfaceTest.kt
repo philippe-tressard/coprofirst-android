@@ -11,6 +11,9 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import fr.coprofirst.app.commun.attendreDescription
+import fr.coprofirst.app.commun.attendreTag
+import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.detail.sondage.ReperesSondage
 import fr.coprofirst.app.commun.fil.TextesFil
 import fr.coprofirst.app.commun.toucher
@@ -51,51 +54,38 @@ class FilInterfaceTest {
     @After
     fun fermer() = serveur.close()
 
-    private fun attendreTexte(texte: String) = ecran.waitUntil(DELAI_MS) {
-        ecran.onAllNodes(hasText(texte, substring = true)).fetchSemanticsNodes().isNotEmpty()
-    }
-
-    /** Une carte se lit d'un bloc : son texte est dans sa description (`TextesFil.carte`). */
-    private fun attendreCarte(texte: String) = ecran.waitUntil(DELAI_MS) {
-        ecran.onAllNodes(hasContentDescription(texte, substring = true)).fetchSemanticsNodes().isNotEmpty()
-    }
-
-    private fun attendre(tag: String) = ecran.waitUntil(DELAI_MS) {
-        ecran.onAllNodes(hasTestTag(tag)).fetchSemanticsNodes().isNotEmpty()
-    }
-
     /** Les cartes du jour, sous leur en-tête ; l'affaire s'ouvre par la porte (sa fiche, #16), le résumé aussi. */
     @Test
     fun leFilMontreSesCartes() {
-        attendre("fil.ticket_ouvert:41")
+        ecran.attendreTag("fil.ticket_ouvert:41")
         ecran.onNodeWithTag("fil.ticket_ouvert:41").assertIsDisplayed().assertHasClickAction()
-        attendreTexte("AUJOURD'HUI")
-        attendreCarte("Urgent, Fuite d'eau au plafond du parking")
-        attendreCarte("Lieu : Parking")
-        attendreCarte("Niveau -1, place 12.")
+        ecran.attendreTexte("AUJOURD'HUI")
+        ecran.attendreDescription("Urgent, Fuite d'eau au plafond du parking")
+        ecran.attendreDescription("Lieu : Parking")
+        ecran.attendreDescription("Niveau -1, place 12.")
         ecran.onNodeWithTag("fil.point_conseil:2").assertIsDisplayed().assertHasClickAction()
     }
 
     /** Un élément sans écran natif s'ouvre sur son résumé, avec « Voir sur le site ». */
     @Test
     fun leResumeSOuvreDUnToucher() {
-        attendre("fil.point_conseil:2")
+        ecran.attendreTag("fil.point_conseil:2")
         ecran.toucherTag("fil.point_conseil:2")
-        attendre(REPERE_RESUME)
-        attendreTexte("Ordre du jour : ascenseur, ravalement.")
-        attendreTexte("Voir sur le site")
+        ecran.attendreTag(REPERE_RESUME)
+        ecran.attendreTexte("Ordre du jour : ascenseur, ravalement.")
+        ecran.attendreTexte("Voir sur le site")
     }
 
     /** Une carte sondage pousse la fiche du sondage, comme l'iOS (`SondageView`) ; le retour la ferme. */
     @Test
     fun leSondageSOuvreSurSaFiche() {
-        attendre("fil.sondage_ouvert:3")
+        ecran.attendreTag("fil.sondage_ouvert:3")
         serveur.fixes["/api/sondages/3"] = SONDAGE
         serveur.repondre(404) // GET /auth/me, lu avec la fiche : sans compte, « Signaler » partout
         ecran.onNodeWithTag("fil.sondage_ouvert:3").assertHasClickAction().toucher()
-        attendre(ReperesSondage.QUESTION)
-        attendreTexte("Samedi 6 juin")
-        attendreTexte("Sondage") // le titre de la barre du haut
+        ecran.attendreTag(ReperesSondage.QUESTION)
+        ecran.attendreTexte("Samedi 6 juin")
+        ecran.attendreTexte("Sondage") // le titre de la barre du haut
         ecran.toucherDescription("Retour")
         ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(ReperesSondage.QUESTION)).fetchSemanticsNodes().isEmpty() }
     }

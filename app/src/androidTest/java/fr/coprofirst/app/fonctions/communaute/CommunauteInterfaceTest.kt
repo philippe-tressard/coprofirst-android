@@ -30,6 +30,8 @@ import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.commun.CibleSignalement
 import fr.coprofirst.app.commun.GestesDeSortie
 import fr.coprofirst.app.commun.StockageApparence
+import fr.coprofirst.app.commun.attendreTag
+import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.onglets.ReperesOnglets
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.navigation.ActionsDeclarees
@@ -148,14 +150,6 @@ class CommunauteInterfaceTest {
         return service
     }
 
-    private fun attendre(tag: String) = ecran.waitUntil(DELAI_MS) {
-        ecran.onAllNodes(hasTestTag(tag)).fetchSemanticsNodes().isNotEmpty()
-    }
-
-    private fun attendreTexte(texte: String) = ecran.waitUntil(DELAI_MS) {
-        ecran.onAllNodes(hasText(texte, substring = true)).fetchSemanticsNodes().isNotEmpty()
-    }
-
     private fun el(tag: String): SemanticsNodeInteraction = ecran.onNodeWithTag(tag)
 
     private fun rubrique(id: String) {
@@ -166,11 +160,11 @@ class CommunauteInterfaceTest {
     @Test
     fun laCommunauteSOuvreEtUneIdeeSeSoutient() {
         val service = ouvrir()
-        attendre(ReperesCommunaute.sondage(12))
+        ecran.attendreTag(ReperesCommunaute.sondage(12))
         el(ReperesCommunaute.SONDAGES_CREATION).assertIsDisplayed()
 
         rubrique("idees")
-        attendre(ReperesCommunaute.voter(5))
+        ecran.attendreTag(ReperesCommunaute.voter(5))
         el(ReperesCommunaute.voter(5)).assert(hasContentDescription("Voter pour cette idée", substring = true))
         ecran.toucherTag(ReperesCommunaute.voter(5))
         ecran.waitUntil(DELAI_MS) {
@@ -180,19 +174,19 @@ class CommunauteInterfaceTest {
         assertEquals(1, service.votes)
 
         ecran.toucherTag(ReperesCommunaute.idee(3))
-        attendreTexte("Excellente idée, je veux bien m'en occuper.")
+        ecran.attendreTexte("Excellente idée, je veux bien m'en occuper.")
         ecran.toucherTag(ReperesCommunaute.FERMER)
 
         rubrique("annonces")
-        attendre(ReperesCommunaute.annonce(21))
+        ecran.attendreTag(ReperesCommunaute.annonce(21))
         ecran.toucherTag(ReperesCommunaute.annonce(21))
-        attendre(ReperesCommunaute.ANNONCE_CONTACT)
+        ecran.attendreTag(ReperesCommunaute.ANNONCE_CONTACT)
         ecran.toucherTag(ReperesCommunaute.FERMER)
 
         rubrique("avis")
-        attendre(ReperesCommunaute.avis(4))
+        ecran.attendreTag(ReperesCommunaute.avis(4))
         ecran.toucherTag(ReperesCommunaute.CREER)
-        attendre(ReperesCommunaute.ENREGISTRER)
+        ecran.attendreTag(ReperesCommunaute.ENREGISTRER)
         el(ReperesCommunaute.ENREGISTRER).assertIsNotEnabled()
     }
 
@@ -200,7 +194,7 @@ class CommunauteInterfaceTest {
     @Test
     fun laCreationDUnSondageNeSeDitQuAQuiLePeut() {
         ouvrir(CommunauteSimulee(peutCreer = false))
-        attendre(ReperesCommunaute.sondage(12))
+        ecran.attendreTag(ReperesCommunaute.sondage(12))
         ecran.onAllNodes(hasTestTag(ReperesCommunaute.SONDAGES_CREATION)).fetchSemanticsNodes().let { assertEquals(0, it.size) }
     }
 
@@ -208,7 +202,7 @@ class CommunauteInterfaceTest {
     @Test
     fun unCompteSuspenduLitLeMotifDuServeur() {
         ouvrir(CommunauteSimulee(motif = "Votre accès est suspendu jusqu'au 20/11."))
-        attendreTexte("Votre accès est suspendu jusqu'au 20/11.")
+        ecran.attendreTexte("Votre accès est suspendu jusqu'au 20/11.")
         ecran.onAllNodes(hasTestTag(ReperesOnglets.onglet("idees"))).fetchSemanticsNodes().let { assertEquals(0, it.size) }
     }
 
@@ -217,9 +211,9 @@ class CommunauteInterfaceTest {
     fun uneIdeeSePropose() {
         val service = ouvrir()
         rubrique("idees")
-        attendre(ReperesCommunaute.CREER)
+        ecran.attendreTag(ReperesCommunaute.CREER)
         ecran.toucherTag(ReperesCommunaute.CREER)
-        attendre(ReperesCommunaute.ENREGISTRER)
+        ecran.attendreTag(ReperesCommunaute.ENREGISTRER)
         ecran.onNode(hasText("Titre")).performTextInput("Un abri à vélos")
         ecran.onNode(hasText("Description")).performTextInput("Couvert, près du local poubelles.")
         ecran.toucherTag(ReperesCommunaute.ENREGISTRER)
