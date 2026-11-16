@@ -206,7 +206,7 @@ Les textes de l'Espace conseil syndical (#24), écrits une fois — ceux du site
     <string name="espacecs_annuaire_annee_indication">ex. 2024</string>
     <string name="espacecs_annuaire_date_ag">Date de l\'AG</string>
     <string name="espacecs_annuaire_whatsapp">URL communauté WhatsApp</string>
-    <string name="espacecs_annuaire_whatsapp_indication">https://chat.whatsapp.com/...</string>
+    <string name="espacecs_annuaire_whatsapp_indication">https://chat.whatsapp.com/…</string>
     <string name="espacecs_annuaire_nom_syndic">Nom du syndic</string>
     <string name="espacecs_annuaire_nom_syndic_indication">ex. Cabinet Bertrand</string>
     <string name="espacecs_annuaire_nom_syndic_absent">Nom du syndic non renseigné</string>
