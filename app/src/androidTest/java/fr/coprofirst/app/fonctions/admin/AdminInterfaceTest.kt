@@ -3,9 +3,9 @@
 
 package fr.coprofirst.app.fonctions.admin
 
+import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
@@ -16,9 +16,9 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.printToString
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.printToString
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.api.modeles.IndicateursTelemetrie
 import fr.coprofirst.app.ThemeCoproFirst
@@ -28,6 +28,8 @@ import fr.coprofirst.app.commun.PhraseAvis
 import fr.coprofirst.app.commun.StockageApparence
 import fr.coprofirst.app.commun.TonAvis
 import fr.coprofirst.app.commun.amenerTag
+import fr.coprofirst.app.commun.attendreQue
+import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.onglets.CadreAOnglets
 import fr.coprofirst.app.commun.onglets.OngletsSurLeSite
 import fr.coprofirst.app.commun.onglets.ReperesOnglets
@@ -39,12 +41,12 @@ import fr.coprofirst.app.navigation.PagesParDefaut
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsParHote
+import java.time.Instant
+import java.util.concurrent.CopyOnWriteArrayList
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.time.Instant
-import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * Le Paramétrage à l'écran, comme l'iOS (`AdminUITests`) : chacun n'y ouvre que ce que son
@@ -116,16 +118,16 @@ class AdminInterfaceTest {
         ecran.onNodeWithTag(ReperesOnglets.onglet("telemetry")).toucher()
         // La page bouge à l'arrivée du tableau (filtre, graphe) : on ne touche qu'une fois
         // le graphe affiché, puis jusqu'à voir la pastille retenue, essais bornés (#112).
-        attendre("le premier tableau") { existe(ReperesAdmin.GRAPHE) }
+        ecran.attendreQue("le premier tableau", contexte = vuesDemandees) { existe(ReperesAdmin.GRAPHE) }
         toucherJusquA("la pastille « Mois » retenue", ReperesAdmin.vue(PorteeTelemetrie.Mois)) {
             ecran.onAllNodes(hasTestTag(ReperesAdmin.vue(PorteeTelemetrie.Mois)) and isSelected()).fetchSemanticsNodes().isNotEmpty()
         }
-        attendre("la relecture « Mois »") { service.portees.lastOrNull() == PorteeTelemetrie.Mois && existe(ReperesAdmin.GRAPHE) }
+        ecran.attendreQue("la relecture « Mois »", contexte = vuesDemandees) { service.portees.lastOrNull() == PorteeTelemetrie.Mois && existe(ReperesAdmin.GRAPHE) }
         // Le filtre est une bascule : on juge l'écran (activé), pas la relecture, pour ne pas le rebasculer.
         toucherJusquA("le filtre activé", ReperesAdmin.FILTRE) {
             ecran.onAllNodes(hasTestTag(ReperesAdmin.FILTRE) and isOn()).fetchSemanticsNodes().isNotEmpty()
         }
-        attendre("la relecture sans le gestionnaire") { service.sans.lastOrNull() == true }
+        ecran.attendreQue("la relecture sans le gestionnaire", contexte = vuesDemandees) { service.sans.lastOrNull() == true }
     }
 
     /** #127 : « Accès : site ou application » — une ligne par canal servi, et l'accès de chaque page. */
@@ -133,10 +135,10 @@ class AdminInterfaceTest {
     fun laTelemetrieDitLAccesSiteOuApplication() {
         ouvrir(administrateur)
         ecran.onNodeWithTag(ReperesOnglets.onglet("telemetry")).toucher()
-        attendre("le premier tableau") { existe(ReperesAdmin.GRAPHE) }
+        ecran.attendreQue("le premier tableau", contexte = vuesDemandees) { existe(ReperesAdmin.GRAPHE) }
         ecran.amenerTag(ReperesAdmin.acces("android")).assert(hasText("36 vues · 25 %", substring = true))
         ecran.amenerTag(ReperesAdmin.acces("web")).assert(hasText("18 utilisateurs", substring = true))
-        attendre("l'accès de la page") { ecran.onAllNodes(hasText("App Android\u00A018", substring = true)).fetchSemanticsNodes().isNotEmpty() }
+        ecran.attendreTexte("App Android\u00A018")
     }
 
     @Test
@@ -193,18 +195,11 @@ class AdminInterfaceTest {
             ecran.waitForIdle()
             if (runCatching { ecran.waitUntil(DELAI_MS / ESSAIS, vu) }.isSuccess) return
         }
-        attendre(quoi, vu)
+        ecran.attendreQue(quoi, contexte = vuesDemandees, condition = vu)
     }
 
-    /** Attendre, et sur un échec dire ce que l'écran montrait (le rapport de la CI le garde). */
-    private fun attendre(quoi: String, condition: () -> Boolean) {
-        try {
-            ecran.waitUntil(DELAI_MS, condition)
-        } catch (e: ComposeTimeoutException) {
-            val arbre = ecran.onRoot().printToString(maxDepth = Int.MAX_VALUE)
-            throw AssertionError("$quoi : non vu en $DELAI_MS ms ; vues demandées ${service.portees}\n$arbre", e)
-        }
-    }
+    /** Ce qu'un échec d'attente dit en plus de l'écran : les vues demandées au service. */
+    private val vuesDemandees = { "vues demandées ${service.portees}" }
 
     private companion object {
         /** L'émulateur de la CI est lent : le délai des autres tests d'interface. */

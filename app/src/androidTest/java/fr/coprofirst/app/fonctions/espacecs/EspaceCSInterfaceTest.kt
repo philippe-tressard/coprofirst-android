@@ -15,6 +15,9 @@ import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.commun.GestesDeSortie
 import fr.coprofirst.app.commun.StockageApparence
+import fr.coprofirst.app.commun.attendreDisparitionTag
+import fr.coprofirst.app.commun.attendreTag
+import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.onglets.ReperesOnglets
 import fr.coprofirst.app.commun.toucher
 import fr.coprofirst.app.commun.toucherTag
@@ -91,16 +94,6 @@ class EspaceCSInterfaceTest {
     @After
     fun fermer() = serveur.close()
 
-    private fun attendre(texte: String) = ecran.waitUntil(DELAI_MS) {
-        ecran.onAllNodes(hasText(texte, substring = true)).fetchSemanticsNodes().isNotEmpty()
-    }
-
-    private fun attendreRepere(repere: String) =
-        ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(repere)).fetchSemanticsNodes().isNotEmpty() }
-
-    private fun disparu(repere: String) =
-        ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(repere)).fetchSemanticsNodes().isEmpty() }
-
     /** Une pastille de choix : touchée par le geste commun, puis attendue retenue. */
     private fun retenir(repere: String) {
         val retenue = { ecran.onAllNodes(hasTestTag(repere) and isSelected()).fetchSemanticsNodes().isNotEmpty() }
@@ -111,62 +104,62 @@ class EspaceCSInterfaceTest {
     @Test
     fun lesSixOngletsDuSite() {
         listOf("validations", "badges", "reporting", "annonces-hall", "annuaire", "courriels").forEach {
-            attendreRepere(ReperesOnglets.onglet(it))
+            ecran.attendreTag(ReperesOnglets.onglet(it))
         }
     }
 
     @Test
     fun approuverUnNouvelArrivantPuisAccepterUneCommande() {
-        attendreRepere(ReperesValidations.compte(501))
-        attendreRepere(ReperesValidations.COMPTEUR_COMPTES)
+        ecran.attendreTag(ReperesValidations.compte(501))
+        ecran.attendreTag(ReperesValidations.COMPTEUR_COMPTES)
         ecran.toucherTag("${ReperesValidations.compte(501)}.approuver")
         ecran.toucherTag(ReperesValidations.NOUVEL_ARRIVANT)
-        attendre("Ancien résident")
+        ecran.attendreTexte("Ancien résident")
         ecran.toucherTag(ReperesValidations.VALIDATION_ENREGISTRER)
-        disparu(ReperesValidations.compte(501))
-        attendre("Compte activé — 1 lot rattaché.")
+        ecran.attendreDisparitionTag(ReperesValidations.compte(501))
+        ecran.attendreTexte("Compte activé — 1 lot rattaché.")
         assertTrue(residence.recues.any { it.startsWith("POST /api/admin/utilisateurs/501/accueil-arrivant") })
 
         ecran.toucherTag("${ReperesValidations.commande(71)}.approuver")
         ecran.toucherTag(ReperesValidations.COMMANDE_CODES)
         ecran.onNodeWithTag(ReperesValidations.COMMANDE_CODES).performTextInput("4521")
         ecran.toucherTag(ReperesValidations.COMMANDE_ACCEPTER)
-        disparu(ReperesValidations.commande(71))
-        attendre("Commande approuvée")
+        ecran.attendreDisparitionTag(ReperesValidations.commande(71))
+        ecran.attendreTexte("Commande approuvée")
         assertTrue(residence.recues.any { it.contains("/admin/commandes-acces/71/traiter") && it.contains("\"4521\"") })
     }
 
     @Test
     fun rejeterUnCompte() {
         ecran.toucherTag("${ReperesValidations.compte(503)}.rejeter")
-        attendre("Rejeter le compte de Alix MODÈLE ?")
+        ecran.attendreTexte("Rejeter le compte de Alix MODÈLE ?")
         ecran.toucherTag(ReperesValidations.REJET_CONFIRMER)
-        disparu(ReperesValidations.compte(503))
-        attendre("Compte rejeté")
+        ecran.attendreDisparitionTag(ReperesValidations.compte(503))
+        ecran.attendreTexte("Compte rejeté")
     }
 
     @Test
     fun chercherUnBadge() {
         ecran.toucherTag(ReperesOnglets.onglet("badges"))
-        attendreRepere(ReperesEspaceCS.badge("vigik-1"))
-        attendre("5 badges")
+        ecran.attendreTag(ReperesEspaceCS.badge("vigik-1"))
+        ecran.attendreTexte("5 badges")
         ecran.toucherTag(ReperesEspaceCS.BADGES_RECHERCHE)
         ecran.onNodeWithTag(ReperesEspaceCS.BADGES_RECHERCHE).performTextInput("celeste")
-        attendreRepere(ReperesEspaceCS.badge("vigik-4"))
-        disparu(ReperesEspaceCS.badge("vigik-1"))
-        attendre("1 badge sur 5")
+        ecran.attendreTag(ReperesEspaceCS.badge("vigik-4"))
+        ecran.attendreDisparitionTag(ReperesEspaceCS.badge("vigik-1"))
+        ecran.attendreTexte("1 badge sur 5")
     }
 
     @Test
     fun unCourrielSeDeplie() {
         ecran.toucherTag(ReperesOnglets.onglet("courriels"))
-        attendre("Les 50 derniers messages")
+        ecran.attendreTexte("Les 50 derniers messages")
         ecran.toucherTag(ReperesEspaceCS.courriel(40))
-        attendre("Aucune affaire ne porte le numéro TK-E000066")
-        attendre("Camille Essai · envoyé le")
+        ecran.attendreTexte("Aucune affaire ne porte le numéro TK-E000066")
+        ecran.attendreTexte("Camille Essai · envoyé le")
         ecran.toucherTag(ReperesEspaceCS.courriel(41))
-        attendreRepere(ReperesEspaceCS.courrielAffaire(41))
-        attendre("Affaire #TK-A00012")
+        ecran.attendreTag(ReperesEspaceCS.courrielAffaire(41))
+        ecran.attendreTexte("Affaire #TK-A00012")
     }
 
     @Test
@@ -186,50 +179,50 @@ class EspaceCSInterfaceTest {
         ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_TITRE).performTextInput("Ascenseur à l'arrêt")
         ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_MESSAGE).performTextInput("Lundi matin.")
         ecran.toucherTag(ReperesEspaceCS.NOUVELLE_CREER)
-        attendre("Annonce A5 créée et envoyée à 1 membre du CS")
+        ecran.attendreTexte("Annonce A5 créée et envoyée à 1 membre du CS")
         val creation = synchronized(residence) { residence.recues.toList() }.single { it.startsWith("POST /api/annonces-hall ") }
         assertTrue(creation, creation.contains("\"a5\"") && creation.contains("\"perimetre_cible\":[\"bat_a\"]"))
 
         // Les archives : en cours puis archivées ; le menu « … » range une affiche.
-        attendreRepere(ReperesEspaceCS.annonce(2))
+        ecran.attendreTag(ReperesEspaceCS.annonce(2))
         ecran.toucherTag(ReperesEspaceCS.annonceGestes(5))
         ecran.toucherTag(ReperesEspaceCS.ANNONCE_ARCHIVER)
-        attendre("Annonce archivée")
+        ecran.attendreTexte("Annonce archivée")
         assertTrue(residence.recues.any { it.startsWith("PATCH /api/annonces-hall/5") })
     }
 
     @Test
     fun leReportingEtSesModes() {
         ecran.toucherTag(ReperesOnglets.onglet("reporting"))
-        attendreRepere(ReperesEspaceCS.REPORTING_TOTAL)
-        attendre("affaires non fermées")
-        attendreRepere(ReperesEspaceCS.reportingAffaire(12))
-        attendre("Nouveau message depuis le dernier résumé")
+        ecran.attendreTag(ReperesEspaceCS.REPORTING_TOTAL)
+        ecran.attendreTexte("affaires non fermées")
+        ecran.attendreTag(ReperesEspaceCS.reportingAffaire(12))
+        ecran.attendreTexte("Nouveau message depuis le dernier résumé")
         ecran.toucherTag(ReperesEspaceCS.reportingMode("entretien"))
-        attendre("À venir")
+        ecran.attendreTexte("À venir")
         assertTrue(residence.recues.any { it.startsWith("GET /api/suivi-affaires?mode=entretien") })
         ecran.toucherTag(ReperesEspaceCS.reportingMode("renouvellements"))
-        attendreRepere(ReperesEspaceCS.RENOUVELLEMENTS_PREAVIS)
-        attendre("Préavis en cours")
-        attendreRepere(ReperesEspaceCS.renouvellementDiagnostic(1))
+        ecran.attendreTag(ReperesEspaceCS.RENOUVELLEMENTS_PREAVIS)
+        ecran.attendreTexte("Préavis en cours")
+        ecran.attendreTag(ReperesEspaceCS.renouvellementDiagnostic(1))
     }
 
     /** Annuaire CS & Syndic : les fiches, l'en-tête du conseil en feuille, puis un interlocuteur monté d'un rang. */
     @Test
     fun lAnnuaireDuConseilEtDuSyndic() {
         ecran.toucherTag(ReperesOnglets.onglet("annuaire"))
-        attendreRepere(ReperesEspaceCS.annuaireConseil(0))
-        attendre("Camille EXEMPLE")
+        ecran.attendreTag(ReperesEspaceCS.annuaireConseil(0))
+        ecran.attendreTexte("Camille EXEMPLE")
         ecran.toucherTag(ReperesEspaceCS.ANNUAIRE_CONSEIL_MODIFIER)
-        attendreRepere(ReperesEspaceCS.FEUILLE_ENTETE_CONSEIL)
+        ecran.attendreTag(ReperesEspaceCS.FEUILLE_ENTETE_CONSEIL)
         ecran.onNodeWithTag("${ReperesEspaceCS.FEUILLE_ENTETE_CONSEIL}.enregistrer").toucher()
-        disparu(ReperesEspaceCS.FEUILLE_ENTETE_CONSEIL)
-        attendre("Conseil Syndical enregistré")
+        ecran.attendreDisparitionTag(ReperesEspaceCS.FEUILLE_ENTETE_CONSEIL)
+        ecran.attendreTexte("Conseil Syndical enregistré")
         assertTrue(residence.recues.any { it.startsWith("PUT /api/admin/annuaire/cs") && it.contains("\"ag_annee\":2026") })
 
         ecran.toucherTag("${ReperesEspaceCS.annuaireSyndic(1)}.gestes")
         ecran.toucherTag("${ReperesEspaceCS.annuaireSyndic(1)}.monter")
-        attendre("Syndic enregistré")
+        ecran.attendreTexte("Syndic enregistré")
         assertTrue(residence.recues.any { it.startsWith("PUT /api/admin/annuaire/syndic") && it.indexOf("Sacha") < it.indexOf("Dominique") })
     }
 

@@ -10,6 +10,7 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.commun.amenerTag
+import fr.coprofirst.app.commun.attendreTag
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.delay
@@ -41,16 +42,12 @@ class FaqInterfaceTest {
         ThemeCoproFirst { EcranFaq(FaqSimulee(redige), LiensFaq.depuis("/faq", "https://residence.test")) }
     }
 
-    private fun attendre(tag: String) = ecran.waitUntil(DELAI_MS) {
-        ecran.onAllNodes(hasTestTag(tag)).fetchSemanticsNodes().isNotEmpty()
-    }
-
     private fun compte(tag: String) = ecran.onAllNodes(hasTestTag(tag)).fetchSemanticsNodes().size
 
     @Test
     fun uneQuestionSeDeplieEtLaRedactionSeDitAQuiLePeut() {
         ouvrir(redige = true)
-        attendre(ReperesFaq.question(2))
+        ecran.attendreTag(ReperesFaq.question(2))
         ecran.toucherTag(ReperesFaq.question(2))
         ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasText("Pas de gravats", substring = true)).fetchSemanticsNodes().isNotEmpty() }
         ecran.amenerTag(ReperesFaq.REDACTION).assertIsDisplayed()
@@ -60,8 +57,8 @@ class FaqInterfaceTest {
     @Test
     fun sansDroitServiLaRedactionNeSeDitPas() {
         ouvrir(redige = null)
-        attendre(ReperesFaq.question(1))
-        attendre(ReperesFaq.MANUEL)
+        ecran.attendreTag(ReperesFaq.question(1))
+        ecran.attendreTag(ReperesFaq.MANUEL)
         assertEquals(0, compte(ReperesFaq.REDACTION))
     }
 

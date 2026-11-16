@@ -15,6 +15,7 @@ import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.commun.amenerTag
+import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.commun.toucherTexte
 import fr.coprofirst.app.entree.NavigationEntree
@@ -111,24 +112,20 @@ class ProfilInterfaceTest {
         val parcours = serveur.parcours()
         ecran.setContent { NavigationEntree(serveur.apparence(), parcours) }
         ecran.entrerDansLaResidence("residence.exemple.test", "Les Glycines")
-        attendre("Plus")
+        ecran.attendreTexte("Plus")
         ecran.toucherTexte("Plus")
         ecran.toucherTag("plus.profil")
-        attendre("Camille EXEMPLE")
+        ecran.attendreTexte("Camille EXEMPLE")
     }
 
     @After
     fun fermer() = serveur.close()
 
-    private fun attendre(texte: String) = ecran.waitUntil(DELAI_MS) {
-        ecran.onAllNodes(hasText(texte, substring = true)).fetchSemanticsNodes().isNotEmpty()
-    }
-
     @Test
     fun leProfilDitLaResidenceEtLeStatutServis() {
-        attendre("Bât. A, T3, 2ème")
-        attendre("Copropriétaire résident")
-        attendre("Conseil syndical")
+        ecran.attendreTexte("Bât. A, T3, 2ème")
+        ecran.attendreTexte("Copropriétaire résident")
+        ecran.attendreTexte("Conseil syndical")
     }
 
     /** Le thème de l'appareil se choisit au Profil ; la sortie y est, et se confirme. */
@@ -137,7 +134,7 @@ class ProfilInterfaceTest {
         ecran.toucherTag("profil.theme.sombre")
         ecran.toucherTag("profil.deconnecter")
         ecran.toucherTag("sortie.confirmer")
-        attendre("Connectez-vous à votre espace")
+        ecran.attendreTexte("Connectez-vous à votre espace")
     }
 
     @Test
@@ -145,27 +142,27 @@ class ProfilInterfaceTest {
         ecran.toucherTag("profil.suppression.demander")
 
         // La feuille dit ce qui sera effacé (phrases servies) avant de demander quoi que ce soit.
-        attendre("Ancien résident")
+        ecran.attendreTexte("Ancien résident")
         ecran.onNodeWithTag("suppression.confirmer").assertIsNotEnabled()
 
         // Un mot de passe refusé par le serveur : sa phrase, la feuille reste.
         val motDePasse = ecran.onNodeWithTag("suppression.motDePasse")
         motDePasse.performTextInput("refuse")
         ecran.toucherTag("suppression.confirmer")
-        attendre("Mot de passe incorrect.")
+        ecran.attendreTexte("Mot de passe incorrect.")
 
         // Le bon mot de passe : la demande part, la feuille se ferme, on peut la retirer.
         motDePasse.performTextClearance()
         motDePasse.performTextInput("secret")
         ecran.toucherTag("suppression.confirmer")
-        attendre("Un accusé de réception vous est adressé.")
+        ecran.attendreTexte("Un accusé de réception vous est adressé.")
         ecran.amenerTag("profil.suppression.retirer")
         assertTrue(ecran.onAllNodes(hasTestTag("profil.suppression.demander")).fetchSemanticsNodes().isEmpty())
         assertTrue("le mot de passe est parti, au serveur local seul", motsDePasseRecus.size == 2)
 
         // Retirée : le compte est conservé, le geste revient.
         ecran.toucherTag("profil.suppression.retirer")
-        attendre("votre compte est conservé")
+        ecran.attendreTexte("votre compte est conservé")
         ecran.amenerTag("profil.suppression.demander")
     }
 
@@ -175,7 +172,7 @@ class ProfilInterfaceTest {
         ecran.toucherTag("profil.motDePasse")
         ecran.onNodeWithTag("profil.motDePasse.actuel").performTextInput("ancien")
         ecran.onNodeWithTag("profil.motDePasse.nouveau").performTextInput("court")
-        attendre("caractères au minimum")
+        ecran.attendreTexte("caractères au minimum")
         ecran.onNodeWithTag("profil.motDePasse.modifier").assertIsNotEnabled()
     }
 
@@ -194,11 +191,11 @@ class ProfilInterfaceTest {
     @Test
     fun ceQueJAfficheSeRegleEtSEnregistre() {
         ecran.toucherTag(ReperesPreferences.OUVRIR)
-        attendre("N'afficher que les contenus")
+        ecran.attendreTexte("N'afficher que les contenus")
         assertTrue(ecran.onAllNodesWithText("réglage par défaut").fetchSemanticsNodes().size == 3)
         ecran.toucherTag(ReperesPreferences.cle("mon_batiment_mail"))
         ecran.toucherTag(ReperesPreferences.ENREGISTRER)
-        attendre("Préférences enregistrées")
+        ecran.attendreTexte("Préférences enregistrées")
         val envoye = synchronized(saisies) { saisies.last() }.replace(" ", "")
         assertTrue(envoye, "mon_batiment_mail\\\":false" in envoye)
         assertTrue(envoye, "autres_batiments_mail\\\":true" in envoye)
@@ -227,7 +224,7 @@ class ProfilInterfaceTest {
         ecran.toucherTag("profil.deconnecter")
         ecran.toucherTag("sortie.confirmer")
         ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(REPERE_AVIS_SORTIE)).fetchSemanticsNodes().isNotEmpty() }
-        attendre("Le serveur n'a pas répondu")
+        ecran.attendreTexte("Le serveur n'a pas répondu")
     }
 
     private companion object {

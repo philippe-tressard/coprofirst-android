@@ -13,6 +13,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.commun.amenerTag
 import fr.coprofirst.app.commun.annuaire.ReperesContact
+import fr.coprofirst.app.commun.attendreTag
+import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.toucher
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.fonctions.annuaire.AnnuaireSimule
@@ -39,24 +41,17 @@ class ResidenceInterfaceTest {
         ThemeCoproFirst { EcranMaResidence(residence, AnnuaireSimule(), droits, null) }
     }
 
-    private fun attendre(texte: String) = ecran.waitUntil(DELAI_MS) {
-        ecran.onAllNodes(hasText(texte, substring = true)).fetchSemanticsNodes().isNotEmpty()
-    }
-
-    private fun attendreRepere(repere: String) =
-        ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(repere)).fetchSemanticsNodes().isNotEmpty() }
-
     @Test
     fun lesTroisOngletsDeLaResidence() {
         ouvrir()
-        attendre("AA0-000-000") // la Fiche s'ouvre d'abord
+        ecran.attendreTexte("AA0-000-000") // la Fiche s'ouvre d'abord
 
         ecran.toucherTag("onglet.carnet")
-        attendre("Révision annuelle de la chaudière")
-        attendre("1 visite attendue")
+        ecran.attendreTexte("Révision annuelle de la chaudière")
+        ecran.attendreTexte("1 visite attendue")
 
         ecran.toucherTag("onglet.reglement")
-        attendre("Puis-je installer une climatisation sur mon balcon ?")
+        ecran.attendreTexte("Puis-je installer une climatisation sur mon balcon ?")
         ecran.amenerTag(ReperesResidence.POSER).assertIsNotEnabled() // question vide : rien à poser
     }
 
@@ -64,13 +59,13 @@ class ResidenceInterfaceTest {
     fun leSyndicDeLaFicheOuvreLAnnuaire() {
         ouvrir()
         ecran.toucherTag(ReperesResidence.SYNDIC)
-        attendre("Gestionnaire de copropriété")
+        ecran.attendreTexte("Gestionnaire de copropriété")
         assertTrue(
             "le numéro du gestionnaire s'appelle d'un toucher",
             ecran.onAllNodes(hasTestTag(ReperesContact.APPELER).and(hasText("01 00 00 00 01"))).fetchSemanticsNodes().isNotEmpty(),
         )
         ecran.toucherTag(ReperesResidence.FERMER)
-        attendre("AA0-000-000")
+        ecran.attendreTexte("AA0-000-000")
     }
 
     @Test
@@ -78,12 +73,12 @@ class ResidenceInterfaceTest {
         ouvrir()
         ecran.toucherTag("onglet.reglement")
         ecran.toucherTag(ReperesResidence.question(1))
-        attendreRepere(ReperesResidence.FONDEMENTS)
-        attendre("Renvoi sans extrait")
+        ecran.attendreTag(ReperesResidence.FONDEMENTS)
+        ecran.attendreTexte("Renvoi sans extrait")
         assertTrue("sections pliées", ecran.onAllNodes(hasTestTag(ReperesResidence.extrait("AG1"))).fetchSemanticsNodes().isEmpty())
         ecran.toucherTag(ReperesResidence.fondement("AG1"))
-        attendreRepere(ReperesResidence.extrait("AG1"))
-        attendre("Résolution 12")
+        ecran.attendreTag(ReperesResidence.extrait("AG1"))
+        ecran.attendreTexte("Résolution 12")
     }
 
     @Test
@@ -92,14 +87,14 @@ class ResidenceInterfaceTest {
         ecran.toucherTag("onglet.reglement")
         ecran.amenerTag(ReperesResidence.QUESTION).performTextInput("Puis-je fermer mon balcon ?")
         ecran.amenerTag(ReperesResidence.POSER).assertIsEnabled().toucher()
-        attendreRepere(ReperesResidence.question(99))
+        ecran.attendreTag(ReperesResidence.question(99))
         assertEquals(listOf("Puis-je fermer mon balcon ?"), residence.posees)
     }
 
     @Test
     fun leLocataireNeVoitQueLaFiche() {
         ouvrir(DroitsOnglet(locataire = true))
-        attendre("AA0-000-000")
+        ecran.attendreTexte("AA0-000-000")
         assertTrue("une seule page : pas de barre", ecran.onAllNodes(hasTestTag("onglet.fiche")).fetchSemanticsNodes().isEmpty())
         assertTrue("ni les comptes-rendus d'AG", ecran.onAllNodes(hasText("Comptes-rendus", substring = true)).fetchSemanticsNodes().isEmpty())
     }
@@ -107,10 +102,10 @@ class ResidenceInterfaceTest {
     @Test
     fun lAnnuaireGroupeLeConseilParBatiment() {
         ecran.setContent { ThemeCoproFirst { EcranAnnuaire(AnnuaireSimule(), null) } }
-        attendre("Voté en AG 2026 - 12 juin 2026")
-        attendre("BÂTIMENT A")
-        attendre("SANS BÂTIMENT")
-        attendre("Président du Conseil Syndical")
+        ecran.attendreTexte("Voté en AG 2026 - 12 juin 2026")
+        ecran.attendreTexte("BÂTIMENT A")
+        ecran.attendreTexte("SANS BÂTIMENT")
+        ecran.attendreTexte("Président du Conseil Syndical")
     }
 
     private companion object {
