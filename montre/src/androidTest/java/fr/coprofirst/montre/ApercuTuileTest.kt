@@ -63,6 +63,9 @@ class ApercuTuileTest {
                 factory = { ctx ->
                     FrameLayout(ctx).also { vue ->
                         cadre = vue
+                        // Une tuile se peint sur le NOIR du système (aucune couleur de la charte) :
+                        // sans lui, la capture prend le fond clair de l'activité du test.
+                        vue.setBackgroundResource(android.R.color.black)
                         TileRenderer(ctx, ContextCompat.getMainExecutor(ctx)) {}.inflateAsync(mise, TuileCloche.ressources(), vue)
                     }
                 },
