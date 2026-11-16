@@ -42,6 +42,7 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.AvisDuGeste
+import fr.coprofirst.app.commun.ConstantesDuServeur
 import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.texte.TexteDuSite
 import kotlin.math.roundToInt
@@ -49,7 +50,7 @@ import kotlin.math.roundToInt
 /**
  * « Donner mon avis » — ou « Modifier l'avis » quand le compte en a déjà un (`existant`).
  * Sous le seuil, ce qui a manqué ; à partir de l'autre, l'accord de diffusion (sans réponse
- * par défaut, comme sur le site). Les seuils sont ceux du serveur (`TablesCommunaute`).
+ * par défaut, comme sur le site). Les seuils sont ceux du serveur (`ConstantesDuServeur`).
  */
 @Composable
 fun FormulaireAvis(avis: AvisDuGeste, service: ServiceCommunaute, existant: AvisRead?, fermer: () -> Unit, fait: () -> Unit) {
@@ -69,7 +70,7 @@ fun FormulaireAvis(avis: AvisDuGeste, service: ServiceCommunaute, existant: Avis
         ChampCommunaute(R.string.communaute_titre, saisie.titre, { saisie = saisie.copy(titre = it) }, R.string.avis_titre_indication)
         Libelle(stringResource(R.string.avis_note), Modifier.semantics { heading() })
         ChoixEtoiles(saisie.note) { saisie = saisie.copy(note = it) }
-        Etiquette(stringResource(R.string.avis_note_explication, TablesCommunaute.NOTE_PUBLIABLE))
+        Etiquette(stringResource(R.string.avis_note_explication, ConstantesDuServeur.NOTE_PUBLIABLE))
         if (ReglesCommunaute.demandeRemarque(saisie.note)) {
             ChampCommunaute(
                 R.string.avis_ce_qui_vous_a_manque, saisie.remarque, { saisie = saisie.copy(remarque = it) },
@@ -101,7 +102,7 @@ private fun ChoixEtoiles(note: Int, choisir: (Int) -> Unit) {
     val couleurs = LocalCouleurs.current
     val libelle = stringResource(R.string.avis_note)
     val valeur = if (note == 0) stringResource(R.string.avis_note_aucune) else stringResource(R.string.avis_note_valeur, note)
-    val bornes = TablesCommunaute.NOTE_MIN..TablesCommunaute.NOTE_MAX
+    val bornes = ConstantesDuServeur.NOTE_MIN..ConstantesDuServeur.NOTE_MAX
     Row(
         Modifier.semantics(mergeDescendants = true) {
             contentDescription = libelle

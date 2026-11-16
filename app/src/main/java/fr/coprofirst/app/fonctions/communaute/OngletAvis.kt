@@ -45,6 +45,7 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.Chargement
+import fr.coprofirst.app.commun.ConstantesDuServeur
 import fr.coprofirst.app.commun.FlowCapsules
 import fr.coprofirst.app.commun.Pastille
 import fr.coprofirst.app.commun.PastilleTeinte
@@ -110,7 +111,7 @@ private fun Avis(liste: AvisListe, contexte: ContexteOnglet, service: ServiceCom
         )
         RangeeFiltres {
             Pastille(stringResource(R.string.avis_toutes), note == null) { note = null }
-            (TablesCommunaute.NOTE_MAX downTo TablesCommunaute.NOTE_MIN).forEach { valeur ->
+            (ConstantesDuServeur.NOTE_MAX downTo ConstantesDuServeur.NOTE_MIN).forEach { valeur ->
                 Pastille(stringResource(R.string.avis_filtre_note, valeur), note == valeur) { note = valeur }
             }
         }

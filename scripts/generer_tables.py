@@ -59,9 +59,6 @@ JETON = re.compile(r"^var\(--([a-z][a-z0-9-]*)\)$")
 # porte (`teintes` de PastilleTeinte.kt) — la table de l'iOS (`BADGE_PAR_COULEUR`, affaires.py).
 BADGE_PAR_COULEUR = {"info": "badge-blue", "violet": "badge-purple", "orange": "badge-orange",
                      "success": "badge-green", "danger": "badge-red"}
-# Les schémas d'un lien touchable : SCHEMAS_URL de coprofirst (api/app/utils/html_sur.py),
-# non publiés dans tables-clients.json — à générer quand coprofirst#2757 les publiera.
-SCHEMAS_DE_LIEN = ("http", "https", "mailto")
 # Les pièces jointes comme le site les range et les nomme : `EXTENSIONS_IMAGE` (dépliée :
 # `jpe?g` → jpeg, jpg ; `tiff?` → tif, tiff), `PREFIXE_UUID` et les familles de
 # `typeFichier` de coprofirst (front/src/lib/fichiers.ts), NON publiés dans
@@ -220,16 +217,13 @@ def kotlin_balises(tables: dict, source: str) -> str:
         raise TableInattendue("attributsAdmis sans href — un lien ne se lirait plus")
     return "\n".join([
         "// GÉNÉRÉ par scripts/generer_tables.py — NE PAS MODIFIER À LA MAIN.",
-        f"// Source : {source} (balisesAdmises, attributsAdmis) ; schémas : SCHEMAS_DE_LIEN du générateur.",
+        f"// Source : {source} (balisesAdmises, attributsAdmis) ; schémas : ConstantesDuServeur.",
         f"package {PAQUET_TEXTE}",
         "",
         "/** La liste blanche du texte riche du site : ce que l'app rend, et rien d'autre. */",
         "object BalisesDuSite {",
         f"    val balises: Set<String> = {ensemble(balises)}",
         f"    val attributs: Set<String> = {ensemble(attributs)}",
-        "",
-        "    /** Les schémas d'un lien touchable (`SCHEMAS_URL`, appliqué par l'API). */",
-        f"    val schemasDeLien: Set<String> = {ensemble(list(SCHEMAS_DE_LIEN))}",
         "}",
         "",
     ])
@@ -367,7 +361,7 @@ def jetons_portes(tables: dict) -> tuple[set[str], object]:
     gc = _charte()
     try:
         palettes = gc.cascade(tables)
-    except (KeyError, TypeError, AttributeError) as e:
+    except (KeyError, TypeError, AttributeError, ValueError) as e:
         raise TableInattendue(f"jetons de la charte illisibles ({e})") from e
     gardes, _ = gc.portables(palettes[gc.CHARTE][0], palettes)
     return set(gardes), gc

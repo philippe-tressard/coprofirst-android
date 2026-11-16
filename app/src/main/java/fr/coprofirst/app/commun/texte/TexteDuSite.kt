@@ -4,6 +4,7 @@
 package fr.coprofirst.app.commun.texte
 
 import androidx.compose.ui.text.AnnotatedString
+import fr.coprofirst.app.commun.ConstantesDuServeur
 import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
 import java.net.URI
@@ -25,7 +26,7 @@ import java.net.URISyntaxException
  *   pour un texte qui ne peut être qu'un `Text`.
  *
  * Rien ne se charge : une image devient son texte de remplacement. Un lien n'est
- * touchable que s'il est absolu et de schéma `BalisesDuSite.schemasDeLien` (`lienSur`).
+ * touchable que s'il est absolu et de schéma `ConstantesDuServeur.schemasDeLien` (`lienSur`).
  * `styleLien` : la couleur des liens, posée par l'appelant (`TexteRiche` prend `primary`).
  */
 object TexteDuSite {
@@ -99,7 +100,7 @@ object TexteDuSite {
             return null
         }
         val schema = uri.scheme?.lowercase() ?: return null
-        if (schema !in BalisesDuSite.schemasDeLien) return null
+        if (schema !in ConstantesDuServeur.schemasDeLien) return null
         // Un hôte que `URI` ne range pas en nom de serveur (souligné, accent) se lit dans l'autorité.
         val hote = uri.host ?: uri.rawAuthority?.substringAfterLast('@')?.substringBefore(':')
         if (schema != "mailto" && hote.isNullOrEmpty()) return null

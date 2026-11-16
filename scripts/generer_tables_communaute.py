@@ -10,9 +10,8 @@ dans `tables-clients.json` — `statutsIdee` (`idees.ts`), `typesAnnonce`,
 `categoriesAnnonce`, `trisAnnonce`, `statutsAnnonce` et `teinteStatutAnnonce`
 (`annonces.ts`).
 
-Les seuils de la note d'un avis (`api/app/utils/avis.py`) ne sont pas encore publiés :
-ils sont TENUS ici, aux valeurs de l'iOS, tant que `seuilsAvis` manque à la table
-(coprofirst#2772) ; publiés, ils priment.
+Les seuils de la note d'un avis sont des constantes du serveur
+(`constantes-clients.json` → `ConstantesDuServeur`, scripts/generer_constantes.py, #74).
 
 Une table qui change de forme : la génération s'arrête.
 
@@ -30,8 +29,6 @@ from generer_tables import TableInattendue, chaine  # noqa: E402
 
 PAQUET = "fr.coprofirst.app.fonctions.communaute"
 
-# Les seuils de l'avis, tenus aux valeurs de l'iOS tant que coprofirst ne les publie pas.
-SEUILS_AVIS_TENUS = {"noteMin": 1, "noteMax": 5, "noteRemarque": 3, "notePubliable": 4}
 
 
 def valeur(tables: dict, nom: str):
@@ -55,17 +52,6 @@ def codes(tables: dict, nom: str) -> list[tuple[str, str]]:
         raise TableInattendue(f"{nom} n'est pas une liste")
     return [(texte(e, ("val", "value"), nom), texte(e, ("label",), nom)) for e in entrees]
 
-
-def seuils(tables: dict) -> dict[str, int]:
-    publies = tables.get("seuilsAvis", {}).get("valeur")
-    if publies is None:
-        return dict(SEUILS_AVIS_TENUS)
-    if not isinstance(publies, dict) or set(publies) != set(SEUILS_AVIS_TENUS) \
-            or not all(isinstance(v, int) for v in publies.values()):
-        raise TableInattendue(f"seuilsAvis : forme inattendue ({publies})")
-    if not publies["noteMin"] < publies["noteRemarque"] <= publies["notePubliable"] <= publies["noteMax"]:
-        raise TableInattendue(f"seuilsAvis : seuils incohérents ({publies})")
-    return publies
 
 
 def liste_teintes(nom: str, entrees: list[tuple[str, str, str]], doc: str) -> list[str]:
@@ -92,11 +78,10 @@ def kotlin(tables: dict, source: str) -> str:
         if not isinstance(badge, str):
             raise TableInattendue(f"teinteStatutAnnonce : {code} sans teinte")
         annonces.append((code, libelle, badge))
-    s = seuils(tables)
     l = [
         "// GÉNÉRÉ par scripts/generer_tables_communaute.py — NE PAS MODIFIER À LA MAIN.",
         f"// Source : {source} (statutsIdee, typesAnnonce, categoriesAnnonce, trisAnnonce, statutsAnnonce,",
-        "// teinteStatutAnnonce, seuilsAvis).",
+        "// teinteStatutAnnonce).",
         f"package {PAQUET}",
         "",
         "import fr.coprofirst.app.commun.LibelleTeinte",
@@ -110,16 +95,7 @@ def kotlin(tables: dict, source: str) -> str:
     l += liste_codes("trisAnnonce", codes(tables, "trisAnnonce"), "Les tris des annonces (`TRIS_ANNONCE`) ; le premier par défaut.")
     l += liste_teintes("statutsAnnonce", annonces,
                        "Les états d'une annonce et leur teinte (`STATUTS_ANNONCE`, `TEINTE_STATUT_ANNONCE`).")
-    l += [
-        "    /** La note d'un avis et ses seuils, la règle du SERVEUR : sous `NOTE_REMARQUE`, ce qui a manqué ;",
-        "     *  à partir de `NOTE_PUBLIABLE`, l'accord de diffusion. */",
-        f"    const val NOTE_MIN = {s['noteMin']}",
-        f"    const val NOTE_MAX = {s['noteMax']}",
-        f"    const val NOTE_REMARQUE = {s['noteRemarque']}",
-        f"    const val NOTE_PUBLIABLE = {s['notePubliable']}",
-        "}",
-        "",
-    ]
+    l += ["}", ""]
     return "\n".join(l)
 
 

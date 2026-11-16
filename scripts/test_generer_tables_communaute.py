@@ -33,28 +33,20 @@ def tables(**remplace):
 
 
 class TablesCommunaute(unittest.TestCase):
-    def test_les_tables_et_les_seuils_tenus(self):
+    def test_les_tables(self):
         texte = g.kotlin(tables(), "test.json")
         self.assertIn('"ouverte" to LibelleTeinte("💡 Ouverte", "badge-blue"),', texte)
         self.assertIn('"vente" to "🏷️ Vente",', texte)
         self.assertIn('"divers" to "📦 Divers",', texte)
         self.assertIn('"recent" to "Plus récentes",', texte)
         self.assertIn('"en_cours" to LibelleTeinte("En cours", "badge-green"),', texte)
-        self.assertIn("const val NOTE_REMARQUE = 3", texte)
-        self.assertIn("const val NOTE_PUBLIABLE = 4", texte)
-
-    def test_les_seuils_publies_priment(self):
-        publies = {"noteMin": 1, "noteMax": 10, "noteRemarque": 5, "notePubliable": 8}
-        texte = g.kotlin(tables(seuilsAvis=t(publies)), "t")
-        self.assertIn("const val NOTE_MAX = 10", texte)
-        self.assertIn("const val NOTE_PUBLIABLE = 8", texte)
+        # Les seuils de l'avis sont des constantes du serveur (generer_constantes.py, #74).
+        self.assertNotIn("NOTE_", texte)
 
     def test_ce_qui_change_de_forme_arrete(self):
         for casse in ({"statutsIdee": t([{"value": "x", "label": "X"}])},
                       {"statutsAnnonce": t([{"val": "vendu", "label": "Vendu"}])},
-                      {"teinteStatutAnnonce": t([])}, {"typesAnnonce": t([])}, {"trisAnnonce": t(None)},
-                      {"seuilsAvis": t({"noteMin": 1})},
-                      {"seuilsAvis": t({"noteMin": 3, "noteMax": 5, "noteRemarque": 2, "notePubliable": 4})}):
+                      {"teinteStatutAnnonce": t([])}, {"typesAnnonce": t([])}, {"trisAnnonce": t(None)}):
             with self.assertRaises(g.TableInattendue, msg=str(casse)):
                 g.kotlin(tables(**casse), "t")
 
