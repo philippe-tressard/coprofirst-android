@@ -167,11 +167,24 @@ class NotificationsPushTest {
         val abonnement = p.abonnements.existant(glycines.installation.url)!!
         assertEquals(glycines.installation.url, p.residenceDe(abonnement))
         releve.echoue = true
-        p.retirer(glycines)
+        p.residenceFermee(glycines)
         assertEquals("DELETE https://glycines.exemple.test $abonnement", releve.requetes.last())
         assertNull(p.abonnements.existant(glycines.installation.url))
         assertNull("une notification qui arriverait encore ne mène plus à rien", p.residenceDe(abonnement))
         assertNull(p.residenceDe(null))
+    }
+
+    /** #150 : le parcours donne une session NEUVE à chaque geste — la fermeture se juge par la résidence. */
+    @Test
+    fun uneResidenceFermeeParUneAutreSessionNeSeReenregistrePas() = runTest {
+        val p = push()
+        centre.autorisation = AutorisationPush.ACCORDEE
+        p.jetonRecu(JetonPush("abc"))
+        p.residenceOuverte(glycines)
+        p.residenceFermee(session("glycines.exemple.test"))
+        val avant = releve.requetes.size
+        p.jetonRecu(JetonPush("neuf"))
+        assertEquals("aucun enregistrement auprès d'une résidence fermée", avant, releve.requetes.size)
     }
 
     @Test

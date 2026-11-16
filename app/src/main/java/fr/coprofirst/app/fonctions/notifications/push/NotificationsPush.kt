@@ -4,6 +4,7 @@
 package fr.coprofirst.app.fonctions.notifications.push
 
 import android.content.Context
+import fr.coprofirst.app.session.AbonneSession
 import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.SessionOuverte
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,7 +38,7 @@ class NotificationsPush(
     private val environnement: EnvironnementPush,
     val relaisActif: Boolean = RelaisPush.ACTIF,
     private val maintenant: () -> Instant = Instant::now,
-) {
+) : AbonneSession {
     val abonnements = AbonnementsPush(reglages)
     private val _etat = MutableStateFlow(EtatPush(reporteeLe = reglages.lire(CLE_REPORT)?.let(::lireInstant)))
     val etat: StateFlow<EtatPush> = _etat.asStateFlow()
@@ -91,7 +92,7 @@ class NotificationsPush(
      * Une résidence s'ouvre, sa session en main : l'appareil s'y enregistre si la personne
      * a autorisé les notifications ; sinon rien ne part.
      */
-    suspend fun residenceOuverte(session: SessionOuverte) {
+    override suspend fun residenceOuverte(session: SessionOuverte) {
         if (!relaisActif) return
         ouverte = session
         lireAutorisation()
@@ -120,10 +121,11 @@ class NotificationsPush(
      * serveur ne répond pas (l'installation le purgera, et une notification qui arriverait
      * encore ne mène plus à rien).
      */
-    suspend fun retirer(session: SessionOuverte) {
+    override suspend fun residenceFermee(session: SessionOuverte) {
         val residence = session.installation.url
         enregistrees -= residence
-        if (ouverte === session) ouverte = null
+        // Par la résidence, pas par l'objet : le parcours donne une session neuve à chaque geste.
+        if (ouverte?.installation?.url == residence) ouverte = null
         val abonnement = abonnements.existant(residence) ?: return
         abonnements.oublier(residence)
         try {

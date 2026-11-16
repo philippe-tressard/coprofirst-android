@@ -4,6 +4,8 @@
 package fr.coprofirst.app.entree
 
 import fr.coprofirst.api.routes.ConfigApi
+import fr.coprofirst.app.session.AbonneSession
+import fr.coprofirst.app.session.AbonnesSession
 import fr.coprofirst.app.session.CoffreEnMemoire
 import fr.coprofirst.app.session.Connexion
 import fr.coprofirst.app.session.Decouverte
@@ -12,6 +14,7 @@ import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.InstallationsConnues
 import fr.coprofirst.app.session.PreuveHote
+import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsGardeesEnMemoire
 import fr.coprofirst.app.session.SessionsParHote
 import fr.coprofirst.app.session.StockageResidences
@@ -55,6 +58,12 @@ class ParcoursSessionRefuseeTest {
     /** Les résidences dont la session s'est close (#162). */
     private val closes = mutableListOf<Installation>()
     private var piecesEffacees = 0
+    /** Ce que les abonnés au cycle de la résidence ont reçu (#150), avec le nombre de requêtes servies alors. */
+    private val prevenus = mutableListOf<String>()
+    private val abonne = object : AbonneSession {
+        override suspend fun residenceOuverte(session: SessionOuverte) { prevenus += "ouverte ${session.installation.url}" }
+        override suspend fun residenceFermee(session: SessionOuverte) { prevenus += "fermée ${session.installation.url} après ${serveur.requestCount}" }
+    }
 
     @Before
     fun preparer() {
@@ -77,7 +86,7 @@ class ParcoursSessionRefuseeTest {
         return ParcoursEntree(
             Decouverte(OkHttpClient(), Dispatchers.Unconfined, base), sessions,
             Connexion(sessions, Dispatchers.Unconfined, base), connues, effacerLesPieces = { piecesEffacees += 1 },
-            baseApi = base, apresSortie = { closes += it },
+            baseApi = base, apresSortie = { closes += it }, abonnes = AbonnesSession(listOf(abonne)),
         ) { PreuveHote.Declaree }.also { it.deverrouillage = Deverrouillage { chiffre, _ -> chiffre } }
     }
 
@@ -170,5 +179,29 @@ class ParcoursSessionRefuseeTest {
         assertEquals(EcranEntree.Espace, parcours.etat.value.ecran)
         assertTrue("sans réponse du serveur, rien ne s'efface", gardees.contient(hote))
         assertTrue(closes.isEmpty())
+    }
+
+    /** #150 : la résidence rouverte prévient ses abonnés ; refusée, elle les prévient de sa fermeture. */
+    @Test
+    fun lesAbonnesSuiventLOuvertureEtLeRefus() = test {
+        val parcours = ouvrir()
+        assertEquals(listOf("ouverte https://connue.exemple.test"), prevenus)
+        repondre(401)
+        repondre(401)
+        parcours.lire()
+        advanceUntilIdle()
+        assertEquals(listOf("ouverte https://connue.exemple.test", "fermée https://connue.exemple.test après 3"), prevenus)
+    }
+
+    /** #150 : à la déconnexion, les abonnés sont prévenus AVANT POST /auth/logout — leur retrait part authentifié. */
+    @Test
+    fun lesAbonnesSontPrevenusAvantLaDeconnexion() = test {
+        val parcours = ouvrir()
+        val avant = serveur.requestCount
+        repondre(200) // POST /auth/logout
+        parcours.deconnecter()
+        advanceUntilIdle()
+        assertEquals("fermée https://connue.exemple.test après $avant", prevenus.last())
+        assertEquals(avant + 1, serveur.requestCount)
     }
 }
