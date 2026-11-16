@@ -4,6 +4,12 @@
 package fr.coprofirst.app.fonctions.prestataires
 
 import androidx.compose.ui.test.hasContentDescription
+import fr.coprofirst.app.commun.attendreTexte
+import org.junit.Assert.assertTrue
+import org.junit.Assert.assertEquals
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -54,7 +60,7 @@ class EcranPrestatairesInterfaceTest {
         dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 val chemin = request.url.encodedPath + (request.url.encodedQuery?.let { "?$it" } ?: "")
-                val (code, corps) = simules.repondre(request.method, chemin)
+                val (code, corps) = simules.repondre(request.method, chemin, request.body?.utf8().orEmpty())
                 return MockResponse.Builder().code(code).addHeader("Content-Type", "application/json").body(corps).build()
             }
         }
@@ -83,7 +89,21 @@ class EcranPrestatairesInterfaceTest {
             }),
             barre = BarreDuHaut(),
         )
-        ecran.setContent { ThemeCoproFirst { EcranPrestataires(contexte, ServicePrestatairesApi(session)) } }
+        this.contexte = contexte
+        this.session = session
+    }
+
+    private lateinit var contexte: ContexteDeMenu
+    private lateinit var session: SessionOuverte
+
+    /** L'écran, en clair ou en sombre, au texte normal ou très grand (`echelle`). */
+    private fun afficher(sombre: Boolean = false, echelle: Float = 1f) {
+        ecran.setContent {
+            val densite = LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(densite.density, fontScale = echelle)) {
+                ThemeCoproFirst(sombre = sombre) { EcranPrestataires(contexte, ServicePrestatairesApi(session)) }
+            }
+        }
     }
 
     @After
@@ -91,6 +111,7 @@ class EcranPrestatairesInterfaceTest {
 
     @Test
     fun lesTroisOngletsSOuvrent() {
+        afficher()
         ecran.attendreTag(ReperesPrestataires.prestataire(1))
         ecran.toucherTag(ReperesPrestataires.prestataire(1))
         ecran.attendreTexteOuDescription("📮 12 rue de l'Exemple")
@@ -118,6 +139,7 @@ class EcranPrestatairesInterfaceTest {
     /** Le récapitulatif servi : l'exercice le plus récent ouvert, un badge qui déplie l'avis. */
     @Test
     fun lesAvisDUnPrestataireSeDeplient() {
+        afficher()
         ecran.toucherTag(ReperesPrestataires.prestataire(1))
         ecran.attendreTag(ReperesAvis.exercice(2026))
         ecran.attendreTexteOuDescription("Avis du conseil syndical (3)".uppercase())
@@ -133,9 +155,59 @@ class EcranPrestatairesInterfaceTest {
 
     @Test
     fun lesArchivesSeDeplient() {
+        afficher()
         ecran.attendreTag(ReperesPrestataires.ARCHIVES)
         ecran.toucherTag(ReperesPrestataires.ARCHIVES)
         ecran.attendreTag(ReperesPrestataires.prestataire(9))
+    }
+
+    /**
+     * ⭐ Noter, en sombre (#209) : l'affaire trouvée par la recherche détaillée, où le
+     * prestataire n'intervient pas encore — sa confirmation, puis les refus du site un à un.
+     */
+    @Test
+    fun noterUneAffaireOuIlNIntervientPas() {
+        afficher(sombre = true)
+        ecran.toucherTag(ReperesPrestataires.prestataire(1))
+        ecran.toucherTag(ReperesSaisieAvis.noter(1))
+        ecran.attendreTexte("Sans affaire, l’avis porte sur le prestataire en général.")
+        ecran.onNodeWithTag(ReperesSaisieAvis.RECHERCHE).performTextInput("toiture")
+        ecran.toucherTag(ReperesSaisieAvis.affaire(52))
+        ecran.attendreTag(ReperesSaisieAvis.RETENUE)
+        ecran.attendreTexte("Choisissez l'état : Mauvais, Neutre ou Excellent")
+        ecran.toucherTag(ReperesSaisieAvis.etat("mauvais"))
+        ecran.attendreTexte("Un avis « Mauvais » doit être justifié par un commentaire")
+        ecran.onNodeWithTag(ReperesSaisieAvis.LIBRE).performTextInput("Fuite non réparée")
+        ecran.attendreTexte("Confirmez l'ajout de Ascenseurs du Parc (fictif) à l'affaire choisie")
+        ecran.toucherTag(ReperesSaisieAvis.CONFIRMER_AJOUT)
+        ecran.attendreDisparitionTag(ReperesSaisieAvis.REFUS)
+        ecran.toucherTag(ReperesSaisieAvis.ENREGISTRER)
+        ecran.attendreTexte("Notation enregistrée")
+        val envoye = simules.corps.getValue("POST /prestataires/notations")
+        assertTrue(envoye, envoye.contains("\"ticket_id\":52") && envoye.contains("\"confirmer_ajout\":true"))
+        // Un avis d'un autre membre : le conseil peut le retirer, pas le corriger (droit servi).
+        ecran.toucherTag(ReperesAvis.avis(11))
+        ecran.attendreTag(ReperesSaisieAvis.retirer(11))
+        ecran.attendreDisparitionTag(ReperesSaisieAvis.modifier(11))
+    }
+
+    /** Corriger puis retirer son avis, en très grand texte : seul ce qui change part. */
+    @Test
+    fun corrigerPuisRetirerSonAvis() {
+        afficher(echelle = 2f)
+        ecran.toucherTag(ReperesPrestataires.prestataire(1))
+        ecran.toucherTag(ReperesAvis.avis(12))
+        ecran.toucherTag(ReperesSaisieAvis.modifier(12))
+        ecran.toucherTag(ReperesSaisieAvis.etat("neutre"))
+        ecran.toucherTag(ReperesSaisieAvis.ENREGISTRER)
+        ecran.attendreTexte("Avis modifié")
+        assertEquals("""{"etat":"neutre","confirmer_ajout":false}""", simules.corps.getValue("PATCH /prestataires/notations/12"))
+
+        ecran.toucherTag(ReperesSaisieAvis.retirer(12))
+        ecran.attendreTexte("La suppression est définitive")
+        ecran.toucherTag(ReperesSaisieAvis.CONFIRMER_RETRAIT)
+        ecran.attendreTexte("Avis retiré.")
+        assertTrue(simules.recues.contains("DELETE /api/prestataires/notations/12"))
     }
 
     private companion object {

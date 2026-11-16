@@ -113,6 +113,12 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   « Tout récupérer » ; la gestion locative en lecture (baux actifs, archives, inventaire).
   Le tableau des charges, créer ou terminer un bail et tenir l'inventaire restent sur le
   site, et l'écran le dit.
+- **Prestataires** (conseil syndical) : fiches, contrats et consommations ; les avis du
+  conseil, par exercice et par intervention. « ⭐ Noter » un prestataire, depuis sa fiche ou
+  la carte d'un contrat, en choisissant l'affaire jugée (la recherche de la page Affaires ;
+  l'ajouter comme intervenant se confirme) ; « Modifier cet avis » pour son auteur, « Retirer
+  cet avis » pour le conseil, chacun selon le droit servi. Créer, corriger ou archiver une
+  fiche, un contrat ou un relevé restent sur le site.
 - **Délégations aidant** (Plus › Délégations) : les délégations que le compte voit, leur
   état et leur période ; « Accepter » et « Révoquer » (confirmé) quand le serveur les ouvre
   au compte ; au conseil syndical, « Nouvelle délégation » (personne aidée, proche aidant,
@@ -185,7 +191,11 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
 - **Montre Wear OS** (`montre/`, en construction, #207) : la même app Google Play, pour
   la cloche de la dernière résidence ouverte, en lecture seule — pendant de l'Apple Watch.
   Tant que la liaison au téléphone est éteinte, elle dit « Ouvrez CoproFirst sur le
-  téléphone pour relier la montre ». Ce que la montre partage avec le téléphone vit dans
+  téléphone pour relier la montre ». Écrans prêts derrière la liaison : la cloche (le nom
+  de la résidence ; les non lues, urgentes devant ; « Déjà lues », repliée ; chaque ligne
+  avec son titre sur deux lignes et son âge relatif ; « Aucune alerte ») et le détail
+  (titre, date ; le corps vient avec le rendu partagé du texte du site, #206).
+  Ce que la montre partage avec le téléphone vit dans
   `partage/` (#206) : le client HTTP, les formats du site, l'alerte reçue, le découpage du
   texte riche — écrits une fois.
 

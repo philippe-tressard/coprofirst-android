@@ -48,15 +48,26 @@ data class DonneesPrestataires(
 /**
  * Les données partagées, gardées le temps de la page : un onglet ouvert après un autre ne
  * relit pas ce que le premier a lu ; « tirer pour actualiser » (une `actualisation` neuve)
- * relit tout.
+ * relit tout, comme un geste sur un avis (`oublier`, #209 : le nombre d'avis est servi
+ * avec la liste).
  */
 class DepotPrestataires(private val service: ServicePrestataires) {
     private val verrou = Mutex()
     private var lues: Pair<Int, DonneesPrestataires>? = null
 
+    @Volatile private var perimees = false
+
     suspend fun donnees(actualisation: Int): DonneesPrestataires = verrou.withLock {
-        lues?.takeIf { it.first == actualisation }?.second
-            ?: DonneesPrestataires.lire(service).also { lues = actualisation to it }
+        lues?.takeIf { it.first == actualisation && !perimees }?.second
+            ?: DonneesPrestataires.lire(service).also {
+                lues = actualisation to it
+                perimees = false
+            }
+    }
+
+    /** La prochaine lecture repart du serveur. */
+    fun oublier() {
+        perimees = true
     }
 }
 

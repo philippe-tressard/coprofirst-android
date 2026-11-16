@@ -14,7 +14,6 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.core.content.ContextCompat
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import fr.coprofirst.api.VERSION_CONTRAT_PLANCHER
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Palettes
 import fr.coprofirst.app.commun.attendreTexte
@@ -23,14 +22,7 @@ import fr.coprofirst.app.commun.toucherTexte
 import fr.coprofirst.app.entree.NavigationEntree
 import fr.coprofirst.app.entree.ServeurDeTest
 import fr.coprofirst.app.entree.entrerDansLaResidence
-import fr.coprofirst.app.fonctions.fil.FilInterfaceTest
-import fr.coprofirst.app.fonctions.monlot.FixturesMonLot
-import fr.coprofirst.app.fonctions.profil.FixturesProfil
 import java.io.File
-import java.time.Instant
-import mockwebserver3.Dispatcher
-import mockwebserver3.MockResponse
-import mockwebserver3.RecordedRequest
 import org.junit.After
 import org.junit.Assume.assumeTrue
 import org.junit.Before
@@ -110,7 +102,7 @@ class CapturesPlay {
         val automate = instrumentation.uiAutomation
         automate.executeShellCommand("wm size 1080x1920").close()
         try {
-            serveur.serveur.dispatcher = residence
+            serveur.serveur.dispatcher = ResidenceFictive()
             ecran.setContent { NavigationEntree(serveur.apparence(), serveur.parcours()) }
             ecran.entrerDansLaResidence("residence.exemple.test", "Les Glycines")
             // Une carte du fil se lit d'un bloc : son texte est dans sa description.
@@ -137,28 +129,5 @@ class CapturesPlay {
     private fun capturer(nom: String) {
         ecran.waitForIdle()
         enregistrer(nom, requireNotNull(instrumentation.uiAutomation.takeScreenshot()))
-    }
-
-    /** La résidence fictive : chaque route répond par sa fixture ; une liste inconnue est vide. */
-    private val residence = object : Dispatcher() {
-        private val routes = mapOf(
-            "/config" to """{"site_nom": "Les Glycines", "version_contrat": "$VERSION_CONTRAT_PLANCHER"}""",
-            "/auth/login" to "{}",
-            "/auth/me" to FixturesProfil.MOI,
-            "/flux" to FilInterfaceTest.fil(Instant.now()),
-            "/notifications" to "[]",
-            "/lots/mes-lots" to FixturesMonLot.MES_LOTS,
-            "/acces/mes-vigiks" to FixturesMonLot.MES_VIGIKS,
-            "/acces/mes-telecommandes" to FixturesMonLot.MES_TELECOMMANDES,
-            "/bailleur/mes-acces-recus" to FixturesMonLot.ACCES_RECUS,
-            "/bailleur/mes-baux" to FixturesMonLot.BAUX,
-            "/bailleur/tous-les-baux" to FixturesMonLot.BAUX,
-        )
-
-        override fun dispatch(request: RecordedRequest): MockResponse {
-            val chemin = request.url.encodedPath.removePrefix("/api")
-            val corps = routes[chemin] ?: return MockResponse.Builder().code(404).body("""{"detail": "Introuvable."}""").build()
-            return MockResponse.Builder().code(200).addHeader("Content-Type", "application/json").body(corps).build()
-        }
     }
 }

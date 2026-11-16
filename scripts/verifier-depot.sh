@@ -298,6 +298,10 @@ python3 -I scripts/verifier_securite_donnees.py \
 python3 -I scripts/verifier_fixtures.py \
   || echec "une réponse simulée ne dit pas ce que le serveur sert (python3 -I scripts/verifier_fixtures.py)"
 
+# Le contrôle avant soumission (#4) se prouve : il départage un vert, un rouge et un INCONNU.
+python3 -I scripts/controle_avant_soumission.py --autotest >/dev/null \
+  || echec "controle_avant_soumission.py : autotest en échec"
+
 # Un séparateur du site (· — →) ne finit jamais une ligne (#117) : il se lit dans la table
 # générée `Separateur`, et une ressource l'écrit suivi de `\u00A0`, confronté à la table.
 python3 -I scripts/verifier_separateurs.py --autotest >/dev/null \

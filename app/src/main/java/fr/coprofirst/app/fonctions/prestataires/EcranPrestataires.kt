@@ -33,7 +33,7 @@ object ReperesPrestataires {
 
 /**
  * « Prestataires » (page `prestataires` du site, #19), comme l'iOS (`PrestatairesView`) :
- * trois onglets en lecture — Prestataires, Contrats, Consommations —, réservés au conseil
+ * trois onglets — Prestataires, Contrats, Consommations —, réservés au conseil
  * syndical. Les fiches, les contrats et les équipements se lisent une fois pour les trois
  * onglets (`DepotPrestataires`), et se relisent en tirant pour actualiser.
  *
@@ -53,10 +53,10 @@ internal fun EcranPrestataires(contexte: ContexteDeMenu, service: ServicePrestat
         PageAOnglets(
             "prestataires",
             mapOf(
-                "prestataires" to { onglet -> AvecDonnees(onglet, depot) { OngletPrestataires(it, service) } },
-                "contrats" to { onglet -> AvecDonnees(onglet, depot) { OngletContrats(it, service, onglet) } },
+                "prestataires" to { onglet -> AvecDonnees(onglet, depot) { d, gestes -> OngletPrestataires(d, service, gestes) } },
+                "contrats" to { onglet -> AvecDonnees(onglet, depot) { d, gestes -> OngletContrats(d, service, onglet, gestes) } },
                 "consommations" to { onglet ->
-                    AvecDonnees(onglet, depot) { OngletConsommations(it, service, onglet, conseil = onglet.droits.cs) }
+                    AvecDonnees(onglet, depot) { d, _ -> OngletConsommations(d, service, onglet, conseil = onglet.droits.cs) }
                 },
             ),
             reserve = R.string.prestataires_reserve,
@@ -65,15 +65,31 @@ internal fun EcranPrestataires(contexte: ContexteDeMenu, service: ServicePrestat
     CadreAOnglets(contexte, page)
 }
 
-/** Les données partagées, puis l'onglet ; et, pour le conseil, ce qui reste sur le site. */
+/**
+ * Les données partagées, puis l'onglet ; et, pour le conseil, ce qui reste sur le site. Les
+ * gestes des avis (#209) tiennent leur droit du compte SERVI (`est_moderateur`, `droits.cs`)
+ * et relisent la liste après coup, sans repasser par le squelette.
+ */
 @Composable
-private fun AvecDonnees(onglet: ContexteOnglet, depot: DepotPrestataires, contenu: @Composable (DonneesPrestataires) -> Unit) {
+private fun AvecDonnees(
+    onglet: ContexteOnglet,
+    depot: DepotPrestataires,
+    contenu: @Composable (DonneesPrestataires, GestesAvis) -> Unit,
+) {
     Column(verticalArrangement = Arrangement.spacedBy(Mise.ecart)) {
         Chargement(
             charger = { depot.donnees(onglet.actualisation) },
             cle = onglet.actualisation,
             squelette = { SquelettePrestataires() },
-        ) { donnees, _ -> contenu(donnees) }
+        ) { donnees, recharger ->
+            val gestes = remember(onglet.droits, onglet.avis, recharger) {
+                GestesAvis(onglet.droits.cs, onglet.avis) {
+                    depot.oublier()
+                    recharger()
+                }
+            }
+            contenu(donnees, gestes)
+        }
         if (onglet.droits.cs) {
             Text(
                 stringResource(R.string.prestataires_gestes_sur_le_site),

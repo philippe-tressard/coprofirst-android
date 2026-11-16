@@ -8,6 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.wear.compose.material3.AppScaffold
 import androidx.wear.compose.material3.MaterialTheme
+import fr.coprofirst.montre.cloche.LectureCloche
 
 /** L'unique activité de la montre. */
 class ActiviteMontre : ComponentActivity() {
@@ -17,7 +18,8 @@ class ActiviteMontre : ComponentActivity() {
         val etat = EtatMontre.auLancement(residenceGardee = null)
         setContent {
             MaterialTheme {
-                AppScaffold { EcranMontre(etat) }
+                // La cloche se lit par le jeton de montre (lot 2) : tant qu'il n'y en a pas, rien.
+                AppScaffold { EcranMontre(etat, LectureCloche.EnCours) }
             }
         }
     }

@@ -16,28 +16,28 @@ import androidx.compose.ui.unit.dp
 import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
+import fr.coprofirst.montre.cloche.LectureCloche
 
-/** L'écran de la montre selon son état. */
+/** L'écran de la montre selon son état : pas reliée, ou la cloche de la résidence reliée. */
 @Composable
-fun EcranMontre(etat: EtatMontre) {
-    ScreenScaffold {
-        when (etat) {
-            EtatMontre.NonReliee -> Message(stringResource(R.string.montre_non_reliee), "montre.nonReliee")
-            // La cloche arrive avec les écrans (#207, lot 3) ; d'ici là, la liaison reste éteinte.
-            is EtatMontre.Reliee -> Message(etat.residence, "montre.residence")
-        }
+fun EcranMontre(etat: EtatMontre, lecture: LectureCloche) {
+    when (etat) {
+        EtatMontre.NonReliee -> NonReliee()
+        is EtatMontre.Reliee -> NavigationMontre(etat.residence, lecture)
     }
 }
 
-/** Un message seul, centré, dans le cercle du cadran. */
+/** « Ouvrez CoproFirst sur le téléphone pour relier la montre », centré dans le cadran. */
 @Composable
-private fun Message(texte: String, repere: String) {
-    Box(Modifier.fillMaxSize().padding(horizontal = 24.dp), contentAlignment = Alignment.Center) {
-        Text(
-            texte,
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.testTag(repere),
-        )
+private fun NonReliee() {
+    ScreenScaffold {
+        Box(Modifier.fillMaxSize().padding(horizontal = 24.dp), contentAlignment = Alignment.Center) {
+            Text(
+                stringResource(R.string.montre_non_reliee),
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.testTag("montre.nonReliee"),
+            )
+        }
     }
 }
