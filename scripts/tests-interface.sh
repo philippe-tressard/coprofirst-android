@@ -40,8 +40,15 @@ for _ in $(seq 1 90); do [ "$(a shell getprop sys.boot_completed | tr -d '\r')" 
 
 # Le démon partagé du poste (gradle.properties) : jamais --no-daemon ici.
 ./gradlew -q :app:assembleDebug :app:assembleDebugAndroidTest || exit 1
-a install -r app/build/outputs/apk/debug/app-debug.apk >/dev/null || { echo "❓ INCONNU : installation impossible" >&2; exit 2; }
-a install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk >/dev/null || { echo "❓ INCONNU : installation impossible" >&2; exit 2; }
+# `-d` : la version se déduit du nombre de commits ; une branche plus courte que la dernière
+# build installée rétrogradait, et l'installation était refusée (en silence : la raison
+# d'adb est désormais dite).
+installer() {
+  local sortie
+  sortie=$(a install -r -d "$1") || { echo "❓ INCONNU : installation impossible ($1) — $sortie" >&2; exit 2; }
+}
+installer app/build/outputs/apk/debug/app-debug.apk
+installer app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
 FILTRE=${1:+-e class $1}
 a shell "rm -f /data/local/tmp/resultat.txt; nohup am instrument -w -r $FILTRE fr.coprofirst.app.test/androidx.test.runner.AndroidJUnitRunner > /data/local/tmp/resultat.txt 2>&1 &"
 for _ in $(seq 1 200); do
