@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.session.audience
 
+import fr.coprofirst.api.VERSION_CONTRAT_PLANCHER
 import fr.coprofirst.app.session.AdresseInstallation
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.SessionOuverte
@@ -25,7 +26,7 @@ import org.junit.Test
 class ServiceAudienceApiTest {
     private val serveur = MockWebServer().apply { start() }
     private val session = SessionOuverte(
-        Installation("https://glycines.exemple.test", "Les Glycines", versionContrat = "2.0.0"),
+        Installation("https://glycines.exemple.test", "Les Glycines", versionContrat = VERSION_CONTRAT_PLANCHER),
         SessionsParHote(OkHttpClient()),
         Dispatchers.Unconfined,
     ) { _: AdresseInstallation -> serveur.url("/api").toString() }

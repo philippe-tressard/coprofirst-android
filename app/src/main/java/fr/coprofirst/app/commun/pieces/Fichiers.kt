@@ -13,20 +13,20 @@ import java.nio.charset.CodingErrorAction
  * (`front/src/lib/fichiers.ts`) : la règle est dans `FichiersDuSite`, générée.
  */
 object Fichiers {
-    /** Une image affichable en vignette — la liste du site (`FichiersDuSite`, générée). */
-    fun estImage(chemin: String): Boolean = extensionDe(chemin).lowercase() in FichiersDuSite.extensionsImage
+    /** Une image affichable en vignette — le motif publié par le serveur (`motifImage`, généré). */
+    fun estImage(chemin: String): Boolean = FichiersDuSite.motifImage.containsMatchIn(chemin)
 
     /**
      * Le nom montré d'un fichier servi (`nomFichier` du site) : le dernier segment de
-     * l'URL, décodé, sans le préfixe que le serveur ajoute au téléversement.
+     * l'URL, décodé, sans le préfixe que le serveur ajoute au téléversement (`prefixeStockage`).
      */
     fun nomAffiche(chemin: String): String {
         val segment = chemin.split('?').firstOrNull { it.isNotEmpty() } ?: chemin
         val brut = segment.split('/').lastOrNull { it.isNotEmpty() } ?: segment
         val base = decoder(brut) ?: brut
-        val prefixe = FichiersDuSite.LONGUEUR_PREFIXE
-        val prefixee = base.length > prefixe + 1 && base[prefixe] == '_' && base.take(prefixe).all { it in HEXA }
-        return if (prefixee) base.drop(prefixe + 1) else base
+        // Un nom qui ne serait QUE le préfixe se montre tel quel.
+        val prefixe = FichiersDuSite.prefixeStockage.find(base)?.value.orEmpty()
+        return if (prefixe.isNotEmpty() && base.length > prefixe.length) base.drop(prefixe.length) else base
     }
 
     /** « PDF », « WORD », « EXCEL » — le type montré (`typeFichier` du site). */

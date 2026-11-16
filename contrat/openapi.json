@@ -3,7 +3,7 @@
  "info": {
   "title": "CoproFirst API",
   "description": "API de gestion de copropriétés",
-  "version": "2.0.0"
+  "version": "2.1.0"
  },
  "paths": {
   "/auth/batiments": {
@@ -40330,6 +40330,17 @@
        }
       ],
       "title": "Batiment Id"
+     },
+     "batiment_libelle": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Batiment Libelle"
      },
      "profondeur": {
       "type": "integer",

@@ -80,8 +80,8 @@ class FichiersTest {
 
     @Test
     fun lesExtensionsDImageSontCellesDuSite() {
-        // Générées : `jpe?g` et `tiff?` y sont dépliés.
-        assertTrue(FichiersDuSite.extensionsImage.containsAll(setOf("jpg", "jpeg", "tif", "tiff", "heif", "avif")))
+        // Le motif publié (`motifImage`, #169) : `jpe?g` et `tiff?` compris, la casse ignorée.
+        listOf("jpg", "jpeg", "tif", "tiff", "heif", "avif", "Png").forEach { assertTrue(it, Fichiers.estImage("/u/a.$it")) }
         assertFalse(Fichiers.estImage("/uploads/devis.pdf"))
         assertFalse(Fichiers.estImage("/uploads/dossier.jpg/fichier"))
         assertTrue(Fichiers.estImage("/uploads/PHOTO.JPG"))
