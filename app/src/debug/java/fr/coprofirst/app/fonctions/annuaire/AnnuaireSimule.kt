@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.fonctions.annuaire
 
+import fr.coprofirst.app.commun.annuaire.Annuaire
 /**
  * L'annuaire simulé, pour les tests d'interface (variante de mise au point seulement) —
  * celui de l'iOS (`Apercu.annuaire`) : des prénoms et des noms qui n'appartiennent à
