@@ -26,9 +26,9 @@ SPDX-FileCopyrightText = "2015 the original authors of Gradle"
 SPDX-License-Identifier = "Apache-2.0"
 
 # Produit par `gradle wrapper` (sans commentaire conservé) ; le JSON n'admet pas de
-# commentaire.
+# commentaire ; l'avis d'un composant tiers s'affiche tel quel dans « À propos » (#27).
 [[annotations]]
-path = ["gradle/wrapper/gradle-wrapper.properties", ".claude/settings.json"]
+path = ["gradle/wrapper/gradle-wrapper.properties", ".claude/settings.json", "app/src/main/tiers/composants.json", "app/src/main/tiers/avis-public-suffix-list.txt"]
 precedence = "override"
 SPDX-FileCopyrightText = "2026 Philippe TRESSARD"
 SPDX-License-Identifier = "AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins"

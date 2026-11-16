@@ -122,6 +122,11 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   export de la copropriété). Les autres onglets sont « Sur le site », chacun avec son
   lien ; lancer une tâche ou un export reste au site, et l'écran le dit.
 
+- **À propos** (Plus) : la résidence et la mention de son pied de page (©, texte libre,
+  version de l'app) ; ses mentions légales et sa politique de confidentialité, lues dans
+  l'app (« Logiciel libre » sous les mentions) ; le site de CoproFirst, le code du serveur
+  et celui de l'app (AGPL §13) ; chaque composant tiers embarqué et sa licence entière —
+  la liste est confrontée au build à ce que l'app embarque vraiment.
 - **Écran** : portrait au téléphone ; sur tablette, pliable déplié ou fenêtre de bureau,
   toutes les orientations et le multi-fenêtre (comme l'iPad). La mise en page grand écran
   (barre latérale, liste et fiche côte à côte) suit les lots de l'iOS (#69).

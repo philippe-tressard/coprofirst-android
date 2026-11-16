@@ -247,3 +247,8 @@ fun ComposeTestRule.toucherTexte(texte: String, substring: Boolean = false) = to
 
 /** Par description (une icône sans texte : « Retour »). */
 fun ComposeTestRule.toucherDescription(description: String) = toucher(hasContentDescription(description))
+
+/** Attend qu'un texte affiché apparaisse (une partie suffit). */
+fun ComposeTestRule.attendreTexte(texte: String, delaiMs: Long = DELAI_GESTE_MS) = waitUntil(delaiMs) {
+    onAllNodes(hasText(texte, substring = true)).fetchSemanticsNodes().isNotEmpty()
+}

@@ -98,14 +98,37 @@ abstract class GenererDepuisPython : DefaultTask() {
     @get:Input abstract val entree: Property<String>
     @get:InputFile abstract val generateur: RegularFileProperty
     @get:OutputDirectory abstract val sortie: DirectoryProperty
+    /** Ce que le script reçoit après l'entrée et la sortie (la liste des modules embarqués). */
+    @get:Input abstract val arguments: ListProperty<String>
     @get:Inject abstract val processus: ExecOperations
 
     @TaskAction
     fun generer() {
         sortie.get().asFile.deleteRecursively()
         processus.exec {
-            commandLine("python3", "-I", generateur.get().asFile.path, entree.get(), sortie.get().asFile.path)
+            commandLine(listOf("python3", "-I", generateur.get().asFile.path, entree.get(), sortie.get().asFile.path) + arguments.get())
         }
+    }
+}
+
+/**
+ * Les modules tiers que l'app EMBARQUE — ceux de la variante publiée (`release`), sans
+ * les modules du dépôt —, un `groupe:module` par ligne, pour « À propos » (#27).
+ */
+abstract class ListerModulesEmbarques : DefaultTask() {
+    @get:Input abstract val racine: Property<ResolvedComponentResult>
+    @get:OutputFile abstract val sortie: RegularFileProperty
+
+    @TaskAction
+    fun lister() {
+        val vus = mutableSetOf<ResolvedComponentResult>()
+        val aVoir = ArrayDeque(listOf(racine.get()))
+        while (aVoir.isNotEmpty()) {
+            aVoir.removeFirst().dependencies.filterIsInstance<ResolvedDependencyResult>()
+                .map { it.selected }.filter(vus::add).forEach(aVoir::addLast)
+        }
+        val modules = vus.mapNotNull { (it.id as? ModuleComponentIdentifier)?.let { m -> "${m.group}:${m.module}" } }
+        sortie.get().asFile.writeText(modules.distinct().sorted().joinToString("\n", postfix = "\n"))
     }
 }
 
@@ -114,6 +137,7 @@ fun generation(nom: String, entree: String, generateur: String, lus: Any = entre
     this.entree.set(rootProject.layout.projectDirectory.file(entree).asFile.path)
     this.generateur.set(rootProject.layout.projectDirectory.file(generateur))
     sortie.set(layout.buildDirectory.dir("generated/$nom"))
+    arguments.convention(emptyList())
 }
 
 val genererCharte = generation("genererCharte", "contrat/tables-clients.json", "scripts/generer_charte.py")
@@ -135,6 +159,24 @@ val genererTablesDesMenus = rootProject.layout.projectDirectory.dir("scripts").a
         generation(nom.replaceFirstChar(Char::lowercase), "contrat/tables-clients.json", "scripts/${script.name}")
     }
 
+// Les composants tiers (#27) : la déclaration (app/src/main/tiers/composants.json),
+// confrontée aux modules que la variante publiée embarque — le build s'arrête sur un
+// module non déclaré (scripts/generer_composants_tiers.py) —, puis copiée avec ses textes
+// dans les ressources de l'app, que « À propos » lit.
+val listerModulesEmbarques = tasks.register<ListerModulesEmbarques>("listerModulesEmbarques") {
+    racine.set(provider { configurations.getByName("releaseRuntimeClasspath") }.flatMap { it.incoming.resolutionResult.rootComponent })
+    sortie.set(layout.buildDirectory.file("modules-embarques.txt"))
+}
+val genererComposantsTiers = generation(
+    "genererComposantsTiers", "app/src/main/tiers/composants.json", "scripts/generer_composants_tiers.py",
+    lus = listOf("app/src/main/tiers", "LICENSES"),
+)
+genererComposantsTiers.configure {
+    val liste = listerModulesEmbarques.flatMap { it.sortie }
+    lus.from(liste)
+    arguments.add(liste.map { it.asFile.path })
+}
+
 // Le registre des menus : les inscriptions des écrans (`fonctions/<menu>/Inscription.kt`).
 val fonctions = "app/src/main/java/fr/coprofirst/app/fonctions"
 val genererRegistre = generation(
@@ -149,6 +191,7 @@ androidComponents {
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererRegistre, GenererDepuisPython::sortie)
         genererTablesDesMenus.forEach { variante.sources.kotlin?.addGeneratedSourceDirectory(it, GenererDepuisPython::sortie) }
         variante.sources.res?.addGeneratedSourceDirectory(genererLogo, GenererDepuisPython::sortie)
+        variante.sources.assets?.addGeneratedSourceDirectory(genererComposantsTiers, GenererDepuisPython::sortie)
     }
 }
 

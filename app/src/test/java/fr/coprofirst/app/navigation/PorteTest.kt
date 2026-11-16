@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.navigation
 
+import fr.coprofirst.app.fonctions.apropos.FichesAPropos
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -53,6 +54,20 @@ class PorteTest {
         // Les natures sont celles du fil (CibleDuFil) : une faute de frappe au registre ne
         // s'ouvrirait jamais. La liste grandit avec les menus qui déclarent leurs fiches.
         val natures = setOf("affaire", "sondage")
-        assertEquals(emptySet<String>(), RegistreDesMenus.fiches.keys - natures)
+        assertEquals(emptySet<String>(), RegistreDesMenus.fiches.keys - natures - FICHES_INTERNES)
+    }
+
+    @Test
+    fun lesFichesInternesServentEncore() {
+        // Une exception qui ne sert plus se retire.
+        assertEquals(emptySet<String>(), FICHES_INTERNES - RegistreDesMenus.fiches.keys)
+    }
+
+    private companion object {
+        /**
+         * Les fiches qu'un menu ouvre de lui-même, hors du fil : le menu les nomme par la
+         * même constante des deux côtés (`FichesAPropos`, #27), aucune faute de frappe possible.
+         */
+        val FICHES_INTERNES = setOf(FichesAPropos.TEXTE_LEGAL, FichesAPropos.COMPOSANT)
     }
 }

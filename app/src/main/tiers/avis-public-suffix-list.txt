@@ -1,0 +1,4 @@
+OkHttp embarque une copie de la Public Suffix List, publiée par la fondation Mozilla
+sous la Mozilla Public License, version 2.0 (MPL-2.0), distinctement de la licence
+d'OkHttp. Sa forme source se trouve à l'adresse
+https://publicsuffix.org/list/public_suffix_list.dat ; le texte de la licence suit.
