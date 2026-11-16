@@ -3,6 +3,9 @@
 
 package fr.coprofirst.app.commun
 
+import android.accessibilityservice.AccessibilityService
+import android.accessibilityservice.AccessibilityServiceInfo
+import android.view.accessibility.AccessibilityWindowInfo
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.unit.toSize
@@ -18,8 +21,6 @@ import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
-import androidx.test.espresso.Espresso
-import androidx.test.espresso.NoActivityResumedException
 import androidx.test.platform.app.InstrumentationRegistry
 
 /*
@@ -113,7 +114,14 @@ private fun SemanticsNodeInteraction.afficheOuDitOu(): SemanticsNodeInteraction 
         val noeud = fetchSemanticsNode()
         val place = Rect(noeud.positionInRoot, noeud.size.toSize())
         val ancetres = noeud.ancetresDefilants().joinToString { it.boundsInRoot.toString() }
-        throw AssertionError("${e.message} — nœud $place (non rogné), ancêtres défilants visibles [$ancetres]", e)
+        // Le premier ancêtre qui coupe le nœud (sa partie visible ne le contient pas) : le coupable.
+        val coupe = generateSequence(noeud.parent) { it.parent }.firstOrNull { !it.boundsInRoot.contains(place.center) }
+        val visible = noeud.boundsInWindow
+        throw AssertionError(
+            "${e.message} — nœud $place (non rogné), visible $visible, placé ${noeud.layoutInfo.isPlaced}, " +
+                "ancêtres défilants visibles [$ancetres], coupé par ${coupe?.let { "${it.config} ${it.boundsInRoot}" } ?: "aucun"}",
+            e,
+        )
     }
     return this
 }
@@ -139,13 +147,21 @@ private fun SemanticsNodeInteraction.attendreImmobile(): SemanticsNodeInteractio
     }
 }
 
-/** Ferme le clavier s'il est ouvert, et attend qu'il le soit ; sans activité au premier plan, rien. */
+/**
+ * Ferme le clavier s'il est ouvert, et attend qu'il le soit. Le clavier se voit par la fenêtre
+ * de méthode de saisie (UiAutomation), sans attendre qu'une fenêtre de l'app ait le focus :
+ * `Espresso.closeSoftKeyboard` attendait jusqu'à 10 s une fenêtre qui ne le prend jamais (une
+ * feuille ouverte), et faisait tomber le test. « Retour » ne part que si le clavier est là : il
+ * le ferme alors, sans quitter l'écran.
+ */
 private fun fermerLeClavier() {
-    try {
-        Espresso.closeSoftKeyboard()
-    } catch (_: NoActivityResumedException) {
-        // Pas d'écran au premier plan : pas de clavier non plus.
-    }
+    val automate = InstrumentationRegistry.getInstrumentation().uiAutomation
+    automate.serviceInfo = automate.serviceInfo.apply { flags = flags or AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS }
+    fun ouvert() = automate.windows.any { it.type == AccessibilityWindowInfo.TYPE_INPUT_METHOD }
+    if (!ouvert()) return
+    automate.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK)
+    val limite = System.nanoTime() + 2_000_000_000L
+    while (ouvert() && System.nanoTime() < limite) Thread.sleep(50)
 }
 
 /**
@@ -158,7 +174,10 @@ fun ComposeTestRule.amener(
     useUnmergedTree: Boolean = false,
     delaiMs: Long = DELAI_GESTE_MS,
 ): SemanticsNodeInteraction {
-    fun existe() = onAllNodes(critere, useUnmergedTree).fetchSemanticsNodes().isNotEmpty()
+    // « Existe » = composé ET placé : une liste paresseuse garde composée une ligne qu'elle ne
+    // place plus (sa dernière position, hors de la vue réelle) — elle se fait alors venir par
+    // la liste, comme une ligne non composée (Profil, « Se déconnecter », #126).
+    fun existe() = onAllNodes(critere, useUnmergedTree).fetchSemanticsNodes().any { it.layoutInfo.isPlaced }
     val limite = System.nanoTime() + delaiMs * 1_000_000
     while (!existe()) {
         val listes = onAllNodes(hasScrollToNodeAction(), useUnmergedTree)
@@ -168,7 +187,7 @@ fun ComposeTestRule.amener(
         }
         if (existe()) break
         if (System.nanoTime() > limite) {
-            throw AssertionError("Toucher : aucun nœud « ${critere.description} » à l'écran ni dans une liste, après $delaiMs ms.")
+            throw AssertionError("Toucher : aucun nœud « ${critere.description} » placé à l'écran ni dans une liste, après $delaiMs ms.")
         }
         runCatching { waitUntil(PAS_MS) { existe() } }
     }
