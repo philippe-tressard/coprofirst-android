@@ -3,25 +3,20 @@
 
 package fr.coprofirst.app.fonctions.espacecs
 
-import androidx.compose.ui.semantics.SemanticsActions
-import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isSelected
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
-import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextInput
-import androidx.test.espresso.Espresso
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.commun.GestesDeSortie
 import fr.coprofirst.app.commun.StockageApparence
 import fr.coprofirst.app.commun.onglets.ReperesOnglets
+import fr.coprofirst.app.commun.toucher
+import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.commun.validations.ReperesValidations
 import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.navigation.ContexteDeMenu
@@ -39,7 +34,6 @@ import okhttp3.tls.HandshakeCertificates
 import okhttp3.tls.HeldCertificate
 import org.junit.After
 import org.junit.Assert.assertTrue
-import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -53,13 +47,6 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidJUnit4::class)
 class EspaceCSInterfaceTest {
-    /**
-     * La règle v2 : ses effets tournent sur un `StandardTestDispatcher`, au fil principal.
-     * La v1 (dépréciée) les menait sur un `UnconfinedTestDispatcher` : un chargement
-     * (`Chargement`, revenu du fil d'E/S) ou une animation (les barres du Reporting)
-     * reprenait sur un autre fil, et Compose y observait des lectures — « Detected
-     * multithreaded access to SnapshotStateObserver », par intermittence (CI de #80).
-     */
     @get:Rule
     val ecran = createComposeRule()
     private val residence = ResidenceSimuleeCS()
@@ -113,54 +100,11 @@ class EspaceCSInterfaceTest {
     private fun disparu(repere: String) =
         ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(repere)).fetchSemanticsNodes().isEmpty() }
 
-    /** Un élément hors de toute liste (une confirmation, une feuille). */
-    private fun toucher(repere: String) {
-        attendreRepere(repere)
-        ecran.onNodeWithTag(repere).performClick()
-    }
-
-    /** Un élément de la page qui défile : il s'amène à l'écran d'abord. */
-    private fun atteindre(repere: String) {
-        attendreRepere(repere)
-        ecran.onNodeWithTag(repere).performScrollTo().performClick()
-    }
-
-    /** Une pastille de choix : touchée jusqu'à ce qu'elle soit retenue (la page peut bouger sous le doigt). */
+    /** Une pastille de choix : touchée par le geste commun, puis attendue retenue. */
     private fun retenir(repere: String) {
         val retenue = { ecran.onAllNodes(hasTestTag(repere) and isSelected()).fetchSemanticsNodes().isNotEmpty() }
-        repeat(3) {
-            if (retenue()) return
-            attendreRepere(repere)
-            ecran.onNodeWithTag(repere).performScrollTo().assertIsDisplayed()
-            attendreImmobile(repere)
-            ecran.onNodeWithTag(repere).performClick()
-            ecran.waitForIdle()
-        }
-        if (ecran.runCatching { waitUntil(DELAI_MS, retenue) }.isSuccess) return
-        // DIAGNOSTIC, jamais un passage (CI de #112, A5) : le toucher n'a pas porté. L'action de
-        // la pastille dit si un utilisateur le pourrait : retenue par elle seule, quelque chose
-        // dans l'écran fait obstacle au toucher (défaut de l'écran) ; pas même par elle, c'est la
-        // logique de sélection. Le test échoue dans les deux cas, en disant lequel.
-        val noeud = ecran.onNodeWithTag(repere).fetchSemanticsNode()
-        val racine = ecran.onRoot().fetchSemanticsNode().boundsInRoot
-        ecran.onNodeWithTag(repere).performSemanticsAction(SemanticsActions.OnClick)
-        val parAction = ecran.runCatching { waitUntil(DELAI_MS, retenue) }.isSuccess
-        fail(
-            "retenir($repere) : le toucher ne retient pas la pastille ; " +
-                (if (parAction) "son action la retient — un obstacle au toucher dans l'écran" else "son action non plus — la logique de sélection") +
-                " (bornes ${noeud.boundsInRoot}, racine $racine)",
-        )
-    }
-
-    /** Attend que le nœud ne bouge plus (deux lectures de sa position identiques), 3 s au plus. */
-    private fun attendreImmobile(repere: String) {
-        var avant = ecran.onNodeWithTag(repere).fetchSemanticsNode().boundsInRoot
-        repeat(30) {
-            Thread.sleep(100)
-            val apres = ecran.onNodeWithTag(repere).fetchSemanticsNode().boundsInRoot
-            if (apres == avant) return
-            avant = apres
-        }
+        if (!retenue()) ecran.toucherTag(repere)
+        ecran.waitUntil(DELAI_MS, retenue)
     }
 
     @Test
@@ -174,18 +118,18 @@ class EspaceCSInterfaceTest {
     fun approuverUnNouvelArrivantPuisAccepterUneCommande() {
         attendreRepere(ReperesValidations.compte(501))
         attendreRepere(ReperesValidations.COMPTEUR_COMPTES)
-        atteindre("${ReperesValidations.compte(501)}.approuver")
-        toucher(ReperesValidations.NOUVEL_ARRIVANT)
+        ecran.toucherTag("${ReperesValidations.compte(501)}.approuver")
+        ecran.toucherTag(ReperesValidations.NOUVEL_ARRIVANT)
         attendre("Ancien résident")
-        ecran.onNodeWithTag(ReperesValidations.VALIDATION_ENREGISTRER).performScrollTo().performClick()
+        ecran.toucherTag(ReperesValidations.VALIDATION_ENREGISTRER)
         disparu(ReperesValidations.compte(501))
         attendre("Compte activé — 1 lot rattaché.")
         assertTrue(residence.recues.any { it.startsWith("POST /api/admin/utilisateurs/501/accueil-arrivant") })
 
-        atteindre("${ReperesValidations.commande(71)}.approuver")
-        toucher(ReperesValidations.COMMANDE_CODES)
+        ecran.toucherTag("${ReperesValidations.commande(71)}.approuver")
+        ecran.toucherTag(ReperesValidations.COMMANDE_CODES)
         ecran.onNodeWithTag(ReperesValidations.COMMANDE_CODES).performTextInput("4521")
-        toucher(ReperesValidations.COMMANDE_ACCEPTER)
+        ecran.toucherTag(ReperesValidations.COMMANDE_ACCEPTER)
         disparu(ReperesValidations.commande(71))
         attendre("Commande approuvée")
         assertTrue(residence.recues.any { it.contains("/admin/commandes-acces/71/traiter") && it.contains("\"4521\"") })
@@ -193,19 +137,19 @@ class EspaceCSInterfaceTest {
 
     @Test
     fun rejeterUnCompte() {
-        atteindre("${ReperesValidations.compte(503)}.rejeter")
+        ecran.toucherTag("${ReperesValidations.compte(503)}.rejeter")
         attendre("Rejeter le compte de Alix MODÈLE ?")
-        toucher(ReperesValidations.REJET_CONFIRMER)
+        ecran.toucherTag(ReperesValidations.REJET_CONFIRMER)
         disparu(ReperesValidations.compte(503))
         attendre("Compte rejeté")
     }
 
     @Test
     fun chercherUnBadge() {
-        atteindre(ReperesOnglets.onglet("badges"))
+        ecran.toucherTag(ReperesOnglets.onglet("badges"))
         attendreRepere(ReperesEspaceCS.badge("vigik-1"))
         attendre("5 badges")
-        toucher(ReperesEspaceCS.BADGES_RECHERCHE)
+        ecran.toucherTag(ReperesEspaceCS.BADGES_RECHERCHE)
         ecran.onNodeWithTag(ReperesEspaceCS.BADGES_RECHERCHE).performTextInput("celeste")
         attendreRepere(ReperesEspaceCS.badge("vigik-4"))
         disparu(ReperesEspaceCS.badge("vigik-1"))
@@ -214,60 +158,53 @@ class EspaceCSInterfaceTest {
 
     @Test
     fun unCourrielSeDeplie() {
-        atteindre(ReperesOnglets.onglet("courriels"))
+        ecran.toucherTag(ReperesOnglets.onglet("courriels"))
         attendre("Les 50 derniers messages")
-        atteindre(ReperesEspaceCS.courriel(40))
+        ecran.toucherTag(ReperesEspaceCS.courriel(40))
         attendre("Aucune affaire ne porte le numéro TK-E000066")
         attendre("Camille Essai · envoyé le")
-        atteindre(ReperesEspaceCS.courriel(41))
+        ecran.toucherTag(ReperesEspaceCS.courriel(41))
         attendreRepere(ReperesEspaceCS.courrielAffaire(41))
         attendre("Affaire #TK-A00012")
     }
 
     @Test
     fun creerPuisArchiverUneAnnonce() {
-        atteindre(ReperesOnglets.onglet("annonces-hall"))
-        // Le format et le périmètre AVANT toute frappe : le clavier, ouvert par la frappe, couvre
-        // le bas de la page (la sémantique l'ignore) et le toucher tombait sur lui (CI de #112).
-        // Le lieu que le serveur nomme arrive après le choix et déplace la page : chaque
-        // pastille est touchée immobile, jusqu'à être retenue.
-        // `performScrollTo` ne fait défiler que le défilant le plus proche : pour A5, la rangée
-        // horizontale des formats, pas la page (CI de #112, « not displayed »). La page d'abord.
-        attendreRepere(ReperesEspaceCS.NOUVELLE_FORMATS)
-        ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_FORMATS).performScrollTo()
+        ecran.toucherTag(ReperesOnglets.onglet("annonces-hall"))
+        // Le format et le périmètre AVANT toute frappe (#112). toucher() amène A5 à l'écran
+        // à travers la page PUIS la rangée des formats, et attend qu'il soit immobile (#119).
         retenir(ReperesEspaceCS.nouvelleFormat("a5"))
         retenir("${ReperesEspaceCS.NOUVELLE_PERIMETRE}.bat_a")
         // ⚠️ Attente retirée : attendre("Bâtiment A ›") — le lieu servi par LieuDeLaSaisie ne
         // paraît pas en 10 s à l'émulateur (#129). À rétablir une fois #129 corrigé ; le corps
         // envoyé (perimetre_cible) reste vérifié plus bas.
-        toucher(ReperesEspaceCS.NOUVELLE_TITRE)
+        ecran.toucherTag(ReperesEspaceCS.NOUVELLE_TITRE)
         ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_TITRE).performTextInput("Ascenseur à l'arrêt")
         ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_MESSAGE).performTextInput("Lundi matin.")
-        Espresso.closeSoftKeyboard()
-        atteindre(ReperesEspaceCS.NOUVELLE_CREER)
+        ecran.toucherTag(ReperesEspaceCS.NOUVELLE_CREER)
         attendre("Annonce A5 créée et envoyée à 1 membre du CS")
         val creation = synchronized(residence) { residence.recues.toList() }.single { it.startsWith("POST /api/annonces-hall ") }
         assertTrue(creation, creation.contains("\"a5\"") && creation.contains("\"perimetre_cible\":[\"bat_a\"]"))
 
         // Les archives : en cours puis archivées ; le menu « … » range une affiche.
         attendreRepere(ReperesEspaceCS.annonce(2))
-        atteindre(ReperesEspaceCS.annonceGestes(5))
-        toucher(ReperesEspaceCS.ANNONCE_ARCHIVER)
+        ecran.toucherTag(ReperesEspaceCS.annonceGestes(5))
+        ecran.toucherTag(ReperesEspaceCS.ANNONCE_ARCHIVER)
         attendre("Annonce archivée")
         assertTrue(residence.recues.any { it.startsWith("PATCH /api/annonces-hall/5") })
     }
 
     @Test
     fun leReportingEtSesModes() {
-        atteindre(ReperesOnglets.onglet("reporting"))
+        ecran.toucherTag(ReperesOnglets.onglet("reporting"))
         attendreRepere(ReperesEspaceCS.REPORTING_TOTAL)
         attendre("affaires non fermées")
         attendreRepere(ReperesEspaceCS.reportingAffaire(12))
         attendre("Nouveau message depuis le dernier résumé")
-        atteindre(ReperesEspaceCS.reportingMode("entretien"))
+        ecran.toucherTag(ReperesEspaceCS.reportingMode("entretien"))
         attendre("À venir")
         assertTrue(residence.recues.any { it.startsWith("GET /api/suivi-affaires?mode=entretien") })
-        atteindre(ReperesEspaceCS.reportingMode("renouvellements"))
+        ecran.toucherTag(ReperesEspaceCS.reportingMode("renouvellements"))
         attendreRepere(ReperesEspaceCS.RENOUVELLEMENTS_PREAVIS)
         attendre("Préavis en cours")
         attendreRepere(ReperesEspaceCS.renouvellementDiagnostic(1))
@@ -276,18 +213,18 @@ class EspaceCSInterfaceTest {
     /** Annuaire CS & Syndic : les fiches, l'en-tête du conseil en feuille, puis un interlocuteur monté d'un rang. */
     @Test
     fun lAnnuaireDuConseilEtDuSyndic() {
-        atteindre(ReperesOnglets.onglet("annuaire"))
+        ecran.toucherTag(ReperesOnglets.onglet("annuaire"))
         attendreRepere(ReperesEspaceCS.annuaireConseil(0))
         attendre("Camille EXEMPLE")
-        atteindre(ReperesEspaceCS.ANNUAIRE_CONSEIL_MODIFIER)
+        ecran.toucherTag(ReperesEspaceCS.ANNUAIRE_CONSEIL_MODIFIER)
         attendreRepere(ReperesEspaceCS.FEUILLE_ENTETE_CONSEIL)
-        ecran.onNodeWithTag("${ReperesEspaceCS.FEUILLE_ENTETE_CONSEIL}.enregistrer").performScrollTo().performClick()
+        ecran.onNodeWithTag("${ReperesEspaceCS.FEUILLE_ENTETE_CONSEIL}.enregistrer").toucher()
         disparu(ReperesEspaceCS.FEUILLE_ENTETE_CONSEIL)
         attendre("Conseil Syndical enregistré")
         assertTrue(residence.recues.any { it.startsWith("PUT /api/admin/annuaire/cs") && it.contains("\"ag_annee\":2026") })
 
-        atteindre("${ReperesEspaceCS.annuaireSyndic(1)}.gestes")
-        toucher("${ReperesEspaceCS.annuaireSyndic(1)}.monter")
+        ecran.toucherTag("${ReperesEspaceCS.annuaireSyndic(1)}.gestes")
+        ecran.toucherTag("${ReperesEspaceCS.annuaireSyndic(1)}.monter")
         attendre("Syndic enregistré")
         assertTrue(residence.recues.any { it.startsWith("PUT /api/admin/annuaire/syndic") && it.indexOf("Sacha") < it.indexOf("Dominique") })
     }

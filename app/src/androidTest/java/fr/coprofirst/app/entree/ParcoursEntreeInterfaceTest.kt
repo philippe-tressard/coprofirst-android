@@ -7,13 +7,14 @@ import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import fr.coprofirst.app.commun.toucher
+import fr.coprofirst.app.commun.toucherTag
+import fr.coprofirst.app.commun.toucherTexte
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -32,7 +33,7 @@ class ParcoursEntreeInterfaceTest {
     fun ouvrir() {
         val parcours = serveur.parcours()
         ecran.setContent { NavigationEntree(serveur.apparence(), parcours) }
-        ecran.onNodeWithText("Entrer dans ma résidence").performClick()
+        ecran.toucherTexte("Entrer dans ma résidence")
     }
 
     @After
@@ -65,24 +66,24 @@ class ParcoursEntreeInterfaceTest {
         attendre("Les Glycines")
         ecran.onNodeWithTag(Reperes.EMAIL).performTextInput("a@exemple.test")
         ecran.onNodeWithTag(Reperes.MOT_DE_PASSE).performTextInput("secret")
-        ecran.onNodeWithTag(Reperes.VALIDER).assertIsEnabled().performClick()
+        ecran.onNodeWithTag(Reperes.VALIDER).assertIsEnabled().toucher()
         attendre("Vérifiez l'adresse")
         attendre("Adresse reconnue comme une installation CoproFirst.")
         assertEquals("seul GET /config est parti", 1, serveur.serveur.requestCount)
         serveur.repondre(200) // POST /auth/login
         serveur.repondre(404) // GET /auth/me : sans profil, la barre reste celle de tous
-        ecran.onNodeWithText("Me connecter à cette adresse").performClick()
+        ecran.toucherTexte("Me connecter à cette adresse")
         // La résidence ouverte : la barre, la première page — le fil, vide (`ServeurDeTest.flux`).
         attendre("Rien de neuf")
-        ecran.onNodeWithText("Plus").performClick()
+        ecran.toucherTexte("Plus")
         // « Se déconnecter » est au bas du Profil, comme sur l'iOS (#21) — là quel que soit
         // l'état du compte (chargé, en erreur, en chargement) — et se confirme.
         serveur.repondre(404) // GET /auth/me du Profil
         serveur.repondre(200) // POST /auth/logout
-        ecran.onNodeWithTag("plus.profil").performClick()
+        ecran.toucherTag("plus.profil")
         ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag("profil.deconnecter")).fetchSemanticsNodes().isNotEmpty() }
-        ecran.onNodeWithTag("profil.deconnecter").performClick()
-        ecran.onNodeWithTag("sortie.confirmer").performClick()
+        ecran.toucherTag("profil.deconnecter")
+        ecran.toucherTag("sortie.confirmer")
         attendre("Connectez-vous à votre espace")
     }
 

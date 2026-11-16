@@ -9,12 +9,9 @@ import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
-import androidx.test.espresso.Espresso
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.longClick
@@ -24,6 +21,7 @@ import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.commun.AvisEphemere
 import fr.coprofirst.app.commun.perimetres.Perimetre
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.toucher
 import fr.coprofirst.app.navigation.ActionsDeclarees
 import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.navigation.DroitsOnglet
@@ -193,19 +191,6 @@ class AffairesInterfaceTest {
 
     private fun el(tag: String): SemanticsNodeInteraction = ecran.onNodeWithTag(tag, useUnmergedTree = true)
 
-    /**
-     * Un bouton d'une feuille de saisie : amené à l'écran avant d'être touché. Après une
-     * frappe, le clavier couvre le pied de la feuille, et un toucher hors de la zone visible
-     * se perd (rouge en CI, run 43777305471).
-     */
-    private fun toucherDansLaFeuille(noeud: SemanticsNodeInteraction) {
-        Espresso.closeSoftKeyboard()
-        ecran.waitForIdle()
-        noeud.performScrollTo()
-        ecran.waitForIdle()
-        noeud.performClick()
-    }
-
     /** La liste montre les affaires actives ; le filtre « Suivi » retient un état, son compte sur la pastille. */
     @Test
     fun laListeSeFiltreParSuivi() {
@@ -213,10 +198,10 @@ class AffairesInterfaceTest {
         attendre(ReperesAffaires.carte("A-0001"))
         el(ReperesAffaires.carte("A-0002")).assertIsDisplayed()
         disparait(ReperesAffaires.carte("A-0004"))
-        el(ReperesAffaires.suivi("ouvert")).performClick()
+        el(ReperesAffaires.suivi("ouvert")).toucher()
         disparait(ReperesAffaires.carte("A-0002"))
         el(ReperesAffaires.carte("A-0001")).assertIsDisplayed()
-        el(ReperesAffaires.suivi(null)).performClick()
+        el(ReperesAffaires.suivi(null)).toucher()
         attendre(ReperesAffaires.carte("A-0002"))
     }
 
@@ -237,7 +222,7 @@ class AffairesInterfaceTest {
         attendre(ReperesAffaires.carte("A-0002"))
         el(ReperesAffaires.carte("A-0002")).performTouchInput { longClick() }
         attendre(ReperesAffaires.archiver("A-0002"))
-        el(ReperesAffaires.archiver("A-0002")).performClick()
+        el(ReperesAffaires.archiver("A-0002")).toucher()
         disparait(ReperesAffaires.carte("A-0002"))
         assertEquals(listOf(2), service.archivees)
     }
@@ -247,18 +232,18 @@ class AffairesInterfaceTest {
     fun uneCarteSeDeplaceAuKanban() {
         val service = ouvrir()
         attendre("onglet.kanban")
-        el("onglet.kanban").performClick()
+        el("onglet.kanban").toucher()
         attendre(ReperesAffaires.carteKanban("A-0001"))
         attendreTexte("2 affaires suivies")
         el(ReperesAffaires.carteKanban("A-0001")).performTouchInput { longClick() }
         attendre(ReperesAffaires.deplacer("A-0001", "syndic"))
-        el(ReperesAffaires.deplacer("A-0001", "syndic")).performClick()
+        el(ReperesAffaires.deplacer("A-0001", "syndic")).toucher()
         ecran.waitUntil(DELAI_MS) { service.deplacements == listOf(1 to "en_cours") }
         el(ReperesAffaires.carteKanban("A-0002")).performTouchInput { longClick() }
         attendre(ReperesAffaires.deplacer("A-0002", "termine"))
-        el(ReperesAffaires.deplacer("A-0002", "termine")).performClick()
+        el(ReperesAffaires.deplacer("A-0002", "termine")).toucher()
         attendre(ReperesAffaires.CLORE_SANS_FUSION)
-        el(ReperesAffaires.CLORE_SANS_FUSION).performClick()
+        el(ReperesAffaires.CLORE_SANS_FUSION).toucher()
         ecran.waitUntil(DELAI_MS) { service.deplacements.lastOrNull() == (2 to "résolu") }
     }
 
@@ -275,12 +260,12 @@ class AffairesInterfaceTest {
     fun lesArchivesSeReplientParAnnee() {
         ouvrir()
         attendre("onglet.archives")
-        el("onglet.archives").performClick()
+        el("onglet.archives").toucher()
         attendre(ReperesAffaires.archive("A-0005"))
         disparait(ReperesAffaires.archive("A-0004"))
         // 400 jours plus tôt : toujours une autre année que 20 jours plus tôt.
         val annee = Instant.now().minus(400, ChronoUnit.DAYS).atZone(FormatsDuSite.PARIS).year
-        el(ReperesAffaires.annee(annee)).performClick()
+        el(ReperesAffaires.annee(annee)).toucher()
         attendre(ReperesAffaires.archive("A-0004"))
     }
 
@@ -289,7 +274,7 @@ class AffairesInterfaceTest {
     fun uneCarteOuvreSaFicheParLaPorte() {
         ouvrir()
         attendre(ReperesAffaires.carte("A-0001"))
-        el(ReperesAffaires.carte("A-0001")).performClick()
+        el(ReperesAffaires.carte("A-0001")).toucher()
         ecran.waitUntil(DELAI_MS) { fiches == listOf(1) }
     }
 
@@ -300,7 +285,7 @@ class AffairesInterfaceTest {
         attendre(ReperesAffaires.etape(EtapeFil.Cle.Suite))
         attendreTexte("Ouvert → Chez le syndic")
         attendre(ReperesAffaires.message(41))
-        el(ReperesAffaires.element("suite.31")).performClick()
+        el(ReperesAffaires.element("suite.31")).toucher()
         attendreTexte("Le syndic est prévenu.")
     }
 
@@ -309,13 +294,13 @@ class AffairesInterfaceTest {
     fun uneNouvelleAffaireSEnvoie() {
         val service = ouvrir()
         attendre(ReperesNouvelle.NOUVELLE)
-        el(ReperesNouvelle.NOUVELLE).performClick()
+        el(ReperesNouvelle.NOUVELLE).toucher()
         attendre(ReperesChamps.NOUVELLE.categorie("panne"))
         el(ReperesNouvelle.DEPUIS_LE_SITE).assertExists()
-        el(ReperesChamps.NOUVELLE.categorie("panne")).performClick()
+        el(ReperesChamps.NOUVELLE.categorie("panne")).toucher()
         el(ReperesChamps.NOUVELLE.titre).performTextInput("Interphone muet")
         el(ReperesChamps.NOUVELLE.description).performTextInput("Le bouton du 3e ne sonne plus.")
-        toucherDansLaFeuille(el(ReperesNouvelle.ENVOYER))
+        el(ReperesNouvelle.ENVOYER).toucher()
         attendre(ReperesAffaires.carte("A-0009"))
         assertEquals("copro", service.creees.single().perimetre)
         assertEquals("panne", service.creees.single().categorie)
@@ -326,12 +311,12 @@ class AffairesInterfaceTest {
     fun uneSaisieEntameeDemandeAvantDAbandonner() {
         ouvrir()
         attendre(ReperesNouvelle.NOUVELLE)
-        el(ReperesNouvelle.NOUVELLE).performClick()
+        el(ReperesNouvelle.NOUVELLE).toucher()
         attendre(ReperesChamps.NOUVELLE.titre)
         el(ReperesChamps.NOUVELLE.titre).performTextInput("Brouillon")
-        toucherDansLaFeuille(ecran.onNode(hasText("Annuler")))
+        ecran.onNode(hasText("Annuler")).toucher()
         attendre(ReperesNouvelle.ABANDONNER)
-        el(ReperesNouvelle.ABANDONNER).performClick()
+        el(ReperesNouvelle.ABANDONNER).toucher()
         disparait(ReperesChamps.NOUVELLE.titre)
     }
 
@@ -340,16 +325,16 @@ class AffairesInterfaceTest {
     fun laFicheAjouteUneSuiteEtRepond() {
         val service = ouvrirFiche(1)
         attendre(repereGeste(GesteAffaire.Suite))
-        el(repereGeste(GesteAffaire.Suite)).performClick()
+        el(repereGeste(GesteAffaire.Suite)).toucher()
         attendre(ReperesFeuilles.suiteEtat("en_cours"))
-        el(ReperesFeuilles.suiteEtat("en_cours")).performClick()
-        toucherDansLaFeuille(el(ReperesFeuilles.SUITE_ENREGISTRER))
+        el(ReperesFeuilles.suiteEtat("en_cours")).toucher()
+        el(ReperesFeuilles.SUITE_ENREGISTRER).toucher()
         attendreTexte("Statut mis à jour")
         assertEquals("en_cours", service.suites.single().second.statut)
-        el(repereGeste(GesteAffaire.Repondre)).performClick()
+        el(repereGeste(GesteAffaire.Repondre)).toucher()
         attendre(ReperesFeuilles.REPONDRE_TEXTE)
         el(ReperesFeuilles.REPONDRE_TEXTE).performTextInput("Merci !")
-        toucherDansLaFeuille(el(ReperesFeuilles.REPONDRE_ENVOYER))
+        el(ReperesFeuilles.REPONDRE_ENVOYER).toucher()
         attendreTexte("Réponse envoyée")
         assertEquals(listOf(1 to "Merci !"), service.reponses)
     }
@@ -359,22 +344,22 @@ class AffairesInterfaceTest {
     fun uneEntreeDeLaSuiteSeCorrigeEtSeSupprime() {
         val service = ouvrirFiche(1)
         attendre(ReperesAffaires.gestesSuite(31))
-        el(ReperesAffaires.gestesSuite(31)).performClick()
+        el(ReperesAffaires.gestesSuite(31)).toucher()
         attendre(ReperesAffaires.gesteSuite(GesteSuite.Modifier))
-        el(ReperesAffaires.gesteSuite(GesteSuite.Modifier)).performClick()
+        el(ReperesAffaires.gesteSuite(GesteSuite.Modifier)).toucher()
         attendre(ReperesFeuilles.SUITE_TEXTE)
         el(ReperesFeuilles.SUITE_TEXTE).performTextReplacement("Le syndic est prévenu. Relancé.")
-        toucherDansLaFeuille(el(ReperesFeuilles.SUITE_ENREGISTRER))
+        el(ReperesFeuilles.SUITE_ENREGISTRER).toucher()
         attendre(ReperesAffaires.APPLIQUER)
         attendreTexte("L'affaire a avancé depuis")
-        el(ReperesAffaires.APPLIQUER).performClick()
+        el(ReperesAffaires.APPLIQUER).toucher()
         ecran.waitUntil(DELAI_MS) { service.suites.lastOrNull()?.second?.statut == "en_cours" }
         assertEquals(true, service.corrections.single().contenuHtml?.contains("Relancé"))
-        el(ReperesAffaires.gestesSuite(31)).performClick()
+        el(ReperesAffaires.gestesSuite(31)).toucher()
         attendre(ReperesAffaires.gesteSuite(GesteSuite.Supprimer))
-        el(ReperesAffaires.gesteSuite(GesteSuite.Supprimer)).performClick()
+        el(ReperesAffaires.gesteSuite(GesteSuite.Supprimer)).toucher()
         attendre(ReperesAffaires.CONFIRMER_SUPPRESSION)
-        el(ReperesAffaires.CONFIRMER_SUPPRESSION).performClick()
+        el(ReperesAffaires.CONFIRMER_SUPPRESSION).toucher()
         ecran.waitUntil(DELAI_MS) { service.supprimees == listOf(31) }
     }
 
@@ -383,11 +368,11 @@ class AffairesInterfaceTest {
     fun uneAffaireSeModifie() {
         val service = ouvrirFiche(1)
         attendre(repereGeste(GesteAffaire.Modifier))
-        el(repereGeste(GesteAffaire.Modifier)).performClick()
+        el(repereGeste(GesteAffaire.Modifier)).toucher()
         attendre(ReperesChamps.MODIFIER.titre)
         // Le champ est déjà rempli : on remplace son texte (une frappe s'écrirait au début).
         el(ReperesChamps.MODIFIER.titre).performTextReplacement("Fuite au local vélos")
-        toucherDansLaFeuille(el(ReperesNouvelle.MODIFIER_ENREGISTRER))
+        el(ReperesNouvelle.MODIFIER_ENREGISTRER).toucher()
         attendreTexte("Affaire modifiée")
         assertEquals(listOf(EditionAffaire(titre = "Fuite au local vélos")), service.editions)
     }

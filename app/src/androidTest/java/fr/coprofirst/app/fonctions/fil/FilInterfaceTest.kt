@@ -8,14 +8,15 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.commun.detail.sondage.ReperesSondage
+import fr.coprofirst.app.commun.toucher
+import fr.coprofirst.app.commun.toucherDescription
+import fr.coprofirst.app.commun.toucherTag
+import fr.coprofirst.app.commun.toucherTexte
 import fr.coprofirst.app.entree.NavigationEntree
 import fr.coprofirst.app.entree.Reperes
 import fr.coprofirst.app.entree.ServeurDeTest
@@ -41,17 +42,17 @@ class FilInterfaceTest {
     fun ouvrir() {
         serveur.flux = fil(Instant.now())
         ecran.setContent { NavigationEntree(serveur.apparence(), serveur.parcours()) }
-        ecran.onNodeWithText("Entrer dans ma résidence").performClick()
+        ecran.toucherTexte("Entrer dans ma résidence")
         serveur.residence("Les Glycines")
         ecran.onNodeWithTag(Reperes.RESIDENCE).performTextInput("residence.example.com")
         attendreTexte("Les Glycines")
         ecran.onNodeWithTag(Reperes.EMAIL).performTextInput("a@example.com")
         ecran.onNodeWithTag(Reperes.MOT_DE_PASSE).performTextInput("secret")
-        ecran.onNodeWithTag(Reperes.VALIDER).performClick()
+        ecran.toucherTag(Reperes.VALIDER)
         attendreTexte("Adresse reconnue comme une installation CoproFirst.")
         serveur.repondre(200) // POST /auth/login
         serveur.repondre(404) // GET /auth/me : sans profil, la barre reste celle de tous
-        ecran.onNodeWithText("Me connecter à cette adresse").performClick()
+        ecran.toucherTexte("Me connecter à cette adresse")
     }
 
     @After
@@ -86,7 +87,7 @@ class FilInterfaceTest {
     @Test
     fun leResumeSOuvreDUnToucher() {
         attendre("fil.point_conseil:2")
-        ecran.onNodeWithTag("fil.point_conseil:2").performClick()
+        ecran.toucherTag("fil.point_conseil:2")
         attendre(REPERE_RESUME)
         attendreTexte("Ordre du jour : ascenseur, ravalement.")
         attendreTexte("Voir sur le site")
@@ -98,11 +99,11 @@ class FilInterfaceTest {
         attendre("fil.sondage_ouvert:3")
         serveur.fixes["/api/sondages/3"] = SONDAGE
         serveur.repondre(404) // GET /auth/me, lu avec la fiche : sans compte, « Signaler » partout
-        ecran.onNodeWithTag("fil.sondage_ouvert:3").assertHasClickAction().performClick()
+        ecran.onNodeWithTag("fil.sondage_ouvert:3").assertHasClickAction().toucher()
         attendre(ReperesSondage.QUESTION)
         attendreTexte("Samedi 6 juin")
         attendreTexte("Sondage") // le titre de la barre du haut
-        ecran.onNodeWithContentDescription("Retour").performClick()
+        ecran.toucherDescription("Retour")
         ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(ReperesSondage.QUESTION)).fetchSemanticsNodes().isEmpty() }
     }
 

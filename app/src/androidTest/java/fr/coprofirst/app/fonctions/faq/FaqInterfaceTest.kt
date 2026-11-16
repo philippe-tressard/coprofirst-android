@@ -6,12 +6,11 @@ package fr.coprofirst.app.fonctions.faq
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.ThemeCoproFirst
+import fr.coprofirst.app.commun.amenerTag
+import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.delay
 import org.junit.Assert.assertEquals
@@ -52,9 +51,9 @@ class FaqInterfaceTest {
     fun uneQuestionSeDeplieEtLaRedactionSeDitAQuiLePeut() {
         ouvrir(redige = true)
         attendre(ReperesFaq.question(2))
-        ecran.onNodeWithTag(ReperesFaq.question(2)).performScrollTo().performClick()
+        ecran.toucherTag(ReperesFaq.question(2))
         ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasText("Pas de gravats", substring = true)).fetchSemanticsNodes().isNotEmpty() }
-        ecran.onNodeWithTag(ReperesFaq.REDACTION).performScrollTo().assertIsDisplayed()
+        ecran.amenerTag(ReperesFaq.REDACTION).assertIsDisplayed()
     }
 
     /** Un droit illisible vaut « non » : la FAQ se lit, sans l'indication de rédaction (#37). */

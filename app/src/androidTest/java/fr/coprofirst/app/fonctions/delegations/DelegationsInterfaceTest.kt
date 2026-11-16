@@ -7,13 +7,14 @@ import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.ThemeCoproFirst
+import fr.coprofirst.app.commun.amenerTag
+import fr.coprofirst.app.commun.toucher
+import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.delay
 import org.junit.Assert.assertEquals
@@ -89,11 +90,6 @@ class DelegationsInterfaceTest {
         ecran.onAllNodes(hasText(texte, substring = true)).fetchSemanticsNodes().isNotEmpty()
     }
 
-    private fun toucher(repere: String) {
-        attendre(repere)
-        ecran.onNodeWithTag(repere).performScrollTo().performClick()
-    }
-
     @Test
     fun lesDelegationsSAcceptentEtSeRevoquent() {
         ouvrir()
@@ -105,14 +101,14 @@ class DelegationsInterfaceTest {
         )
         attendreTexte("Du 06/11/2026 au 04/02/2027")
         attendreTexte("Du 11/07/2026 — illimité")
-        toucher(ReperesDelegations.accepter(12))
+        ecran.toucherTag(ReperesDelegations.accepter(12))
         disparait(ReperesDelegations.accepter(12))
         attendreTexte("Délégation acceptée")
 
         // Révoquer demande une confirmation.
-        toucher(ReperesDelegations.revoquer(8))
+        ecran.toucherTag(ReperesDelegations.revoquer(8))
         attendre(ReperesDelegations.REVOQUER_CONFIRMER)
-        ecran.onNodeWithTag(ReperesDelegations.REVOQUER_CONFIRMER).performClick()
+        ecran.toucherTag(ReperesDelegations.REVOQUER_CONFIRMER)
         disparait(ReperesDelegations.revoquer(8))
         attendreTexte("Délégation révoquée")
     }
@@ -120,27 +116,27 @@ class DelegationsInterfaceTest {
     @Test
     fun uneNouvelleDelegationAttendDeuxPersonnes() {
         val residence = ouvrir()
-        toucher(ReperesDelegations.NOUVELLE)
+        ecran.toucherTag(ReperesDelegations.NOUVELLE)
         attendre(ReperesDelegations.ENREGISTRER)
         ecran.onNodeWithTag(ReperesDelegations.ENREGISTRER).assertIsNotEnabled()
 
-        toucher(ReperesDelegations.MANDANT)
+        ecran.toucherTag(ReperesDelegations.MANDANT)
         // Le compte inactif ne se propose pas.
         attendre(ReperesDelegations.resident(4))
         assertEquals(0, ecran.onAllNodes(hasTestTag(ReperesDelegations.resident(9))).fetchSemanticsNodes().size)
         ecran.onNodeWithTag(ReperesDelegations.RECHERCHE).performTextInput("marc")
         disparait(ReperesDelegations.resident(3))
-        ecran.onNodeWithTag(ReperesDelegations.resident(4)).performClick()
+        ecran.toucherTag(ReperesDelegations.resident(4))
         attendreTexte("Marc DÉMO (marc@exemple.test)")
         ecran.onNodeWithTag(ReperesDelegations.ENREGISTRER).assertIsNotEnabled()
 
-        toucher(ReperesDelegations.AIDANT)
+        ecran.toucherTag(ReperesDelegations.AIDANT)
         attendre(ReperesDelegations.resident(7))
         // La personne aidée ne peut pas être son propre aidant.
         assertEquals(0, ecran.onAllNodes(hasTestTag(ReperesDelegations.resident(4))).fetchSemanticsNodes().size)
-        ecran.onNodeWithTag(ReperesDelegations.resident(7)).performClick()
+        ecran.toucherTag(ReperesDelegations.resident(7))
         ecran.onNodeWithTag(ReperesDelegations.MOTIF).performTextInput("Assistance personne âgée")
-        ecran.onNodeWithTag(ReperesDelegations.ENREGISTRER).performScrollTo().assertIsEnabled().performClick()
+        ecran.amenerTag(ReperesDelegations.ENREGISTRER).assertIsEnabled().toucher()
 
         attendre(ReperesDelegations.carte(20))
         attendreTexte("Délégation créée")

@@ -12,10 +12,8 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.api.modeles.AnnonceRead
@@ -33,6 +31,7 @@ import fr.coprofirst.app.commun.CibleSignalement
 import fr.coprofirst.app.commun.GestesDeSortie
 import fr.coprofirst.app.commun.StockageApparence
 import fr.coprofirst.app.commun.onglets.ReperesOnglets
+import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.navigation.ActionsDeclarees
 import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.navigation.ContexteDeMenu
@@ -159,11 +158,8 @@ class CommunauteInterfaceTest {
 
     private fun el(tag: String): SemanticsNodeInteraction = ecran.onNodeWithTag(tag)
 
-    private fun amener(tag: String): SemanticsNodeInteraction = el(tag).performScrollTo()
-
     private fun rubrique(id: String) {
-        attendre(ReperesOnglets.onglet(id))
-        el(ReperesOnglets.onglet(id)).performScrollTo().performClick()
+        ecran.toucherTag(ReperesOnglets.onglet(id))
         ecran.waitForIdle()
     }
 
@@ -176,26 +172,26 @@ class CommunauteInterfaceTest {
         rubrique("idees")
         attendre(ReperesCommunaute.voter(5))
         el(ReperesCommunaute.voter(5)).assert(hasContentDescription("Voter pour cette idée", substring = true))
-        el(ReperesCommunaute.voter(5)).performClick()
+        ecran.toucherTag(ReperesCommunaute.voter(5))
         ecran.waitUntil(DELAI_MS) {
             ecran.onAllNodes(hasTestTag(ReperesCommunaute.voter(5)) and hasContentDescription("Retirer mon vote", substring = true))
                 .fetchSemanticsNodes().isNotEmpty()
         }
         assertEquals(1, service.votes)
 
-        amener(ReperesCommunaute.idee(3)).performClick()
+        ecran.toucherTag(ReperesCommunaute.idee(3))
         attendreTexte("Excellente idée, je veux bien m'en occuper.")
-        el(ReperesCommunaute.FERMER).performClick()
+        ecran.toucherTag(ReperesCommunaute.FERMER)
 
         rubrique("annonces")
         attendre(ReperesCommunaute.annonce(21))
-        amener(ReperesCommunaute.annonce(21)).performClick()
+        ecran.toucherTag(ReperesCommunaute.annonce(21))
         attendre(ReperesCommunaute.ANNONCE_CONTACT)
-        el(ReperesCommunaute.FERMER).performClick()
+        ecran.toucherTag(ReperesCommunaute.FERMER)
 
         rubrique("avis")
         attendre(ReperesCommunaute.avis(4))
-        el(ReperesCommunaute.CREER).performClick()
+        ecran.toucherTag(ReperesCommunaute.CREER)
         attendre(ReperesCommunaute.ENREGISTRER)
         el(ReperesCommunaute.ENREGISTRER).assertIsNotEnabled()
     }
@@ -222,11 +218,11 @@ class CommunauteInterfaceTest {
         val service = ouvrir()
         rubrique("idees")
         attendre(ReperesCommunaute.CREER)
-        el(ReperesCommunaute.CREER).performClick()
+        ecran.toucherTag(ReperesCommunaute.CREER)
         attendre(ReperesCommunaute.ENREGISTRER)
         ecran.onNode(hasText("Titre")).performTextInput("Un abri à vélos")
         ecran.onNode(hasText("Description")).performTextInput("Couvert, près du local poubelles.")
-        el(ReperesCommunaute.ENREGISTRER).performClick()
+        ecran.toucherTag(ReperesCommunaute.ENREGISTRER)
         ecran.waitUntil(DELAI_MS) { service.deposes.isNotEmpty() }
         assertEquals(listOf("Un abri à vélos"), service.deposes)
     }

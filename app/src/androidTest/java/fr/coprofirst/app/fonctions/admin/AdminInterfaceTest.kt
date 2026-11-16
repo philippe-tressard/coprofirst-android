@@ -15,7 +15,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.printToString
-import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -29,6 +28,7 @@ import fr.coprofirst.app.commun.TonAvis
 import fr.coprofirst.app.commun.onglets.CadreAOnglets
 import fr.coprofirst.app.commun.onglets.OngletsSurLeSite
 import fr.coprofirst.app.commun.onglets.ReperesOnglets
+import fr.coprofirst.app.commun.toucher
 import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.navigation.ContexteDeMenu
 import fr.coprofirst.app.navigation.DroitsOnglet
@@ -83,7 +83,7 @@ class AdminInterfaceTest {
         for (id in listOf("telemetry", "maintenance", OngletsSurLeSite.ID)) {
             ecran.onNodeWithTag(ReperesOnglets.onglet(id)).assertExists()
         }
-        ecran.onNodeWithTag(ReperesOnglets.onglet("maintenance")).performScrollTo().performClick()
+        ecran.onNodeWithTag(ReperesOnglets.onglet("maintenance")).toucher()
         ecran.waitUntil(DELAI_MS) { service.lectures.contains("export") }
         ecran.onNodeWithTag(ReperesAdmin.EXPORT).performScrollTo().assertIsDisplayed()
         ecran.onNodeWithTag(ReperesAdmin.tache("backup")).assertDoesNotExist()
@@ -91,7 +91,7 @@ class AdminInterfaceTest {
         ecran.onNodeWithTag(ReperesAdmin.surLeSite("maintenance")).performScrollTo().assertIsDisplayed()
 
         // Ce que l'app ne porte pas : « Sur le site », avec son lien.
-        ecran.onNodeWithTag(ReperesOnglets.onglet(OngletsSurLeSite.ID)).performScrollTo().performClick()
+        ecran.onNodeWithTag(ReperesOnglets.onglet(OngletsSurLeSite.ID)).toucher()
         ecran.onNodeWithTag(ReperesOnglets.surLeSite("imports")).performScrollTo().assertIsDisplayed()
     }
 
@@ -110,7 +110,7 @@ class AdminInterfaceTest {
     @Test
     fun laTelemetrieChangeDeVue() {
         ouvrir(administrateur)
-        ecran.onNodeWithTag(ReperesOnglets.onglet("telemetry")).performScrollTo().performClick()
+        ecran.onNodeWithTag(ReperesOnglets.onglet("telemetry")).toucher()
         // La page bouge à l'arrivée du tableau (filtre, graphe) : on ne touche qu'une fois
         // le graphe affiché, puis jusqu'à voir la pastille retenue, essais bornés (#112).
         attendre("le premier tableau") { existe(ReperesAdmin.GRAPHE) }
@@ -128,17 +128,17 @@ class AdminInterfaceTest {
     @Test
     fun lesUtilisateursEtLaFiche() {
         ouvrir(administrateur)
-        ecran.onNodeWithTag(ReperesOnglets.onglet("utilisateurs")).performScrollTo().performClick()
+        ecran.onNodeWithTag(ReperesOnglets.onglet("utilisateurs")).toucher()
         ecran.waitUntil(DELAI_MS) { service.lectures.contains("utilisateurs") }
         ecran.onNodeWithTag(ReperesAdmin.utilisateur(11)).assertExists()
         ecran.onNodeWithTag(ReperesAdmin.RECHERCHE).performTextInput("dominique")
         ecran.onNodeWithTag(ReperesAdmin.utilisateur(11)).assertDoesNotExist()
-        ecran.onNodeWithTag(ReperesAdmin.utilisateur(12)).performScrollTo().performClick()
+        ecran.onNodeWithTag(ReperesAdmin.utilisateur(12)).toucher()
         ecran.onNodeWithTag(ReperesAdmin.FICHE_FERMER).assertIsDisplayed()
         ecran.onNodeWithTag(ReperesAdmin.FICHE_SUPPRIMER).assertExists()
         ecran.onNodeWithTag(ReperesAdmin.role("operateur")).assertDoesNotExist()
         // Un geste ferme la fiche, son annonce suit.
-        ecran.onNodeWithTag(ReperesAdmin.FICHE_COMMUNAUTE).performScrollTo().performClick()
+        ecran.onNodeWithTag(ReperesAdmin.FICHE_COMMUNAUTE).toucher()
         ecran.waitUntil(DELAI_MS) { service.lectures.contains("ban-12") }
         ecran.waitUntil(DELAI_MS) { ecran.onAllNodesWithTag(ReperesAdmin.FICHE_FERMER).fetchSemanticsNodes().isEmpty() }
     }
@@ -146,12 +146,12 @@ class AdminInterfaceTest {
     @Test
     fun laConfirmationDitVotreCompte() {
         ouvrir(administrateur)
-        ecran.onNodeWithTag(ReperesOnglets.onglet("utilisateurs")).performScrollTo().performClick()
+        ecran.onNodeWithTag(ReperesOnglets.onglet("utilisateurs")).toucher()
         ecran.waitUntil(DELAI_MS) { service.lectures.contains("utilisateurs") }
-        ecran.onNodeWithTag(ReperesAdmin.utilisateur(11)).performScrollTo().performClick()
-        ecran.onNodeWithTag(ReperesAdmin.role("conseil_syndical")).performScrollTo().performClick()
+        ecran.onNodeWithTag(ReperesAdmin.utilisateur(11)).toucher()
+        ecran.onNodeWithTag(ReperesAdmin.role("conseil_syndical")).toucher()
         ecran.onNodeWithText("Retirer le rôle Conseil syndical de votre compte ?").assertIsDisplayed()
-        ecran.onNodeWithTag(ReperesAdmin.FICHE_CONFIRMER).performClick()
+        ecran.onNodeWithTag(ReperesAdmin.FICHE_CONFIRMER).toucher()
         ecran.waitUntil(DELAI_MS) { service.lectures.contains("role-11-conseil_syndical") }
     }
 
@@ -161,11 +161,11 @@ class AdminInterfaceTest {
         ecran.onNodeWithTag(ReperesOnglets.onglet("a_traiter")).assertIsSelected()
         ecran.waitUntil(DELAI_MS) { service.lectures.contains("demandes") }
         ecran.onNodeWithTag(ReperesAdmin.demande(41)).performScrollTo().assertIsDisplayed()
-        ecran.onNodeWithTag("${ReperesAdmin.demande(41)}.approuver").performScrollTo().performClick()
+        ecran.onNodeWithTag("${ReperesAdmin.demande(41)}.approuver").toucher()
         ecran.waitUntil(DELAI_MS) { ecran.onAllNodesWithTag(ReperesAdmin.demande(41)).fetchSemanticsNodes().isEmpty() }
-        ecran.onNodeWithTag("${ReperesAdmin.demande(42)}.rejeter").performScrollTo().performClick()
+        ecran.onNodeWithTag("${ReperesAdmin.demande(42)}.rejeter").toucher()
         ecran.onNodeWithTag(ReperesAdmin.DEMANDE_MOTIF).performTextInput("Bail non fourni")
-        ecran.onNodeWithTag(ReperesAdmin.DEMANDE_REJETER).performClick()
+        ecran.onNodeWithTag(ReperesAdmin.DEMANDE_REJETER).toucher()
         ecran.waitUntil(DELAI_MS) { service.lectures.contains("rejeter-42-Bail non fourni") }
     }
 
@@ -175,7 +175,7 @@ class AdminInterfaceTest {
     private fun toucherJusquA(quoi: String, repere: String, vu: () -> Boolean) {
         repeat(ESSAIS) {
             if (vu()) return
-            ecran.onNodeWithTag(repere).performScrollTo().performClick()
+            ecran.onNodeWithTag(repere).toucher()
             ecran.waitForIdle()
             if (runCatching { ecran.waitUntil(DELAI_MS / ESSAIS, vu) }.isSuccess) return
         }

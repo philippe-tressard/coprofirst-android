@@ -102,6 +102,10 @@ jobs:
             app/build/outputs/androidTest-results/
           retention-days: 7
           if-no-files-found: ignore
-      - name: Tests d'interface en échec, nommés dans le résumé
-        if: failure()
-        run: python3 -I scripts/bilan_tests_interface.py app/build/outputs/androidTest-results >> "$GITHUB_STEP_SUMMARY"
+      - name: Bilan des tests d'interface dans le résumé (échecs, les plus lents)
+        # Vert comme rouge : les tests les plus lents, en regard du délai commun d'attente
+        # (DELAI_GESTE_MS), mesurent si ce délai tient sur l'émulateur de la CI (#119).
+        if: success() || failure()
+        # Au résumé ET au journal : le résumé ne se lit que connecté à GitHub, le journal
+        # se lit par `gh run view --log` (les sessions, la coordination).
+        run: python3 -I scripts/bilan_tests_interface.py app/build/outputs/androidTest-results | tee -a "$GITHUB_STEP_SUMMARY"

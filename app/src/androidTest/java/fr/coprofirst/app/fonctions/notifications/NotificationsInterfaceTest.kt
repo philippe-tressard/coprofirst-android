@@ -7,17 +7,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollToNode
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.api.NOTIFICATIONS_SELECTION_PAR_REQUETE
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.commun.REPERE_AVIS
+import fr.coprofirst.app.commun.amenerTag
+import fr.coprofirst.app.commun.toucher
+import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.navigation.ActionsDeclarees
 import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.session.ErreurService
@@ -121,11 +121,7 @@ class NotificationsInterfaceTest {
 
     private fun el(tag: String): SemanticsNodeInteraction = ecran.onNodeWithTag(tag, useUnmergedTree = true)
 
-    /** Une ligne de la liste, amenée à l'écran. */
-    private fun ligne(id: Int): SemanticsNodeInteraction {
-        ecran.onNode(hasScrollAction()).performScrollToNode(hasTestTag("notification.$id"))
-        return ecran.onNodeWithTag("notification.$id")
-    }
+    private fun toucher(tag: String) = ecran.toucherTag(tag, useUnmergedTree = true)
 
     /** « Tout marquer lu » et « Modifier » se voient dans la barre du haut ; tout se marque lu. */
     @Test
@@ -135,7 +131,7 @@ class NotificationsInterfaceTest {
         el("notifications.toutMarquerLu").assertIsDisplayed()
         el("notifications.modifier").assertIsDisplayed()
         attendreTexte("12 non lues")
-        el("notifications.toutMarquerLu").performClick()
+        toucher("notifications.toutMarquerLu")
         disparait("notifications.toutMarquerLu")
     }
 
@@ -144,17 +140,17 @@ class NotificationsInterfaceTest {
     fun plusieursNotificationsSeSuppriment() {
         val boite = ouvrir()
         attendre("notifications.modifier")
-        el("notifications.modifier").performClick()
-        listOf(5, 4, 3).forEach { ligne(it).performClick() }
+        toucher("notifications.modifier")
+        listOf(5, 4, 3).forEach { ecran.toucherTag("notification.$it") }
         attendreTexte("Supprimer (3)")
-        el("notifications.supprimerSelection").assertIsDisplayed().performClick()
+        el("notifications.supprimerSelection").assertIsDisplayed().toucher()
         attendre("notifications.confirmerSuppression")
-        el("notifications.confirmerSuppression").performClick()
+        toucher("notifications.confirmerSuppression")
         disparait("notification.5")
         assertEquals(listOf(3), boite.selections)
-        el("notifications.modifier").performClick()
+        toucher("notifications.modifier")
         attendreTexte("10 non lues")
-        ligne(2).assertIsDisplayed()
+        ecran.amenerTag("notification.2").assertIsDisplayed()
     }
 
     /** « Supprimer les lues » : direct, confirmé — la confirmation dit ce qui part —, dit par l'avis, puis absent. */
@@ -162,13 +158,13 @@ class NotificationsInterfaceTest {
     fun lesLuesSeSupprimentDUnGeste() {
         ouvrir()
         attendre("notifications.supprimerLues")
-        el("notifications.supprimerLues").assertIsDisplayed().performClick()
+        el("notifications.supprimerLues").assertIsDisplayed().toucher()
         attendreTexte("Les 138 notifications lues")
-        el("notifications.confirmerSuppression").performClick()
+        toucher("notifications.confirmerSuppression")
         attendreTexte("Notifications lues supprimées")
         el(REPERE_AVIS).assertIsDisplayed()
         disparait("notification.3")
-        ligne(5).assertIsDisplayed()
+        ecran.amenerTag("notification.5").assertIsDisplayed()
         disparait("notifications.supprimerLues")
     }
 
@@ -178,11 +174,11 @@ class NotificationsInterfaceTest {
         val nombre = NOTIFICATIONS_SELECTION_PAR_REQUETE + 20
         val boite = ouvrir(BoiteSimulee(nombre))
         attendre("notifications.modifier")
-        el("notifications.modifier").performClick()
-        el("notifications.toutSelectionner").performClick()
+        toucher("notifications.modifier")
+        toucher("notifications.toutSelectionner")
         attendreTexte("Supprimer ($nombre)")
-        el("notifications.supprimerSelection").performClick()
-        el("notifications.confirmerSuppression").performClick()
+        toucher("notifications.supprimerSelection")
+        toucher("notifications.confirmerSuppression")
         attendreTexte("Aucune notification")
         assertEquals(listOf(NOTIFICATIONS_SELECTION_PAR_REQUETE, 20), boite.selections)
     }
