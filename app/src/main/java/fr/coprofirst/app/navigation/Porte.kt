@@ -11,8 +11,8 @@ import androidx.compose.runtime.Composable
  * (`Navigation/Porte/Destination.swift`). Un écran ne l'ouvre que par `contexte.ouvrir`,
  * jamais en touchant à la barre lui-même.
  *
- * L'adresse de la résidence et le navigateur intégré de l'iOS (`adresse`, `.navigateur`,
- * `.connexion`) servent aux liens d'application : ils arrivent avec eux (#7).
+ * Un lien d'application y entre par son chemin (`LienDuSite`, #147) ; son adresse et la
+ * connexion qu'il demande sont l'affaire de l'entrée (#7).
  */
 sealed interface Destination {
     /** Une page du menu, par son identifiant (`PagesParDefaut`), ou une entrée fixe de « Plus ». */
@@ -52,7 +52,7 @@ sealed interface Aiguillage {
          * ⚠️ Deux écarts déclarés avec l'iOS (#85) : une page de « Plus » s'y OUVRE (l'iOS
          * n'ouvre que l'onglet « Plus ») ; une page que le compte ne voit pas ne mène nulle
          * part (l'iOS revient au fil) — l'appelant le sait par `ouvrir` et garde son repli.
-         * Les liens d'application (#7) reviendront au fil d'eux-mêmes, comme l'iOS.
+         * Un lien d'application, lui, revient au fil (`EcranResidence`, #147), comme l'iOS.
          *
          * @param barre les pages de la barre, dans leur ordre ; @param plus celles de « Plus » ;
          * @param fiches les natures qu'un menu déclare ouvrir ; @param cloche la page des alertes existe.
