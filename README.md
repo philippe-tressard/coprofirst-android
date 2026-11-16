@@ -103,6 +103,18 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   l'archiver ou le restaurer. Une idée ou une annonce ouverte porte le fil des réponses
   (répondre, supprimer la sienne, signaler celles des autres) et « Signaler » au conseil
   syndical ; chaque contenu dit qui le lit et où.
+- **Paramétrage** (administration et opérateur de la plateforme), en partie :
+  **À traiter** (la file des comptes et des commandes d'accès, celle de l'Espace CS, puis
+  les demandes de changement de profil : approuver, ou rejeter avec un motif facultatif),
+  **Utilisateurs** (recherche, type, état du compte, compteurs ; la fiche d'un compte,
+  ses rattachements, et les gestes que le serveur offre : interdire ou réautoriser la
+  communauté, ajouter ou retirer un rôle, rejouer l'auto-match des lots, supprimer —
+  chacun confirmé s'il le faut, puis annoncé), **Télémétrie** (quatre vues — jour, 30 jours, 12 mois, 10 ans —, le filtre « sans le
+  gestionnaire du site » quand il change quelque chose, les nombres clés, le graphe, les
+  pages les plus vues et les utilisateurs actifs) et **Maintenance** (à l'opérateur, la
+  santé des tâches planifiées et leurs échecs récents ; à l'administration, le dernier
+  export de la copropriété). Les autres onglets sont « Sur le site », chacun avec son
+  lien ; lancer une tâche ou un export reste au site, et l'écran le dit.
 
 Pas encore : les écrans des pages, le courriel retenu et la
 biométrie, les personnages de la démo, le QR code, les liens d'application (tickets
