@@ -20,7 +20,7 @@ object FixturesSondage {
     /** L'identifiant du compte simulé. */
     const val MOI = 7
 
-    /** GET /sondages/12, /11, /9 → `SondageDetail`, une fiche par élément. */
+    /** GET /sondages/12, /11, /9, une fiche par élément → `[SondageDetail]`. */
     const val FICHES = """[
       {"id": 12, "question": "Quel jour pour la fête des voisins ?",
        "description": "<p>Trois dates sont proposées. Les réponses sont ouvertes jusqu'à <strong>vendredi</strong>.</p>",

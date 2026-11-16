@@ -11,7 +11,7 @@ package fr.coprofirst.app.fonctions.profil
  * coprofirst v3.89.0), reprises de l'iOS (`FixturesSuppressionCompte`). Identité fictive.
  */
 object FixturesProfil {
-    /** GET /auth/me. */
+    /** GET /auth/me → `UserRead`. */
     const val MOI = """{
       "id": 7, "nom": "Exemple", "prenom": "Camille", "email": "camille@exemple.test",
       "statut": "copropriétaire_résident", "role": "conseil_syndical", "roles": ["propriétaire", "conseil_syndical"],
@@ -21,7 +21,7 @@ object FixturesProfil {
       "derniere_connexion": "2026-11-14T18:30:00", "opt_out_telemetrie": false, "est_moderateur": true
     }"""
 
-    /** GET /auth/demande-suppression, sans demande en cours. */
+    /** GET /auth/demande-suppression, sans demande en cours → `EtatDemandeSuppression`. */
     const val ETAT_SANS_DEMANDE = """{
       "delai_annonce_jours": 30,
       "consequences": [
@@ -32,12 +32,12 @@ object FixturesProfil {
       ]
     }"""
 
-    /** POST /auth/demande-suppression → la demande ouverte. */
+    /** POST /auth/demande-suppression, la demande ouverte → `DemandeSuppressionRead`. */
     const val DEMANDE = """{"id": 1, "statut": "ouverte", "cree_le": "2026-11-12T09:00:00", "traitee_le": null, "delai_annonce_jours": 30}"""
 
-    /** GET /auth/demande-suppression, la demande en cours. */
+    /** GET /auth/demande-suppression, la demande en cours → `EtatDemandeSuppression`. */
     const val ETAT_AVEC_DEMANDE = """{"delai_annonce_jours": 30, "consequences": [], "demande": $DEMANDE}"""
 
-    /** Le refus du serveur pour un mot de passe faux (400). */
+    /** Le refus du serveur pour un mot de passe faux (400) → erreur. */
     const val MOT_DE_PASSE_INCORRECT = """{"detail": "Mot de passe incorrect."}"""
 }
