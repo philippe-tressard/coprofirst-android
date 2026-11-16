@@ -244,6 +244,11 @@ while IFS= read -r t; do
   python3 -I "$t" >/dev/null 2>&1 || echec "$t en échec (python3 -I $t)"
 done < <(grep -E '^scripts/test_[a-z_]+\.py$' <<< "$FICHIERS")
 
+# Les réponses de l'API simulée (app/src/debug) disent ce que le serveur sert (#30) :
+# chacune déclare son schéma, jugé contre le contrat au plancher.
+python3 -I scripts/verifier_fixtures.py \
+  || echec "une réponse simulée ne dit pas ce que le serveur sert (python3 -I scripts/verifier_fixtures.py)"
+
 # Un écran s'inscrit dans SON paquet (#109) : ni le build ni la navigation ne nomment un
 # menu. Les tables d'un menu se découvrent (`scripts/generer_tables_<menu>.py`), ses
 # pages et ses fiches s'inscrivent (`fonctions/<menu>/Inscription.kt`) — sans quoi deux

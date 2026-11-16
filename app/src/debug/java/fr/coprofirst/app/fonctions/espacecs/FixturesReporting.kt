@@ -66,32 +66,19 @@ object FixturesReporting {
         ),
     )
 
-    private fun contrat(id: Int, libelle: String, fin: String?, preavis: String?, urgence: String?, dansLAnnee: Boolean, extra: String = "") = """
-        {"id": $id, "copropriete_id": 1, "prestataire_id": ${id + 100}, "type_equipement": "ascenseur", "libelle": "$libelle",
-         "date_debut": "2023-12-01", "actif": true, "prestataire_nom": "Ascenseurs Exemple",
-         "date_fin": ${fin?.let { "\"$it\"" } ?: "null"}, "date_preavis": ${preavis?.let { "\"$it\"" } ?: "null"},
-         "urgence_echeance": ${urgence?.let { "\"$it\"" } ?: "null"}, "echeance_dans_l_annee": $dansLAnnee$extra}
-    """.trimIndent()
-
-    private fun diagnostic(id: Int, nom: String, echeance: String?, urgence: String?, permanent: Boolean = false) = """
-        {"id": $id, "code": "D$id", "nom": "$nom", "texte_legislatif": "Article d'exemple", "ordre": $id,
-         "permanent": $permanent, "frequence": ${if (permanent) "null" else "\"10 ans\""}, "dernier_rapport_le": "2016-05-02",
-         "prochaine_echeance": ${echeance?.let { "\"$it\"" } ?: "null"}, "urgence_echeance": ${urgence?.let { "\"$it\"" } ?: "null"}}
-    """.trimIndent()
-
-    /** GET /reporting/renouvellements → `ReleveRenouvellements`. */
+    /** GET /reporting/renouvellements → `ReleveRenouvellements` (écrite en entier : le juge des fixtures la lit). */
     val RENOUVELLEMENTS = """
         {"annee": 2026, "preavis_mois": 3,
          "compteurs": {"contrats_en_preavis": 1, "echeances_contrats_annee": 1, "audits_a_planifier": 1},
          "contrats": [
-           ${contrat(7, "Entretien des ascenseurs", "2026-11-30", "2026-08-31", "preavis", true, """, "numero_contrat": "ASC-2023-07", "note_moyenne": 2.5, "nb_notations": 4, "reconduit": true""")},
-           ${contrat(8, "Nettoyage des parties communes", "2028-03-31", "2027-12-31", "futur", false)},
-           ${contrat(9, "Espaces verts", null, null, null, false)}
+           {"id": 7, "copropriete_id": 1, "prestataire_id": 107, "type_equipement": "ascenseur", "libelle": "Entretien des ascenseurs", "date_debut": "2023-12-01", "actif": true, "prestataire_nom": "Ascenseurs Exemple", "date_fin": "2026-11-30", "date_preavis": "2026-08-31", "urgence_echeance": "preavis", "echeance_dans_l_annee": true, "numero_contrat": "ASC-2023-07", "note_moyenne": 2.5, "nb_notations": 4, "reconduit": true},
+           {"id": 8, "copropriete_id": 1, "prestataire_id": 108, "type_equipement": "ascenseur", "libelle": "Nettoyage des parties communes", "date_debut": "2023-12-01", "actif": true, "prestataire_nom": "Ascenseurs Exemple", "date_fin": "2028-03-31", "date_preavis": "2027-12-31", "urgence_echeance": "futur", "echeance_dans_l_annee": false},
+           {"id": 9, "copropriete_id": 1, "prestataire_id": 109, "type_equipement": "ascenseur", "libelle": "Espaces verts", "date_debut": "2023-12-01", "actif": true, "prestataire_nom": "Ascenseurs Exemple", "date_fin": null, "date_preavis": null, "urgence_echeance": null, "echeance_dans_l_annee": false}
          ],
          "diagnostics": [
-           ${diagnostic(1, "Diagnostic technique global", "2026-05-02", "depasse")},
-           ${diagnostic(2, "Contrôle des ascenseurs", "2031-01-15", "futur")},
-           ${diagnostic(3, "Repérage amiante", null, null, permanent = true)}
+           {"id": 1, "code": "D1", "nom": "Diagnostic technique global", "texte_legislatif": "Article d'exemple", "ordre": 1, "permanent": false, "frequence": "10 ans", "dernier_rapport_le": "2016-05-02", "prochaine_echeance": "2026-05-02", "urgence_echeance": "depasse"},
+           {"id": 2, "code": "D2", "nom": "Contrôle des ascenseurs", "texte_legislatif": "Article d'exemple", "ordre": 2, "permanent": false, "frequence": "10 ans", "dernier_rapport_le": "2016-05-02", "prochaine_echeance": "2031-01-15", "urgence_echeance": "futur"},
+           {"id": 3, "code": "D3", "nom": "Repérage amiante", "texte_legislatif": "Article d'exemple", "ordre": 3, "permanent": true, "frequence": null, "dernier_rapport_le": "2016-05-02", "prochaine_echeance": null, "urgence_echeance": null}
          ]}
     """.trimIndent()
 }
