@@ -14,6 +14,11 @@
 # Un prérequis illisible rend INCONNU (sortie 2), jamais OK.
 set -uo pipefail
 cd "$(dirname "$0")/.."
+# Une tâche lourde du poste : sous le verrou commun (#55), elle attend son tour ;
+# `--verifier` ne construit rien, il ne le prend pas.
+if [ -z "${VERROU_POSTE_TENU:-}" ] && [ "${1:-}" != "--verifier" ]; then
+  exec bash scripts/sous-verrou.sh "release Android (bundleRelease)" -- bash scripts/construire-release.sh "$@"
+fi
 
 CLE="${COPROFIRST_CLE_TELEVERSEMENT:-$HOME/.coprofirst-android/televersement.jks}"
 SERVICE=coprofirst-android-televersement
