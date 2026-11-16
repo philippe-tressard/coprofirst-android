@@ -15,7 +15,8 @@
   (`dureeToastMs`), comme l'iOS (`scripts/generateurs/avis.py`) ;
 - `BalisesDuSite` (paquet `commun.texte`) : la liste blanche du texte riche — balises et
   attributs admis (`balisesAdmises`, `attributsAdmis`), schémas d'un lien touchable —
-  comme l'iOS (`scripts/generateurs/charte.py`, `balises`) ;
+  comme l'iOS (`scripts/generateurs/charte.py`, `balises`). Sa forme s'écrit ici
+  (`kotlin_balises`) ; elle se GÉNÈRE dans `:partage-android` (`generer_balises.py`, #206) ;
 - `TablesCommunes` (paquet `commun`) : le libellé et la pastille de chaque statut et de
   chaque rôle (`attributsStatut`, `attributsRole`, `libellesHerites`), les rôles mis en
   avant (`rolesMisEnAvant`), les statuts qu'un compte peut demander
@@ -415,7 +416,6 @@ def main(argv: list[str]) -> int:
             (PAQUET, "TablesDuSite.kt"): kotlin(tables, entree.name),
             ("fr.coprofirst.app.commun", "TablesCommunes.kt"): kotlin_commun(tables, entree.name),
             ("fr.coprofirst.app.commun", "AvisDuSite.kt"): kotlin_avis(tables, entree.name),
-            (PAQUET_TEXTE, "BalisesDuSite.kt"): kotlin_balises(tables, entree.name),
             (PAQUET_TEXTE, "Separateur.kt"): kotlin_separateurs(tables, entree.name),
             (PAQUET_CHARTE, "NaturesDuFil.kt"): kotlin_natures(tables, entree.name),
             (tc.PAQUET_ACCES, "TablesAcces.kt"): tc.kotlin_acces(tables, entree.name),
