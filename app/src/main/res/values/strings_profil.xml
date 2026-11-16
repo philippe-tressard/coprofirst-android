@@ -54,7 +54,11 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="profil_confirmation">Confirmation</string>
     <string name="profil_confirmation_differe">Cette saisie diffère du nouveau mot de passe.</string>
     <string name="profil_attente_actuel">Saisissez d’abord votre mot de passe actuel.</string>
-    <string name="profil_attente_nouveau">Saisissez le nouveau mot de passe, puis sa confirmation.</string>
+    <!-- %1$d : la longueur minimale du serveur (ConstantesDuServeur). -->
+    <plurals name="profil_attente_nouveau">
+        <item quantity="one">Le nouveau mot de passe doit faire %1$d caractère au minimum.</item>
+        <item quantity="other">Le nouveau mot de passe doit faire %1$d caractères au minimum.</item>
+    </plurals>
     <string name="profil_attente_confirmation">Les deux saisies du nouveau mot de passe doivent être identiques.</string>
     <string name="profil_mot_de_passe_modifie">Mot de passe modifié</string>
 

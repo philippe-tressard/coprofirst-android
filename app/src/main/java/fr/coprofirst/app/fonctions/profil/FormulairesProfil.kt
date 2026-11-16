@@ -22,6 +22,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -33,6 +34,7 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.BoutonPlein
+import fr.coprofirst.app.commun.ConstantesDuServeur
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.launch
@@ -160,7 +162,7 @@ fun FormulaireMotDePasse(service: ServiceProfil, fermer: () -> Unit) {
             when {
                 confirmation.isNotEmpty() && confirmation != nouveau ->
                     Note(stringResource(R.string.profil_confirmation_differe), marge, couleurs.danger)
-                attente != null -> Note(stringResource(attente.phrase()), marge)
+                attente != null -> Note(attente.phrase(), marge)
             }
         }
         erreur?.let { MessageErreur(it, Modifier.padding(horizontal = Mise.marge)) }
@@ -193,8 +195,12 @@ fun FormulaireMotDePasse(service: ServiceProfil, fermer: () -> Unit) {
     }
 }
 
-private fun AttenteMotDePasse.phrase(): Int = when (this) {
-    AttenteMotDePasse.Actuel -> R.string.profil_attente_actuel
-    AttenteMotDePasse.Nouveau -> R.string.profil_attente_nouveau
-    AttenteMotDePasse.Confirmation -> R.string.profil_attente_confirmation
+/** Ce qui manque, dit comme l'iOS ; la longueur minimale est celle du serveur. */
+@Composable
+private fun AttenteMotDePasse.phrase(): String = when (this) {
+    AttenteMotDePasse.Actuel -> stringResource(R.string.profil_attente_actuel)
+    AttenteMotDePasse.Nouveau -> ConstantesDuServeur.LONGUEUR_MIN_MOT_DE_PASSE.let {
+        pluralStringResource(R.plurals.profil_attente_nouveau, it, it)
+    }
+    AttenteMotDePasse.Confirmation -> stringResource(R.string.profil_attente_confirmation)
 }

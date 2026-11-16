@@ -12,10 +12,11 @@ import fr.coprofirst.app.session.PreuveHote
 import fr.coprofirst.app.session.ProtectionSession
 
 /**
- * Les écrans de l'entrée, dans leur ordre — ceux de l'app iOS. `Retour` : la dernière
- * résidence, dont la session est gardée sous la biométrie (`RetourView`).
+ * Les écrans de l'entrée, dans leur ordre — ceux de l'app iOS (le sens du passage en
+ * dépend). `Retour` : la dernière résidence, dont la session est gardée sous la biométrie
+ * (`RetourView`) — une racine, comme l'accueil.
  */
-enum class EcranEntree { Accueil, Retour, Connexion, Espace }
+enum class EcranEntree { Accueil, Retour, EnSavoirPlus, Demo, Connexion, Espace }
 
 /** Ce qu'a rendu « Activer » sur la feuille de la session gardée. */
 sealed interface IssueGarde {
@@ -28,6 +29,10 @@ sealed interface IssueGarde {
 /** Ce que montrent les écrans de l'entrée. */
 data class EtatEntree(
     val ecran: EcranEntree = EcranEntree.Accueil,
+    /** Les écrans sous celui-ci, que le retour retrouve (la pile de navigation de l'iOS). */
+    val pile: List<EcranEntree> = emptyList(),
+    /** Le rôle de la démo choisi (« Conseil syndical ») : où lire son mot de passe public. */
+    val aideDemo: String? = null,
     /** L'adresse saisie dans « Votre résidence ». */
     val saisie: String = "",
     /** La reconnaissance court. */
@@ -63,6 +68,9 @@ data class EtatEntree(
     /** L'écran qu'un lien d'application vise, en attente que sa résidence soit ouverte (#147). */
     val lien: LienEnAttente? = null,
 ) {
+    /** Vers cet écran, celui-ci gardé pour le retour. */
+    fun vers(suivant: EcranEntree): EtatEntree = copy(ecran = suivant, pile = pile + ecran)
+
     /** « Se connecter » répond : une résidence reconnue, un courriel, un mot de passe. */
     val connexionPossible: Boolean
         get() = reconnue != null && email.isNotBlank() && motDePasse.isNotEmpty() && !connexionEnCours

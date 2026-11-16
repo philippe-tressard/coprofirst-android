@@ -142,6 +142,16 @@ class ProfilInterfaceTest {
         ecran.amenerTag("profil.suppression.demander")
     }
 
+    /** #47 : un nouveau mot de passe trop court se dit avant l'envoi, à la longueur du serveur. */
+    @Test
+    fun unMotDePasseTropCourtSeDitAvantLEnvoi() {
+        ecran.toucherTag("profil.motDePasse")
+        ecran.onNodeWithTag("profil.motDePasse.actuel").performTextInput("ancien")
+        ecran.onNodeWithTag("profil.motDePasse.nouveau").performTextInput("court")
+        attendre("caractères au minimum")
+        ecran.onNodeWithTag("profil.motDePasse.modifier").assertIsNotEnabled()
+    }
+
     private companion object {
         const val DELAI_MS = 10_000L
     }

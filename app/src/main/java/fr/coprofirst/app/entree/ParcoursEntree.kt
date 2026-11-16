@@ -88,14 +88,26 @@ class ParcoursEntree(
 
     override fun entrer() {
         val derniere = connues.liste.firstOrNull()?.adresse?.enSaisie
-        _etat.update { it.copy(ecran = EcranEntree.Connexion) }
+        _etat.update { it.vers(EcranEntree.Connexion).copy(aideDemo = null) }
         if (_etat.value.saisie.isEmpty() && derniere != null) saisir(derniere, pause = false)
     }
 
-    /** La démonstration : l'écran de connexion, à son adresse (les personnages : #10). */
-    override fun entrerDemo() {
-        _etat.update { it.copy(ecran = EcranEntree.Connexion) }
-        saisir(AdresseInstallation.DEMO.enSaisie, pause = false)
+    /** La démonstration : ses trois rôles (`DemoView` de l'iOS). */
+    override fun entrerDemo() = _etat.update { it.vers(EcranEntree.Demo) }
+
+    override fun enSavoirPlus() = _etat.update { it.vers(EcranEntree.EnSavoirPlus) }
+
+    /**
+     * Un rôle de la démo, comme l'iOS sans route qui serve les identifiants : la connexion,
+     * à l'adresse de la démo, l'identifiant public du rôle (`user-cs@demo.coprofirst.fr`)
+     * pré-rempli, et où lire son mot de passe. La démo ne se confirme pas (`GardeHote`).
+     */
+    override fun choisirPersonnage(code: String, role: String) {
+        val demo = AdresseInstallation.DEMO.enSaisie
+        _etat.update {
+            it.vers(EcranEntree.Connexion).copy(email = "$code@$demo", motDePasse = "", aideDemo = role, erreurConnexion = null)
+        }
+        saisir(demo, pause = false)
     }
 
     override fun saisir(texte: String) = saisir(texte, pause = true)
@@ -128,7 +140,8 @@ class ParcoursEntree(
         reconnaissance?.cancel()
         _etat.update {
             it.copy(
-                ecran = EcranEntree.Connexion, ouverte = null, confirmation = null, venue = null,
+                ecran = EcranEntree.Connexion, pile = emptyList(), aideDemo = null,
+                ouverte = null, confirmation = null, venue = null,
                 motDePasse = "", connexionEnCours = false, erreurConnexion = null, lien = enAttente,
             )
         }
@@ -155,18 +168,13 @@ class ParcoursEntree(
 
     override fun basculerVoirMotDePasse() = _etat.update { it.copy(voirMotDePasse = !it.voirMotDePasse) }
 
-    /** Le retour de la connexion : à l'écran de retour si la dernière session est gardée, sinon l'accueil. */
+    /** L'écran d'avant ; quitter la connexion y arrête tout ce qui courait. */
     override fun retour() {
-        reconnaissance?.cancel()
-        val derniere = connues.derniere?.takeIf(connexion::aUneSessionGardee)
-        _etat.update {
-            it.copy(
-                ecran = if (derniere != null) EcranEntree.Retour else EcranEntree.Accueil,
-                reconnue = derniere ?: it.reconnue,
-                saisie = derniere?.adresse?.enSaisie ?: it.saisie,
-                enCours = false, confirmation = null, erreurReprise = null, venue = null,
-            )
+        if (_etat.value.ecran == EcranEntree.Connexion) {
+            reconnaissance?.cancel()
+            _etat.update { it.copy(enCours = false, confirmation = null, venue = null, aideDemo = null) }
         }
+        _etat.update { it.copy(ecran = it.pile.lastOrNull() ?: EcranEntree.Accueil, pile = it.pile.dropLast(1)) }
     }
 
     /** L'écran de retour paraît : la biométrie, demandée d'office une seule fois. */
@@ -202,13 +210,17 @@ class ParcoursEntree(
 
     /** « Utiliser le mot de passe » : la connexion, adresse et courriel pré-remplis. */
     override fun utiliserMotDePasse() {
-        _etat.value.reconnue?.let(::versLeMotDePasse)
+        _etat.value.reconnue?.let { versLeMotDePasse(it, empiler = true) }
     }
 
-    private fun versLeMotDePasse(installation: Installation) {
+    /**
+     * La connexion, adresse et courriel pré-remplis. `empiler` : le retour ramène à l'écran
+     * de retour (la session y reste gardée) ; sinon la connexion est la racine.
+     */
+    private fun versLeMotDePasse(installation: Installation, empiler: Boolean = false) {
         _etat.update {
-            it.copy(
-                ecran = EcranEntree.Connexion, parMotDePasse = true, reconnue = installation,
+            (if (empiler) it.vers(EcranEntree.Connexion) else it.copy(ecran = EcranEntree.Connexion, pile = emptyList())).copy(
+                parMotDePasse = true, reconnue = installation,
                 saisie = installation.adresse?.enSaisie ?: it.saisie, erreurReprise = null,
                 email = connues.identifiant(installation) ?: it.email,
             )
@@ -259,7 +271,7 @@ class ParcoursEntree(
                         connexionEnCours = false, motDePasse = "", ouverte = installation, ecran = EcranEntree.Espace,
                         proposerGarde = proposer,
                         // Le lien d'une autre résidence tombe : l'utilisateur est allé ailleurs.
-                        lien = it.lien?.takeIf { l -> l.adresse == installation.adresse },
+                        pile = emptyList(), aideDemo = null, lien = it.lien?.takeIf { l -> l.adresse == installation.adresse },
                     )
                 }
             } catch (erreur: ErreurService) {
@@ -307,7 +319,7 @@ class ParcoursEntree(
             it.copy(
                 ouverte = null, ecran = EcranEntree.Connexion, parMotDePasse = true, proposerGarde = false,
                 issueGarde = null, reconnue = ouverte, saisie = ouverte.adresse?.enSaisie ?: it.saisie,
-                email = connues.identifiant(ouverte) ?: it.email, lien = null,
+                email = connues.identifiant(ouverte) ?: it.email, lien = null, pile = emptyList(),
             )
         }
         effacerLesPieces()
