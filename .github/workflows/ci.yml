@@ -198,6 +198,14 @@ jobs:
           profile: wearos_large_round
           disable-animations: true
           script: ./gradlew --no-daemon --max-workers=4 :montre:connectedDebugAndroidTest
+      - name: Aperçu de la tuile (rendu par le test, à versionner tel quel)
+        if: success()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: apercu-tuile
+          path: montre/build/outputs/connected_android_test_additional_output/
+          retention-days: 7
+          if-no-files-found: error
       - name: Rapport des tests d'interface de la montre (sur échec)
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

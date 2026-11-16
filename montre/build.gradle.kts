@@ -25,6 +25,9 @@ android {
         // nombre de commits (build racine). Le décalage ne bouge jamais.
         versionCode = versionCode?.plus(DECALAGE_MONTRE)
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // Les fichiers que les tests d'interface écrivent (l'aperçu de la tuile) remontent de
+        // l'émulateur dans build/outputs/connected_android_test_additional_output.
+        testInstrumentationRunnerArguments["useTestStorageService"] = "true"
     }
     lint {
         // L'icône vient du logo, généré au build par la couche commune (#206) ; la montre la
@@ -60,4 +63,8 @@ dependencies {
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.junit)
     debugImplementation(libs.compose.ui.test.manifest)
+    // L'aperçu de la tuile : la tuile rendue comme sur la montre, écrite par le test (#207).
+    androidTestImplementation(libs.wear.tiles.renderer)
+    androidTestImplementation(libs.androidx.test.services.storage)
+    androidTestUtil(libs.androidx.test.services)
 }
