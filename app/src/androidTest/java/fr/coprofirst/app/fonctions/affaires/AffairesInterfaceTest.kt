@@ -6,6 +6,7 @@ package fr.coprofirst.app.fonctions.affaires
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.test.SemanticsNodeInteraction
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
@@ -19,6 +20,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.commun.AvisEphemere
+import fr.coprofirst.app.commun.amenerTag
+import fr.coprofirst.app.commun.apercu.SaisieLecture
+import fr.coprofirst.app.commun.lecture.Lecture
 import fr.coprofirst.app.commun.perimetres.Perimetre
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.toucher
@@ -42,6 +46,15 @@ import java.time.temporal.ChronoUnit
  * personne), le conseil syndical qui les lit — il déplace au Kanban et archive.
  */
 private class AffairesSimulees : ServiceAffaires {
+    /** Les saisies dont « Qui la lira » a été demandé (#179). */
+    val lectures = mutableListOf<SaisieLecture>()
+    override suspend fun lecture(saisie: SaisieLecture): Lecture {
+        synchronized(lectures) { lectures += saisie }
+        return Lecture(
+            "coproprietaires", listOf("key-round"), "Copropriétaires", "Copropriétaires (occupants et bailleurs)", false,
+            "Lue par les copropriétaires, dans toute la copropriété.", "Pas les locataires.", false,
+        )
+    }
     val deplacements = mutableListOf<Pair<Int, String>>()
     val archivees = mutableListOf<Int>()
     private val maintenant = Instant.now()
@@ -304,6 +317,24 @@ class AffairesInterfaceTest {
         attendre(ReperesAffaires.carte("A-0009"))
         assertEquals("copro", service.creees.single().perimetre)
         assertEquals("panne", service.creees.single().categorie)
+    }
+
+    /**
+     * #179 : « Qui la lira » dit d'où viendra la règle avant la catégorie, puis la pastille et
+     * la phrase que le serveur rend pour la catégorie et le lieu saisis.
+     */
+    @Test
+    fun quiLaLiraSeDitDesLaCategorieChoisie() {
+        val service = ouvrir()
+        attendre(ReperesNouvelle.NOUVELLE)
+        el(ReperesNouvelle.NOUVELLE).toucher()
+        attendre(ReperesChamps.NOUVELLE.categorie("panne"))
+        ecran.amenerTag(ReperesNouvelle.QUI_LA_LIRA).assert(hasText("Elle se dit dès la catégorie choisie.", substring = true))
+        el(ReperesChamps.NOUVELLE.categorie("panne")).toucher()
+        ecran.waitUntil(DELAI_MS) {
+            ecran.onAllNodes(hasTestTag(ReperesNouvelle.QUI_LA_LIRA) and hasText("Lue par les copropriétaires", substring = true)).fetchSemanticsNodes().isNotEmpty()
+        }
+        assertEquals(SaisieLecture("panne", listOf("copro")), synchronized(service.lectures) { service.lectures.last() })
     }
 
     /** Une saisie entamée ne se perd pas : « Annuler » demande d'abord. */

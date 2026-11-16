@@ -3,6 +3,8 @@
 
 package fr.coprofirst.app.fonctions.affaires
 
+import fr.coprofirst.app.commun.apercu.SaisieLecture
+import fr.coprofirst.app.commun.lecture.Lecture
 import fr.coprofirst.app.commun.perimetres.Perimetre
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.test.runTest
@@ -15,6 +17,7 @@ import java.time.Instant
 /** L'état partagé des trois onglets : un geste refusé ramène la carte où elle était, et se dit. */
 class EtatAffairesTest {
     private class Simule(var refuser: Boolean = false) : ServiceAffaires {
+        override suspend fun lecture(saisie: SaisieLecture): Lecture = error("« Qui la lira » n'est pas du ressort de l'état de la liste")
         val deplacements = mutableListOf<Pair<Int, String>>()
         var affaires = listOf(
             affaire(1, "ouvert", "cs"), affaire(2, "en_cours", "syndic"),
