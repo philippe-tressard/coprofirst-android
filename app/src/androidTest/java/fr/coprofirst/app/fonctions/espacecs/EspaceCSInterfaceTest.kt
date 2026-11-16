@@ -231,6 +231,10 @@ class EspaceCSInterfaceTest {
         // le bas de la page (la sémantique l'ignore) et le toucher tombait sur lui (CI de #112).
         // Le lieu que le serveur nomme arrive après le choix et déplace la page : chaque
         // pastille est touchée immobile, jusqu'à être retenue.
+        // `performScrollTo` ne fait défiler que le défilant le plus proche : pour A5, la rangée
+        // horizontale des formats, pas la page (CI de #112, « not displayed »). La page d'abord.
+        attendreRepere(ReperesEspaceCS.NOUVELLE_FORMATS)
+        ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_FORMATS).performScrollTo()
         retenir(ReperesEspaceCS.nouvelleFormat("a5"))
         retenir("${ReperesEspaceCS.NOUVELLE_PERIMETRE}.bat_a")
         attendre("Bâtiment A ›")

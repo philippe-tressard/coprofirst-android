@@ -107,7 +107,10 @@ internal fun NouvelleAnnonceHall(service: ServiceAnnoncesHall, perimetres: Servi
             }
         }
         Champ(R.string.espacecs_annonces_format, aide = R.string.espacecs_annonces_format_aide) {
-            Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                Modifier.horizontalScroll(rememberScrollState()).testTag(ReperesEspaceCS.NOUVELLE_FORMATS),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
                 TablesEspaceCS.formatsAffiche.forEach { (code, libelle) ->
                     Pastille(libelle, format == code, Modifier.testTag(ReperesEspaceCS.nouvelleFormat(code))) { format = code }
                 }
