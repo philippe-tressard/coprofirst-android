@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 
 import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.api.dsl.CommonExtension
 
 plugins {
     alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.library) apply false
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.kotlin.serialization) apply false
@@ -57,12 +59,31 @@ val cleTeleversement: String? = providers.gradleProperty("coprofirst.signature.c
 val motDePasseTeleversement: String? = providers.environmentVariable("COPROFIRST_SIGNATURE_MDP").orNull
 val signatureDuPoste = cleTeleversement != null && motDePasseTeleversement != null
 
+/**
+ * Ce que TOUT module Android du dépôt partage — les deux applications et la bibliothèque
+ * commune (`:partage-android`, #206) : SDK, Java, lint. Un module le précise dans son
+ * propre `android {}` (la montre : `minSdk = 30`).
+ */
+fun CommonExtension.reglagesCommuns() {
+    compileSdk {
+        version = release(37) { minorApiLevel = 2 }
+    }
+    defaultConfig.minSdk = 26
+    compileOptions.sourceCompatibility = JavaVersion.VERSION_21
+    compileOptions.targetCompatibility = JavaVersion.VERSION_21
+    lint.warningsAsErrors = true
+    lint.abortOnError = true
+    // Une version plus récente publiée n'est pas un défaut du dépôt : Dependabot la propose.
+    lint.disable += setOf("GradleDependency", "NewerVersionAvailable", "AndroidGradlePluginVersion")
+}
+
 subprojects {
+    plugins.withId("com.android.library") {
+        extensions.configure<CommonExtension> { reglagesCommuns() }
+    }
     plugins.withId("com.android.application") {
         extensions.configure<ApplicationExtension> {
-            compileSdk {
-                version = release(37) { minorApiLevel = 2 }
-            }
+            reglagesCommuns()
             defaultConfig {
                 // Identifiant aligné sur l'app iOS : il se FIGE à la première publication
                 // (liens d'application, compte Play) — en changer ensuite est une nouvelle app.
@@ -95,17 +116,7 @@ subprojects {
             // Le geste et les attentes des tests d'interface, écrits une fois pour le téléphone et la
             // montre (#216) : `toucher` amène l'élément à l'écran avant de toucher.
             sourceSets.getByName("androidTest").kotlin.srcDir(rootProject.file("tests-interface-communs"))
-            compileOptions {
-                sourceCompatibility = JavaVersion.VERSION_21
-                targetCompatibility = JavaVersion.VERSION_21
-            }
             buildFeatures { compose = true }
-            lint {
-                warningsAsErrors = true
-                abortOnError = true
-                // Une version plus récente publiée n'est pas un défaut du dépôt : Dependabot la propose.
-                disable += setOf("GradleDependency", "NewerVersionAvailable", "AndroidGradlePluginVersion")
-            }
         }
         val application = extensions.getByType<ApplicationExtension>().defaultConfig
         tasks.register("afficherVersion") {

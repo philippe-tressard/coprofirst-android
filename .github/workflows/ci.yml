@@ -64,7 +64,7 @@ jobs:
           fetch-depth: 0
       - uses: ./.github/actions/preparer-android
       - name: Build (debug et release non signée), lint strict, tests — téléphone et montre (#207)
-        run: ./gradlew --no-daemon --max-workers=4 :app:assembleDebug :app:assembleRelease :app:lintDebug :app:testDebugUnitTest :client-api:test :partage:test :montre:assembleDebug :montre:assembleRelease :montre:lintDebug :montre:testDebugUnitTest
+        run: ./gradlew --no-daemon --max-workers=4 :app:assembleDebug :app:assembleRelease :app:lintDebug :app:testDebugUnitTest :client-api:test :partage:test :partage-android:lintDebug :montre:assembleDebug :montre:assembleRelease :montre:lintDebug :montre:testDebugUnitTest
   interface:
     name: Interface (émulateur)
     runs-on: ubuntu-latest
