@@ -5,8 +5,13 @@ package fr.coprofirst.app.session
 
 import android.content.Context
 import androidx.core.content.edit
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
+
+/** Le statut et les rôles du compte dans une résidence (`statut`, `roles` de GET /auth/me). */
+@Serializable
+data class RolesConnus(val statut: String?, val roles: List<String>)
 
 /** Où se gardent les résidences connues — une chaîne, sur l'appareil seul. */
 interface StockageResidences {
@@ -66,9 +71,22 @@ class InstallationsConnues(
     /** Après une déconnexion : elle sera reproposée à la prochaine connexion. */
     fun oublierGardeProposee(installation: Installation) = coffre.effacer(PREFIXE_PROPOSEE + cle(installation))
 
+    /**
+     * Le statut et les rôles du compte dans cette résidence (#180), relus à chaque ouverture
+     * (GET /auth/me) : la feuille « Résidences » les montre pour chacune, comme l'iOS
+     * (`connues.noter(profil)`). Au coffre, avec ce qui dit qui est l'utilisateur.
+     */
+    fun noterRoles(installation: Installation, statut: String?, roles: List<String>) {
+        coffre.ranger(json.encodeToString(RolesConnus.serializer(), RolesConnus(statut, roles)), PREFIXE_ROLES + cle(installation))
+    }
+
+    fun roles(installation: Installation): RolesConnus? =
+        coffre.lire(PREFIXE_ROLES + cle(installation))?.let { runCatching { json.decodeFromString(RolesConnus.serializer(), it) }.getOrNull() }
+
     /** « Oublier toutes les résidences » : comme une app neuve. */
     fun vider() {
         for (installation in liste) {
+            coffre.effacer(PREFIXE_ROLES + cle(installation))
             coffre.effacer(PREFIXE_IDENTIFIANT + cle(installation))
             oublierGardeProposee(installation)
         }
@@ -91,6 +109,7 @@ class InstallationsConnues(
     private companion object {
         const val PREFIXE_IDENTIFIANT = "identifiant."
         const val PREFIXE_PROPOSEE = "garde-proposee."
+        const val PREFIXE_ROLES = "roles."
         val json = Json { ignoreUnknownKeys = true }
         val serialiseur = ListSerializer(Installation.serializer())
     }

@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.commun.StockageApparencePreferences
 import fr.coprofirst.app.commun.pieces.PiecesLocales
+import fr.coprofirst.app.entree.FabriqueParcoursEntree
 import fr.coprofirst.app.entree.NavigationEntree
 import fr.coprofirst.app.entree.ParcoursEntree
 
@@ -21,7 +22,7 @@ import fr.coprofirst.app.entree.ParcoursEntree
  */
 class ActiviteAccueil : ComponentActivity() {
     /** Le même parcours que celui de `NavigationEntree` : un par activité, gardé à la rotation. */
-    private val parcours: ParcoursEntree by lazy { ViewModelProvider(this, ParcoursEntree.Fabrique)[ParcoursEntree::class.java] }
+    private val parcours: ParcoursEntree by lazy { ViewModelProvider(this, FabriqueParcoursEntree)[ParcoursEntree::class.java] }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

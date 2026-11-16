@@ -58,11 +58,9 @@ import java.time.Instant
  * actualiser » ; un fil vide et une erreur dits. Un toucher ouvre le résumé, le document ou
  * la fiche d'un sondage ou d'une affaire, poussée par la porte (`DestinationDuFil`).
  *
- * ⚠️ Divergences déclarées : l'affaire ne s'ouvre pas tant que Mes affaires n'a pas déclaré
- * sa fiche (`DestinationDuFil`) ;
- * ni le logement de l'utilisateur dans la barre (`PastilleLogement` de l'iOS, qui ouvre
- * « Mes lots & accès ») ni la pastille de la résidence (`PastilleOuSuisJe`, #15) ; pas de
- * bandeau hors ligne ; une notification touchée n'ouvre pas encore son élément (#23).
+ * ⚠️ Divergences déclarées : pas encore le logement de l'utilisateur dans la barre
+ * (`PastilleLogement` de l'iOS, qui ouvre « Mes lots & accès », #181) ; une notification
+ * touchée n'ouvre pas encore son élément (#23).
  */
 @Composable
 fun EcranFil(contexte: ContexteDeMenu) {

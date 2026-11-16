@@ -13,6 +13,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
+import fr.coprofirst.app.session.Installation
+import fr.coprofirst.app.session.RolesConnus
 
 /** Les deux gestes de sortie, comme l'iOS (`GesteDeSortie`). */
 sealed interface GesteDeSortie {
@@ -27,7 +29,23 @@ interface GestesDeSortie {
 
     /** Fermer chaque session, oublier les résidences retenues : l'app revient à son accueil, comme neuve. */
     fun oublierTout()
+
+    /**
+     * Quitter la résidence ouverte SANS se déconnecter (#180, `Parcours.changer(pour:)` de
+     * l'iOS) : la connexion, pré-remplie pour `installation` — sa session gardée se rouvre
+     * par la biométrie ; `null` : « Une autre résidence », la connexion vierge.
+     */
+    fun changerDeResidence(installation: Installation?) = Unit
+
+    /** Les résidences retenues sur l'appareil, avec le statut et les rôles qu'on y a. */
+    fun residencesConnues(): List<ResidenceConnue> = emptyList()
+
+    /** Le statut et les rôles du compte dans la résidence ouverte, relus : retenus pour la feuille. */
+    fun noterRoles(installation: Installation, statut: String?, roles: List<String>) = Unit
 }
+
+/** Une résidence retenue, et ce que le compte y est (`null` : jamais relu). */
+data class ResidenceConnue(val installation: Installation, val roles: RolesConnus?)
 
 /**
  * La confirmation d'un geste de sortie, comme l'iOS (`confirmationDeSortie`) : titre,
