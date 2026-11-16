@@ -76,7 +76,16 @@ CoproFirst est un logiciel libre (AGPL-3.0) : son code est public, celui de cett
 | Captures du téléphone | 2 à 8, PNG ou JPEG, côté court ≥ 1080 px recommandé, 9:16 | les écrans de l'app, thème clair, résidence de démonstration |
 | Captures de tablette | facultatives ; 7 et 10 pouces | après les lots grand écran (#69) |
 
-Les captures et l'image de présentation se produisent par un lot à part (#31).
+Ils se produisent par l'app elle-même, sur l'émulateur, dans `build/captures-play/` (jamais
+versionnés : ils se refont à chaque version) :
+
+```bash
+bash scripts/captures-play.sh
+```
+
+`icone-512.png`, `presentation-1024x500.png` (fond, texte et teintes de la charte, logo
+tel quel), puis les écrans `1-fil.png`, `2-acces.png`, `3-profil.png` en 1080 × 1920,
+thème clair, résidence fictive (`CapturesPlay`, comme `LancementCaptures` de l'iOS).
 
 ## Notes de version
 
