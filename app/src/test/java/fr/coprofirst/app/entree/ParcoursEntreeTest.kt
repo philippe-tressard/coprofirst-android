@@ -186,6 +186,49 @@ class ParcoursEntreeTest {
         assertEquals(EcranEntree.Espace, parcours.etat.value.ecran)
     }
 
+    /** #6 : une adresse lue dans un QR se confirme TOUJOURS — même connue, même la démo. */
+    @Test
+    fun uneAdresseScanneeSeConfirmeToujours() = test {
+        connues.retenir(Installation("https://connue.exemple.test", "Connue"))
+        residence("Connue")
+        parcours.entrer()
+        parcours.lireQR("https://Connue.exemple.test/")
+        advanceUntilIdle()
+        assertEquals("connue.exemple.test", parcours.etat.value.saisie)
+        assertEquals("Connue", parcours.etat.value.reconnue?.nom)
+        parcours.saisirEmail("a@exemple.test")
+        parcours.saisirMotDePasse("secret")
+        parcours.seConnecter()
+        advanceUntilIdle()
+        assertEquals("seul GET /config est parti", 1, serveur.requestCount)
+        assertEquals(PreuveHote.Declaree, parcours.etat.value.confirmation?.preuve)
+    }
+
+    /** Un QR qui ne porte pas d'adresse ne touche à rien ; une adresse retapée redevient une saisie. */
+    @Test
+    fun lOrigineDuQRNeVautQuePourSonAdresse() = test {
+        connues.retenir(Installation("https://connue.exemple.test", "Connue"))
+        residence("Connue")
+        parcours.entrer()
+        advanceUntilIdle()
+        val avant = parcours.etat.value
+        parcours.lireQR("Bonjour à tous")
+        assertEquals(avant, parcours.etat.value)
+        residence("Imitation")
+        parcours.lireQR("imitation.exemple.test")
+        advanceUntilIdle()
+        residence("Connue")
+        parcours.saisir("connue.exemple.test")
+        advanceUntilIdle()
+        parcours.saisirEmail("a@exemple.test")
+        parcours.saisirMotDePasse("secret")
+        ok()
+        parcours.seConnecter()
+        advanceUntilIdle()
+        assertNull(parcours.etat.value.confirmation)
+        assertEquals(EcranEntree.Espace, parcours.etat.value.ecran)
+    }
+
     @Test
     fun identifiantsRefusesSansQuitterLEcran() = test {
         connues.retenir(Installation("https://connue.exemple.test", "Connue"))

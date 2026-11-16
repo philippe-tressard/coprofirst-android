@@ -40,6 +40,17 @@ val versionDeGit: VersionDeGit = run {
     VersionDeGit(code, "$base.$code")
 }
 
+/**
+ * La SIGNATURE de téléversement (Play App Signing, #33) — au poste seulement, JAMAIS en CI.
+ * La clé vit hors du dépôt (`docs/signature-android.md`) ; son mot de passe, rangé dans le
+ * trousseau macOS, ne passe que par l'environnement le temps d'un build
+ * (`scripts/construire-release.sh`, sans cache de configuration). Sans la clé ET le mot de
+ * passe, la release se construit non signée : c'est le cas de la CI.
+ */
+val cleTeleversement: String? = providers.gradleProperty("coprofirst.signature.cle").orNull
+val motDePasseTeleversement: String? = providers.environmentVariable("COPROFIRST_SIGNATURE_MDP").orNull
+val signatureDuPoste = cleTeleversement != null && motDePasseTeleversement != null
+
 tasks.register("afficherVersion") {
     val v = versionDeGit
     doLast { println("versionCode=${v.code} versionName=${v.nom}") }
@@ -62,8 +73,20 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        if (signatureDuPoste) {
+            create("televersement") {
+                storeFile = file(requireNotNull(cleTeleversement))
+                storePassword = motDePasseTeleversement
+                keyAlias = "televersement"
+                keyPassword = motDePasseTeleversement
+            }
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.findByName("televersement")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
@@ -214,6 +237,12 @@ dependencies {
     // L'œil du mot de passe (Visibility) : seules les icônes utilisées restent après R8.
     implementation(libs.compose.material.icons.extended)
     implementation(libs.compose.ui.tooling.preview)
+    // Le QR code de la fiche d'arrivée (#6) : la caméra (CameraX) et le décodage (ZXing),
+    // libres tous deux et sur l'appareil seul — aucun service de Google Play.
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+    implementation(libs.zxing.core)
     debugImplementation(libs.compose.ui.tooling)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

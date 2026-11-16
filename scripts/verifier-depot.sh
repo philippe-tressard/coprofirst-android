@@ -126,6 +126,15 @@ autotest_motif "couleurs nommées" "$COULEURS_MAIN" 'val c = Color.Red' 'val c =
 autotest_motif "couleurs XML" "$COULEURS_MAIN" '<color name="x">#112233</color>' '<string name="x">Bonjour</string>'
 interdire "$COULEURS_MAIN" "couleur écrite à la main — à générer depuis coprofirst"
 
+# La signature de téléversement (#33) : au poste seulement. Aucun mot de passe écrit dans
+# un fichier de build ; aucun job de CI ne reçoit la clé ni son mot de passe.
+SIGNATURE_EN_CLAIR='(storePassword|keyPassword)[[:space:]]*=[[:space:]]*"'
+autotest_motif "signature en clair" "$SIGNATURE_EN_CLAIR" 'storePassword = "secret"' 'storePassword = motDePasseTeleversement'
+interdire "$SIGNATURE_EN_CLAIR" "mot de passe de signature écrit en clair" '' '\.(kts|properties)$'
+SIGNATURE_EN_CI='COPROFIRST_SIGNATURE|coprofirst\.signature\.|construire-release'
+autotest_motif "signature en CI" "$SIGNATURE_EN_CI" '  COPROFIRST_SIGNATURE_MDP: x' '  run: ./gradlew :app:assembleRelease'
+interdire "$SIGNATURE_EN_CI" "la signature n'entre pas en CI (#33)" '' '^\.github/'
+
 # L'API se parle par le client GÉNÉRÉ (client-api/) : aucune requête écrite à la main,
 # aucune route en dur. Une route absente est un ticket dans coprofirst.
 REQUETE_MAIN='Request\.Builder|HttpURLConnection|openConnection\(|\.newCall\(|"/api/|/api/[a-z]'

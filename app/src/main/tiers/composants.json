@@ -55,6 +55,20 @@
       "role": "Les annotations de nullité des bibliothèques d'AndroidX.",
       "modules": ["org.jspecify:jspecify"],
       "textes": ["LICENSES/Apache-2.0.txt"]
+    },
+    {
+      "nom": "ZXing",
+      "licences": ["Apache-2.0"],
+      "role": "La lecture du QR code de la fiche d'arrivée, sur l'appareil.",
+      "modules": ["com.google.zxing:core"],
+      "textes": ["LICENSES/Apache-2.0.txt"]
+    },
+    {
+      "nom": "AutoValue (annotations)",
+      "licences": ["Apache-2.0"],
+      "role": "Des annotations de la caméra d'AndroidX (CameraX).",
+      "modules": ["com.google.auto.value:auto-value-annotations"],
+      "textes": ["LICENSES/Apache-2.0.txt"]
     }
   ]
 }

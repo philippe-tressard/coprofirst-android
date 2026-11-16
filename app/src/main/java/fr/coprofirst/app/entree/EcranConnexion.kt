@@ -11,6 +11,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -20,14 +21,21 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -54,6 +62,7 @@ import fr.coprofirst.app.session.Installation
  */
 @Composable
 fun EcranConnexion(etat: EtatEntree, parcours: ActionsEntree) {
+    var scanner by rememberSaveable { mutableStateOf(false) }
     CadreEcran(retour = parcours::retour) { marges ->
         Column(
             modifier = Modifier
@@ -68,19 +77,26 @@ fun EcranConnexion(etat: EtatEntree, parcours: ActionsEntree) {
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.semantics { heading() },
             )
-            ChampResidence(etat, parcours::saisir)
+            ChampResidence(etat, parcours::saisir, scanner = { scanner = true })
             ChampsIdentifiants(etat, parcours)
+        }
+    }
+    if (scanner) {
+        FeuilleScannerQR(fermer = { scanner = false }) { texte ->
+            scanner = false
+            parcours.lireQR(texte)
         }
     }
     etat.confirmation?.let { FeuilleConfirmationHote(it, parcours) }
 }
 
 /**
- * « Votre résidence » : l'adresse, l'attente puis la coche DANS le champ, et sous lui
- * le nom de la résidence reconnue — ou la phrase de l'échec. Aucun annuaire.
+ * « Votre résidence » : l'adresse, l'attente puis la coche DANS le champ, et l'icône du QR
+ * code de la fiche d'arrivée ; sous lui le nom de la résidence reconnue — ou la phrase de
+ * l'échec. Aucun annuaire.
  */
 @Composable
-private fun ChampResidence(etat: EtatEntree, saisir: (String) -> Unit) {
+private fun ChampResidence(etat: EtatEntree, saisir: (String) -> Unit, scanner: () -> Unit) {
     val focus = remember { FocusRequester() }
     LaunchedEffect(Unit) { if (etat.saisie.isEmpty()) focus.requestFocus() }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -89,7 +105,18 @@ private fun ChampResidence(etat: EtatEntree, saisir: (String) -> Unit) {
             onValueChange = saisir,
             label = { Text(stringResource(R.string.connexion_residence)) },
             placeholder = { Text(stringResource(R.string.adresse_exemple)) },
-            trailingIcon = { EtatReconnaissance(etat.enCours, etat.reconnue) },
+            trailingIcon = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    EtatReconnaissance(etat.enCours, etat.reconnue)
+                    IconButton(onClick = scanner, modifier = Modifier.testTag(Reperes.SCANNER)) {
+                        Icon(
+                            Icons.Filled.QrCodeScanner,
+                            contentDescription = stringResource(R.string.connexion_scanner),
+                            tint = LocalCouleurs.current.primary,
+                        )
+                    }
+                }
+            },
             isError = etat.erreur != null,
             singleLine = true,
             keyboardOptions = KeyboardOptions(
