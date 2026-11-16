@@ -3,6 +3,8 @@
 
 package fr.coprofirst.app.fonctions.fil
 
+import fr.coprofirst.app.commun.fil.CibleDuFil
+import fr.coprofirst.app.commun.fil.ElementDuFil
 import fr.coprofirst.app.session.AdresseInstallation
 import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.Installation

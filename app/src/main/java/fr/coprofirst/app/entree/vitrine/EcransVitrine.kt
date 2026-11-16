@@ -4,6 +4,7 @@
 package fr.coprofirst.app.entree.vitrine
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -41,6 +43,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -53,6 +57,8 @@ import fr.coprofirst.app.commun.BoutonContour
 import fr.coprofirst.app.commun.BoutonPlein
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.GRANDE_ECHELLE
+import fr.coprofirst.app.commun.fil.ApercuDuFil
+import fr.coprofirst.app.commun.fil.CarteDuFil
 import fr.coprofirst.app.entree.ActionsEntree
 import fr.coprofirst.app.entree.CadreEcran
 
@@ -78,9 +84,8 @@ private fun pages(): PagesVitrine {
 /**
  * « En savoir plus sur CoproFirst », comme `EnSavoirPlusView` de l'iOS : la page de
  * coprofirst.fr raccourcie (`contenu.json`), d'un seul tenant ; les deux portes restent
- * collées en bas. ⚠️ Divergences déclarées (#153) : l'aperçu du fil (trois cartes, rendues
- * par l'app) n'y est pas encore — la carte du fil est celle d'un menu, pas de la couche
- * commune ; et le contenu est celui EMBARQUÉ, l'iOS le relisant aussi sur le site.
+ * collées en bas, et sous le chapeau le fil en miniature (`FilEnMiniature`). ⚠️ Divergence
+ * déclarée (#153) : le contenu est celui EMBARQUÉ, l'iOS le relisant aussi sur le site.
  */
 @Composable
 fun EcranEnSavoirPlus(parcours: ActionsEntree) {
@@ -102,6 +107,7 @@ fun EcranEnSavoirPlus(parcours: ActionsEntree) {
             )
             Text(page.chapeau, style = MaterialTheme.typography.titleMedium, color = couleurs.textMuted)
         }
+        FilEnMiniature()
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(
                 page.section,
@@ -134,6 +140,29 @@ fun EcranEnSavoirPlus(parcours: ActionsEntree) {
  * fictives, effacées chaque nuit… ») reste collé en bas, ou passe dans la page quand le
  * texte est si grand qu'un bandeau couvrirait l'écran.
  */
+/**
+ * « Une capture » : le fil lui-même, en miniature, rendu par l'app (`ApercuDuFil` de l'iOS,
+ * #153) — trois cartes du fil inventé, sans session ni toucher, lues d'un bloc.
+ */
+@Composable
+private fun FilEnMiniature() {
+    val couleurs = LocalCouleurs.current
+    val forme = RoundedCornerShape(22.dp)
+    val description = stringResource(R.string.vitrine_apercu_fil)
+    val elements = remember { ApercuDuFil.elements() }
+    Column(
+        Modifier.fillMaxWidth().background(couleurs.neutreFond, forme).border(1.dp, couleurs.border, forme).padding(12.dp)
+            // Le repère AVANT : `clearAndSetSemantics` efface ce qui le suit.
+            .testTag(REPERE_APERCU_FIL).clearAndSetSemantics { contentDescription = description },
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        elements.forEach { CarteDuFil(it, session = null) }
+    }
+}
+
+/** Le repère de l'aperçu du fil, pour les tests d'interface. */
+const val REPERE_APERCU_FIL = "vitrine.apercuFil"
+
 @Composable
 fun EcranDemo(parcours: ActionsEntree) {
     val page = pages().demo

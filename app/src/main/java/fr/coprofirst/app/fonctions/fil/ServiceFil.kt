@@ -6,6 +6,9 @@ package fr.coprofirst.app.fonctions.fil
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import fr.coprofirst.api.routes.FluxApi
+import fr.coprofirst.app.commun.fil.Chronologie
+import fr.coprofirst.app.commun.fil.ElementDuFil
+import fr.coprofirst.app.commun.fil.JourDuFil
 import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.SessionOuverte
 import kotlinx.coroutines.flow.MutableStateFlow

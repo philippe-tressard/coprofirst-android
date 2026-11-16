@@ -38,6 +38,10 @@ import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.EtatVide
 import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.MessageErreur
+import fr.coprofirst.app.commun.fil.CarteDuFil
+import fr.coprofirst.app.commun.fil.CibleDuFil
+import fr.coprofirst.app.commun.fil.ElementDuFil
+import fr.coprofirst.app.commun.fil.TextesFil
 import fr.coprofirst.app.commun.pieces.AvisOuverture
 import fr.coprofirst.app.commun.pieces.rememberOuverture
 import fr.coprofirst.app.navigation.ContexteDeMenu
@@ -111,7 +115,7 @@ private fun ListeFil(parcours: ParcoursFil, session: SessionOuverte, ouvrir: (De
                         session,
                         Modifier.padding(horizontal = Mise.marge).animateItem(),
                         maintenant = maintenant,
-                        action = destination?.let { TextesFil.action(it) },
+                        action = destination?.let { actionDuFil(it) },
                         ouvrir = when (destination) {
                             null -> null
                             DestinationDuFil.Resume -> ({ resume = element.id })

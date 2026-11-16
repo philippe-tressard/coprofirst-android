@@ -150,6 +150,7 @@ class ServiceProfilApi(private val session: SessionOuverte) : ServiceProfil {
 | `MessageErreur(texte, reessayer?)` | `MessageErreur(texte:)` | La même, pour une phrase que l'écran compose (« 500 notifications sur 1200 ont été supprimées ; … » puis la raison) : même mise en forme, même « Réessayer ». La version `erreur` passe par elle. |
 | `ErreurService.phrase()` | `.phrase` | La phrase d'une erreur, en `@Composable`. |
 | `EtatVide(titre, icone?, explication?)` | `ContentUnavailableView` | Une liste vide, dite. |
+| `commun.fil` : `CarteDuFil(element, session?)`, `ElementDuFil`, `MetaDuFil`, `TextesFil`, `ApercuDuFil.elements()` | `CarteDuFil`, `Apercu.fil` | La carte d'un élément du fil et son modèle, hors du menu Fil (#153) : le fil la pose, et « En savoir plus » montre trois cartes du fil inventé (`ApercuDuFil`), sans session ni toucher. |
 | `Carte(ouvrir?, action?) { … }` | `Carte` | La surface d'une carte : `surface`, filet `border`, sans ombre ; touchable si `ouvrir`. |
 | `PastilleTeinte(libelle, badge, compacte?)`, `LibelleTeinte` | `PastilleTeinte` | Une pastille d'état : la classe `badge-*` du site → couleurs de la charte ; `LibelleTeinte.brut(v)` pour une valeur inconnue (en gris). |
 | `PastilleStatut(statut, libelle, compacte?)` | `PastilleStatut` | Le statut d'une affaire : la teinte par son code (`StatutsAffaire.pastilles`, générée de `statutsTicket`), le libellé servi, dit « Statut : … » — Mes affaires, Reporting de l'Espace CS, fil (#92). |

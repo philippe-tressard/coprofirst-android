@@ -3,6 +3,8 @@
 
 package fr.coprofirst.app.entree
 
+import androidx.compose.ui.test.assertContentDescriptionEquals
+import androidx.compose.ui.test.assertHasNoClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -11,6 +13,7 @@ import fr.coprofirst.app.commun.amenerTag
 import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.commun.toucherTexte
+import fr.coprofirst.app.entree.vitrine.REPERE_APERCU_FIL
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -37,6 +40,8 @@ class VitrineInterfaceTest {
     fun deLaVitrineALaConnexionDUnRoleDeLaDemo() {
         ecran.toucherTexte("En savoir plus sur CoproFirst")
         ecran.onNodeWithTag("vitrine.titre").assertIsDisplayed()
+        // #153 : le fil en miniature, rendu par l'app, lu d'un bloc et sans toucher.
+        ecran.amenerTag(REPERE_APERCU_FIL).assertContentDescriptionEquals("Aperçu du fil d'une résidence").assertHasNoClickAction()
         // Les six fonctions de l'app, textes du site.
         ecran.amenerTag("vitrine.rangee.communaute")
         ecran.toucherTexte("Essayer la démo")

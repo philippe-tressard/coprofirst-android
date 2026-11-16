@@ -3,6 +3,10 @@
 
 package fr.coprofirst.app.fonctions.fil
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import fr.coprofirst.app.R
+import fr.coprofirst.app.commun.fil.CibleDuFil
 import fr.coprofirst.app.commun.onglets.OngletsSurLeSite
 import java.net.URI
 
@@ -55,4 +59,13 @@ sealed interface DestinationDuFil {
             return lien.takeIf { memeHote }
         }
     }
+}
+
+/** Ce que fait un toucher, dit au lecteur d'écran (`typeVoirLabel` du site). */
+@Composable
+fun actionDuFil(destination: DestinationDuFil): String = when (destination) {
+    DestinationDuFil.Resume -> stringResource(R.string.fil_voir_resume)
+    is DestinationDuFil.Document -> stringResource(R.string.pieces_ouvrir_document)
+    is DestinationDuFil.Element ->
+        stringResource(if (destination.nature == DestinationDuFil.SONDAGE) R.string.fil_voir_sondage else R.string.fil_voir_affaire)
 }

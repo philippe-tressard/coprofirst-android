@@ -12,6 +12,7 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.commun.detail.sondage.ReperesSondage
+import fr.coprofirst.app.commun.fil.TextesFil
 import fr.coprofirst.app.commun.toucher
 import fr.coprofirst.app.commun.toucherDescription
 import fr.coprofirst.app.commun.toucherTag
