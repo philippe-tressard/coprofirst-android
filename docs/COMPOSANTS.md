@@ -148,6 +148,7 @@ class ServiceProfilApi(private val session: SessionOuverte) : ServiceProfil {
 | `EtatVide(titre, icone?, explication?)` | `ContentUnavailableView` | Une liste vide, dite. |
 | `Carte(ouvrir?, action?) { … }` | `Carte` | La surface d'une carte : `surface`, filet `border`, sans ombre ; touchable si `ouvrir`. |
 | `PastilleTeinte(libelle, badge, compacte?)`, `LibelleTeinte` | `PastilleTeinte` | Une pastille d'état : la classe `badge-*` du site → couleurs de la charte ; `LibelleTeinte.brut(v)` pour une valeur inconnue (en gris). |
+| `PastilleStatut(statut, libelle, compacte?)` | `PastilleStatut` | Le statut d'une affaire : la teinte par son code (`StatutsAffaire.pastilles`, générée de `statutsTicket`), le libellé servi, dit « Statut : … » — Mes affaires, Reporting de l'Espace CS, fil (#92). |
 | `BoutonPlein(libelle, actif?, enCours?)` | `.plein` | Le bouton principal (`primaryPlein`), toute la largeur. Le `Button` de Material ne s'écrit que dans `Boutons.kt`. |
 | `BoutonPleinDestructif(libelle, actif?, icone?)` | `Button(role: .destructive)` plein | Le bouton plein d'un geste définitif : fond `dangerPlein`, texte `surPlein`, `icone` avant le libellé ; à la largeur de son libellé (l'écran le place). « Supprimer (3) » des notifications. |
 | `BoutonContour(libelle)` | `.contour` | Le bouton secondaire. |

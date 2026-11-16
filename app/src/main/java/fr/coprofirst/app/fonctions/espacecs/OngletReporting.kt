@@ -43,6 +43,7 @@ import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.Chiffre
 import fr.coprofirst.app.commun.EtatVide
 import fr.coprofirst.app.commun.Pastille
+import fr.coprofirst.app.commun.PastilleStatut
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.RangeeDeChiffres
 import fr.coprofirst.app.commun.formats.FormatsDuSite
@@ -130,7 +131,6 @@ private fun VueSuivi(suivi: SuiviAffaires, entretien: Boolean, ouvrir: (Destinat
 private fun LigneAffaireSuivie(affaire: AffaireSuivie, entretien: Boolean, ouvrir: (() -> Unit)?) {
     val c = LocalCouleurs.current
     val ageLu = pluralStringResource(R.plurals.espacecs_reporting_age_lu, affaire.ageJours, FormatsDuSite.nombre(affaire.ageJours))
-    val statutLu = stringResource(R.string.espacecs_reporting_statut, affaire.libelleStatut)
     Carte(Modifier.testTag(ReperesEspaceCS.reportingAffaire(affaire.id)), ouvrir = ouvrir, action = stringResource(R.string.espacecs_ouvrir_affaire)) {
         Column(Modifier.semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(8.dp)) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp), itemVerticalAlignment = Alignment.CenterVertically) {
@@ -151,7 +151,7 @@ private fun LigneAffaireSuivie(affaire: AffaireSuivie, entretien: Boolean, ouvri
             }
             if (affaire.apercu.isNotEmpty()) Apercu(affaire)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp), itemVerticalAlignment = Alignment.CenterVertically) {
-                PastilleTeinte(affaire.libelleStatut, affaire.teinteStatut, Modifier.semantics { contentDescription = statutLu })
+                PastilleStatut(affaire.statut, affaire.libelleStatut)
                 val visite = affaire.visite
                 if (entretien && visite != null) {
                     PastilleTeinte(visite)

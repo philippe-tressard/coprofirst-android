@@ -10,6 +10,7 @@ import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 import generer_tables as g  # noqa: E402
+import tables_communes as tc  # noqa: E402
 
 RACINE = pathlib.Path(__file__).resolve().parent.parent
 
@@ -228,7 +229,7 @@ class Acces(unittest.TestCase):
         return base
 
     def test_les_deux_tables(self):
-        texte = g.kotlin_acces(self.tables(), "test.json")
+        texte = tc.kotlin_acces(self.tables(), "test.json")
         self.assertIn("package fr.coprofirst.app.commun.acces", texte)
         self.assertIn('"actif" to LibelleTeinte("Actif", "badge-green"),', texte)
         self.assertIn('"vigik" to "🏷️ Badge Vigik",', texte)
@@ -236,13 +237,39 @@ class Acces(unittest.TestCase):
     def test_ce_qui_change_de_forme_arrete(self):
         for casse in ({"statutsAcces": t([{"val": "actif"}])}, {"typesAcces": t(None)}, {"typesAcces": t([{"val": "x"}])}):
             with self.assertRaises(g.TableInattendue, msg=str(casse)):
-                g.kotlin_acces(self.tables(**casse), "t")
+                tc.kotlin_acces(self.tables(**casse), "t")
 
     def test_le_plancher_se_genere(self):
         publiees = json.loads((RACINE / "contrat" / "tables-clients.json").read_text(encoding="utf-8"))["tables"]
-        texte = g.kotlin_acces(publiees, "tables-clients.json")
+        texte = tc.kotlin_acces(publiees, "tables-clients.json")
         for attendu in ('"perdu" to LibelleTeinte(', '"telecommande" to ', '"vigik" to '):
             self.assertIn(attendu, texte)
+
+
+class StatutsAffaire(unittest.TestCase):
+    """`StatutsAffaire` : la teinte du statut d'une affaire, commune (#92)."""
+
+    def tables(self, **remplace):
+        base = {"statutsTicket": t([{"value": "ouvert", "label": "Ouvert", "badge": "badge-blue"}]),
+                "statutsTicketHistoriques": t({"fermé": {"label": "Fermé", "badge": "badge-gray"}}),
+                "statutsTicketSansCycle": t({"publie": {"label": "Publiée", "badge": "badge-blue"}})}
+        base.update(remplace)
+        return base
+
+    def test_le_cycle_les_historiques_et_hors_cycle(self):
+        texte = tc.kotlin_statuts_affaire(self.tables(), "test.json")
+        self.assertIn("package fr.coprofirst.app.commun", texte)
+        for code, badge in (("ouvert", "badge-blue"), ("fermé", "badge-gray"), ("publie", "badge-blue")):
+            self.assertIn(f'"{code}" to "{badge}",', texte)
+
+    def test_ce_qui_change_de_forme_arrete(self):
+        for casse in ({"statutsTicket": t([{"value": "ouvert"}])}, {"statutsTicketHistoriques": t([])}, {"statutsTicketSansCycle": t(None)}):
+            with self.assertRaises(g.TableInattendue, msg=str(casse)):
+                tc.kotlin_statuts_affaire(self.tables(**casse), "t")
+
+    def test_le_plancher_se_genere(self):
+        publiees = json.loads((RACINE / "contrat" / "tables-clients.json").read_text(encoding="utf-8"))["tables"]
+        self.assertIn('"ouvert" to "badge-', tc.kotlin_statuts_affaire(publiees, "tables-clients.json"))
 
 
 if __name__ == "__main__":

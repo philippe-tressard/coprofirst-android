@@ -30,7 +30,6 @@ def tables(**remplace):
         "etatsVisite": t({"realisee": {"libelle": "✅ Réalisée", "teinte": "badge-green"}}),
         "motifsEvolution": t({"etat": "Changement d’état"}),
         "motifEvolutionParDefaut": t("Du nouveau"),
-        "statutsTicket": t([{"value": "en_cours", "label": "Chez le syndic", "badge": "badge-orange"}]),
         "jetonsCharte": t({"--serie-1": "#000", "--palier-2": "#111", "--color-neutre-fond": "#222"}),
         "tranchesRepartition": t({
             "s1": {"background": "var(--serie-1)"},
@@ -51,7 +50,7 @@ class TablesEspaceCS(unittest.TestCase):
         self.assertIn('"suivi" to "Suivi affaires",', texte)
         self.assertIn('"realisee" to LibelleTeinte("Réalisée", "badge-green"),', texte)  # sans l'émoji
         self.assertIn('MOTIF_EVOLUTION_PAR_DEFAUT: String = "Du nouveau"', texte)
-        self.assertIn('"en_cours" to "badge-orange",', texte)
+        self.assertNotIn("teintesStatutAffaire", texte)  # commune : StatutsAffaire (#92)
         self.assertIn('"s1" to listOf({ it.serie1 }),', texte)
         self.assertIn('"plusieurs" to listOf({ it.palier2 }, { it.neutreFond }),', texte)
 
@@ -60,7 +59,6 @@ class TablesEspaceCS(unittest.TestCase):
             {"verdictsReleve": t({"accepte": {"libelle": "x", "ton": "inconnu"}})},
             {"formatsAffiche": t([])},
             {"civilites": t(None)},
-            {"statutsTicket": t([{"value": "ouvert"}])},
             {"etatsVisite": t({"realisee": {"libelle": "x"}})},
             {"tranchesRepartition": t({"s9": {"background": "var(--serie-9)"}})},  # jeton absent de la charte
             {"tranchesRepartition": t({"s1": {"background": "#fff"}})},
@@ -72,7 +70,7 @@ class TablesEspaceCS(unittest.TestCase):
         publiees = json.loads((RACINE / "contrat" / "tables-clients.json").read_text(encoding="utf-8"))["tables"]
         texte = g.kotlin(publiees, "tables-clients.json")
         for attendu in ('"a_classer" to ', '"a7" to ', '"Mlle"', '"relance" to "Relancer le syndic"',
-                        '"annulee" to LibelleTeinte(', '"résolu" to "badge-green"', '"autre" to listOf({ it.textMuted })'):
+                        '"annulee" to LibelleTeinte(', '"autre" to listOf({ it.textMuted })'):
             self.assertIn(attendu, texte)
 
 

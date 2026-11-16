@@ -88,7 +88,6 @@ data class AffaireSuivie(
     val etatVisite: String? = null,
 ) {
     val teinteAge: String get() = TablesEspaceCS.teintesAge[anciennete] ?: "badge-gray"
-    val teinteStatut: String get() = TablesEspaceCS.teintesStatutAffaire[statut] ?: "badge-gray"
     val evolution: String
         get() = motifEvolution?.let { TablesEspaceCS.motifsEvolution[it] } ?: TablesEspaceCS.MOTIF_EVOLUTION_PAR_DEFAUT
     val visite: LibelleTeinte? get() = etatVisite?.let { TablesEspaceCS.etatsVisite[it] ?: LibelleTeinte.brut(it) }
