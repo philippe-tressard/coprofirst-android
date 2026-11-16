@@ -32,6 +32,12 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   passe à côté. Une session expirée se renouvelle d'elle-même (POST /auth/refresh, un
   seul à la fois par hôte). Se déconnecter efface la session gardée ; « Oublier toutes
   les résidences » efface tout.
+- **Hors ligne** : pour une résidence dont la session est gardée, la dernière lecture du
+  fil, des affaires, du profil, de l'annuaire et des documents ou photos déjà ouverts est
+  gardée sur l'appareil, chiffrée, sept jours au plus. Sans réseau, la biométrie passée,
+  elle s'ouvre en consultation : « Hors ligne — à jour au… », et rien d'autre ne part
+  (« Vous êtes hors ligne… »). Le réseau revenu, la session se rouvre seule et tout se
+  relit. L'appareil qui perd le réseau, l'app ouverte : « ce qui est affiché peut dater ».
 - **La résidence ouverte** : la barre du bas, dans l'ordre et avec les libellés réglés
   par l'administration de la résidence, filtrée selon le compte (Espace CS, Prestataires,
   Délégations, Paramétrage ne paraissent qu'à ceux qui y ont droit) ; « Plus » pour les

@@ -40,6 +40,7 @@ import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.BoutonPlein
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.session.Installation
+import fr.coprofirst.app.session.LecturesGardees
 
 /**
  * Le retour d'un habitué dont la session est gardée, comme l'iOS (`RetourView`) : la
@@ -85,7 +86,14 @@ fun EcranRetour(etat: EtatEntree, parcours: ActionsEntree) {
             verticalArrangement = Arrangement.spacedBy(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            etat.erreurReprise?.let { MessageErreur(it) }
+            if (etat.lecturePerimee) {
+                MessageErreur(
+                    stringResource(R.string.hors_ligne_perimee, LecturesGardees.JOURS_MAX.toInt()),
+                    modifier = Modifier.testTag(ReperesRetour.LECTURE_PERIMEE),
+                )
+            } else {
+                etat.erreurReprise?.let { MessageErreur(it) }
+            }
             BoutonPlein(
                 biometrie.ouvrir,
                 modifier = Modifier.testTag(ReperesRetour.OUVRIR),
@@ -108,6 +116,7 @@ object ReperesRetour {
     const val RESIDENCE = "retour.residence"
     const val OUVRIR = "retour.ouvrir"
     const val MOT_DE_PASSE = "retour.motDePasse"
+    const val LECTURE_PERIMEE = "retour.lecturePerimee"
 }
 
 @Preview(showBackground = true)

@@ -76,6 +76,8 @@ internal fun SessionsParHote.rafraichir(adresse: AdresseInstallation, baseApi: S
     try {
         AuthApi(baseApi, client(adresse)).postAuthRefresh()
     } catch (_: ClientException) {
+        // Session refusée : rien de ce compte ne reste lisible hors ligne.
+        lectures?.effacer(adresse.cleCoffre)
         return false
     }
     val cle = adresse.cleCoffre

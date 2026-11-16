@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.key
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.fillMaxSize
@@ -55,6 +56,7 @@ interface ActionsEntree {
     fun utiliserMotDePasse()
     fun activerGarde()
     fun fermerGarde()
+    fun reprendreEnLigne()
 
     /** Pour les aperçus : aucun geste ne fait rien. */
     object Inertes : ActionsEntree {
@@ -75,6 +77,7 @@ interface ActionsEntree {
         override fun utiliserMotDePasse() = Unit
         override fun activerGarde() = Unit
         override fun fermerGarde() = Unit
+        override fun reprendreEnLigne() = Unit
     }
 }
 
@@ -88,6 +91,7 @@ private const val DUREE_MS = 220
 @Composable
 fun NavigationEntree(apparence: Apparence, parcours: ParcoursEntree = viewModel(factory = ParcoursEntree.Fabrique)) {
     val etat by parcours.etat.collectAsStateWithLifecycle()
+    val enLigne by parcours.reseau.enLigne.collectAsStateWithLifecycle()
     // La biométrie se demande par l'activité affichée : posée ici, retirée à sa sortie.
     val deverrouillage = rememberDeverrouillage(etat.reconnue)
     DisposableEffect(parcours, deverrouillage) {
@@ -117,7 +121,12 @@ fun NavigationEntree(apparence: Apparence, parcours: ParcoursEntree = viewModel(
                     EcranEntree.Accueil -> EcranAccueil(parcours)
                     EcranEntree.Retour -> EcranRetour(etat, parcours)
                     EcranEntree.Connexion -> EcranConnexion(etat, parcours)
-                    EcranEntree.Espace -> parcours.sessionOuverte()?.let { EcranResidence(it, parcours, apparence) }
+                    EcranEntree.Espace -> parcours.sessionOuverte()?.let { session ->
+                        EspaceHorsLigne(etat.consultation, enLigne, parcours::reprendreEnLigne) {
+                            // Le réseau revenu, la session reprise : l'espace se reconstruit, tout se relit.
+                            key(etat.consultation == null) { EcranResidence(session, parcours, apparence) }
+                        }
+                    }
                 }
             }
             // « Garder la session ? », proposée une fois après la première connexion.
