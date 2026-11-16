@@ -27,6 +27,8 @@ import java.util.concurrent.ConcurrentHashMap
  *
  * GET /flux (le fil, la première page d'une résidence ouverte) se sert HORS de la file, depuis
  * `flux` : il part en même temps que GET /auth/me, et prendrait sinon la réponse de l'autre.
+ * GET /notifications aussi, depuis `notifications` (aucune par défaut) : la cloche relit ses
+ * non lues à l'ouverture de la résidence (#120), en même temps que les deux autres.
  * De même toute route posée dans `fixes` (chemin → corps, en 200) : la fiche d'un sondage, lue
  * avec GET /auth/me.
  */
@@ -38,6 +40,10 @@ class ServeurDeTest : AutoCloseable {
     @Volatile
     var flux: String = FIL_VIDE
 
+    /** Ce que sert GET /notifications : aucune alerte, sauf si le test en pose. */
+    @Volatile
+    var notifications: String = "[]"
+
     /** Les routes servies hors de la file, par chemin (`/api/sondages/3`). */
     val fixes = ConcurrentHashMap<String, String>()
     val serveur = MockWebServer().apply {
@@ -45,6 +51,7 @@ class ServeurDeTest : AutoCloseable {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 val chemin = request.url.encodedPath
                 if (chemin == "/api/flux") return json(200, flux)
+                if (chemin == "/api/notifications" && request.method == "GET") return json(200, notifications)
                 return fixes[chemin]?.let { json(200, it) } ?: super.dispatch(request)
             }
         }
