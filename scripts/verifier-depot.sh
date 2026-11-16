@@ -235,6 +235,11 @@ while IFS= read -r t; do
   python3 -I "$t" >/dev/null 2>&1 || echec "$t en échec (python3 -I $t)"
 done < <(grep -E '^scripts/test_[a-z_]+\.py$' <<< "$FICHIERS")
 
+# La section « Sécurité des données » de Google Play dit ce que le code envoie (#32) :
+# chaque écriture du client généré et chaque permission y sont classées.
+python3 -I scripts/verifier_securite_donnees.py \
+  || echec "docs/play-store/securite-des-donnees.md ne dit pas ce que l'app envoie (python3 -I scripts/verifier_securite_donnees.py)"
+
 # Un écran s'inscrit dans SON paquet (#109) : ni le build ni la navigation ne nomment un
 # menu. Les tables d'un menu se découvrent (`scripts/generer_tables_<menu>.py`), ses
 # pages et ses fiches s'inscrivent (`fonctions/<menu>/Inscription.kt`) — sans quoi deux
