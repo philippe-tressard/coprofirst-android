@@ -4,6 +4,7 @@
 package fr.coprofirst.app.fonctions.residence
 
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.perimetres.Perimetre
 import fr.coprofirst.app.session.ErreurService
 
 /**

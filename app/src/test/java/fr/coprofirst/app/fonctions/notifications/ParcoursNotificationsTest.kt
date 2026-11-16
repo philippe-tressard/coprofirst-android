@@ -123,6 +123,7 @@ class ParcoursNotificationsTest {
         assertEquals("la notification revient", 2, parcours.etat.value.liste.size)
         assertFalse(parcours.supprimerLues())
         assertEquals("les lues reviennent aussi", listOf(1, 2), parcours.etat.value.liste.map { it.id })
+        assertEquals("et aucun avis ne le dit", 0, parcours.etat.value.luesSupprimees)
     }
 
     @Test
@@ -146,8 +147,11 @@ class ParcoursNotificationsTest {
         assertEquals(2, parcours.etat.value.lues)
         assertTrue(parcours.supprimerLues())
         assertEquals("les non lues restent", listOf(5), parcours.etat.value.liste.map { it.id })
+        assertEquals("l'avis du site le dit", 1, parcours.etat.value.luesSupprimees)
+        assertEquals("seul, comme l'iOS : aucune autre confirmation", 0, parcours.etat.value.confirmations)
         assertFalse("plus de lue : aucune requête", parcours.supprimerLues())
         assertEquals(1, serveur.requetes)
+        assertEquals("ni un second avis", 1, parcours.etat.value.luesSupprimees)
     }
 
     @Test

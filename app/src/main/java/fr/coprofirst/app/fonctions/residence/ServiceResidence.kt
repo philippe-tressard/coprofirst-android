@@ -12,6 +12,7 @@ import fr.coprofirst.api.routes.EquipementsApi
 import fr.coprofirst.api.routes.PerimetresApi
 import fr.coprofirst.api.routes.ReglementApi
 import fr.coprofirst.api.routes.RglesRsidenceApi
+import fr.coprofirst.app.commun.perimetres.Perimetre
 import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.SessionOuverte
 import kotlinx.coroutines.async
@@ -80,7 +81,7 @@ class ServiceResidenceApi(private val session: SessionOuverte) : ServiceResidenc
         ContenuCarnet(carnet.entrees.map { it.lue() }, libelles)
     }
 
-    override suspend fun perimetres() = session.appeler { b, c -> PerimetresApi(b, c).getPerimetres().actifs() }
+    override suspend fun perimetres() = session.appeler { b, c -> Perimetre.lus(PerimetresApi(b, c).getPerimetres()) }
 
     override suspend fun accesReglement() = session.appeler { b, c -> ReglementApi(b, c).getReglementAcces().acces }
 

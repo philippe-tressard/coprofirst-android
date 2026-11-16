@@ -12,11 +12,11 @@ import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.commun.amenerTag
+import fr.coprofirst.app.commun.annuaire.ReperesContact
 import fr.coprofirst.app.commun.toucher
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.fonctions.annuaire.AnnuaireSimule
 import fr.coprofirst.app.fonctions.annuaire.EcranAnnuaire
-import fr.coprofirst.app.fonctions.annuaire.ReperesAnnuaire
 import fr.coprofirst.app.navigation.DroitsOnglet
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -67,7 +67,7 @@ class ResidenceInterfaceTest {
         attendre("Gestionnaire de copropriété")
         assertTrue(
             "le numéro du gestionnaire s'appelle d'un toucher",
-            ecran.onAllNodes(hasTestTag(ReperesAnnuaire.APPELER).and(hasText("01 00 00 00 01"))).fetchSemanticsNodes().isNotEmpty(),
+            ecran.onAllNodes(hasTestTag(ReperesContact.APPELER).and(hasText("01 00 00 00 01"))).fetchSemanticsNodes().isNotEmpty(),
         )
         ecran.toucherTag(ReperesResidence.FERMER)
         attendre("AA0-000-000")

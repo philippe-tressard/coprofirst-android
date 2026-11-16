@@ -8,7 +8,6 @@ import fr.coprofirst.api.modeles.CoproprieteRead
 import fr.coprofirst.api.modeles.DiagnosticTypeRead
 import fr.coprofirst.api.modeles.DocumentRead
 import fr.coprofirst.api.modeles.EntreeCarnetLue
-import fr.coprofirst.api.modeles.PerimetreRead
 import fr.coprofirst.api.modeles.RegleResidenceLue
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import java.time.Instant
@@ -157,9 +156,6 @@ data class ContenuCarnet(val entrees: List<EntreeCarnet>, val libellesEquipement
     val enAlerte: List<EntreeCarnet> get() = entrees.filter { !it.alerte.isNullOrEmpty() }
 }
 
-/** Un périmètre ACTIF de la copropriété (GET /perimetres) : le filtre du carnet. */
-data class Perimetre(val code: String, val libelle: String)
-
 // Les réponses du client généré → les modèles. Aucune règle n'y est ajoutée.
 
 private fun String?.nonVide(): String? = this?.takeIf { it.isNotEmpty() }
@@ -193,6 +189,3 @@ internal fun EntreeCarnetLue.lue() = EntreeCarnet(
     date = date, libelle = libelle, origine = origine.value, detail = detail.nonVide(), numero = numero.nonVide(),
     equipement = equipement.nonVide(), lien = lien.nonVide(), alerte = alerte.nonVide(), extrait = extrait.nonVide(),
 )
-
-/** L'arbre servi, ACTIFS seulement, comme l'iOS (`Perimetre.lus`). */
-internal fun List<PerimetreRead>.actifs() = filter { it.actif }.map { Perimetre(it.code, it.libelle) }

@@ -21,6 +21,7 @@ Les textes de l'écran des notifications, écrits une fois — ceux du site
     <string name="notifications_supprimer">Supprimer</string>
     <string name="notifications_supprimer_nombre">Supprimer (%1$d)</string>
     <string name="notifications_supprimer_lues">Supprimer les lues</string>
+    <string name="notifications_lues_supprimees">Notifications lues supprimées</string>
     <string name="notifications_modifier">Modifier</string>
     <string name="notifications_terminer">OK</string>
     <string name="notifications_tout_selectionner">Tout sélectionner</string>

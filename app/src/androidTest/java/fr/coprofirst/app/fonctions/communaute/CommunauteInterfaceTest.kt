@@ -27,6 +27,7 @@ import fr.coprofirst.api.modeles.StatutAnnonce
 import fr.coprofirst.api.modeles.TypeAnnonce
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.commun.Apparence
+import fr.coprofirst.app.commun.CibleSignalement
 import fr.coprofirst.app.commun.GestesDeSortie
 import fr.coprofirst.app.commun.StockageApparence
 import fr.coprofirst.app.commun.onglets.ReperesOnglets
@@ -92,6 +93,12 @@ private class CommunauteSimulee(val motif: String? = null, val peutCreer: Boolea
 
     override suspend fun changerStatutAnnonce(id: Int, statut: String) = Unit
     override suspend fun supprimerAnnonce(id: Int) = Unit
+    override suspend fun repondre(fil: FilCommunaute, texte: String) {
+        deposes += texte
+    }
+
+    override suspend fun supprimerReponse(fil: FilCommunaute, reponse: Int) = Unit
+    override suspend fun signalerAuConseil(cible: CibleSignalement, motif: String) = Unit
     override suspend fun avis() = AvisListe(listOf(AvisRead(4, 5, "Enfin informé", "<p>Tout est clair.</p>", LE, luDeTous = true)), false, null)
     override suspend fun deposerAvis(saisie: SaisieAvis) = Unit
     override suspend fun corrigerAvis(id: Int, saisie: SaisieAvis) = Unit

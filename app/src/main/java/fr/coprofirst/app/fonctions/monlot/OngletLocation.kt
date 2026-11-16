@@ -40,6 +40,7 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.PastilleTeinte
+import fr.coprofirst.app.commun.annuaire.Coordonnees
 import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.texte.TexteRiche
@@ -93,7 +94,7 @@ private fun CarteBaux(groupe: GroupesDeBaux.Groupe, lots: List<LotDuCompte>) {
                 )
                 PastilleTeinte(LibellesMonLot.statutBail(premier.statut))
             }
-            Coordonnees(premier.locataireEmail, premier.locataireTelephone)
+            Coordonnees(premier.locataireEmail, listOfNotNull(premier.locataireTelephone))
             groupe.baux.forEach { bail ->
                 HorizontalDivider(color = LocalCouleurs.current.border)
                 UnBail(bail, lots.firstOrNull { it.id == bail.lotId }, plusieurs = groupe.baux.size > 1)
