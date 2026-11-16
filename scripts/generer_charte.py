@@ -4,15 +4,11 @@
 """Les PALETTES de CoproFirst, générées au build depuis `contrat/tables-clients.json` —
 la pièce jointe de la release de coprofirst au plancher, recopiée à l'octet.
 
-Les jetons viennent des tables publiées : `jetonsCharte` (`:root` de socle.css),
-`jetonsCharteSombre`, `palettesClaires` et `palettesSombres`. La cascade est celle du
-site, et celle de l'app iOS (`scripts/generateurs/palettes.py`) : au clair, la palette
-sur la charte ; au sombre, la charte sombre par-dessus la palette claire, puis la
-palette sombre par-dessus tout. La charte est `seine`.
-
-⚠️ Doublon déclaré : la résolution des `var(--…)` et la cascade existent aussi côté
-iOS (une vingtaine de lignes). Qu'elles disparaissent des deux apps est demandé à
-coprofirst : publier les jetons déjà résolus (coprofirst#2754).
+Les jetons viennent de `palettesResolues` (tables 1.2.0, coprofirst#2754) : chaque
+palette, au clair et au sombre, jetons déjà résolus par coprofirst en `#rrggbb` ou
+`rgba(…)` — la cascade du site faite chez lui, comparée à son rendu. L'app ne résout
+plus rien (#74) : une valeur qui n'est ni l'une ni l'autre arrête la génération. La
+charte est `seine`.
 
 Usage : generer_charte.py <tables-clients.json> <dossier de sortie>
 """
@@ -28,7 +24,6 @@ import sys
 EXPOSES = ("color-", "fil-", "kanban-", "serie-", "palier-")
 HEX = re.compile(r"^#([0-9a-fA-F]{6})$")
 RGBA = re.compile(r"^rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([0-9.]+)\s*\)$")
-VAR = re.compile(r"^var\(--([a-z][a-z0-9-]*)\)$")
 CHARTE = "seine"
 PAQUET = "fr.coprofirst.app.charte"
 
@@ -38,32 +33,28 @@ def jetons(table: dict) -> dict[str, str]:
     return {k[2:]: str(v).strip() for k, v in table.items() if k.startswith("--")}
 
 
-def resoudre(nom: str, table: dict[str, str], vus: tuple = ()) -> tuple | None:
-    """(rouge, vert, bleu, alpha) du jeton dans `table`, ou None s'il n'est pas portable."""
+class ValeurNonResolue(ValueError):
+    pass
+
+
+def resoudre(nom: str, table: dict[str, str]) -> tuple | None:
+    """(rouge, vert, bleu, alpha) du jeton dans `table`, ou None s'il en est absent."""
     valeur = table.get(nom)
-    if valeur is None or nom in vus:
+    if valeur is None:
         return None
     if m := HEX.match(valeur):
         h = int(m.group(1), 16)
         return (h >> 16 & 0xFF, h >> 8 & 0xFF, h & 0xFF, 1.0)
     if m := RGBA.match(valeur):
         return (int(m.group(1)), int(m.group(2)), int(m.group(3)), float(m.group(4)))
-    if m := VAR.match(valeur):
-        return resoudre(m.group(1), table, (*vus, nom))
-    return None
+    raise ValeurNonResolue(f"--{nom} : « {valeur} » n'est pas résolu (#rrggbb ou rgba attendu)")
 
 
 def cascade(tables: dict) -> dict[str, tuple[dict, dict]]:
-    """Par code de palette : (jetons au clair, jetons au sombre), selon la cascade du site."""
-    socle = jetons(tables["jetonsCharte"]["valeur"])
-    sombre = jetons(tables["jetonsCharteSombre"]["valeur"])
-    claires = tables["palettesClaires"]["valeur"]
-    sombres = tables["palettesSombres"]["valeur"]
-    resultat = {CHARTE: (socle, {**socle, **sombre})}
-    for code in sorted(claires):
-        clair_p, sombre_p = jetons(claires[code]), jetons(sombres.get(code, {}))
-        resultat[code] = ({**socle, **clair_p}, {**socle, **clair_p, **sombre, **sombre_p})
-    return resultat
+    """Par code de palette, la charte d'abord : (jetons au clair, jetons au sombre), publiés résolus."""
+    resolues = tables["palettesResolues"]["valeur"]
+    codes = [CHARTE] + sorted(c for c in resolues if c != CHARTE)
+    return {code: (jetons(resolues[code]["clair"]), jetons(resolues[code]["sombre"])) for code in codes}
 
 
 def portables(socle: dict, palettes: dict) -> tuple[list[str], list[str]]:
@@ -90,8 +81,8 @@ def kotlin(tables: dict, source: str) -> str:
     gardes, ecartes = portables(palettes[CHARTE][0], palettes)
     lignes = [
         "// GÉNÉRÉ par scripts/generer_charte.py — NE PAS MODIFIER À LA MAIN.",
-        f"// Source : {source} (jetonsCharte, jetonsCharteSombre, palettesClaires, palettesSombres).",
-        "// Jetons non portés (color-mix, valeur non littérale) : " + (", ".join(f"--{e}" for e in ecartes) or "aucun"),
+        f"// Source : {source} (palettesResolues).",
+        "// Jetons absents d'une palette, non portés : " + (", ".join(f"--{e}" for e in ecartes) or "aucun"),
         f"package {PAQUET}",
         "",
         "import androidx.compose.ui.graphics.Color",
@@ -129,9 +120,14 @@ def main(argv: list[str]) -> int:
         return 2
     entree, sortie = pathlib.Path(argv[1]), pathlib.Path(argv[2])
     tables = json.loads(entree.read_text(encoding="utf-8"))["tables"]
+    try:
+        code = kotlin(tables, entree.name)
+    except (KeyError, ValeurNonResolue) as e:
+        print(f"❌ {entree.name} : palettes illisibles ({e})", file=sys.stderr)
+        return 1
     fichier = sortie / PAQUET.replace(".", "/") / "Palettes.kt"
     fichier.parent.mkdir(parents=True, exist_ok=True)
-    fichier.write_text(kotlin(tables, entree.name), encoding="utf-8")
+    fichier.write_text(code, encoding="utf-8")
     return 0
 
 
