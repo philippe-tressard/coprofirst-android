@@ -18,6 +18,7 @@ import fr.coprofirst.app.commun.amenerTag
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.commun.toucherTexte
 import fr.coprofirst.app.entree.NavigationEntree
+import fr.coprofirst.app.entree.REPERE_AVIS_SORTIE
 import fr.coprofirst.app.entree.entrerDansLaResidence
 import fr.coprofirst.app.entree.ServeurDeTest
 import kotlinx.serialization.json.Json
@@ -52,6 +53,10 @@ class ProfilInterfaceTest {
     private var demandeOuverte = false
     private val motsDePasseRecus = mutableListOf<String>()
     private val saisies = mutableListOf<String>()
+
+    /** #177 : le serveur ne répond pas à la déconnexion. */
+    @Volatile
+    private var logoutInjoignable = false
     private val nomsDemandes = mutableListOf<Int>()
 
     private fun JsonObject.texte(cle: String) = (this[cle] as? JsonPrimitive)?.contentOrNull?.trim().orEmpty()
@@ -61,6 +66,7 @@ class ProfilInterfaceTest {
             val chemin = request.url.encodedPath
             return when {
                 chemin.endsWith("/config") -> json(200, """{"site_nom": "Les Glycines"}""")
+                chemin.endsWith("/auth/logout") && logoutInjoignable -> json(503, "{}")
                 chemin.endsWith("/auth/login") || chemin.endsWith("/auth/logout") -> json(200, "{}")
                 chemin.endsWith("/auth/me") -> {
                     if (request.method == "PATCH") synchronized(saisies) { saisies += request.body?.utf8().orEmpty() }
@@ -212,6 +218,16 @@ class ProfilInterfaceTest {
         ecran.onNodeWithTag("profil.identite.prenom").performTextClearance()
         ecran.onNodeWithTag("profil.identite.prenom").performTextInput("Dominique")
         ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(REPERE_NOM) and hasText("Dominique EXEMPLE", substring = true)).fetchSemanticsNodes().isNotEmpty() }
+    }
+
+    /** #177 : une déconnexion sans réponse du serveur se dit sur la connexion, sans empêcher d'en sortir. */
+    @Test
+    fun uneDeconnexionSansReponseLeDitSurLaConnexion() {
+        logoutInjoignable = true
+        ecran.toucherTag("profil.deconnecter")
+        ecran.toucherTag("sortie.confirmer")
+        ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(REPERE_AVIS_SORTIE)).fetchSemanticsNodes().isNotEmpty() }
+        attendre("Le serveur n'a pas répondu")
     }
 
     private companion object {

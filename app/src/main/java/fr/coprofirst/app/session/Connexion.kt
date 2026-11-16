@@ -140,14 +140,27 @@ class Connexion(
 
     /**
      * Se déconnecter : le serveur révoque la session ; quoi qu'il réponde, l'app
-     * l'oublie, session gardée comprise — une déconnexion ne se refuse pas.
+     * l'oublie, session gardée comprise — une déconnexion ne se refuse pas. Rend `true` si
+     * le serveur a répondu (#177, `ServiceAPI.deconnecter` de l'iOS) : 200, ou 401 — la
+     * session y était déjà morte, rien de plus à révoquer ; `false` s'il n'a pas été joint
+     * (réseau, 5xx…) : il la révoquera à son expiration.
      */
-    suspend fun deconnecter(installation: Installation) {
-        val adresse = installation.adresse ?: return
-        withContext(fond) {
-            runCatching { AuthApi(baseApi(adresse), sessions.client(adresse)).postAuthLogout() }
+    suspend fun deconnecter(installation: Installation): Boolean {
+        val adresse = installation.adresse ?: return true
+        return withContext(fond) {
+            val atteint = try {
+                AuthApi(baseApi(adresse), sessions.client(adresse)).postAuthLogout()
+                true
+            } catch (annulee: CancellationException) {
+                throw annulee
+            } catch (refus: ClientException) {
+                refus.statusCode == 401
+            } catch (_: Exception) {
+                false
+            }
             oublierCeQuiEstGarde(adresse)
             sessions.oublier(adresse)
+            atteint
         }
     }
 }
