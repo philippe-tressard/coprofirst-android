@@ -138,6 +138,9 @@ dependencies {
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
     implementation(libs.zxing.core)
+    // La liaison à la montre Wear OS (#207) : le Data Layer, propriétaire, permis par la licence
+    // (point 4, décision de Philippe du 16/11/2026, #213). Éteinte tant que LiaisonMontre.ACTIF l'est.
+    implementation(libs.play.services.wearable)
     debugImplementation(libs.compose.ui.tooling)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

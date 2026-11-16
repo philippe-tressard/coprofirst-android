@@ -46,9 +46,17 @@ Le lien téléphone ↔ montre (Wearable, #207) se déclare dans le lot qui l'ap
 Son premier geste, « Continuer sur le téléphone » (lot 2a), ne fait passer qu'**une adresse
 de page de la résidence** (« https://<résidence>/tickets/12 ») de la montre au téléphone
 relié, par Google Play services. Elle ne porte aucun contenu de l'alerte. La liaison elle-même
-(lot 2b) fera passer le jeton de montre et le nom de la résidence. Les deux se classent
-ensemble dans la grille à ce lot-là, en lecture prudente : Google Play services peut acheminer
-par ses serveurs, et pas seulement de proche en proche.
+(lot 2b) : à l'ouverture d'une résidence, si une montre joignable porte l'app, le téléphone
+demande à la résidence un **jeton de montre** (`postMontres`, renouvelé par
+`postMontresMontreIdRenouveler`, retiré par `deleteMontresMontreId` à la déconnexion). Ce
+jeton ne lit que la cloche, et il expire au bout de 30 jours (coprofirst#2771). Le téléphone
+le transmet à la montre avec l'adresse et le nom de la résidence, par le Data Layer de Google
+Play services, que seule une app de même identifiant et de même signature lit. La montre
+efface l'élément de données dès qu'elle l'a gardé.
+**Lecture prudente** : Google Play services peut acheminer par ses serveurs, et pas
+seulement de proche en proche. Ce dépôt déclare donc ce jeton comme un `ID appareil`
+**partagé avec Google**, pour l'acheminement seulement, comme le jeton FCM. C'est à
+Philippe de retenir cette lecture (#207).
 
 ⚠️ Lecture prudente, pas un avis juridique ; c'est à Philippe de la retenir. Si une autre
 lecture l'emporte, ce fichier et la saisie changent ensemble.
@@ -84,7 +92,7 @@ sauf `ID appareil`, partagé avec Google pour l'acheminement des notifications (
 | `Messages` | Messages › Autres messages dans l'application | les messages d'une affaire | facultatif | Fonctionnement de l'app |
 | `Contenu utilisateur` | Activité dans les applications › Autre contenu généré par l'utilisateur | affaires, annonces, idées, avis, votes, commentaires, questions, demandes de badge | facultatif | Fonctionnement de l'app |
 | `Interactions` | Activité dans les applications › Interactions avec l'application | les écrans vus, sous le chemin de la page équivalente du site, et le canal « android » : la mesure d'audience de la résidence, **jamais** si le compte l'a refusée au Profil | facultatif | Analyses |
-| `ID appareil` | Identifiants de l'appareil ou autres | le jeton d'appareil des notifications (FCM) et l'abonnement (#23) ; **partagé avec Google** (Firebase Cloud Messaging), pour l'acheminement seulement, sans contenu | facultatif | Fonctionnement de l'app |
+| `ID appareil` | Identifiants de l'appareil ou autres | le jeton d'appareil des notifications (FCM) et l'abonnement (#23) ; le jeton de la montre Wear OS reliée et son identifiant (#207) ; **partagés avec Google** (Firebase Cloud Messaging, Data Layer de Wear OS), pour l'acheminement seulement, sans contenu | facultatif | Fonctionnement de l'app |
 
 **Non cochées** : localisation, informations financières, santé, photos et vidéos,
 fichiers, agenda, contacts, historique de navigation, applications installées, journaux de
@@ -117,6 +125,9 @@ contrôle le refuse dès que l'envoi existe — la PR qui l'apporte retire la ma
 | `deleteAuthMeTelemetrie` | — |
 | `postTelemetryCollect` | `Interactions` |
 | `postAppareils` | `ID appareil` |
+| `postMontres` | `ID appareil` |
+| `postMontresMontreIdRenouveler` | `ID appareil` |
+| `deleteMontresMontreId` | — |
 | `deleteAppareilsAbonnement` | `ID appareil` |
 | `postTickets` | `Contenu utilisateur` |
 | `patchTicketsTicketId` | `Contenu utilisateur` |
