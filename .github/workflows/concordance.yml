@@ -1,0 +1,80 @@
+# SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+# SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+#
+# La concordance quotidienne avec coprofirst (#30), comme celle de l'iOS : ce que l'app
+# dérive du serveur se surveille chaque jour (standards/09 §8, règle 2). Elle ne lit que
+# ce que coprofirst publie (pièces de release, GET /config des installations connues).
+# Un écart au plancher ouvre un ticket (ou le complète) ; le retour au vert le ferme. La
+# montée possible ne s'affiche que dans le résumé : c'est une information, pas un rouge.
+name: Concordance avec CoproFirst
+
+on:
+  schedule:
+    - cron: "47 5 * * *"
+  workflow_dispatch:
+    inputs:
+      simuler_ecart:
+        description: "Poser un écart exprès (le contrôle doit passer au rouge ; aucun ticket)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: concordance
+  cancel-in-progress: false
+
+jobs:
+  concordance:
+    name: Écart au plancher, montée possible
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TITRE: "Concordance avec CoproFirst : écart au plancher"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Autotest (un écart posé exprès est vu, un cas zéro passe)
+        run: python3 -I scripts/concordance.py --autotest
+      - name: Écart au plancher
+        id: plancher
+        env:
+          SIMULER: ${{ inputs.simuler_ecart && '--simuler-ecart' || '' }}
+        run: |
+          set +e
+          # shellcheck disable=SC2086 # SIMULER est vide ou une seule option.
+          python3 -I scripts/concordance.py --plancher --rapport "$RUNNER_TEMP/plancher.md" $SIMULER
+          echo "code=$?" >> "$GITHUB_OUTPUT"
+      - name: Montée possible
+        id: montee
+        run: |
+          set +e
+          python3 -I scripts/concordance.py --montee --rapport "$RUNNER_TEMP/montee.md"
+          echo "code=$?" >> "$GITHUB_OUTPUT"
+      - name: Résumé
+        run: cat "$RUNNER_TEMP/plancher.md" "$RUNNER_TEMP/montee.md" >> "$GITHUB_STEP_SUMMARY"
+      - name: Ticket (un rouge l'ouvre ou le complète, le vert le ferme)
+        if: ${{ !inputs.simuler_ecart }}
+        env:
+          CODE: ${{ steps.plancher.outputs.code }}
+        run: |
+          OUVERT=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "in:title \"$TITRE\"" \
+            --json number,title -q ".[] | select(.title == env.TITRE) | .number" | head -1)
+          if [ "$CODE" = 1 ]; then
+            if [ -n "$OUVERT" ]; then
+              gh issue comment "$OUVERT" --repo "$GITHUB_REPOSITORY" --body-file "$RUNNER_TEMP/plancher.md"
+            else
+              gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITRE" --body-file "$RUNNER_TEMP/plancher.md"
+            fi
+          elif [ "$CODE" = 0 ] && [ -n "$OUVERT" ]; then
+            gh issue close "$OUVERT" --repo "$GITHUB_REPOSITORY" --comment "Retour au vert : $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          fi
+      - name: Verdict (rouge ou INCONNU font échouer le job ; la montée n'est qu'une information)
+        env:
+          PLANCHER: ${{ steps.plancher.outputs.code }}
+          MONTEE: ${{ steps.montee.outputs.code }}
+        run: |
+          echo "plancher=$PLANCHER montee=$MONTEE"
+          [ "$PLANCHER" = 0 ] && [ "$MONTEE" != 2 ]
