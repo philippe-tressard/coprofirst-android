@@ -8,6 +8,7 @@ import fr.coprofirst.api.modeles.ChangePasswordBody
 import fr.coprofirst.api.modeles.DemandeModifCreate
 import fr.coprofirst.api.modeles.DemandeModifRead
 import fr.coprofirst.api.modeles.DemandeSuppressionCreate
+import fr.coprofirst.api.modeles.MeUpdate
 import fr.coprofirst.api.modeles.OptOutTelemetrieBody
 import fr.coprofirst.api.modeles.UserRead
 import fr.coprofirst.api.routes.AuthApi
@@ -28,6 +29,9 @@ interface ServiceProfil {
 
     /** POST /auth/change-password : un refus porte la phrase du serveur. */
     suspend fun changerMotDePasse(actuel: String, nouveau: String)
+
+    /** PATCH /auth/me : la saisie d'une affaire du compte (`saisie_affaire`), pour tous ses appareils. */
+    suspend fun choisirSaisie(mode: String)
 
     /** PATCH /auth/me/opt-out-telemetrie. */
     suspend fun refuserTelemetrie(refus: Boolean)
@@ -62,6 +66,10 @@ class ServiceProfilApi(private val session: SessionOuverte) : ServiceProfil {
     private suspend fun <R> auth(requete: AuthApi.() -> R): R = session.appeler { base, client -> AuthApi(base, client).requete() }
 
     override suspend fun moi(): UserRead = auth { getAuthMe() }
+
+    override suspend fun choisirSaisie(mode: String) {
+        auth { patchAuthMe(MeUpdate(saisieAffaire = mode)) }
+    }
 
     override suspend fun modifierIdentite(saisie: SaisieIdentite, ancienne: String): Boolean {
         auth { patchAuthMe(saisie.versMeUpdate(ancienne)) }

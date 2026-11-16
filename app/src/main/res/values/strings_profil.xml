@@ -39,7 +39,12 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="profil_mis_a_jour">Profil mis à jour</string>
 
     <!-- Ce qui reste au site (coprofirst#2755, #47) -->
-    <string name="profil_au_site">La saisie d\'une affaire et ce que j\'affiche (préférences de notification) se règlent sur le site pour l\'instant.</string>
+    <string name="profil_au_site">Ce que j\'affiche (préférences de notification) se règle sur le site pour l\'instant.</string>
+
+    <!-- Saisie d'une affaire (#47), comme l'iOS (SectionSaisieAffaire) et le site (ChoixSaisieAffaire.svelte) -->
+    <string name="profil_saisie">Saisie d\'une affaire</string>
+    <!-- %1$s : ce que montre la saisie choisie (optionsSaisie, généré). -->
+    <string name="profil_saisie_note">%1$s. En saisie essentielle, les autres sections se rangent dans « Plus de détails », avec leur valeur par défaut. Ce choix vaut pour votre compte, sur tous vos appareils.</string>
 
     <!-- Apparence -->
     <string name="profil_apparence">Apparence</string>
