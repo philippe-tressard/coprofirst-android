@@ -18,7 +18,9 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   de la résidence dessous. Sinon, une phrase dit pourquoi (adresse injoignable, pas une
   résidence CoproFirst, résidence à mettre à jour). La dernière résidence ouverte est
   pré-remplie ; elle reste sur l'appareil seul. La démonstration ouvre cet écran à son
-  adresse.
+  adresse. L'icône du QR code, dans le champ, lit celui de la fiche d'arrivée avec la
+  caméra (demandée à ce moment-là, l'image lue sur l'appareil, ni gardée ni envoyée) ;
+  une adresse scannée se confirme toujours avant le premier mot de passe.
 - **Se connecter** : adresse électronique et mot de passe, sous la résidence. Avant le
   premier mot de passe envoyé à une adresse jamais vue, « Vérifiez l'adresse » montre
   l'hôte en entier et dit s'il est reconnu comme une installation CoproFirst ; sinon,
@@ -157,6 +159,10 @@ sdkmanager "platform-tools" "platforms;android-37.2"
 
 `JAVA_HOME` et `ANDROID_HOME` (ou `local.properties`, `sdk.dir=…`) doivent désigner
 le JDK 21 et le SDK.
+
+La release pour Google Play (AAB signé par la clé de téléversement, au poste seulement,
+jamais en CI) : `bash scripts/construire-release.sh` — la clé, son rangement et Play
+App Signing sont dans `docs/signature-android.md`.
 
 ## Contrat d'API
 

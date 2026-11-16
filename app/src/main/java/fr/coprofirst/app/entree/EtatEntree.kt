@@ -4,7 +4,9 @@
 package fr.coprofirst.app.entree
 
 import fr.coprofirst.app.session.ErreurService
+import fr.coprofirst.app.session.AdresseInstallation
 import fr.coprofirst.app.session.Installation
+import fr.coprofirst.app.session.OrigineAdresse
 import fr.coprofirst.app.session.PreuveHote
 import fr.coprofirst.app.session.ProtectionSession
 
@@ -55,6 +57,8 @@ data class EtatEntree(
     /** Ce qu'a rendu « Activer » ; `null` : la question. */
     val issueGarde: IssueGarde? = null,
     val activationEnCours: Boolean = false,
+    /** L'adresse lue dans un QR ou venue d'un lien, et d'où : elle se confirme TOUJOURS. */
+    val venue: AdresseVenue? = null,
 ) {
     /** « Se connecter » répond : une résidence reconnue, un courriel, un mot de passe. */
     val connexionPossible: Boolean
@@ -71,3 +75,6 @@ data class ConfirmationHote(
     /** « Me connecter à cette adresse » répond : preuve lue, et reconnue ou second accord. */
     val confirmable: Boolean get() = preuve != null && (preuve.reconnue || secondAccord)
 }
+
+/** Une adresse que l'utilisateur n'a pas écrite (QR, lien) et son origine, pour la garde de l'hôte. */
+data class AdresseVenue(val adresse: AdresseInstallation, val origine: OrigineAdresse)
