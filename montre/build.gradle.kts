@@ -54,6 +54,9 @@ dependencies {
     implementation(libs.wear.tiles)
     implementation(libs.wear.protolayout.material3)
     implementation(libs.androidx.concurrent.futures)
+    // « Continuer sur le téléphone » (#207, lot 2) : RemoteActivityHelper (AndroidX), qui tire
+    // play-services-wearable — permis par la licence (point 4, #213).
+    implementation(libs.wear.remote.interactions)
     // Le client HTTP, les formats du site, l'alerte reçue : ceux du téléphone (#206).
     implementation(project(":partage"))
     testImplementation(libs.junit)

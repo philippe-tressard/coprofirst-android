@@ -23,7 +23,7 @@ import fr.coprofirst.montre.cloche.LectureCloche
 fun EcranMontre(etat: EtatMontre, lecture: LectureCloche) {
     when (etat) {
         EtatMontre.NonReliee -> NonReliee()
-        is EtatMontre.Reliee -> NavigationMontre(etat.residence, lecture)
+        is EtatMontre.Reliee -> NavigationMontre(etat, lecture)
     }
 }
 

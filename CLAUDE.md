@@ -102,4 +102,6 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   (pas d'émulateur pendant une suite xcodebuild ou un autre émulateur), émulateur
   arrêté à la fin. Le poste est partagé : Gradle y tourne à deux workers et sur un
   démon commun aux worktrees (`gradle.properties`) — jamais `--no-daemon` au poste ;
-  la CI relève la borne (`--max-workers=4`).
+  la CI relève la borne (`--max-workers=4`). Chaque job Gradle de la CI se prépare par
+  `.github/actions/preparer-android` (image d'émulateur en cache, téléchargements réessayés,
+  #232 ; `scripts/verifier_ci.py` le tient).

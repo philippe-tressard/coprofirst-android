@@ -8,20 +8,23 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class EtatMontreTest {
+    private val tilleuls = EtatMontre.Reliee("https://residence.exemple.test", "Les Tilleuls")
+
     @Test
     fun `drapeau eteint - une liaison gardee ne s'ouvre pas`() {
-        assertEquals(EtatMontre.NonReliee, EtatMontre.auLancement("Les Tilleuls", actif = false))
+        assertEquals(EtatMontre.NonReliee, EtatMontre.auLancement(tilleuls, actif = false))
     }
 
     @Test
     fun `drapeau allume - sans liaison gardee, la montre n'est pas reliee`() {
         assertEquals(EtatMontre.NonReliee, EtatMontre.auLancement(null, actif = true))
-        assertEquals(EtatMontre.NonReliee, EtatMontre.auLancement("  ", actif = true))
+        assertEquals(EtatMontre.NonReliee, EtatMontre.auLancement(EtatMontre.Reliee("  ", "Les Tilleuls"), actif = true))
+        assertEquals(EtatMontre.NonReliee, EtatMontre.auLancement(EtatMontre.Reliee("https://residence.exemple.test", " "), actif = true))
     }
 
     @Test
     fun `drapeau allume - la residence gardee s'ouvre`() {
-        assertEquals(EtatMontre.Reliee("Les Tilleuls"), EtatMontre.auLancement("Les Tilleuls", actif = true))
+        assertEquals(tilleuls, EtatMontre.auLancement(tilleuls, actif = true))
     }
 
     @Test
