@@ -53,18 +53,17 @@ fun EcranProfil(contexte: ContexteDeMenu) {
 }
 
 /** Les formulaires du Profil, chacun dans sa feuille. */
-private enum class Feuille { Identite, MotDePasse, DemandeModification }
+private enum class Feuille { Identite, MotDePasse, DemandeModification, Preferences }
 
 /**
  * Plus › Profil, comme l'iOS (`ProfilView`), dans l'ordre du site : la résidence et le
- * statut, les informations personnelles, la sécurité, l'apparence, les droits RGPD, la
- * demande de suppression du compte — puis tout en bas les gestes de sortie.
+ * statut, les informations personnelles, la sécurité, la saisie d'une affaire, l'apparence,
+ * « Ce que j'affiche », les droits RGPD, la demande de suppression du compte — puis tout en
+ * bas les gestes de sortie.
  *
- * ⚠️ Divergences déclarées. Si le compte ne se lit pas, l'iOS garde « Apparence » ; ici
+ * ⚠️ Divergence déclarée. Si le compte ne se lit pas, l'iOS garde « Apparence » ; ici
  * elle se range avec les sections du compte, sous la phrase d'erreur — seule la sortie
- * reste. Et, résorbée par #47 : « Saisie d'une affaire » et « Ce que
- * j'affiche » restent au site, et l'écran le dit — leurs tables (options, défauts) ne
- * sont pas publiées (coprofirst#2755).
+ * reste.
  */
 @Composable
 fun EcranProfil(
@@ -89,7 +88,9 @@ fun EcranProfil(
                     SectionSecurite { feuille = Feuille.MotDePasse }
                     SectionSaisieAffaire(compte, service) { compte = it }
                     SectionApparence(apparence)
-                    Note(stringResource(R.string.profil_au_site), Modifier.padding(horizontal = Mise.marge + 4.dp))
+                    SectionProfil(null) {
+                        LigneAction(stringResource(R.string.profil_preferences), ReperesPreferences.OUVRIR) { feuille = Feuille.Preferences }
+                    }
                     SectionDroits(compte, installation, service, relireDroits) { compte = it }
                     SectionSuppressionCompte(service)
                 }
@@ -100,6 +101,7 @@ fun EcranProfil(
                     }
                     Feuille.MotDePasse -> FormulaireMotDePasse(service) { feuille = null }
                     Feuille.DemandeModification -> FeuilleDemandeModification(service) { feuille = null }
+                    Feuille.Preferences -> FeuillePreferences(compte, service, fermer = { feuille = null }) { compte = it }
                     null -> Unit
                 }
             }

@@ -9,6 +9,10 @@ import fr.coprofirst.api.modeles.MeUpdate
 import fr.coprofirst.api.modeles.StatutDemandeSuppression
 import fr.coprofirst.api.modeles.UserRead
 import fr.coprofirst.app.commun.ConstantesDuServeur
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
 import java.time.Instant
 
 /** Une saisie vide part à `null` — le site fait de même. */
@@ -92,5 +96,31 @@ data class EtatSuppressionCompte(
         )
 
         private fun demande(lu: DemandeSuppressionRead) = DemandeSuppressionCompte(lu.creeLe.toInstant(), lu.delaiAnnonceJours)
+    }
+}
+
+/**
+ * Les préférences de notification lues dans le JSON du compte (`preferences_notifications`),
+ * comme l'iOS (`LecturePreferences`) : pour chaque clé que le serveur connaît
+ * (`ConstantesDuServeur.defautsPreferences`), la valeur réglée, sinon le défaut du SERVEUR —
+ * et la liste des clés jamais réglées (« réglage par défaut »). Un JSON illisible vaut `{}`.
+ */
+data class LecturePreferences(val valeurs: Map<String, Boolean>, val heritees: Set<String>) {
+    fun avec(cle: String, valeur: Boolean) = copy(valeurs = valeurs + (cle to valeur))
+
+    /** Le JSON enregistré : toutes les clés, réglées désormais, dans l'ordre alphabétique. */
+    val json: String get() = JsonObject(valeurs.toSortedMap().mapValues { JsonPrimitive(it.value) }).toString()
+
+    companion object {
+        fun depuis(json: String?): LecturePreferences {
+            val lues = runCatching { Json.parseToJsonElement(json.orEmpty()) as? JsonObject }.getOrNull().orEmpty()
+            val reglees = ConstantesDuServeur.defautsPreferences.keys.mapNotNull { cle ->
+                (lues[cle] as? JsonPrimitive)?.takeUnless { it.isString }?.booleanOrNull?.let { cle to it }
+            }.toMap()
+            return LecturePreferences(
+                valeurs = ConstantesDuServeur.defautsPreferences + reglees,
+                heritees = ConstantesDuServeur.defautsPreferences.keys - reglees.keys,
+            )
+        }
     }
 }
