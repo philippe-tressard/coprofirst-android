@@ -8,6 +8,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.lifecycle.ViewModelProvider
 import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.commun.StockageApparencePreferences
@@ -15,6 +16,8 @@ import fr.coprofirst.app.commun.pieces.PiecesLocales
 import fr.coprofirst.app.entree.FabriqueParcoursEntree
 import fr.coprofirst.app.entree.NavigationEntree
 import fr.coprofirst.app.entree.ParcoursEntree
+import fr.coprofirst.app.entree.vitrine.LocalVitrine
+import fr.coprofirst.app.entree.vitrine.VitrineDuSite
 
 /**
  * Point d'entrée de l'app : le parcours d'entrée (qui pose le thème de sa résidence), et
@@ -34,7 +37,9 @@ class ActiviteAccueil : ComponentActivity() {
         if (savedInstanceState == null) PiecesLocales.effacer(applicationContext)
         // Le thème de l'appareil se lit une fois, ici, et se partage (Profil › Apparence).
         val apparence = Apparence(StockageApparencePreferences(applicationContext))
-        setContent { NavigationEntree(apparence, parcours) }
+        // La vitrine relue sur coprofirst.fr (#153) : posée ici, absente des tests d'interface.
+        val vitrine = VitrineDuSite.deLApp(this)
+        setContent { CompositionLocalProvider(LocalVitrine provides vitrine) { NavigationEntree(apparence, parcours) } }
         // Un lien suivi une fois : pas de nouveau après une rotation.
         if (savedInstanceState == null) suivre(intent)
     }

@@ -28,6 +28,11 @@ même** ces données comme collectées (l'éditeur tient lui-même des installat
 démonstration, sa propre résidence), liées au compte, et **non partagées** : leur envoi à
 la résidence est le geste de l'utilisateur, qui en a saisi l'adresse.
 
+Une seule lecture part ailleurs, et elle n'envoie rien : le texte public de la vitrine,
+`https://coprofirst.fr/contenu.json`, relu une fois par lancement (#153) — une requête GET
+sans cookie, sans jeton, sans paramètre, qui ne porte aucune donnée de l'utilisateur. Rien
+à déclarer dans la grille ; elle est dite ici pour que la fiche reste vraie.
+
 ⚠️ Lecture prudente, pas un avis juridique ; c'est à Philippe de la retenir. Si une autre
 lecture l'emporte, ce fichier et la saisie changent ensemble.
 

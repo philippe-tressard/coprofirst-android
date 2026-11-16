@@ -146,8 +146,11 @@ autotest_motif "routes en dur" "$REQUETE_MAIN" 'val u = "https://" + hote + "/ap
 #   (PreuveAASA.swift) ;
 # - les fichiers protégés (photos, pièces jointes de /uploads/) sont servis derrière la
 #   session, hors du contrat — comme l'iOS (fichierProtege) : la porte n'accepte que
-#   l'hôte de la session (commun/pieces/FichierProtege.kt).
-DISPENSES_REQUETE='^app/src/main/java/fr/coprofirst/app/(session/PreuveHote|commun/pieces/FichierProtege)\.kt$'
+#   l'hôte de la session (commun/pieces/FichierProtege.kt) ;
+# - le contenu public de la vitrine, coprofirst.fr/contenu.json, relu une fois par
+#   lancement, sans cookie ni donnée de l'utilisateur — comme l'iOS (Vitrine.actualiser,
+#   #153) : son adresse est une constante, jamais une saisie (entree/vitrine/VitrineDuSite.kt).
+DISPENSES_REQUETE='^app/src/main/java/fr/coprofirst/app/(session/PreuveHote|commun/pieces/FichierProtege|entree/vitrine/VitrineDuSite)\.kt$'
 interdire "$REQUETE_MAIN" "requête ou route écrite à la main — passer par le client généré (client-api)" "$DISPENSES_REQUETE"
 
 # Le bouton plein (texte `surPlein` sur un fond plein de la charte, comme le `.plein` de
