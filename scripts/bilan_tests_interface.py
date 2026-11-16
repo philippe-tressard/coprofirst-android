@@ -51,7 +51,7 @@ def bilan(dossier: pathlib.Path, delai_ms: int | None = None) -> str:
             defaut = cas.find("failure") if cas.find("failure") is not None else cas.find("error")
             if defaut is not None:
                 message = (defaut.get("message") or defaut.text or "").strip().splitlines()
-                echecs.append(f"- `{cas.get('classname')}.{cas.get('name')}` — {message[0][:200] if message else '(sans message)'}")
+                echecs.append(f"- `{cas.get('classname')}.{cas.get('name')}` — {message[0][:600] if message else '(sans message)'}")
     lignes = ["### Tests d'interface en échec"]
     if not lus:
         lignes.append("❓ INCONNU : aucun rapport lu (le job a échoué avant les tests ?)")
