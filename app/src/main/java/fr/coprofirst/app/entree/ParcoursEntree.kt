@@ -20,6 +20,13 @@ import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.GardeHote
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.InstallationsConnues
+import fr.coprofirst.app.session.LectureDisponible
+import fr.coprofirst.app.session.LecturesGardees
+import fr.coprofirst.app.session.Reseau
+import fr.coprofirst.app.session.ReseauDuSysteme
+import fr.coprofirst.app.session.ChiffrementKeystore
+import fr.coprofirst.app.session.cleCoffre
+import java.io.File
 import fr.coprofirst.app.session.OrigineAdresse
 import fr.coprofirst.app.session.PreuveHote
 import fr.coprofirst.app.session.RepriseAnnulee
@@ -56,6 +63,8 @@ class ParcoursEntree(
     private val effacerLesPieces: () -> Unit = {},
     /** La racine de l'API d'une adresse, pour la session ouverte ; les tests la remplacent par un serveur local. */
     private val baseApi: (AdresseInstallation) -> String = { it.baseApi },
+    /** L'appareil est-il en ligne ? (#28) : le bandeau, et la reprise au retour du réseau. */
+    val reseau: Reseau = Reseau.Fige(),
     private val lirePreuve: suspend (AdresseInstallation) -> PreuveHote = { PreuveHote.lire(it) },
 ) : ViewModel(), ActionsEntree, GestesDeSortie {
     private val _etat = MutableStateFlow(EtatEntree())
@@ -70,8 +79,14 @@ class ParcoursEntree(
      * retiré quand il la quitte. Sans lui, aucune session gardée ne se rouvre.
      */
     var deverrouillage: Deverrouillage? = null
+    private var repriseEnLigneEnCours = false
 
     init {
+        // Au lancement, comme l'iOS (`purgerLesLectures`) : rien ne reste d'une lecture
+        // périmée, ni d'une résidence dont la session n'est plus gardée.
+        sessions.lectures?.purger(
+            connues.liste.filter(connexion::aUneSessionGardee).mapNotNull { it.adresse?.cleCoffre }.toSet(),
+        )
         connues.derniere?.let { derniere ->
             if (connexion.aUneSessionGardee(derniere)) {
                 _etat.update { it.copy(ecran = EcranEntree.Retour, reconnue = derniere) }
@@ -128,7 +143,7 @@ class ParcoursEntree(
         val installation = _etat.value.reconnue ?: return
         val deverrouillage = deverrouillage ?: return
         if (_etat.value.repriseEnCours) return
-        _etat.update { it.copy(repriseEnCours = true, erreurReprise = null) }
+        _etat.update { it.copy(repriseEnCours = true, erreurReprise = null, lecturePerimee = false) }
         viewModelScope.launch {
             try {
                 connexion.reprendre(installation, deverrouillage)
@@ -142,7 +157,50 @@ class ParcoursEntree(
                 versLeMotDePasse(installation)
                 _etat.update { it.copy(repriseEnCours = false, erreurConnexion = ErreurService.SessionExpiree) }
             } catch (erreur: ErreurService) {
-                _etat.update { it.copy(repriseEnCours = false, erreurReprise = erreur) }
+                if (!entrerHorsLigne(installation, erreur)) _etat.update { it.copy(repriseEnCours = false, erreurReprise = erreur) }
+            }
+        }
+    }
+
+    /**
+     * La reprise vient d'échouer, la biométrie passée : faute de réseau et avec une lecture
+     * gardée, la résidence s'ouvre en consultation (#28). Rend `true` si l'écran a changé.
+     */
+    private fun entrerHorsLigne(installation: Installation, erreur: ErreurService): Boolean {
+        if (erreur != ErreurService.Injoignable && erreur != ErreurService.HorsLigne) return false
+        when (val lecture = connexion.consulterHorsLigne(installation)) {
+            is LectureDisponible.Gardee -> _etat.update {
+                it.copy(repriseEnCours = false, ouverte = installation, ecran = EcranEntree.Espace, consultation = lecture.aJourAu)
+            }
+            LectureDisponible.Perimee -> _etat.update { it.copy(repriseEnCours = false, lecturePerimee = true) }
+            LectureDisponible.Aucune -> return false
+        }
+        return true
+    }
+
+    /**
+     * Le réseau est revenu pendant une consultation : la session se rouvre sans redemander
+     * la biométrie, et l'espace se reconstruit — tout se relit. Un refus du serveur a tout
+     * effacé : retour à la connexion. Toujours sans réseau : la consultation continue.
+     */
+    override fun reprendreEnLigne() {
+        val ouverte = _etat.value.ouverte ?: return
+        if (_etat.value.consultation == null || repriseEnLigneEnCours) return
+        repriseEnLigneEnCours = true
+        viewModelScope.launch {
+            try {
+                connexion.reprendreEnLigne(ouverte)
+                _etat.update { if (it.ouverte == ouverte) it.copy(consultation = null) else it }
+            } catch (_: ReprisePerdue) {
+                if (_etat.value.ouverte == ouverte) {
+                    effacerLesPieces()
+                    versLeMotDePasse(ouverte)
+                    _etat.update { it.copy(ouverte = null, consultation = null, erreurConnexion = ErreurService.SessionExpiree) }
+                }
+            } catch (_: ErreurService) {
+                // Toujours sans réseau : la consultation continue.
+            } finally {
+                repriseEnLigneEnCours = false
             }
         }
     }
@@ -248,7 +306,7 @@ class ParcoursEntree(
         connues.oublierGardeProposee(ouverte)
         _etat.update {
             it.copy(
-                ouverte = null, ecran = EcranEntree.Connexion, parMotDePasse = true, proposerGarde = false,
+                ouverte = null, ecran = EcranEntree.Connexion, parMotDePasse = true, proposerGarde = false, consultation = null,
                 issueGarde = null, reconnue = ouverte, saisie = ouverte.adresse?.enSaisie ?: it.saisie,
                 email = connues.identifiant(ouverte) ?: it.email,
             )
@@ -264,6 +322,7 @@ class ParcoursEntree(
         _etat.value = EtatEntree()
         connues.vider()
         sessions.gardees.vider()
+        sessions.lectures?.purger()
         effacerLesPieces()
         viewModelScope.launch {
             if (ouverte != null) connexion.deconnecter(ouverte)
@@ -313,9 +372,17 @@ class ParcoursEntree(
                 }
                 // UNE session HTTP par hôte pour toute l'app : la connexion y pose ses
                 // cookies, les écrans des menus les y relisent.
-                val sessions = SessionsParHote(gardees = gardees)
+                // Les lectures gardées pour la consultation hors ligne (#28) : chiffrées, hors
+                // de toute sauvegarde, seulement pour une résidence dont la session est gardée.
+                val lectures = LecturesGardees(
+                    File(application.noBackupFilesDir, "lectures-gardees"),
+                    ChiffrementKeystore("fr.coprofirst.app.lectures"),
+                    sessionGardee = gardees::contient,
+                )
+                val sessions = SessionsParHote(gardees = gardees, lectures = lectures)
                 ParcoursEntree(
                     Decouverte(), sessions, Connexion(sessions), InstallationsConnues(stockage, CoffreKeystore(application)),
+                    reseau = ReseauDuSysteme(application),
                     effacerLesPieces = { PiecesLocales.effacer(application) },
                 )
             }

@@ -5,10 +5,13 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 -->
 <!-- Un droit neuf se déclare aussi dans la section « Sécurité des données » de Google
      Play (standards/14 §3 bis). INTERNET : lire l'API de la résidence donnée par
-     l'utilisateur, rien d'autre. -->
+     l'utilisateur, rien d'autre. ACCESS_NETWORK_STATE (#28) : savoir si l'appareil est en
+     ligne, pour dire « Hors ligne » et rouvrir la session au retour du réseau — aucune
+     donnée n'est collectée ni transmise, la déclaration ne change pas. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="false"

@@ -125,6 +125,7 @@ inscription :
 | `ErreurService` (`ErreurService`) | `SessionExpiree`, `Introuvable`, `TropDEssais`, `Injoignable`, `Refus(phraseServie, statut)` (la phrase `detail` du serveur), `Inattendue`… `ErreurService.depuis(e)` ramène toute erreur à un cas. |
 | `Installation` | La résidence : `nom`, `adresse`, `versionContrat`, `codePalette`. |
 | `Renouvellement` (`Renouvellement`) | LA porte du renouvellement (#13) : un 401 dans `appeler` (client généré, ou fichier protégé) renouvelle la session — un seul POST /auth/refresh à la fois par hôte — puis rejoue la requête une fois. Un écran n'a rien à faire : un renouvellement refusé sort en `SessionExpiree`. |
+| `LecturesGardees`, `GarderLesLectures` (`LecturesGardees`, `GarderLesLectures`) | La consultation hors ligne (#28) : la porte, dans le client de chaque hôte, garde les lectures de la liste blanche (`LectureGardee`) et, en consultation, les sert et refuse tout le reste avant qu'il parte — `ErreurService.HorsLigne`. Un écran n'a rien à faire pour être relu hors ligne. |
 | `CoffreDuCompte`, `SessionsGardees` (`CoffreDuCompte`, `Trousseau`) | Le courriel retenu (chiffré, Keystore) et la session gardée sous la biométrie : propres à l'entrée (`ParcoursEntree`) ; un écran de menu ne les emploie pas. |
 
 Un service :
