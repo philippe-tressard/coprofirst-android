@@ -75,12 +75,17 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   sans agir au nom de la personne aidée.
 - **Mes affaires** : Liste, Kanban (au conseil et aux copropriétaires) et Archives. La
   liste cherche au serveur (et propose les archives trouvées), se filtre par suivi, par
-  nature et par « ce qui me concerne » ; un appui long copie le numéro ou partage le
-  lien (archiver attend un correctif du client d'API, #99). Au Kanban, « Déplacer
+  nature et par « ce qui me concerne » ; un appui long copie le numéro, partage le lien
+  ou archive, si le serveur le permet. Au Kanban, « Déplacer
   vers… » change l'état — clore prévient quand des affaires liées pourraient être
   fusionnées, ce qui se fait sur le site. Les Archives se rangent par année. La fiche montre le fil de l'affaire (la
-  demande, la suite, les comptes rendus, la synthèse) et ses messages, en lecture ; la
-  saisie et les gestes de la fiche suivent (#16).
+  demande, la suite, les comptes rendus, la synthèse) et ses messages ; en bas, ses gestes
+  selon ce que le serveur ouvre au compte : copier ou partager le lien, Répondre, Ajouter
+  une suite (un commentaire ou un nouvel état), Modifier (seuls les champs changés
+  partent), épingler ou marquer urgente, archiver.
+  Chaque entrée de la suite se corrige ou se supprime (« ⋯ »), si le serveur le permet.
+  « Nouvelle affaire » (le « + » du haut) : catégorie, titre, description, lieu, urgence —
+  les photos, les prestataires et ce que le conseil désigne se règlent sur le site.
 - **Ma résidence** : la Fiche (photo, immatriculation, lots, assurance et syndic — qui
   ouvre l'annuaire du syndic —, composition par bâtiment ; règles, plans, règlement,
   comptes-rendus d'AG et diagnostics, chacun s'ouvrant dans l'app de l'appareil) ; aux
@@ -103,6 +108,18 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   l'archiver ou le restaurer. Une idée ou une annonce ouverte porte le fil des réponses
   (répondre, supprimer la sienne, signaler celles des autres) et « Signaler » au conseil
   syndical ; chaque contenu dit qui le lit et où.
+- **Paramétrage** (administration et opérateur de la plateforme), en partie :
+  **À traiter** (la file des comptes et des commandes d'accès, celle de l'Espace CS, puis
+  les demandes de changement de profil : approuver, ou rejeter avec un motif facultatif),
+  **Utilisateurs** (recherche, type, état du compte, compteurs ; la fiche d'un compte,
+  ses rattachements, et les gestes que le serveur offre : interdire ou réautoriser la
+  communauté, ajouter ou retirer un rôle, rejouer l'auto-match des lots, supprimer —
+  chacun confirmé s'il le faut, puis annoncé), **Télémétrie** (quatre vues — jour, 30 jours, 12 mois, 10 ans —, le filtre « sans le
+  gestionnaire du site » quand il change quelque chose, les nombres clés, le graphe, les
+  pages les plus vues et les utilisateurs actifs) et **Maintenance** (à l'opérateur, la
+  santé des tâches planifiées et leurs échecs récents ; à l'administration, le dernier
+  export de la copropriété). Les autres onglets sont « Sur le site », chacun avec son
+  lien ; lancer une tâche ou un export reste au site, et l'écran le dit.
 
 Pas encore : les écrans des pages, le courriel retenu et la
 biométrie, les personnages de la démo, le QR code, les liens d'application (tickets

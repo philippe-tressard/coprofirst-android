@@ -111,6 +111,12 @@ data class ReferentielsAffaires(
     /** Les catégories que CE compte peut poser, dans l'ordre servi, celles « en tête » d'abord. */
     val permises: List<Categorie> get() = categories.filter { it.permise }.let { p -> p.filter { it.enTete } + p.filterNot { it.enTete } }
 
+    /**
+     * Les catégories que « Modifier » propose : les permises, si celle de l'affaire en est —
+     * une catégorie que ce compte ne pourrait pas reposer ne se propose pas.
+     */
+    fun permises(enModifiant: String): List<Categorie> = permises.let { p -> if (p.any { it.code == enModifiant }) p else emptyList() }
+
     /** Ce compte pose-t-il ce que le serveur réserve au conseil ? Lu des catégories servies. */
     val poseLesReservees: Boolean get() = categories.any { it.reservee && it.permise }
 
@@ -167,13 +173,6 @@ data class AnneeDArchives(val annee: Int, val affaires: List<Affaire>)
 object ReglesAffaires {
     /** En dessous, une frappe n'est pas encore une recherche (`RECHERCHE_MIN` du site). */
     const val RECHERCHE_MINIMALE = 2
-
-    /**
-     * 🔴 Les gestes par `PATCH /tickets/{id}` (archiver, les options) sont retenus : le client
-     * généré envoie tous les champs absents à `null`, et le serveur applique ces `null` (les
-     * affaires liées d'une affaire archivée seraient supprimées). Ils s'ouvrent avec #99.
-     */
-    const val GESTES_PAR_PATCH = false
 
     /** Le temps de finir un mot avant d'interroger le serveur. */
     const val DELAI_DE_FRAPPE_MS = 250L

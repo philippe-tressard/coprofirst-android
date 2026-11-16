@@ -214,6 +214,25 @@ class EspaceCSInterfaceTest {
         attendreRepere(ReperesEspaceCS.renouvellementDiagnostic(1))
     }
 
+    /** Annuaire CS & Syndic : les fiches, l'en-tête du conseil en feuille, puis un interlocuteur monté d'un rang. */
+    @Test
+    fun lAnnuaireDuConseilEtDuSyndic() {
+        atteindre(ReperesOnglets.onglet("annuaire"))
+        attendreRepere(ReperesEspaceCS.annuaireConseil(0))
+        attendre("Camille EXEMPLE")
+        atteindre(ReperesEspaceCS.ANNUAIRE_CONSEIL_MODIFIER)
+        attendreRepere(ReperesEspaceCS.FEUILLE_ENTETE_CONSEIL)
+        ecran.onNodeWithTag("${ReperesEspaceCS.FEUILLE_ENTETE_CONSEIL}.enregistrer").performScrollTo().performClick()
+        disparu(ReperesEspaceCS.FEUILLE_ENTETE_CONSEIL)
+        attendre("Conseil Syndical enregistré")
+        assertTrue(residence.recues.any { it.startsWith("PUT /api/admin/annuaire/cs") && it.contains("\"ag_annee\":2026") })
+
+        atteindre("${ReperesEspaceCS.annuaireSyndic(1)}.gestes")
+        toucher("${ReperesEspaceCS.annuaireSyndic(1)}.monter")
+        attendre("Syndic enregistré")
+        assertTrue(residence.recues.any { it.startsWith("PUT /api/admin/annuaire/syndic") && it.indexOf("Sacha") < it.indexOf("Dominique") })
+    }
+
     private companion object {
         const val DELAI_MS = 10_000L
     }
