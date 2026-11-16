@@ -91,7 +91,8 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   (lint en erreurs) ; tests d'interface (`app/src/androidTest`, serveur local en HTTPS,
   repères = identifiants d'accessibilité de l'iOS ; tout toucher passe par `toucher`,
   `androidTest/…/commun/Gestes.kt`, qui amène l'élément à l'écran avant de toucher — un
-  `performClick` direct se perd hors de l'écran, `verifier-depot.sh` le refuse) en CI, job « Interface », et au poste
+  `performClick` direct se perd hors de l'écran, `verifier-depot.sh` le refuse ; règle
+  `junit4.v2.createComposeRule`, effets au fil principal — la v1 est refusée) en CI, job « Interface », et au poste
   par `bash scripts/tests-interface.sh` — une seule tâche lourde au poste à la fois
   (pas d'émulateur pendant une suite xcodebuild ou un autre émulateur), émulateur
   arrêté à la fin. Le poste est partagé : Gradle y tourne à deux workers et sur un

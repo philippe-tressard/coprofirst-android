@@ -20,6 +20,7 @@
 #   7 quater. aucune version écrite à la main (elle se déduit de git) ;
 #   7 quinquies. aucun hôte fictif sur un vrai domaine (exemple.fr…), libellés compris ;
 #   7 sexies. aucun `performClick` dans les tests d'interface hors du geste commun ;
+#   7 septies. la règle des tests d'interface est la v2 (junit4.v2), jamais la v1 ;
 #   8. un seul bouton plein, `BoutonPlein` (commun/Boutons.kt) ;
 #   9. les générateurs du build passent leurs tests (scripts/test_*.py) ;
 #  10. aucun chemin de .claude/worktrees/ suivi.
@@ -170,6 +171,15 @@ CLIC_DIRECT='\.performClick\('
 autotest_motif "toucher hors du geste commun" "$CLIC_DIRECT" '        ecran.onNodeWithTag(r).performClick()' '        ecran.toucherTag(r)'
 interdire "$CLIC_DIRECT" "toucher écrit à la main dans un test d'interface — passer par toucher (commun/Gestes.kt)" \
   '^app/src/androidTest/java/fr/coprofirst/app/commun/Gestes\.kt$' '^app/src/androidTest/.*\.kt$'
+
+# La règle des tests d'interface est la v2 (`junit4.v2.createComposeRule`) : ses effets
+# tournent sur un `StandardTestDispatcher`, au fil principal. La v1 (dépréciée) les menait
+# sur un `UnconfinedTestDispatcher` : un chargement revenu du fil d'E/S ou une animation
+# reprenait sur un autre fil, et Compose y observait des lectures — « Detected
+# multithreaded access to SnapshotStateObserver », par intermittence (CI de #80, #119).
+REGLE_V1='androidx\.compose\.ui\.test\.junit4\.create[A-Za-z]*ComposeRule'
+autotest_motif "règle de test v1" "$REGLE_V1" 'import androidx.compose.ui.test.junit4.createComposeRule' 'import androidx.compose.ui.test.junit4.v2.createComposeRule'
+interdire "$REGLE_V1" "règle de test v1 (dépréciée, effets hors du fil principal) — junit4.v2" "" '^app/src/(androidTest|test)/.*\.kt$'
 
 # La version se DÉDUIT de git (app/build.gradle.kts) : aucune PR ne l'écrit. Un
 # `versionCode`/`versionName` littéral reviendrait au conflit des PR parallèles.
