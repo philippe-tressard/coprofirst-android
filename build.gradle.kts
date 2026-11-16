@@ -92,6 +92,9 @@ subprojects {
             // Les ressources des deux apps, écrites une fois : les règles de sauvegarde et de
             // transfert — rien ne quitte l'appareil (standards/03, standards/14 §1).
             sourceSets.getByName("main").res.srcDir(rootProject.file("ressources-communes"))
+            // Le geste et les attentes des tests d'interface, écrits une fois pour le téléphone et la
+            // montre (#216) : `toucher` amène l'élément à l'écran avant de toucher.
+            sourceSets.getByName("androidTest").kotlin.srcDir(rootProject.file("tests-interface-communs"))
             compileOptions {
                 sourceCompatibility = JavaVersion.VERSION_21
                 targetCompatibility = JavaVersion.VERSION_21

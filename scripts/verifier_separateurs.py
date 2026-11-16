@@ -41,7 +41,7 @@ import tempfile
 RACINE = pathlib.Path(__file__).resolve().parent.parent
 TABLE = RACINE / "contrat" / "tables-clients.json"
 DOSSIERS = ("app/src/main", "app/src/debug", "app/src/test", "app/src/androidTest", "partage/src/main", "partage/src/test",
-            "montre/src/main", "montre/src/test")
+            "montre/src/main", "montre/src/test", "montre/src/androidTest", "tests-interface-communs")
 DISPENSES = (re.compile(r"^app/src/debug/.*/Fixtures[^/]*\.kt$"),)
 
 # Kotlin : un séparateur entre deux espaces ordinaires (U+0020).
@@ -79,7 +79,8 @@ def refus_kotlin(chemin: str, texte: str) -> list[str]:
         return []
     # Un test ÉCRIT la valeur attendue, et ses messages sont de la prose : on n'y refuse
     # que « · » et « → » suivis d'une espace sécable.
-    test = chemin.startswith(("app/src/test/", "app/src/androidTest/", "partage/src/test/", "montre/src/test/"))
+    test = chemin.startswith(("app/src/test/", "app/src/androidTest/", "partage/src/test/", "montre/src/test/",
+                              "montre/src/androidTest/", "tests-interface-communs/"))
     regles = SECABLES_KT[:1] if test else SECABLES_KT
     fautes = []
     for numero, ligne in enumerate(texte.splitlines(), 1):

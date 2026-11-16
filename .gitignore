@@ -32,6 +32,7 @@
 !/partage/
 !/montre/
 !/ressources-communes/
+!/tests-interface-communs/
 
 # 3. Exclus PARTOUT, même dans un dossier ré-inclus
 # Produits de build, caches de Gradle et réglages de l'IDE
