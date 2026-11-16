@@ -22,10 +22,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -33,8 +36,12 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.charte.Mouvement
+import fr.coprofirst.app.charte.Palette
 import fr.coprofirst.app.charte.Palettes
+import fr.coprofirst.app.commun.audience.AudienceDeLApp
+import fr.coprofirst.app.commun.audience.LocalMesureAudience
 import fr.coprofirst.app.navigation.EcranResidence
+import fr.coprofirst.app.session.audience.MesureAudience
 
 /** Les gestes des écrans de l'entrée — une interface, pour que les aperçus s'en passent. */
 interface ActionsEntree {
@@ -90,7 +97,12 @@ interface ActionsEntree {
 private const val DUREE_MS = 220
 
 @Composable
-fun NavigationEntree(apparence: Apparence, parcours: ParcoursEntree = viewModel(factory = ParcoursEntree.Fabrique)) {
+fun NavigationEntree(
+    apparence: Apparence,
+    parcours: ParcoursEntree = viewModel(factory = ParcoursEntree.Fabrique),
+    /** La mesure d'audience (#144) : celle du processus ; un test passe la sienne, ou `null`. */
+    mesure: MesureAudience? = AudienceDeLApp.mesure,
+) {
     val etat by parcours.etat.collectAsStateWithLifecycle()
     // La biométrie se demande par l'activité affichée : posée ici, retirée à sa sortie.
     val deverrouillage = rememberDeverrouillage(etat.reconnue)
@@ -98,6 +110,8 @@ fun NavigationEntree(apparence: Apparence, parcours: ParcoursEntree = viewModel(
         parcours.deverrouillage = deverrouillage
         onDispose { if (parcours.deverrouillage === deverrouillage) parcours.deverrouillage = null }
     }
+    // Le passage en arrière-plan (le `visibilitychange` du site) : la file part.
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) { mesure?.viderEnArrierePlan() }
     // L'espace d'une résidence ouverte ne se quitte que par « Se déconnecter » ; le retour
     // système y ferme l'app, comme sur un écran racine.
     BackHandler(enabled = etat.ecran == EcranEntree.Connexion) { parcours.retour() }
@@ -105,6 +119,11 @@ fun NavigationEntree(apparence: Apparence, parcours: ParcoursEntree = viewModel(
     val palette = Palettes.pour((etat.ouverte ?: etat.reconnue)?.codePalette)
     // Le thème de l'appareil (Profil › Apparence), appliqué à la racine comme sur iOS.
     val choix by apparence.choix.collectAsStateWithLifecycle()
+    CompositionLocalProvider(LocalMesureAudience provides mesure) { Espaces(etat, parcours, apparence, palette, choix) }
+}
+
+@Composable
+private fun Espaces(etat: EtatEntree, parcours: ParcoursEntree, apparence: Apparence, palette: Palette, choix: String) {
     ThemeCoproFirst(palette, sombre = apparence.sombre(choix, isSystemInDarkTheme())) {
         Surface(modifier = Modifier.fillMaxSize()) {
             AnimatedContent(
@@ -121,7 +140,11 @@ fun NavigationEntree(apparence: Apparence, parcours: ParcoursEntree = viewModel(
                     EcranEntree.Accueil -> EcranAccueil(parcours)
                     EcranEntree.Retour -> EcranRetour(etat, parcours)
                     EcranEntree.Connexion -> EcranConnexion(etat, parcours)
-                    EcranEntree.Espace -> parcours.sessionOuverte()?.let { EcranResidence(it, parcours, apparence) }
+                    EcranEntree.Espace -> parcours.sessionOuverte()?.let { session ->
+                        // L'écran d'un lien vers CETTE résidence (#147) ; la porte le pose, puis le rend.
+                        val lien = etat.lien?.takeIf { it.adresse == session.installation.adresse }?.destination
+                        EcranResidence(session, parcours, apparence, lien = lien, lienSuivi = parcours::lienSuivi)
+                    }
                 }
             }
             // « Garder la session ? », proposée une fois après la première connexion.

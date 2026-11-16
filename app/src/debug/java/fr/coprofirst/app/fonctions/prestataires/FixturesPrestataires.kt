@@ -36,7 +36,7 @@ object FixturesPrestataires {
         ]
     """
 
-    /** GET /prestataires/archives. */
+    /** GET /prestataires/archives → `[PrestataireRead]`. */
     const val ARCHIVES = """
         [
           {"id": 9, "nom": "Ancien jardinier (fictif)", "specialite": "espaces_verts",
@@ -75,7 +75,7 @@ object FixturesPrestataires {
         ]
     """
 
-    /** GET /prestataires/contrats/archives. */
+    /** GET /prestataires/contrats/archives → `[ContratRead]`. */
     const val CONTRATS_ARCHIVES = """
         [
           {"id": 8, "copropriete_id": 1, "prestataire_id": 9, "type_equipement": "espaces_verts",

@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.entree
 
+import fr.coprofirst.app.navigation.Destination
 import fr.coprofirst.app.session.Connexion
 import fr.coprofirst.app.session.Decouverte
 import fr.coprofirst.app.session.ErreurService
@@ -48,12 +49,16 @@ class ParcoursEntreeTest {
     fun preparer() {
         Dispatchers.setMain(ordonnanceur)
         serveur.start()
+        construire()
+    }
+
+    private fun construire(avantSortie: suspend () -> Unit = {}) {
         // Toute adresse mène au serveur local : seule la base de l'API change.
         val base = { _: Any -> serveur.url("/api").toString() }
         val decouverte = Decouverte(OkHttpClient(), Dispatchers.Unconfined, base)
         val sessions = SessionsParHote(OkHttpClient())
         val connexion = Connexion(sessions, Dispatchers.Unconfined, base)
-        parcours = ParcoursEntree(decouverte, sessions, connexion, connues, baseApi = base) { preuve }
+        parcours = ParcoursEntree(decouverte, sessions, connexion, connues, baseApi = base, avantSortie = avantSortie) { preuve }
     }
 
     @After
@@ -229,6 +234,77 @@ class ParcoursEntreeTest {
         assertEquals(EcranEntree.Espace, parcours.etat.value.ecran)
     }
 
+    /** #7 : un lien vers un hôte jamais vu ouvre la connexion à son adresse, et se confirme. */
+    @Test
+    fun unLienVersUnHoteJamaisVuSeConfirme() = test {
+        residence("Les Glycines")
+        parcours.suivreLien("https://jamais-vu.exemple.test/tickets/12#msg-3")
+        advanceUntilIdle()
+        assertEquals(EcranEntree.Connexion, parcours.etat.value.ecran)
+        assertEquals("jamais-vu.exemple.test", parcours.etat.value.saisie)
+        assertEquals("Les Glycines", parcours.etat.value.reconnue?.nom)
+        parcours.saisirEmail("a@exemple.test")
+        parcours.saisirMotDePasse("secret")
+        parcours.seConnecter()
+        advanceUntilIdle()
+        assertEquals("seul GET /config est parti", 1, serveur.requestCount)
+        assertEquals(PreuveHote.Declaree, parcours.etat.value.confirmation?.preuve)
+        // L'affaire visée attend l'ouverture de SA résidence, puis la porte la pose (#147).
+        ok()
+        parcours.confirmerHote()
+        advanceUntilIdle()
+        assertEquals(EcranEntree.Espace, parcours.etat.value.ecran)
+        assertEquals(Destination.Element("affaire", "12"), parcours.etat.value.lien?.destination)
+        parcours.lienSuivi()
+        assertNull(parcours.etat.value.lien)
+    }
+
+    /** #147 : le lien d'une résidence tombe quand c'est une autre qui s'ouvre. */
+    @Test
+    fun leLienDUneAutreResidenceTombe() = test {
+        connues.retenir(Installation("https://connue.exemple.test", "Connue"))
+        residence("Les Glycines")
+        parcours.suivreLien("https://jamais-vu.exemple.test/tickets/12")
+        advanceUntilIdle()
+        residence("Connue")
+        parcours.saisir("connue.exemple.test")
+        advanceUntilIdle()
+        parcours.saisirEmail("a@exemple.test")
+        parcours.saisirMotDePasse("secret")
+        ok()
+        parcours.seConnecter()
+        advanceUntilIdle()
+        assertEquals(EcranEntree.Espace, parcours.etat.value.ecran)
+        assertNull(parcours.etat.value.lien)
+    }
+
+    /** #7 : vers une résidence connue, la connexion habituelle ; vers celle qui est ouverte, l'écran visé seul. */
+    @Test
+    fun unLienVersUneResidenceConnueOuOuverte() = test {
+        connues.retenir(Installation("https://connue.exemple.test", "Connue"))
+        residence("Connue")
+        parcours.suivreLien("https://connue.exemple.test/actualites")
+        advanceUntilIdle()
+        assertEquals("connue.exemple.test", parcours.etat.value.saisie)
+        parcours.saisirEmail("a@exemple.test")
+        parcours.saisirMotDePasse("secret")
+        ok()
+        parcours.seConnecter()
+        advanceUntilIdle()
+        assertEquals(EcranEntree.Espace, parcours.etat.value.ecran)
+        // « /actualites » : la page des affaires, posée par la porte à l'ouverture.
+        assertEquals("https://connue.exemple.test", parcours.etat.value.lien?.adresse?.url)
+        parcours.lienSuivi()
+        val ouverte = parcours.etat.value
+        parcours.suivreLien("http://autre.exemple.test/")
+        assertSame(ouverte, parcours.etat.value)
+        parcours.suivreLien("https://connue.exemple.test/tickets/4")
+        advanceUntilIdle()
+        assertEquals(ouverte.copy(lien = parcours.etat.value.lien), parcours.etat.value)
+        assertEquals(Destination.Element("affaire", "4"), parcours.etat.value.lien?.destination)
+        assertEquals(2, serveur.requestCount)
+    }
+
     @Test
     fun identifiantsRefusesSansQuitterLEcran() = test {
         connues.retenir(Installation("https://connue.exemple.test", "Connue"))
@@ -255,6 +331,24 @@ class ParcoursEntreeTest {
         advanceUntilIdle()
         assertEquals(EtatEntree(), parcours.etat.value)
         assertEquals(emptyList<Installation>(), connues.liste)
+    }
+
+    /** #144 : ce qui reste de la mesure d'audience part AVANT que la session se ferme. */
+    @Test
+    fun laMesurePartAvantLaDeconnexion() = test {
+        var requetesALaMesure = -1
+        construire(avantSortie = { requetesALaMesure = serveur.requestCount })
+        connues.retenir(Installation("https://connue.exemple.test", "Connue"))
+        pret("connue.exemple.test")
+        ok()
+        parcours.seConnecter()
+        advanceUntilIdle()
+        val avant = serveur.requestCount
+        ok() // POST /auth/logout
+        parcours.deconnecter()
+        advanceUntilIdle()
+        assertEquals("la mesure, avant tout envoi de la déconnexion", avant, requetesALaMesure)
+        assertEquals(avant + 1, serveur.requestCount)
     }
 
     /** #57 : la session ouverte parle à la même API que la connexion (le serveur local ici). */

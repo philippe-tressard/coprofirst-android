@@ -21,6 +21,14 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   adresse. L'icône du QR code, dans le champ, lit celui de la fiche d'arrivée avec la
   caméra (demandée à ce moment-là, l'image lue sur l'appareil, ni gardée ni envoyée) ;
   une adresse scannée se confirme toujours avant le premier mot de passe.
+- **Liens d'application** : un lien vers la démo ou 5Hostachy (une affaire, les
+  actualités, l'accueil, la connexion) ouvre l'app — la résidence ouverte si c'est la
+  sienne, sinon sa connexion, à son adresse ; une adresse jamais vue se confirme avant
+  le premier mot de passe. L'écran visé (une affaire, les affaires, une page) s'ouvre
+  ensuite dans sa résidence — le fil si le compte ne voit pas la page ; les liens à jeton
+  (vérifier une adresse, choisir un mot de passe) restent au navigateur. Android
+  n'associe le lien à l'app que si l'installation sert `assetlinks.json`
+  (coprofirst#2788).
 - **Se connecter** : adresse électronique et mot de passe, sous la résidence. Avant le
   premier mot de passe envoyé à une adresse jamais vue, « Vérifiez l'adresse » montre
   l'hôte en entier et dit s'il est reconnu comme une installation CoproFirst ; sinon,
@@ -131,6 +139,10 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   export de la copropriété). Les autres onglets sont « Sur le site », chacun avec son
   lien ; lancer une tâche ou un export reste au site, et l'écran le dit.
 
+- **Mesure d'audience** : comme sur le site, la résidence compte les écrans vus (sous le
+  chemin de la page équivalente du site, canal « android »), pour ses statistiques de
+  fréquentation ; jamais si le compte l'a refusée (Profil › Vos droits), ni hors d'une
+  résidence ouverte. Aucun identifiant d'appareil, rien chez l'éditeur.
 - **À propos** (Plus) : la résidence et la mention de son pied de page (©, texte libre,
   version de l'app) ; ses mentions légales et sa politique de confidentialité, lues dans
   l'app (« Logiciel libre » sous les mentions) ; le site de CoproFirst, le code du serveur
@@ -168,7 +180,10 @@ App Signing sont dans `docs/signature-android.md`.
 
 `contrat/openapi.json` est la pièce jointe de la release de coprofirst au plancher
 (`contrat/plancher.env`) ; sa provenance est dans `contrat/PROVENANCE.md`. Le
-réimporter : `bash scripts/importer-contrat.sh` (`gh` authentifié).
+réimporter : `bash scripts/importer-contrat.sh` (`gh` authentifié). Chaque jour, le
+workflow « Concordance avec CoproFirst » (`scripts/concordance.py`) vérifie l'écart au
+plancher — pièces identiques, contrat servi par chaque installation connue
+(`INSTALLATIONS`) — et dit si une release plus récente permettrait de le monter.
 
 ## Licence
 

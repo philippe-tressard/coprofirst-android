@@ -44,7 +44,14 @@ import kotlinx.coroutines.launch
  * (le JSON servi, mis en forme) — sans fichier écrit ni fournisseur de fichiers à déclarer.
  */
 @Composable
-fun SectionDroits(compte: UserRead, installation: Installation, service: ServiceProfil, modifie: (UserRead) -> Unit) {
+fun SectionDroits(
+    compte: UserRead,
+    installation: Installation,
+    service: ServiceProfil,
+    /** Après un refus (ou un accord) enregistré : la mesure d'audience le voit aussitôt (#144). */
+    relireDroits: suspend () -> Unit = {},
+    modifie: (UserRead) -> Unit,
+) {
     val couleurs = LocalCouleurs.current
     val contexte = LocalContext.current
     val liens = LocalUriHandler.current
@@ -78,6 +85,7 @@ fun SectionDroits(compte: UserRead, installation: Installation, service: Service
                         phrase = Phrase.Erreur(e)
                     }) {
                         service.refuserTelemetrie(valeur)
+                        relireDroits()
                         phrase = Phrase.Texte(if (valeur) R.string.profil_statistiques_desactivees else R.string.profil_statistiques_reactivees)
                     }
                 },

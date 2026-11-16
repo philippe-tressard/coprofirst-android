@@ -28,12 +28,35 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
         android:supportsRtl="true"
         android:usesCleartextTraffic="false"
         android:theme="@android:style/Theme.Material.NoActionBar">
+        <!-- singleTask : un lien d'application rejoint l'app ouverte (onNewIntent), il n'en
+             empile pas une seconde. -->
         <activity
             android:name=".ActiviteAccueil"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- Les liens d'application (#7) : les hôtes de l'iOS (associated domains,
+                 project.yml de coprofirst-ios) et les chemins de l'apple-app-site-association
+                 des installations, SAUF les deux liens à jeton (/auth/verifier-email,
+                 /auth/reinitialisation-mdp), laissés au navigateur. La vérification lit
+                 /.well-known/assetlinks.json sur chaque hôte (coprofirst#2788). Un lien n'est
+                 qu'une adresse : elle se découvre, puis se confirme (OrigineAdresse.Lien). -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" />
+                <data android:host="demo.coprofirst.fr" />
+                <data android:host="5hostachy.fr" />
+                <data android:path="/" />
+                <data android:path="/tickets" />
+                <data android:pathPrefix="/tickets/" />
+                <data android:path="/actualites" />
+                <data android:pathPrefix="/actualites/" />
+                <data android:path="/auth/connexion" />
             </intent-filter>
         </activity>
 

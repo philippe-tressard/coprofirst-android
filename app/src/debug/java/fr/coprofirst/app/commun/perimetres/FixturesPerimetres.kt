@@ -48,7 +48,7 @@ object FixturesPerimetres {
     /** POST /perimetres/libelle → `LibellePerimetre` : « le toit du bâtiment A »… */
     const val LIBELLE = """{"libelle": "Bâtiment A › Toit", "badge": "Bâtiment A › Toit"}"""
 
-    /** … et le défaut : le libellé en clair, le badge vide (rien sur une carte). */
+    /** … et le défaut : le libellé en clair, le badge vide (rien sur une carte) → `LibellePerimetre`. */
     const val LIBELLE_PAR_DEFAUT = """{"libelle": "Toute la copropriété", "badge": ""}"""
 
     /** La réponse de POST /perimetres/libelle : le défaut seul a la sienne, toute autre sélection celle du toit. */
