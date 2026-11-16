@@ -33,11 +33,6 @@ android {
         // L'icône vient du logo, généré au build par la couche commune (#206) ; la montre la
         // reçoit avec la complication (#207, lot 5). Rien n'est publié d'ici là.
         disable += "MissingApplicationIcon"
-        // L'aperçu de la tuile est une CAPTURE de la tuile rendue, prise sur l'émulateur Wear OS
-        // de la CI avec les tests d'interface de la montre (#216, #207) : un dessin fait à la
-        // main recopierait des couleurs. Aucune image Wear OS au poste (rien ne s'y installe
-        // sans la demande de Philippe).
-        disable += "TilePreviews"
     }
 }
 

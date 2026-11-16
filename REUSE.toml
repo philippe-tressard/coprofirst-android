@@ -63,3 +63,12 @@ path = "app/src/main/assets/vitrine/contenu.json"
 precedence = "override"
 SPDX-FileCopyrightText = "2026 Philippe TRESSARD"
 SPDX-License-Identifier = "AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins"
+
+# L'aperçu de la tuile de la montre (#207) : une capture de la tuile rendue par
+# ApercuTuileTest sur l'émulateur Wear OS de la CI, versionnée telle quelle. Une image
+# n'admet pas d'en-tête.
+[[annotations]]
+path = "montre/src/main/res/drawable-nodpi/apercu_tuile.png"
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Philippe TRESSARD"
+SPDX-License-Identifier = "AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins"

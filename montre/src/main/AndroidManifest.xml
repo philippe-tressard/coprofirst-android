@@ -46,6 +46,11 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
             <intent-filter>
                 <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
             </intent-filter>
+            <!-- L'aperçu : une CAPTURE de la tuile rendue (ApercuTuileTest, émulateur Wear OS de la
+                 CI), versionnée telle quelle, jamais redessinée. -->
+            <meta-data
+                android:name="androidx.wear.tiles.PREVIEW"
+                android:resource="@drawable/apercu_tuile" />
         </service>
     </application>
 </manifest>
