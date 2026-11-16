@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.foundation.clickable
@@ -46,6 +47,10 @@ import fr.coprofirst.app.commun.Pastille
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.onglets.ContexteOnglet
+import fr.coprofirst.app.commun.lecture.EtiquetteLieu
+import fr.coprofirst.app.commun.lecture.Lecture
+import fr.coprofirst.app.commun.lecture.LieuServi
+import fr.coprofirst.app.commun.lecture.PastilleLecture
 import fr.coprofirst.app.commun.texte.TexteDuSite
 import fr.coprofirst.app.commun.texte.TexteRiche
 
@@ -55,7 +60,7 @@ import fr.coprofirst.app.commun.texte.TexteRiche
  * Un toucher ouvre l'idée et ses réponses ; « + » propose une idée.
  */
 @Composable
-fun OngletIdees(contexte: ContexteOnglet, service: ServiceCommunaute) {
+fun OngletIdees(contexte: ContexteOnglet, service: ServiceCommunaute, moi: Int) {
     var nouvelle by rememberSaveable { mutableStateOf(false) }
     var relecture by rememberSaveable { mutableIntStateOf(0) }
     BoutonCreer(contexte.barre, R.string.idees_nouvelle) { nouvelle = true }
@@ -64,7 +69,7 @@ fun OngletIdees(contexte: ContexteOnglet, service: ServiceCommunaute) {
         cle = contexte.actualisation to relecture,
         squelette = { LigneIdee(SQUELETTE, {}, {}) },
     ) { lues, recharger ->
-        Idees(lues, contexte, service, recharger)
+        Idees(lues, contexte, service, moi, recharger)
     }
     if (nouvelle) {
         FormulaireIdee(contexte.avis, service, fermer = { nouvelle = false }) { relecture++ }
@@ -72,12 +77,13 @@ fun OngletIdees(contexte: ContexteOnglet, service: ServiceCommunaute) {
 }
 
 @Composable
-private fun Idees(lues: List<IdeeRead>, contexte: ContexteOnglet, service: ServiceCommunaute, recharger: () -> Unit) {
+private fun Idees(lues: List<IdeeRead>, contexte: ContexteOnglet, service: ServiceCommunaute, moi: Int, recharger: () -> Unit) {
     val gestes = rememberGestes(contexte.avis)
     var affichees by remember(lues) { mutableStateOf(lues) }
     var filtre by rememberSaveable { mutableStateOf<String?>(null) }
     var ouverte by rememberSaveable { mutableStateOf<Int?>(null) }
-    val voter: (IdeeRead) -> Unit = { idee ->
+    // Le vote dit sa phrase par l'avis de l'écran qui l'a touché (la liste, ou l'idée ouverte).
+    val voter: (IdeeRead, GestesCommunaute) -> Unit = { idee, gestes ->
         val avant = affichees
         affichees = ReglesCommunaute.basculerVote(affichees, idee.id)
         gestes.agir(R.string.communaute_vote_enregistre, apres = { reussi -> if (reussi) recharger() else affichees = avant }) {
@@ -98,11 +104,11 @@ private fun Idees(lues: List<IdeeRead>, contexte: ContexteOnglet, service: Servi
             }
         }
         ListeCommunaute(retenues, { it.archivee == true }, textes, videAuServeur = affichees.isEmpty()) { idee ->
-            LigneIdee(idee, voter = { voter(idee) }) { ouverte = idee.id }
+            LigneIdee(idee, voter = { voter(idee, gestes) }) { ouverte = idee.id }
         }
     }
     ouverte?.let { id ->
-        DetailIdee(affichees.firstOrNull { it.id == id }, voter) { ouverte = null }
+        DetailIdee(affichees.firstOrNull { it.id == id }, moi, service, voter, recharger) { ouverte = null }
     }
 }
 
@@ -115,7 +121,11 @@ private fun LigneIdee(idee: IdeeRead, voter: () -> Unit, ouvrir: () -> Unit) {
             BoutonCoeur(idee, voter)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(idee.titre, style = MaterialTheme.typography.titleMedium, color = couleurs.text)
-                FlowCapsules { PastilleTeinte(ReglesCommunaute.teinte(idee.statut, TablesCommunaute.statutsIdee), compacte = true) }
+                FlowCapsules {
+                    PastilleTeinte(ReglesCommunaute.teinte(idee.statut, TablesCommunaute.statutsIdee), compacte = true)
+                    PastilleLecture(idee.lecture?.let(Lecture::depuis))
+                    EtiquetteLieu(LieuServi.lieu(idee.perimetreLibelle))
+                }
                 Text(
                     TexteDuSite.apercu(idee.description),
                     style = MaterialTheme.typography.bodyMedium,
@@ -158,25 +168,37 @@ private fun BoutonCoeur(idee: IdeeRead, voter: () -> Unit) {
     }
 }
 
-/** Une idée ouverte : sa description entière, le cœur, et le fil des réponses. */
+/**
+ * Une idée ouverte : sa description entière, le cœur, et le fil des réponses (répondre,
+ * supprimer la sienne, signaler celles des autres). « Signaler cette idée au conseil
+ * syndical » à qui ne l'a pas écrite.
+ */
 @Composable
-private fun DetailIdee(idee: IdeeRead?, voter: (IdeeRead) -> Unit, fermer: () -> Unit) {
-    FeuilleDetail(R.string.idees_titre_detail, fermer) {
+private fun DetailIdee(
+    idee: IdeeRead?,
+    moi: Int,
+    service: ServiceCommunaute,
+    voter: (IdeeRead, GestesCommunaute) -> Unit,
+    recharger: () -> Unit,
+    fermer: () -> Unit,
+) {
+    val signaler = idee?.takeIf { it.auteurId != moi }?.let { FilCommunaute.Idee(it.id) to R.string.idees_signaler }
+    DetailCommunaute(R.string.idees_titre_detail, fermer, service, signaler) { gestes ->
         if (idee == null) {
             Etiquette(stringResource(R.string.idees_introuvable))
-            return@FeuilleDetail
+            return@DetailCommunaute
         }
         val couleurs = LocalCouleurs.current
         Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            BoutonCoeur(idee) { voter(idee) }
+            BoutonCoeur(idee) { voter(idee, gestes) }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 PastilleTeinte(ReglesCommunaute.teinte(idee.statut, TablesCommunaute.statutsIdee))
-                Text(idee.titre, style = Typo.titre(), color = couleurs.text)
+                Text(idee.titre, style = Typo.titre(), color = couleurs.text, modifier = Modifier.semantics { heading() })
                 Etiquette(FormatsDuSite.dateCourte(idee.creeLe.toInstant()))
             }
         }
         TexteRiche(idee.description)
-        ReponsesEnLecture(idee.reponses.orEmpty())
+        FilDuContenu(FilCommunaute.Idee(idee.id), idee.reponses.orEmpty(), moi, service, gestes, recharger)
     }
 }
 

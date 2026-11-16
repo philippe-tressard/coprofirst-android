@@ -54,6 +54,7 @@ object ReperesCommunaute {
     const val ARCHIVES = "communaute.archives"
     const val SONDAGES_CREATION = "sondages.creation"
     const val FERMER = "communaute.fermer"
+    const val SIGNALER = "communaute.signaler"
     const val ANNONCE_CONTACT = "annonce.contact"
     const val ANNONCE_SUPPRIMER = "annonce.supprimer"
     const val ANNONCE_CONFIRMER = "annonce.confirmerSuppression"
@@ -167,36 +168,4 @@ fun LibelleSection(@StringRes texte: Int, modifier: Modifier = Modifier) {
         color = LocalCouleurs.current.textMuted,
         modifier = modifier.semantics { heading() },
     )
-}
-
-/**
- * Le fil des réponses d'une idée ou d'une annonce, EN LECTURE : le conseil syndical en
- * tête et en bleu (le serveur trie), texte brut. ⚠️ Divergence déclarée : répondre,
- * supprimer sa réponse et signaler attendent le fil commun (`FilReponses`, #70) — l'iOS
- * les offre ; l'écran dit qu'ils se font sur le site d'ici là.
- */
-@Composable
-fun ReponsesEnLecture(reponses: List<ReponseCommunauteRead>) {
-    val couleurs = LocalCouleurs.current
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        if (reponses.isNotEmpty()) {
-            Text(
-                pluralStringResource(R.plurals.communaute_reponses, reponses.size, reponses.size),
-                style = MaterialTheme.typography.titleSmall,
-                color = couleurs.text,
-            )
-        }
-        reponses.forEach { reponse ->
-            Carte(Modifier.semantics(mergeDescendants = true) {}) {
-                Text(
-                    listOfNotNull(reponse.auteurNom, reponse.auteurBatiment).joinToString(" · "),
-                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
-                    color = if (reponse.estCs == true) couleurs.info else couleurs.text,
-                )
-                Text(FormatsDuSite.dateHeureCourte(reponse.creeLe.toInstant()), style = MaterialTheme.typography.bodySmall, color = couleurs.textMuted)
-                Text(reponse.contenu, style = MaterialTheme.typography.bodyMedium, color = couleurs.text, modifier = Modifier.padding(top = 4.dp))
-            }
-        }
-        Text(stringResource(R.string.communaute_reponses_sur_le_site), style = MaterialTheme.typography.bodySmall, color = couleurs.textMuted)
-    }
 }

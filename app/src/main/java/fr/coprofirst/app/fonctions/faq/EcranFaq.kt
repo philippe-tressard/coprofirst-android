@@ -17,10 +17,11 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
+import androidx.compose.material.icons.outlined.AddComment
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -54,16 +55,19 @@ import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.commun.onglets.OngletsSurLeSite
 import fr.coprofirst.app.commun.texte.TexteRiche
 import fr.coprofirst.app.navigation.ContexteDeMenu
+import fr.coprofirst.app.navigation.Destination
+import fr.coprofirst.app.navigation.PagesParDefaut
 
 /** Les repères des tests d'interface : les identifiants d'accessibilité de l'iOS. */
 object ReperesFaq {
     fun question(id: Int) = "faq.$id"
     const val REDACTION = "faq.redaction"
     const val MANUEL = "faq.manuel"
+    const val NOUVELLE_AFFAIRE = "faq.nouvelleAffaire"
 }
 
 /** Les adresses du site que la FAQ ouvre, sous celle de la résidence. */
-data class LiensFaq(val faq: String?, val manuel: String?) {
+data class LiensFaq(val faq: String?, val manuel: String?, val affaires: String? = null) {
     /** Le lien du site vers une question (`#faq-<id>`), comme l'iOS. */
     fun question(id: Int): String? = faq?.let { "$it#faq-$id" }
 
@@ -71,8 +75,14 @@ data class LiensFaq(val faq: String?, val manuel: String?) {
         /** Le manuel, servi à la racine du site (`manuel-utilisateur.html`), comme l'iOS. */
         private const val MANUEL = "/manuel-utilisateur.html"
 
-        fun depuis(route: String, adresse: String) =
-            LiensFaq(OngletsSurLeSite.lien(route, adresse), OngletsSurLeSite.lien(MANUEL, adresse))
+        /** La page des affaires : celle que « Créer une affaire » ouvre. */
+        const val PAGE_AFFAIRES = "mes-demandes"
+
+        fun depuis(route: String, adresse: String) = LiensFaq(
+            OngletsSurLeSite.lien(route, adresse),
+            OngletsSurLeSite.lien(MANUEL, adresse),
+            PagesParDefaut.toutes.firstOrNull { it.id == PAGE_AFFAIRES }?.let { OngletsSurLeSite.lien(it.route, adresse) },
+        )
     }
 }
 
@@ -83,19 +93,22 @@ data class LiensFaq(val faq: String?, val manuel: String?) {
  * site » ne se dit qu'à qui le serveur l'ouvre (GET /faq/gestes → `peut_rediger`, #37) ;
  * un droit illisible vaut « non », et la FAQ se lit quand même.
  *
- * ⚠️ Divergences déclarées : « Créer une affaire » (qui mène à l'onglet Affaires) attend
- * qu'un écran puisse ouvrir une autre page (#91) ; « Copier le lien » et « Partager » de
+ * « Créer une affaire » ouvre la page des affaires par la porte ; si le compte ne la voit pas
+ * dans l'app, la page du site (l'iOS ne montre alors pas le bouton).
+ *
+ * ⚠️ Divergence déclarée : « Copier le lien » et « Partager » de
  * l'iOS sont un seul « Partager le lien » (la feuille de partage d'Android sait copier).
  */
 @Composable
 fun EcranFaq(contexte: ContexteDeMenu) {
     val service = remember(contexte.session) { ServiceFaqApi(contexte.session) }
-    EcranFaq(service, remember(contexte.page.route) { LiensFaq.depuis(contexte.page.route, contexte.session.installation.url) })
+    val liens = remember(contexte.page.route) { LiensFaq.depuis(contexte.page.route, contexte.session.installation.url) }
+    EcranFaq(service, liens) { contexte.ouvrir(Destination.Page(LiensFaq.PAGE_AFFAIRES)) }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun EcranFaq(service: ServiceFaq, liens: LiensFaq) {
+internal fun EcranFaq(service: ServiceFaq, liens: LiensFaq, ouvrirAffaires: () -> Boolean = { false }) {
     val general = stringResource(R.string.faq_general)
     var relecture by rememberSaveable { mutableIntStateOf(0) }
     PullToRefreshBox(isRefreshing = false, onRefresh = { relecture++ }, modifier = Modifier.fillMaxSize().background(LocalCouleurs.current.bg)) {
@@ -107,18 +120,18 @@ internal fun EcranFaq(service: ServiceFaq, liens: LiensFaq) {
                 Chargement(
                     charger = { ReglesFaq.lire(service, general) },
                     cle = relecture,
-                    squelette = { ListeFaq(SQUELETTE, liens) },
-                ) { lue, _ -> ListeFaq(lue, liens) }
+                    squelette = { ListeFaq(SQUELETTE, liens) { false } },
+                ) { lue, _ -> ListeFaq(lue, liens, ouvrirAffaires) }
             }
         }
     }
 }
 
 @Composable
-private fun ListeFaq(lue: FaqLue, liens: LiensFaq) {
+private fun ListeFaq(lue: FaqLue, liens: LiensFaq, ouvrirAffaires: () -> Boolean) {
     var ouverte by rememberSaveable { mutableStateOf<Int?>(null) }
     Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
-        if (lue.categories.isEmpty()) EtatVide(stringResource(R.string.faq_vide), icone = Icons.Outlined.HelpOutline)
+        if (lue.categories.isEmpty()) EtatVide(stringResource(R.string.faq_vide), icone = Icons.AutoMirrored.Outlined.HelpOutline)
         lue.categories.forEach { categorie ->
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(categorie.nom.uppercase(), style = Typo.libelle(), color = LocalCouleurs.current.textMuted)
@@ -129,7 +142,7 @@ private fun ListeFaq(lue: FaqLue, liens: LiensFaq) {
                 }
             }
         }
-        Aide(lue.peutRediger, liens)
+        Aide(lue.peutRediger, liens, ouvrirAffaires)
     }
 }
 
@@ -171,13 +184,20 @@ private fun LigneQuestion(question: QuestionFaq, ouverte: Boolean, lien: String?
 
 /** L'encart du bas de la page du site, puis la rédaction réservée au site. */
 @Composable
-private fun Aide(peutRediger: Boolean, liens: LiensFaq) {
+private fun Aide(peutRediger: Boolean, liens: LiensFaq, ouvrirAffaires: () -> Boolean) {
     val couleurs = LocalCouleurs.current
     val navigateur = LocalUriHandler.current
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Carte {
             Text(stringResource(R.string.faq_pas_trouve), style = MaterialTheme.typography.titleMedium, color = couleurs.text)
             Text(stringResource(R.string.faq_pas_trouve_texte), style = MaterialTheme.typography.bodyMedium, color = couleurs.textMuted)
+            TextButton(
+                onClick = { if (!ouvrirAffaires()) liens.affaires?.let(navigateur::openUri) },
+                modifier = Modifier.testTag(ReperesFaq.NOUVELLE_AFFAIRE),
+            ) {
+                Icon(Icons.Outlined.AddComment, contentDescription = null)
+                Text(stringResource(R.string.faq_nouvelle_affaire), modifier = Modifier.padding(start = 8.dp))
+            }
             liens.manuel?.let { manuel ->
                 TextButton(onClick = { navigateur.openUri(manuel) }, modifier = Modifier.testTag(ReperesFaq.MANUEL)) {
                     Icon(Icons.AutoMirrored.Outlined.MenuBook, contentDescription = null)
