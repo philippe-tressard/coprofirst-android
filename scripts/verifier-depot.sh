@@ -24,6 +24,7 @@
 #   7 septies. la règle des tests d'interface est la v2 (junit4.v2), jamais la v1 ;
 #   7 octies. aucun séparateur du site (· — →) suivi d'une espace sécable ni recopié (#117) ;
 #   7 nonies. aucune version de contrat écrite dans les tests ni l'API simulée (#203) ;
+#   7 decies. aucune dépendance Google Play services ni Firebase que la licence ne nomme ;
 #   7 undecies. un seul client HTTP, ClientHttp.partage, dans les deux apps (#206) ;
 #   7 duodecies. chaque module inclus a son build.gradle.kts suivi par git ;
 #   8. un seul bouton plein, `BoutonPlein` (commun/Boutons.kt) ;
@@ -297,6 +298,14 @@ python3 -I scripts/verifier_securite_donnees.py \
 # chacune déclare son schéma, jugé contre le contrat au plancher.
 python3 -I scripts/verifier_fixtures.py \
   || echec "une réponse simulée ne dit pas ce que le serveur sert (python3 -I scripts/verifier_fixtures.py)"
+
+# Aucune bibliothèque Google Play services ni Firebase que la permission additionnelle ne
+# nomme (point 4 de LicenseRef-CoproFirst-Magasins, décision du 16/11/2026) : la liste se
+# lit dans la licence elle-même.
+python3 -I scripts/verifier_dependances_google.py --autotest >/dev/null \
+  || echec "verifier_dependances_google.py : autotest en échec"
+python3 -I scripts/verifier_dependances_google.py \
+  || echec "une dépendance Google n'est pas permise par la licence (python3 -I scripts/verifier_dependances_google.py)"
 
 # Le contrôle avant soumission (#4) se prouve : il départage un vert, un rouge et un INCONNU.
 python3 -I scripts/controle_avant_soumission.py --autotest >/dev/null \

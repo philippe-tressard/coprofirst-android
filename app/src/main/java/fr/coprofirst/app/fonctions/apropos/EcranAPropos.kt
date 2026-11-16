@@ -133,7 +133,8 @@ internal fun EcranAPropos(service: ServiceAPropos, nomResidence: String, residen
             }
             Section(
                 titre = null,
-                note = stringResource(R.string.apropos_distribue, TextesDuPied.nomPlateforme, TextesDuPied.licenceNom),
+                note = stringResource(R.string.apropos_distribue, TextesDuPied.nomPlateforme, TextesDuPied.licenceNom) + " " +
+                    stringResource(R.string.apropos_permissions_app),
             ) {
                 LiensDuCode()
             }

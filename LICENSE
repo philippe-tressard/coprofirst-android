@@ -1,13 +1,14 @@
-Application Android de CoproFirst — permission additionnelle (GNU AGPL v3, article 7)
+Application Android de CoproFirst — permissions additionnelles (GNU AGPL v3, article 7)
 
 Copyright © 2026 Philippe TRESSARD.
 
 Ce programme est un logiciel libre : vous pouvez le redistribuer et le modifier
 selon les termes de la GNU Affero General Public License publiée par la Free
 Software Foundation, en version 3 ou, à votre choix, toute version ultérieure
-(texte intégral : LICENSES/AGPL-3.0-or-later.txt). Il est complété par la
-permission additionnelle qui suit, accordée au titre de l'article 7 de cette
-licence.
+(texte intégral : LICENSES/AGPL-3.0-or-later.txt). Il est complété par les
+permissions additionnelles qui suivent, accordées au titre de l'article 7 de cette
+licence : la distribution par les magasins d'applications (points 1 à 3), la
+liaison avec deux bibliothèques de Google Play services (point 4).
 
 1. Objet
 
@@ -42,19 +43,37 @@ licence.
 
    Hors de ces services, l'AGPL s'applique sans cette permission.
 
-4. Versions modifiées
+4. Bibliothèques Google Play services (permission accordée le 16/11/2026)
 
-   Si vous modifiez le programme, vous pouvez étendre cette permission à votre
-   version ; vous n'y êtes pas tenu. Si vous ne le faites pas, retirez cette
-   permission de votre version, comme l'article 7 de l'AGPL vous y autorise.
+   Vous êtes autorisé à combiner le programme, ou une œuvre fondée sur lui, avec
+   les bibliothèques de Google nommées ci-dessous, et à distribuer cette
+   combinaison sous forme de code objet, par les services du point 1 ou
+   autrement. Le code de ces bibliothèques n'est alors pas tenu de faire partie du
+   Source correspondant, ni d'être distribué sous les termes de l'AGPL :
 
-5. Contributions
+   - com.google.firebase:firebase-messaging (Firebase Cloud Messaging :
+     l'acheminement des notifications) ;
+   - com.google.android.gms:play-services-wearable (Wearable : le lien entre le
+     téléphone et la montre) ;
+
+   ainsi que les bibliothèques de Google que ces deux-là requièrent elles-mêmes,
+   telles que leur publication les déclare. Cette permission ne s'étend à aucune
+   autre bibliothèque. Elle ne restreint en rien les droits que l'AGPL donne sur
+   le reste du programme, dont le Source correspondant reste dû.
+
+5. Versions modifiées
+
+   Si vous modifiez le programme, vous pouvez étendre ces permissions à votre
+   version ; vous n'y êtes pas tenu. Si vous ne le faites pas, retirez-les de
+   votre version, comme l'article 7 de l'AGPL vous y autorise.
+
+6. Contributions
 
    Toute contribution proposée à ce dépôt est acceptée sous les termes de
-   l'AGPL v3 ou ultérieure ASSORTIE de la présente permission. La proposer vaut
+   l'AGPL v3 ou ultérieure ASSORTIE des présentes permissions. La proposer vaut
    accord pour qu'elle soit distribuée ainsi.
 
-Cette permission ne concerne pas les fichiers que REUSE.toml place sous une
+Ces permissions ne concernent pas les fichiers que REUSE.toml place sous une
 autre licence, ni les bibliothèques tierces, qui gardent chacune la leur.
 
 LE PROGRAMME EST FOURNI « TEL QUEL », SANS AUCUNE GARANTIE, DANS LES LIMITES
