@@ -24,6 +24,7 @@
 #   7 septies. la règle des tests d'interface est la v2 (junit4.v2), jamais la v1 ;
 #   7 octies. aucun séparateur du site (· — →) suivi d'une espace sécable ni recopié (#117) ;
 #   7 nonies. aucune version de contrat écrite dans les tests ni l'API simulée (#203) ;
+#   7 undecies. un seul client HTTP, ClientHttp.partage, dans les deux apps (#206) ;
 #   8. un seul bouton plein, `BoutonPlein` (commun/Boutons.kt) ;
 #   9. les générateurs du build passent leurs tests (scripts/test_*.py) ;
 #  10. aucun chemin de .claude/worktrees/ suivi.
@@ -110,7 +111,7 @@ autotest_motif() {
 # ressources des deux apps (téléphone, montre #207, ressources-communes/). Une dispense qui ne couvre plus aucun motif échoue : une
 # exception sans objet se retire.
 interdire() {
-  local f motif dispense=${3:-} perimetre=${4:-'^((app|montre)/src/main|ressources-communes)/.*\.(kt|xml)$'}
+  local f motif dispense=${3:-} perimetre=${4:-'^((app|montre|partage)/src/main|ressources-communes)/.*\.(kt|xml)$'}
   while IFS= read -r f; do
     [ -f "$f" ] || continue
     motif=$(premier_motif "$1" "$f")
@@ -190,13 +191,13 @@ while IFS= read -r f; do
   [ -f "$f" ] || continue
   fautes=$(feuille_mi_hauteur "$f")
   [ -z "$fautes" ] || echec "$f : feuille ouverte à mi-hauteur — sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true) ($fautes)"
-done < <(grep -E '^(app|montre)/src/main/.*\.kt$' <<< "$FICHIERS")
+done < <(grep -E '^(app|montre|partage)/src/main/.*\.kt$' <<< "$FICHIERS")
 
 # Les dates et les nombres s'écrivent par `FormatsDuSite`, seul, à la règle du site
 # (fr-FR, Paris) : aucun écran ne compose son propre format.
 FORMAT_MAIN='DateTimeFormatter|SimpleDateFormat|NumberFormat|DecimalFormat|String\.format\(|"%[0-9.]*[df]"'
 autotest_motif "formats" "$FORMAT_MAIN" 'val t = DateTimeFormatter.ofPattern("dd/MM")' 'val t = FormatsDuSite.dateCourte(instant)'
-interdire "$FORMAT_MAIN" "format de date ou de nombre écrit à la main — passer par FormatsDuSite" '^app/src/main/java/fr/coprofirst/app/commun/formats/FormatsDuSite\.kt$'
+interdire "$FORMAT_MAIN" "format de date ou de nombre écrit à la main — passer par FormatsDuSite" '^partage/src/main/kotlin/fr/coprofirst/app/commun/formats/FormatsDuSite\.kt$'
 
 # Le texte riche du site passe par SA porte, `commun/texte` (`TexteDuSite`, `TexteRiche`) :
 # un lecteur maison sur la liste blanche générée, qui ne charge ni n'exécute rien. Une vue
@@ -251,6 +252,12 @@ CONTRAT_ECRIT='(version_contrat"?[[:space:]]*:[[:space:]]*|"version_contrat"[[:s
 autotest_motif "contrat écrit" "$CONTRAT_ECRIT" '    """{"site_nom": "G", "version_contrat": "2.0.0"}"""' '    """{"site_nom": "G", "version_contrat": "$VERSION_CONTRAT_PLANCHER"}"""'
 autotest_motif "contrat écrit (Installation)" "$CONTRAT_ECRIT" '    Installation(a, "G", versionContrat = "2.1.0")' '    mapOf("version_contrat" to "99.0.0")'
 interdire "$CONTRAT_ECRIT" "version de contrat écrite à la main — VERSION_CONTRAT_PLANCHER" "" '^app/src/(test|androidTest|debug)/.*\.kt$'
+
+# UN client HTTP pour le téléphone ET la montre (#206) : `ClientHttp.partage`, qui ne suit
+# aucune redirection. Un client construit ailleurs échapperait à ces réglages.
+CLIENT_NEUF='OkHttpClient[[:space:]]*\([[:space:]]*\)|OkHttpClient\.Builder[[:space:]]*\('
+autotest_motif "client HTTP neuf" "$CLIENT_NEUF" '    val c = OkHttpClient.Builder().build()' '    val c = ClientHttp.partage.newBuilder().build()'
+interdire "$CLIENT_NEUF" "client HTTP construit hors de ClientHttp — passer par ClientHttp.partage" '^partage/src/main/kotlin/fr/coprofirst/app/session/ClientHttp\.kt$'
 
 # Les hôtes FICTIFS sont des noms réservés (RFC 2606/6761 : `.test`, `.invalid`,
 # `example.com`), jamais `exemple.fr` ni `exemple.org`, qui sont de VRAIS domaines : un

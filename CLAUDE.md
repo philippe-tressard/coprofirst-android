@@ -74,7 +74,8 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   un écran la consomme sans la modifier, un besoin devient un ticket. Un écran = un
   paquet `fonctions/<menu>` qui s'inscrit lui-même (`Inscription.kt`, ses tables par
   `scripts/generer_tables_<menu>.py`) : il ne touche ni la navigation ni le build (#109).
-- **Réseau** : un seul client HTTP, `session/ClientHttp.kt` (aucune redirection
+- **Réseau** : un seul client HTTP, `ClientHttp.partage` (module `:partage`, que la montre
+  partage aussi, #206 ; `verifier-depot.sh` refuse tout autre client) (aucune redirection
   suivie, clair refusé par le manifeste), décliné par hôte avec ses cookies en mémoire
   (`SessionsParHote`) ; aucune requête ni route écrite à la main — `verifier-depot.sh`
   le refuse, sauf dans `PreuveHote.kt` (le fichier d'association n'est pas une route de

@@ -7,23 +7,6 @@ import fr.coprofirst.api.modeles.NotificationRead
 import fr.coprofirst.api.modeles.SuppressionNotifications
 import fr.coprofirst.api.routes.NotificationsApi
 import fr.coprofirst.app.session.SessionOuverte
-import java.time.Instant
-
-/** Une alerte reçue, telle que GET /notifications la sert (`NotificationRead`). */
-data class NotificationRecue(
-    val id: Int,
-    val type: String,
-    val titre: String,
-    /** Du HTML de l'éditeur du site : il passe par `TexteRiche`. */
-    val corps: String,
-    val lue: Boolean,
-    val urgente: Boolean,
-    val creeLe: Instant,
-) {
-    companion object {
-        fun depuis(n: NotificationRead) = NotificationRecue(n.id, n.type, n.titre, n.corps, n.lue, n.urgente, n.creeLe.toInstant())
-    }
-}
 
 /** Ce que l'écran des notifications demande à la résidence ouverte, comme l'iOS (`ServiceNotifications`). */
 interface ServiceNotifications {
