@@ -3,6 +3,8 @@
 
 package fr.coprofirst.app.fonctions.espacecs
 
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isSelected
@@ -10,6 +12,7 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextInput
 import androidx.test.espresso.Espresso
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -125,12 +128,18 @@ class EspaceCSInterfaceTest {
         repeat(3) {
             if (retenue()) return
             attendreRepere(repere)
-            ecran.onNodeWithTag(repere).performScrollTo()
+            ecran.onNodeWithTag(repere).performScrollTo().assertIsDisplayed()
             attendreImmobile(repere)
             ecran.onNodeWithTag(repere).performClick()
             ecran.waitForIdle()
         }
+        if (retenue()) return
+        // Le toucher n'a pas porté (CI de #112, A5) : l'action de la pastille, puis le constat
+        // de ce qui a fait obstacle, dans le message.
+        val noeud = ecran.onNodeWithTag(repere).fetchSemanticsNode()
+        ecran.onNodeWithTag(repere).performSemanticsAction(SemanticsActions.OnClick)
         ecran.waitUntil(DELAI_MS, retenue)
+        println("retenir($repere) : retenue par son action seule ; bornes ${noeud.boundsInRoot}, racine ${noeud.layoutInfo.coordinates.size}")
     }
 
     /** Attend que le nœud ne bouge plus (deux lectures de sa position identiques), 3 s au plus. */
