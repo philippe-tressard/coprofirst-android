@@ -32,9 +32,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.outlined.AttachFile
+import androidx.compose.material.icons.outlined.MoreHoriz
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -56,9 +60,12 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -149,7 +156,7 @@ class DepliageDuFil(private val portee: CoroutineScope, val dureeMs: Long = REGA
  * toucher sous VoiceOver).
  */
 @Composable
-internal fun FilAffaire(affaire: DetailAffaire, session: SessionOuverte) {
+internal fun FilAffaire(affaire: DetailAffaire, session: SessionOuverte, gestes: ((GesteSuite, SuiteAffaire) -> Unit)? = null) {
     val portee = rememberCoroutineScope()
     val depliage = remember { DepliageDuFil(portee) }
     val textes = rememberTextesFil()
@@ -158,14 +165,20 @@ internal fun FilAffaire(affaire: DetailAffaire, session: SessionOuverte) {
     Column {
         etapes.forEachIndexed { i, etape ->
             RangeeDuRail(etape.etat, JALON, TraitDuRail.sous(i, etats)) {
-                Section(etape, affaire, depliage, session)
+                Section(etape, affaire, depliage, session, gestes)
             }
         }
     }
 }
 
 @Composable
-private fun Section(etape: EtapeFil, affaire: DetailAffaire, depliage: DepliageDuFil, session: SessionOuverte) {
+private fun Section(
+    etape: EtapeFil,
+    affaire: DetailAffaire,
+    depliage: DepliageDuFil,
+    session: SessionOuverte,
+    gestes: ((GesteSuite, SuiteAffaire) -> Unit)?,
+) {
     val pliee = etape.pliable && depliage.estPliee(etape.cle)
     Column(Modifier.padding(bottom = 18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         EnTeteEtape(etape, pliee) { depliage.basculerPli(etape.cle) }
@@ -180,7 +193,7 @@ private fun Section(etape: EtapeFil, affaire: DetailAffaire, depliage: DepliageD
                         RangeeDuRail(
                             etats[i], JALON_SECONDAIRE, TraitDuRail.sous(i, etats, etape.ouverteALaSuite),
                             enAvant = depliage.estOuvert(element.id),
-                        ) { ElementDuFil(element, depliage, session) }
+                        ) { ElementDuFil(element, depliage, session, gestes) }
                     }
                 }
             }
@@ -219,7 +232,7 @@ private fun EnTeteEtape(etape: EtapeFil, pliee: Boolean, basculer: () -> Unit) {
 /** Un élément sous une section : plié, un titre, une ligne, un aperçu ; ouvert, son texte et ses pièces. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun ElementDuFil(element: ElementFil, depliage: DepliageDuFil, session: SessionOuverte) {
+private fun ElementDuFil(element: ElementFil, depliage: DepliageDuFil, session: SessionOuverte, gestes: ((GesteSuite, SuiteAffaire) -> Unit)?) {
     val c = LocalCouleurs.current
     val ouvert = depliage.estOuvert(element.id)
     val garde = depliage.estGarde(element.id)
@@ -247,6 +260,7 @@ private fun ElementDuFil(element: ElementFil, depliage: DepliageDuFil, session: 
                     Text(element.titre, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = c.text)
                     if (garde) Icon(Icons.Filled.PushPin, contentDescription = null, tint = c.primary, modifier = Modifier.size(14.dp))
                     if (element.pieces.isNotEmpty()) Icon(Icons.Outlined.AttachFile, contentDescription = null, tint = c.textMuted, modifier = Modifier.size(14.dp))
+                    GestesDeLEntree(element.suite, gestes)
                 }
                 if (element.ligne.isNotEmpty()) Text(element.ligne, style = MaterialTheme.typography.bodySmall, color = c.textMuted)
                 if (!ouvert) element.apercu?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = c.textMuted, maxLines = 1) }
@@ -284,6 +298,41 @@ private fun ElementDuFil(element: ElementFil, depliage: DepliageDuFil, session: 
         }
     }
 }
+
+/**
+ * Les gestes d'UNE entrée de la suite, comme l'iOS (`GestesSuite`) : un « ⋯ » visible à sa
+ * droite — un appui long seul serait un geste caché —, et les mêmes en actions du lecteur
+ * d'écran. Rien quand le serveur n'en sert aucun, ni hors d'un écran qui les porte.
+ */
+@Composable
+private fun GestesDeLEntree(suite: SuiteAffaire?, choisir: ((GesteSuite, SuiteAffaire) -> Unit)?) {
+    if (suite == null || choisir == null) return
+    val offerts = GesteSuite.offerts(suite)
+    if (offerts.isEmpty()) return
+    var menu by remember { mutableStateOf(false) }
+    val ressources = LocalResources.current
+    val actions = offerts.map { g -> CustomAccessibilityAction(ressources.getString(libelleGesteSuite(g))) { choisir(g, suite); true } }
+    Box {
+        IconButton(
+            { menu = true },
+            Modifier.size(32.dp).semantics { customActions = actions }.testTag(ReperesAffaires.gestesSuite(suite.id)),
+        ) {
+            Icon(Icons.Outlined.MoreHoriz, contentDescription = stringResource(R.string.historique_gestes), tint = LocalCouleurs.current.primary)
+        }
+        DropdownMenu(menu, { menu = false }) {
+            offerts.forEach { g ->
+                DropdownMenuItem(
+                    text = { Text(stringResource(libelleGesteSuite(g)), color = if (g == GesteSuite.Supprimer) LocalCouleurs.current.danger else LocalCouleurs.current.text) },
+                    leadingIcon = { Icon(if (g == GesteSuite.Supprimer) Icons.Outlined.Delete else Icons.Outlined.Edit, contentDescription = null) },
+                    onClick = { menu = false; choisir(g, suite) },
+                    modifier = Modifier.testTag(ReperesAffaires.gesteSuite(g)),
+                )
+            }
+        }
+    }
+}
+
+private fun libelleGesteSuite(g: GesteSuite) = if (g == GesteSuite.Modifier) R.string.historique_modifier else R.string.historique_supprimer
 
 /** Le temps qui reste avant que l'élément se replie : un filet qui se vide. */
 @Composable

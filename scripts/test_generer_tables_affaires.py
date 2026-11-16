@@ -25,6 +25,9 @@ def tables(**remplace):
         "colonnesKanban": t([{"id": "syndic", "label": "Syndic", "color": "var(--kanban-syndic)"}]),
         "motColonneVide": t("Aucune affaire"),
         "categorieActualite": t("actualite"),
+        "optionsTicket": t(["epingle"]),
+        "optionsPublication": t([{"cle": "epingle", "action": "Épingler", "etat": "Épinglée", "aide": "En tête."},
+                                 {"cle": "brouillon", "action": "Réserver", "etat": "CS", "aide": "Au conseil."}]),
         "statutsTicket": t([{"value": "ouvert", "label": "Ouvert", "badge": "badge-blue"}]),
         "statutsTicketHistoriques": t({"fermé": {"label": "Fermé", "badge": "badge-gray"}}),
         "statutsTicketSansCycle": t({"publie": {"label": "Publiée", "badge": "badge-blue"}}),
@@ -43,19 +46,23 @@ class TablesAffaires(unittest.TestCase):
         for code, badge in (("ouvert", "badge-blue"), ("fermé", "badge-gray"), ("publie", "badge-blue")):
             self.assertIn(f'"{code}" to "{badge}",', texte)
         self.assertIn('const val COLONNE_VIDE = "Aucune affaire"', texte)
+        # Les options du site pour une affaire, et elles seules.
+        self.assertIn('OptionAffaire("epingle", "Épingler", "Épinglée", "En tête."),', texte)
+        self.assertNotIn('"brouillon"', texte)
 
     def test_ce_qui_change_de_forme_arrete(self):
         for casse in ({"groupesSuivi": t([{"value": "x", "label": "X"}])},
                       {"colonnesKanban": t([{"id": "ag", "color": "#123456"}])},
                       {"statutsTicketHistoriques": t([])},
-                      {"motColonneVide": t(None)}):
+                      {"motColonneVide": t(None)},
+                      {"optionsTicket": t(["inconnue"])}):
             with self.assertRaises(g.TableInattendue, msg=str(casse)):
                 g.kotlin(tables(**casse), "t")
 
     def test_le_plancher_se_genere(self):
         publiees = json.loads((RACINE / "contrat" / "tables-clients.json").read_text(encoding="utf-8"))["tables"]
         texte = g.kotlin(publiees, "tables-clients.json")
-        for attendu in ('"annule" to { it.kanbanAnnule }', '"chez_prestataire" to '):
+        for attendu in ('"annule" to { it.kanbanAnnule }', '"chez_prestataire" to ', 'OptionAffaire("urgente"'):
             self.assertIn(attendu, texte)
 
 

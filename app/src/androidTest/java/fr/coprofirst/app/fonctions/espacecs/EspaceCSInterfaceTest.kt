@@ -14,6 +14,7 @@ import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.commun.GestesDeSortie
 import fr.coprofirst.app.commun.StockageApparence
 import fr.coprofirst.app.commun.onglets.ReperesOnglets
+import fr.coprofirst.app.commun.toucher
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.navigation.ContexteDeMenu
@@ -191,6 +192,25 @@ class EspaceCSInterfaceTest {
         attendreRepere(ReperesEspaceCS.RENOUVELLEMENTS_PREAVIS)
         attendre("Préavis en cours")
         attendreRepere(ReperesEspaceCS.renouvellementDiagnostic(1))
+    }
+
+    /** Annuaire CS & Syndic : les fiches, l'en-tête du conseil en feuille, puis un interlocuteur monté d'un rang. */
+    @Test
+    fun lAnnuaireDuConseilEtDuSyndic() {
+        ecran.toucherTag(ReperesOnglets.onglet("annuaire"))
+        attendreRepere(ReperesEspaceCS.annuaireConseil(0))
+        attendre("Camille EXEMPLE")
+        ecran.toucherTag(ReperesEspaceCS.ANNUAIRE_CONSEIL_MODIFIER)
+        attendreRepere(ReperesEspaceCS.FEUILLE_ENTETE_CONSEIL)
+        ecran.onNodeWithTag("${ReperesEspaceCS.FEUILLE_ENTETE_CONSEIL}.enregistrer").toucher()
+        disparu(ReperesEspaceCS.FEUILLE_ENTETE_CONSEIL)
+        attendre("Conseil Syndical enregistré")
+        assertTrue(residence.recues.any { it.startsWith("PUT /api/admin/annuaire/cs") && it.contains("\"ag_annee\":2026") })
+
+        ecran.toucherTag("${ReperesEspaceCS.annuaireSyndic(1)}.gestes")
+        ecran.toucherTag("${ReperesEspaceCS.annuaireSyndic(1)}.monter")
+        attendre("Syndic enregistré")
+        assertTrue(residence.recues.any { it.startsWith("PUT /api/admin/annuaire/syndic") && it.indexOf("Sacha") < it.indexOf("Dominique") })
     }
 
     private companion object {

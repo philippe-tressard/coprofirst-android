@@ -116,16 +116,13 @@ private fun Modifier.desaturee(actif: Boolean): Modifier = if (!actif) this else
 /**
  * Une affaire dans la liste ou aux Archives, comme l'iOS (`CarteAffaire`) : date, urgence,
  * numéro, titre, aperçu sur trois lignes, statut, qui la lit et lieu.
- *
- * ⚠️ Divergence déclarée : la date s'écrit en jour court (« mar. 17 nov. »,
- * `FormatsDuSite.jourCourt`) — l'iOS la dit relative (« il y a 3 jours »), un format que
- * `FormatsDuSite` n'a pas (#89).
+
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun CarteAffaire(affaire: Affaire, archive: Boolean, ouvrir: () -> Unit, modifier: Modifier = Modifier, gestes: (() -> Unit)? = null) {
     val c = LocalCouleurs.current
-    val date = FormatsDuSite.jourCourt(affaire.creeLe)
+    val date = FormatsDuSite.relatif(affaire.creeLe)
     val vocal = listOfNotNull(
         if (affaire.urgente) stringResource(R.string.affaires_urgente) else null,
         affaire.titre, affaire.statutLibelle,

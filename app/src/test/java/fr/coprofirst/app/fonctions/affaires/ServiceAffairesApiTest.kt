@@ -3,12 +3,17 @@
 
 package fr.coprofirst.app.fonctions.affaires
 
+import fr.coprofirst.app.commun.perimetres.Perimetre
 import fr.coprofirst.app.session.AdresseInstallation
 import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsParHote
 import kotlinx.coroutines.Dispatchers
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.coroutines.test.runTest
 import mockwebserver3.Dispatcher
 import mockwebserver3.MockResponse
@@ -21,7 +26,6 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
-import java.time.Instant
 
 /** Chaque lecture et chaque geste part par SA route du contrat, par le client généré. */
 class ServiceAffairesApiTest {
@@ -93,19 +97,71 @@ class ServiceAffairesApiTest {
     }
 
     @Test
-    fun archiverPoseArchiveManuelEtGardeLesPrestataires() = runTest {
-        routes("PATCH /api/tickets/4" to (200 to ticket(4, archivee = true, prestataires = "null")))
-        val lue = service.archiver(AFFAIRE.copy(prestataires = listOf("Ascenseurs du Parc")))
-        assertTrue(recues.single(), "\"archive_manuel\":true" in recues.single())
+    fun archiverPoseArchiveManuel() = runTest {
+        routes("PATCH /api/tickets/4" to (200 to ticket(4, archivee = true)))
+        val lue = service.archiver(4)
+        // Rien d'autre ne part : un null envoyé serait appliqué (les affaires liées, #99).
+        assertEquals("PATCH /api/tickets/4 {\"archive_manuel\":true}", recues.single())
         assertTrue(lue.archivee)
-        assertEquals(listOf("Ascenseurs du Parc"), lue.prestataires)
+    }
+
+    @Test
+    fun creerEnvoieLaSaisieEnHtmlDuSite() = runTest {
+        routes("POST /api/tickets" to (201 to ticket(9)))
+        val creee = service.creer(SaisieAffaire("panne", " Fuite ", "Au local\n<vélos>", urgente = true, perimetre = "bat-a"))
+        assertEquals(9, creee.id)
+        val corps = recues.single()
+        assertTrue(corps, "\"titre\":\"Fuite\"" in corps && "\"categorie\":\"panne\"" in corps && "\"urgente\":true" in corps)
+        assertTrue(corps, "\"perimetre_cible\":[\"bat-a\"]" in corps && "&lt;vélos&gt;" in corps)
+    }
+
+    @Test
+    fun lesGestesDeLaFichePartentParLeursRoutes() = runTest {
+        routes(
+            "POST /api/tickets/4/messages" to (201 to """{"id": 1, "ticket_id": 4, "contenu": "<p>Merci</p>", "interne": false, "cree_le": "2026-11-05T10:00:00Z"}"""),
+            "POST /api/tickets/4/evolutions" to (201 to EVOLUTION),
+            "PATCH /api/tickets/4" to (200 to ticket(4)),
+            "GET /api/perimetres" to (200 to "[]"),
+        )
+        service.repondre(4, " Merci ")
+        service.ajouterSuite(4, SaisieSuite("ouvert", contenu = "Vu"))
+        service.ajouterSuite(4, SaisieSuite("ouvert", statut = "en_cours"))
+        service.regler(4, TablesAffaires.options.first { it.cle == "epingle" }, true)
+        service.regler(4, TablesAffaires.options.first { it.cle == "urgente" }, false)
+        assertEquals(emptyList<Perimetre>(), service.perimetres())
+        assertTrue(recues[0], recues[0].startsWith("POST /api/tickets/4/messages") && "\"contenu\":\"<p>Merci</p>\"" in recues[0])
+        assertTrue(recues[1], "\"type\":\"commentaire\"" in recues[1] && champ(recues[1], "nouveau_statut") == null)
+        assertTrue(recues[2], "\"type\":\"etat\"" in recues[2] && "\"nouveau_statut\":\"en_cours\"" in recues[2] && champ(recues[2], "contenu") == null)
+        assertTrue(recues[3], "\"epingle\":true" in recues[3])
+        assertTrue(recues[4], "\"urgente\":false" in recues[4])
+    }
+
+    @Test
+    fun corrigerUneSuiteLitCeQueLAffaireNAPasSuivi() = runTest {
+        val nonSuivie = EVOLUTION.replace("\"ancien_statut\"", "\"affaire_suivie\": false, \"affaire_suivie_libelle\": \"L'affaire a avancé depuis.\", \"etat_propose\": \"ouvert\", \"ancien_statut\"")
+        routes(
+            "PATCH /api/tickets/4/evolutions/11" to (200 to nonSuivie),
+            "DELETE /api/tickets/4/evolutions/11" to (204 to ""),
+        )
+        val issue = service.corrigerSuite(4, 11, CorrectionSuite(suivi = CorrectionSuite.Suivi("etat", "en_cours")))
+        assertEquals(IssueCorrection("L'affaire a avancé depuis.", "ouvert", null), issue)
+        assertTrue(recues[0], "\"type\":\"etat\"" in recues[0] && "\"nouveau_statut\":\"en_cours\"" in recues[0] && champ(recues[0], "contenu") == null)
+        service.supprimerSuite(4, 11)
+        assertTrue(recues[1], recues[1].startsWith("DELETE /api/tickets/4/evolutions/11"))
+    }
+
+    @Test
+    fun enregistrerNEnvoieQueLesChampsChanges() = runTest {
+        routes("PATCH /api/tickets/4" to (200 to ticket(4)))
+        service.enregistrer(4, EditionAffaire(titre = "Fuite d'eau", perimetres = emptyList()))
+        assertEquals("PATCH /api/tickets/4 {\"titre\":\"Fuite d'eau\",\"perimetre_cible\":[]}", recues.single())
     }
 
     @Test
     fun unRefusDuServeurDitSaPhrase() = runTest {
         routes("PATCH /api/tickets/4" to (403 to """{"detail": "Seul le conseil syndical peut archiver."}"""))
         try {
-            service.archiver(AFFAIRE)
+            service.archiver(4)
             fail("refus attendu")
         } catch (e: ErreurService.Refus) {
             assertEquals("Seul le conseil syndical peut archiver.", e.phraseServie)
@@ -144,9 +200,12 @@ class ServiceAffairesApiTest {
         assertTrue(recues.none { it.contains("/messages") })
     }
 
-    private companion object {
-        val AFFAIRE = Affaire(4, "A-0004", "Fuite", "", Instant.EPOCH, statut = "ouvert", statutLibelle = "Ouvert", categorie = "panne", categorieLibelle = "Panne")
+    /** Un champ du corps JSON d'une requête reçue : `null` s'il est absent. */
+    private fun champ(recue: String, cle: String): String? =
+        Json.parseToJsonElement(recue.substringAfter(' ').substringAfter(' ')).jsonObject[cle]
+            ?.takeUnless { it is JsonNull }?.jsonPrimitive?.content
 
+    private companion object {
         fun ticket(
             id: Int,
             archivee: Boolean = false,
