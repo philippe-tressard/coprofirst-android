@@ -15,7 +15,8 @@ object FixturesProfil {
     const val MOI = """{
       "id": 7, "nom": "Exemple", "prenom": "Camille", "email": "camille@exemple.test",
       "statut": "copropriétaire_résident", "role": "conseil_syndical", "roles": ["propriétaire", "conseil_syndical"],
-      "actif": true, "onboarding_complete": true, "onboarding_etape": 0, "preferences_notifications": "{}",
+      "actif": true, "onboarding_complete": true, "onboarding_etape": 0,
+      "preferences_notifications": "{\"autres_batiments_mail\": true}", "restreindre_a_mes_batiments": false,
       "cree_le": "2026-03-02T10:00:00", "nom_affiche": "Camille EXEMPLE", "nom_aide_affiche": "",
       "telephone": "+33 6 00 00 00 00", "batiment_nom": "Bât. A", "libelle_logement": "Bât. A, T3, 2ème",
       "derniere_connexion": "2026-11-14T18:30:00", "opt_out_telemetrie": false, "est_moderateur": true

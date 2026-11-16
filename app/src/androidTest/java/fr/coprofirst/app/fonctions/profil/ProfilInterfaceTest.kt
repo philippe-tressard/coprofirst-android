@@ -3,11 +3,13 @@
 
 package fr.coprofirst.app.fonctions.profil
 
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
@@ -163,6 +165,25 @@ class ProfilInterfaceTest {
         ecran.toucherTag("profil.saisie.complete")
         ecran.waitUntil(DELAI_MS) { synchronized(saisies) { saisies.any { "\"saisie_affaire\":\"complete\"" in it.replace(" ", "") } } }
         ecran.onNodeWithTag("profil.saisie.complete").assertIsSelected()
+    }
+
+    /**
+     * #47 : « Ce que j'affiche » dit ce qui n'a jamais été réglé, et « Enregistrer » envoie
+     * toutes les clés — celle qu'on vient de décocher, celle déjà réglée, les défauts.
+     */
+    @Test
+    fun ceQueJAfficheSeRegleEtSEnregistre() {
+        ecran.toucherTag(ReperesPreferences.OUVRIR)
+        attendre("N'afficher que les contenus")
+        assertTrue(ecran.onAllNodesWithText("réglage par défaut").fetchSemanticsNodes().size == 3)
+        ecran.toucherTag(ReperesPreferences.cle("mon_batiment_mail"))
+        ecran.toucherTag(ReperesPreferences.ENREGISTRER)
+        attendre("Préférences enregistrées")
+        val envoye = synchronized(saisies) { saisies.last() }.replace(" ", "")
+        assertTrue(envoye, "mon_batiment_mail\\\":false" in envoye)
+        assertTrue(envoye, "autres_batiments_mail\\\":true" in envoye)
+        assertTrue(envoye, "\"restreindre_a_mes_batiments\":false" in envoye)
+        ecran.onAllNodesWithText("réglage par défaut").assertCountEquals(0)
     }
 
     private companion object {

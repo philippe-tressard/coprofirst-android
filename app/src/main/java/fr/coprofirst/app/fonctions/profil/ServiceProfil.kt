@@ -33,6 +33,9 @@ interface ServiceProfil {
     /** PATCH /auth/me : la saisie d'une affaire du compte (`saisie_affaire`), pour tous ses appareils. */
     suspend fun choisirSaisie(mode: String)
 
+    /** PATCH /auth/me : « Ce que j'affiche » — le JSON des préférences et la restriction aux bâtiments. */
+    suspend fun enregistrerPreferences(json: String, restreindre: Boolean)
+
     /** PATCH /auth/me/opt-out-telemetrie. */
     suspend fun refuserTelemetrie(refus: Boolean)
 
@@ -69,6 +72,10 @@ class ServiceProfilApi(private val session: SessionOuverte) : ServiceProfil {
 
     override suspend fun choisirSaisie(mode: String) {
         auth { patchAuthMe(MeUpdate(saisieAffaire = mode)) }
+    }
+
+    override suspend fun enregistrerPreferences(json: String, restreindre: Boolean) {
+        auth { patchAuthMe(MeUpdate(preferencesNotifications = json, restreindreAMesBatiments = restreindre)) }
     }
 
     override suspend fun modifierIdentite(saisie: SaisieIdentite, ancienne: String): Boolean {

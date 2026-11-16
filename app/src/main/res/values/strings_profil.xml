@@ -38,8 +38,16 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="profil_lien_envoye">Un lien de confirmation a été envoyé à %1$s. Votre adresse actuelle reste celle du compte jusqu’à ce que vous cliquiez dessus.</string>
     <string name="profil_mis_a_jour">Profil mis à jour</string>
 
-    <!-- Ce qui reste au site (coprofirst#2755, #47) -->
-    <string name="profil_au_site">Ce que j\'affiche (préférences de notification) se règle sur le site pour l\'instant.</string>
+    <!-- Ce que j'affiche (#47), comme l'iOS (PreferencesView) -->
+    <string name="profil_preferences">Ce que j\'affiche</string>
+    <string name="profil_preferences_restreindre">N\'afficher que les contenus de mon ou mes bâtiments</string>
+    <string name="profil_preferences_restreindre_note">Décochée, vous voyez les actualités de toute la copropriété, sauf celles marquées confidentielles ; cochée, vous ne voyez que celles de votre bâtiment.</string>
+    <string name="profil_preferences_mon">De mon ou mes bâtiments</string>
+    <string name="profil_preferences_autres">Des autres bâtiments</string>
+    <string name="profil_preferences_par_defaut">réglage par défaut</string>
+    <string name="profil_preferences_toujours">Ce qui concerne votre compte — validation, rôle, demande traitée — vous parvient toujours.</string>
+    <string name="profil_preferences_heritees">Les réglages marqués « par défaut » n\'ont jamais été modifiés : enregistrez pour en faire votre choix.</string>
+    <string name="profil_preferences_enregistrees">Préférences enregistrées</string>
 
     <!-- Saisie d'une affaire (#47), comme l'iOS (SectionSaisieAffaire) et le site (ChoixSaisieAffaire.svelte) -->
     <string name="profil_saisie">Saisie d\'une affaire</string>

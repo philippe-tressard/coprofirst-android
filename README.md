@@ -83,8 +83,10 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   compte** — ce qui sera effacé est dit d'abord, le mot de passe la confirme,
   l'administration de la résidence la traite, et elle se retire tant qu'elle n'est pas
   traitée. Le thème de l'appareil (Automatique, Clair, Sombre) ; « Se déconnecter » et « Oublier
-  toutes les résidences », au bas du Profil. La saisie d'une affaire et les préférences
-  de notification se règlent encore sur le site (#47).
+  toutes les résidences », au bas du Profil. La saisie d'une affaire, Essentielle ou
+  Complète, sur le compte ; « Ce que j'affiche » : n'afficher que les contenus de mon ou
+  mes bâtiments, et les notifications par e-mail et dans l'application, de mon ou mes
+  bâtiments et des autres — une case jamais réglée prend le défaut du serveur et le dit.
 - **Notifications** : les alertes du compte, « Aujourd'hui » (les 24 dernières heures)
   puis « Plus anciennes ». Un toucher marque lu ; « Tout marquer lu » en haut, le
   nombre de non lues sous le titre ; « Supprimer les lues » en tête de la liste ;
