@@ -21,6 +21,9 @@ espresso = "3.7.0"
 # CameraX reste en 1.5 : la 1.6 embarque Dagger et Guava entiers (#6).
 camerax = "1.5.3"
 zxing = "3.5.4"
+# La montre Wear OS (#207) : Compose pour Wear OS (AndroidX, Apache-2.0). Aucune bibliothèque
+# de Google Play services : vérifié le 16/11/2026 sur leur arbre de dépendances.
+wear-compose = "1.7.1"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
@@ -49,6 +52,8 @@ androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.r
 androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }
 androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "camerax" }
 zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
+wear-compose-material3 = { module = "androidx.wear.compose:compose-material3", version.ref = "wear-compose" }
+wear-compose-foundation = { module = "androidx.wear.compose:compose-foundation", version.ref = "wear-compose" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

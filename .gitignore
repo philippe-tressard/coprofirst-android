@@ -29,6 +29,8 @@
 !/build.gradle.kts
 !/app/
 !/client-api/
+!/montre/
+!/ressources-communes/
 
 # 3. Exclus PARTOUT, même dans un dossier ré-inclus
 # Produits de build, caches de Gradle et réglages de l'IDE

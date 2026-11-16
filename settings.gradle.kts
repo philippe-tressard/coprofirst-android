@@ -17,4 +17,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "CoproFirst"
-include(":app", ":client-api")
+include(":app", ":client-api", ":montre")

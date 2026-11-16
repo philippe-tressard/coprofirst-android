@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+-->
+<!-- Les libellés de la montre : ceux de l'Apple Watch (coprofirst-ios#226), « l'iPhone »
+     devenu « le téléphone ». -->
+<resources>
+    <string name="nom_app" translatable="false">CoproFirst</string>
+    <string name="montre_non_reliee">Ouvrez CoproFirst sur le téléphone pour relier la montre</string>
+</resources>
