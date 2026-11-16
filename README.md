@@ -218,6 +218,9 @@ plancher — pièces identiques, contrat servi par chaque installation connue
 
 ## Licence
 
-AGPL-3.0-or-later, avec une permission additionnelle (article 7) qui autorise la
-distribution par les magasins d'applications Android : voir `LICENSE` et `LICENSES/`.
+AGPL-3.0-or-later, avec des permissions additionnelles (article 7) : la distribution par
+les magasins d'applications Android, et la liaison avec deux bibliothèques de Google Play
+services, nommées, et elles seules — Firebase Cloud Messaging (notifications) et Wearable
+(lien avec la montre), décision du 16/11/2026. Voir `LICENSE` et `LICENSES/` ;
+`scripts/verifier_dependances_google.py` refuse toute autre bibliothèque de ces familles.
 Conformité [REUSE](https://reuse.software) : `reuse lint`.

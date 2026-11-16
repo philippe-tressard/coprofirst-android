@@ -33,6 +33,17 @@ Une seule lecture part ailleurs, et elle n'envoie rien : le texte public de la v
 sans cookie, sans jeton, sans paramètre, qui ne porte aucune donnée de l'utilisateur. Rien
 à déclarer dans la grille ; elle est dite ici pour que la fiche reste vraie.
 
+**Une donnée part chez Google, sans contenu : le jeton d'appareil des notifications.**
+Les notifications passent par Firebase Cloud Messaging (bibliothèque permise par le
+point 4 de la licence, décision du 16/11/2026). Le téléphone obtient de Google un
+identifiant d'appareil (le jeton FCM) et l'envoie à la résidence (`postAppareils`). La
+résidence le rend à Google pour acheminer chaque notification, qui ne porte qu'un
+identifiant opaque, jamais de donnée personnelle : le détail se lit ensuite par l'API
+(garde-fou du projet). Ce dépôt **déclare ce jeton partagé avec Google**, pour
+l'acheminement seulement. Google range les transferts à un prestataire qui agit pour le
+compte de l'app hors du « partage » : c'est la lecture la plus prudente qui l'emporte ici.
+Le lien téléphone ↔ montre (Wearable, #207) se déclare dans le lot qui l'apporte.
+
 ⚠️ Lecture prudente, pas un avis juridique ; c'est à Philippe de la retenir. Si une autre
 lecture l'emporte, ce fichier et la saisie changent ensemble.
 
@@ -54,7 +65,8 @@ que les bibliothèques ajouteraient au manifeste fusionné se relit au build de 
 
 ## 3. Les données, dans la grille de Google
 
-Pour chacune : **collectée** oui, **partagée** non, **chiffrée en transit** oui (HTTPS).
+Pour chacune : **collectée** oui, **chiffrée en transit** oui (HTTPS), **partagée** non —
+sauf `ID appareil`, partagé avec Google pour l'acheminement des notifications (§1).
 
 | Code (§4) | Case de la Play Console | Ce que c'est | Obligatoire ? | Finalités |
 |---|---|---|---|---|
@@ -66,7 +78,7 @@ Pour chacune : **collectée** oui, **partagée** non, **chiffrée en transit** o
 | `Messages` | Messages › Autres messages dans l'application | les messages d'une affaire | facultatif | Fonctionnement de l'app |
 | `Contenu utilisateur` | Activité dans les applications › Autre contenu généré par l'utilisateur | affaires, annonces, idées, avis, votes, commentaires, questions, demandes de badge | facultatif | Fonctionnement de l'app |
 | `Interactions` | Activité dans les applications › Interactions avec l'application | les écrans vus, sous le chemin de la page équivalente du site, et le canal « android » : la mesure d'audience de la résidence, **jamais** si le compte l'a refusée au Profil | facultatif | Analyses |
-| `ID appareil` | Identifiants de l'appareil ou autres | le jeton d'appareil des notifications et l'abonnement (#23) | facultatif | Fonctionnement de l'app |
+| `ID appareil` | Identifiants de l'appareil ou autres | le jeton d'appareil des notifications (FCM) et l'abonnement (#23) ; **partagé avec Google** (Firebase Cloud Messaging), pour l'acheminement seulement, sans contenu | facultatif | Fonctionnement de l'app |
 
 **Non cochées** : localisation, informations financières, santé, photos et vidéos,
 fichiers, agenda, contacts, historique de navigation, applications installées, journaux de

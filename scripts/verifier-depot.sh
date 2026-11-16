@@ -23,6 +23,7 @@
 #      d'attente recopiée hors des attentes communes (#139) ;
 #   7 septies. la règle des tests d'interface est la v2 (junit4.v2), jamais la v1 ;
 #   7 nonies. aucune version de contrat écrite dans les tests ni l'API simulée (#203) ;
+#   7 decies. aucune dépendance Google Play services ni Firebase que la licence ne nomme ;
 #   8. un seul bouton plein, `BoutonPlein` (commun/Boutons.kt) ;
 #   9. les générateurs du build passent leurs tests (scripts/test_*.py) ;
 #  10. aucun chemin de .claude/worktrees/ suivi.
@@ -275,6 +276,14 @@ python3 -I scripts/verifier_securite_donnees.py \
 # chacune déclare son schéma, jugé contre le contrat au plancher.
 python3 -I scripts/verifier_fixtures.py \
   || echec "une réponse simulée ne dit pas ce que le serveur sert (python3 -I scripts/verifier_fixtures.py)"
+
+# Aucune bibliothèque Google Play services ni Firebase que la permission additionnelle ne
+# nomme (point 4 de LicenseRef-CoproFirst-Magasins, décision du 16/11/2026) : la liste se
+# lit dans la licence elle-même.
+python3 -I scripts/verifier_dependances_google.py --autotest >/dev/null \
+  || echec "verifier_dependances_google.py : autotest en échec"
+python3 -I scripts/verifier_dependances_google.py \
+  || echec "une dépendance Google n'est pas permise par la licence (python3 -I scripts/verifier_dependances_google.py)"
 
 # Un écran s'inscrit dans SON paquet (#109) : ni le build ni la navigation ne nomment un
 # menu. Les tables d'un menu se découvrent (`scripts/generer_tables_<menu>.py`), ses
