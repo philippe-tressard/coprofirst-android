@@ -10,6 +10,7 @@ import fr.coprofirst.app.session.Connexion
 import fr.coprofirst.app.session.Decouverte
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.InstallationsConnues
+import fr.coprofirst.app.session.LecturesGardees
 import fr.coprofirst.app.session.PreuveHote
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsGardees
@@ -74,9 +75,10 @@ class ServeurDeTest : AutoCloseable {
         preuve: PreuveHote = PreuveHote.Declaree,
         gardees: SessionsGardees = SessionsGardees.Indisponibles,
         connues: InstallationsConnues = residencesEnMemoire(),
+        lectures: LecturesGardees? = null,
     ): ParcoursEntree {
         val base = { _: Any -> serveur.url("/api").toString() }
-        val sessions = SessionsParHote(client, gardees)
+        val sessions = SessionsParHote(client, gardees, lectures)
         return ParcoursEntree(
             Decouverte(client, baseApi = base),
             sessions,

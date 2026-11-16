@@ -23,6 +23,8 @@ import java.util.concurrent.TimeUnit
 class SessionsParHote(
     private val base: OkHttpClient = ClientHttp.partage,
     val gardees: SessionsGardees = SessionsGardees.Indisponibles,
+    /** Les lectures gardées pour la consultation hors ligne (#28) ; `null` : rien n'est gardé. */
+    val lectures: LecturesGardees? = null,
 ) {
     private val parHote = mutableMapOf<String, Pot>()
 
@@ -73,7 +75,10 @@ class SessionsParHote(
         const val JETON_RAFRAICHISSEMENT = "refresh_token"
     }
 
-    private fun pot(adresse: AdresseInstallation): Pot = parHote.getOrPut(cle(adresse)) { Pot(base) }
+    private fun pot(adresse: AdresseInstallation): Pot = parHote.getOrPut(cle(adresse)) {
+        // LA porte des lectures gardées, dans le client de l'hôte : toute requête y passe.
+        Pot(lectures?.let { base.newBuilder().addInterceptor(GarderLesLectures(adresse.cleCoffre, it)).build() } ?: base)
+    }
 
     private fun cle(adresse: AdresseInstallation) = adresse.url
 

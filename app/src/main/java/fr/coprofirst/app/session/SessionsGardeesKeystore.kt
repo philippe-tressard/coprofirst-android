@@ -22,7 +22,6 @@ import java.security.SecureRandom
 import java.security.spec.MGF1ParameterSpec
 import java.security.spec.X509EncodedKeySpec
 import javax.crypto.Cipher
-import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.OAEPParameterSpec
 import javax.crypto.spec.PSource
 import javax.crypto.spec.SecretKeySpec
@@ -90,10 +89,7 @@ class SessionsGardeesKeystore(private val contexte: Context) : SessionsGardees {
         }
         return runCatching {
             val cle = SecretKeySpec(ouvert.doFinal(entree.cleChiffree), "AES")
-            val aes = Cipher.getInstance(AES).apply {
-                init(Cipher.DECRYPT_MODE, cle, GCMParameterSpec(128, entree.jetonChiffre, 0, TAILLE_IV))
-            }
-            String(aes.doFinal(entree.jetonChiffre, TAILLE_IV, entree.jetonChiffre.size - TAILLE_IV), Charsets.UTF_8)
+            String(ChiffrementAesGcm { cle }.dechiffrer(entree.jetonChiffre), Charsets.UTF_8)
         }.fold({ LectureSession.Jeton(it) }, { perdue(hote) })
     }
 
@@ -144,8 +140,7 @@ class SessionsGardeesKeystore(private val contexte: Context) : SessionsGardees {
     private fun ecrire(hote: String, jeton: String, protection: ProtectionSession) {
         val publique = publique(hote) ?: error("clé absente")
         val cle = ByteArray(32).also(SecureRandom()::nextBytes)
-        val aes = Cipher.getInstance(AES).apply { init(Cipher.ENCRYPT_MODE, SecretKeySpec(cle, "AES")) }
-        val jetonChiffre = aes.iv + aes.doFinal(jeton.toByteArray(Charsets.UTF_8))
+        val jetonChiffre = ChiffrementAesGcm { SecretKeySpec(cle, "AES") }.chiffrer(jeton.toByteArray(Charsets.UTF_8))
         val cleChiffree = Cipher.getInstance(RSA).apply { init(Cipher.ENCRYPT_MODE, publique, OAEP) }.doFinal(cle)
         cle.fill(0)
         val valeur = listOf(protection.name, encoder(cleChiffree), encoder(jetonChiffre)).joinToString(SEPARATEUR)
@@ -176,8 +171,6 @@ class SessionsGardeesKeystore(private val contexte: Context) : SessionsGardees {
         const val PREFIXE_ALIAS = "fr.coprofirst.app.session."
         const val SEPARATEUR = "|"
         const val RSA = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding"
-        const val AES = "AES/GCM/NoPadding"
-        const val TAILLE_IV = 12
 
         /** MGF1 en SHA-1 : la seule que le Keystore accepte avec OAEP SHA-256, des deux côtés. */
         val OAEP = OAEPParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA1, PSource.PSpecified.DEFAULT)

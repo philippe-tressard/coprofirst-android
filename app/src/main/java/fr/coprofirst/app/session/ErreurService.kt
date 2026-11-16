@@ -25,6 +25,9 @@ sealed class ErreurService(@param:StringRes val phraseRes: Int) : Exception() {
     /** 421 : l'adresse répond, mais aucune résidence n'y est installée. */
     data object HoteInconnu : ErreurService(R.string.erreur_hote_inconnu)
 
+    /** La résidence est consultée hors ligne : ce geste attend le réseau (#28). */
+    data object HorsLigne : ErreurService(R.string.erreur_hors_ligne)
+
     /** L'adresse ne répond pas (nom inconnu, refus, délai). */
     data object Injoignable : ErreurService(R.string.erreur_injoignable)
 
@@ -62,6 +65,7 @@ sealed class ErreurService(@param:StringRes val phraseRes: Int) : Exception() {
             is ErreurService -> erreur
             is ClientException -> refus(erreur) ?: depuisStatut(erreur.statusCode)
             is ServerException -> Inattendue
+            is HorsLigneException -> HorsLigne
             is IOException -> Injoignable
             else -> Inattendue
         }

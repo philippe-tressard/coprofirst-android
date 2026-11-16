@@ -10,6 +10,7 @@ import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.OrigineAdresse
 import fr.coprofirst.app.session.PreuveHote
 import fr.coprofirst.app.session.ProtectionSession
+import java.time.Instant
 
 /**
  * Les écrans de l'entrée, dans leur ordre — ceux de l'app iOS (le sens du passage en
@@ -63,6 +64,13 @@ data class EtatEntree(
     /** Ce qu'a rendu « Activer » ; `null` : la question. */
     val issueGarde: IssueGarde? = null,
     val activationEnCours: Boolean = false,
+    /**
+     * La résidence est ouverte SANS réseau, sur sa dernière lecture gardée, à jour à cette
+     * heure (#28) : on consulte, on n'agit pas. `null` : en ligne.
+     */
+    val consultation: Instant? = null,
+    /** Sans réseau, la lecture gardée était trop ancienne : elle vient d'être effacée. */
+    val lecturePerimee: Boolean = false,
     /** L'adresse lue dans un QR ou venue d'un lien, et d'où : elle se confirme TOUJOURS. */
     val venue: AdresseVenue? = null,
     /** L'écran qu'un lien d'application vise, en attente que sa résidence soit ouverte (#147). */

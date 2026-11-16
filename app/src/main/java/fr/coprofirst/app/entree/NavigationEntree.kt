@@ -23,6 +23,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.key
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.fillMaxSize
@@ -73,6 +74,7 @@ interface ActionsEntree {
     fun utiliserMotDePasse()
     fun activerGarde()
     fun fermerGarde()
+    fun reprendreEnLigne()
 
     /** Pour les aperçus : aucun geste ne fait rien. */
     object Inertes : ActionsEntree {
@@ -96,6 +98,7 @@ interface ActionsEntree {
         override fun utiliserMotDePasse() = Unit
         override fun activerGarde() = Unit
         override fun fermerGarde() = Unit
+        override fun reprendreEnLigne() = Unit
     }
 }
 
@@ -114,6 +117,7 @@ fun NavigationEntree(
     mesure: MesureAudience? = AudienceDeLApp.mesure,
 ) {
     val etat by parcours.etat.collectAsStateWithLifecycle()
+    val enLigne by parcours.reseau.enLigne.collectAsStateWithLifecycle()
     // La biométrie se demande par l'activité affichée : posée ici, retirée à sa sortie.
     val deverrouillage = rememberDeverrouillage(etat.reconnue)
     DisposableEffect(parcours, deverrouillage) {
@@ -130,11 +134,11 @@ fun NavigationEntree(
     val palette = Palettes.pour((etat.ouverte ?: etat.reconnue)?.codePalette)
     // Le thème de l'appareil (Profil › Apparence), appliqué à la racine comme sur iOS.
     val choix by apparence.choix.collectAsStateWithLifecycle()
-    CompositionLocalProvider(LocalMesureAudience provides mesure) { Espaces(etat, parcours, apparence, palette, choix) }
+    CompositionLocalProvider(LocalMesureAudience provides mesure) { Espaces(etat, enLigne, parcours, apparence, palette, choix) }
 }
 
 @Composable
-private fun Espaces(etat: EtatEntree, parcours: ParcoursEntree, apparence: Apparence, palette: Palette, choix: String) {
+private fun Espaces(etat: EtatEntree, enLigne: Boolean, parcours: ParcoursEntree, apparence: Apparence, palette: Palette, choix: String) {
     ThemeCoproFirst(palette, sombre = apparence.sombre(choix, isSystemInDarkTheme())) {
         Surface(modifier = Modifier.fillMaxSize()) {
             AnimatedContent(
@@ -156,7 +160,12 @@ private fun Espaces(etat: EtatEntree, parcours: ParcoursEntree, apparence: Appar
                     EcranEntree.Espace -> parcours.sessionOuverte()?.let { session ->
                         // L'écran d'un lien vers CETTE résidence (#147) ; la porte le pose, puis le rend.
                         val lien = etat.lien?.takeIf { it.adresse == session.installation.adresse }?.destination
-                        EcranResidence(session, parcours, apparence, lien = lien, lienSuivi = parcours::lienSuivi)
+                        EspaceHorsLigne(etat.consultation, enLigne, parcours::reprendreEnLigne) {
+                            // Le réseau revenu, la session reprise : l'espace se reconstruit, tout se relit.
+                            key(etat.consultation == null) {
+                                EcranResidence(session, parcours, apparence, lien = lien, lienSuivi = parcours::lienSuivi)
+                            }
+                        }
                     }
                 }
             }
