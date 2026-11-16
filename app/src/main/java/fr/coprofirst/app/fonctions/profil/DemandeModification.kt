@@ -39,6 +39,7 @@ import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.BoutonPlein
 import fr.coprofirst.app.commun.Roles
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.gesteEnLigne
 import fr.coprofirst.app.commun.phrase
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.async
@@ -104,10 +105,11 @@ private fun FormulaireDemande(service: ServiceProfil, batiments: List<BatimentPu
             motif = it
         }
         Note(stringResource(R.string.profil_validation_cs), Modifier.padding(horizontal = Mise.marge + 4.dp))
+        val geste = gesteEnLigne(statut != null || batiment != null)
         BoutonPlein(
             R.string.profil_envoyer_demande,
-            Modifier.padding(horizontal = Mise.marge).testTag("profil.demande.envoyer"),
-            actif = statut != null || batiment != null,
+            geste.modifier.padding(horizontal = Mise.marge).testTag("profil.demande.envoyer"),
+            actif = geste.actif,
             enCours = envoi,
         ) {
             portee.launch {

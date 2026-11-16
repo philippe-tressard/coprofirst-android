@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -50,6 +51,7 @@ import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.cliquable
+import fr.coprofirst.app.commun.gesteEnLigne
 import fr.coprofirst.app.commun.phrase
 import fr.coprofirst.app.session.ErreurService
 
@@ -93,6 +95,7 @@ fun LigneValeur(libelle: String, valeur: String) {
 fun LigneAction(
     libelle: String,
     repere: String,
+    modifier: Modifier = Modifier,
     detruit: Boolean = false,
     actif: Boolean = true,
     discret: Boolean = false,
@@ -105,8 +108,8 @@ fun LigneAction(
         else -> couleurs.primary
     }
     Box(
-        Modifier.fillMaxWidth().heightIn(min = Mise.cible).testTag(repere)
-            .then(if (actif) Modifier.cliquable(libelle, onClick) else Modifier),
+        modifier.fillMaxWidth().heightIn(min = Mise.cible).testTag(repere)
+            .then(if (actif) Modifier.cliquable(libelle, onClick) else Modifier.semantics(mergeDescendants = true) { disabled() }),
         contentAlignment = if (discret) Alignment.Center else Alignment.CenterStart,
     ) {
         Text(
@@ -155,7 +158,9 @@ fun FeuilleProfil(
                             if (enCours) {
                                 CircularProgressIndicator(Modifier.padding(end = 16.dp).size(22.dp), strokeWidth = 2.dp)
                             } else {
-                                TextButton(onClick = geste.onClick, enabled = geste.actif, modifier = Modifier.testTag(geste.repere)) {
+                                // Le geste d'une feuille part au serveur : grisé en consultation hors ligne.
+                                val enLigne = gesteEnLigne(geste.actif)
+                                TextButton(onClick = geste.onClick, enabled = enLigne.actif, modifier = enLigne.modifier.testTag(geste.repere)) {
                                     Text(geste.libelle, fontWeight = FontWeight.SemiBold)
                                 }
                             }

@@ -14,6 +14,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import fr.coprofirst.app.charte.Mouvement
+import fr.coprofirst.app.commun.LocalHorsLigne
 import fr.coprofirst.app.commun.animationsCoupees
 
 /**
@@ -38,7 +39,10 @@ fun <E : Any, S : Any> ApercuServi(
     val etat = remember { EtatApercu(connue) }
     val portee = rememberCoroutineScope()
     val demande by rememberUpdatedState(demander)
-    LaunchedEffect(entree) { etat.saisie(entree, portee) { demande(it) } }
+    // Un appel ne part ni en consultation hors ligne, ni sans réseau ; il part au retour du réseau.
+    val horsLigne = LocalHorsLigne.current
+    val enLigne = horsLigne.consultation == null && horsLigne.enLigne
+    LaunchedEffect(entree, enLigne) { etat.saisie(entree, portee, enLigne) { demande(it) } }
     val reduit = animationsCoupees()
     Crossfade(
         targetState = etat.valeur,

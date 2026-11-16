@@ -29,8 +29,8 @@ import kotlinx.coroutines.launch
  * - **une valeur déjà servie** — avec l'objet (`connue`), ou plus tôt dans la saisie — ne se
  *   redemande pas, et une demande en route pour la même saisie ne repart pas.
  *
- * ⚠️ Divergence déclarée : l'iOS ne fait pas partir la demande hors ligne (`Reseau`) ni en
- * consultation ; l'Android n'a pas encore ces états — la demande part, échoue, et se tait.
+ * - **hors ligne** (#158) : ni en consultation, ni sans réseau — rien ne part ; ce qui a
+ *   déjà été servi se remontre, le reste attend le réseau.
  *
  * Sur le fil principal seulement (celui de Compose) : `pause` est le délai, un test le
  * remplace ou le laisse au temps virtuel.
@@ -51,8 +51,8 @@ class EtatApercu<E : Any, S : Any>(
     /** Le numéro de la dernière demande : une demande remplacée ne touche plus à rien. */
     private var jeton = 0
 
-    /** La saisie est maintenant `entree` ; la demande part dans `portee`, après le délai. */
-    fun saisie(entree: E, portee: CoroutineScope, demander: suspend (E) -> S) {
+    /** La saisie est maintenant `entree` ; la demande part dans `portee`, après le délai — si `enLigne`. */
+    fun saisie(entree: E, portee: CoroutineScope, enLigne: Boolean = true, demander: suspend (E) -> S) {
         courante = entree
         servies[entree]?.let { servie ->
             abandonner()
@@ -61,6 +61,7 @@ class EtatApercu<E : Any, S : Any>(
         }
         if (enCours == entree) return
         abandonner()
+        if (!enLigne) return
         val numero = ++jeton
         enCours = entree
         demande = portee.launch {

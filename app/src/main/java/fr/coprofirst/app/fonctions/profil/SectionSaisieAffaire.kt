@@ -26,6 +26,7 @@ import fr.coprofirst.api.modeles.UserRead
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.MessageErreur
+import fr.coprofirst.app.commun.gesteEnLigne
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.launch
 
@@ -48,10 +49,12 @@ fun SectionSaisieAffaire(compte: UserRead, service: ServiceProfil, modifie: (Use
     val detail = options.firstOrNull { it.code == servi }?.detail
     SectionProfil(stringResource(R.string.profil_saisie), note = detail?.let { stringResource(R.string.profil_saisie_note, it) }) {
         Column {
-            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().testTag(ReperesSaisie.CHOIX)) {
+            val geste = gesteEnLigne()
+            SingleChoiceSegmentedButtonRow(geste.modifier.fillMaxWidth().testTag(ReperesSaisie.CHOIX)) {
                 options.forEachIndexed { i, option ->
                     SegmentedButton(
                         selected = option.code == servi,
+                        enabled = geste.actif,
                         onClick = {
                             if (option.code == servi) return@SegmentedButton
                             refus = null

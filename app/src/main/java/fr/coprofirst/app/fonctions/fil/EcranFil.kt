@@ -38,6 +38,7 @@ import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.EtatVide
 import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.MessageErreur
+import fr.coprofirst.app.commun.PageHorsLigne
 import fr.coprofirst.app.commun.pieces.AvisOuverture
 import fr.coprofirst.app.commun.pieces.rememberOuverture
 import fr.coprofirst.app.navigation.ContexteDeMenu
@@ -66,7 +67,7 @@ fun EcranFil(contexte: ContexteDeMenu) {
         key = "fil@${System.identityHashCode(session)}",
         factory = viewModelFactory { initializer { ParcoursFil(ServiceFilApi(session)) } },
     )
-    EcranFil(parcours, session, contexte.ouvrir)
+    PageHorsLigne { EcranFil(parcours, session, contexte.ouvrir) }
 }
 
 /** @param ouvrir la porte (`ContexteDeMenu.ouvrir`) : l'affaire et le sondage s'ouvrent par elle. */

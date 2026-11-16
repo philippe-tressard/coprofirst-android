@@ -24,6 +24,7 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.commun.TonAvis
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.gesteEnLigne
 import fr.coprofirst.app.commun.phrase
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.CoroutineScope
@@ -131,12 +132,14 @@ internal fun GestesHistorique(affaire: DetailAffaire, choix: ChoixDeSuite, servi
             title = { Text(stringResource(R.string.historique_supprimer)) },
             text = { Text(stringResource(R.string.historique_question, FormatsDuSite.date(suite.date))) },
             confirmButton = {
+                val geste = gesteEnLigne()
                 TextButton(
                     onClick = {
                         choix.aSupprimer = null
                         annonce.lancer(ressources.getString(R.string.historique_supprimee)) { service.supprimerSuite(affaire.id, suite.id) }
                     },
-                    modifier = Modifier.testTag(ReperesAffaires.CONFIRMER_SUPPRESSION),
+                    enabled = geste.actif,
+                    modifier = geste.modifier.testTag(ReperesAffaires.CONFIRMER_SUPPRESSION),
                 ) { Text(stringResource(R.string.historique_confirmer), color = LocalCouleurs.current.danger) }
             },
             dismissButton = { TextButton(onClick = { choix.aSupprimer = null }) { Text(stringResource(R.string.annuler)) } },

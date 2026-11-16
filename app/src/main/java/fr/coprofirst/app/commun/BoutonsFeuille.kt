@@ -36,11 +36,13 @@ fun BoutonsFeuille(
     actif: Boolean = true,
     envoyer: () -> Unit,
 ) {
+    // Une soumission part toujours au serveur : grisée en consultation hors ligne (iOS : `.gesteEnLigne()`).
+    val geste = gesteEnLigne(actif)
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         BoutonPlein(
             if (envoi) R.string.feuille_en_cours else libelle,
-            Modifier.testTag(repere),
-            actif = actif,
+            geste.modifier.testTag(repere),
+            actif = geste.actif,
             enCours = envoi,
             onClick = envoyer,
         )

@@ -32,6 +32,8 @@ import fr.coprofirst.api.modeles.UserRead
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.commun.GesteEnLigne
+import fr.coprofirst.app.commun.gesteEnLigne
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.launch
 
@@ -76,7 +78,8 @@ fun FeuillePreferences(compte: UserRead, service: ServiceProfil, fermer: () -> U
         },
     ) {
         SectionProfil(null, note = stringResource(R.string.profil_preferences_restreindre_note)) {
-            Interrupteur(stringResource(R.string.profil_preferences_restreindre), restreindre, ReperesPreferences.RESTREINDRE) {
+            // Comme l'iOS : la restriction se grise en consultation hors ligne ; les cases suivent « Enregistrer », grisé lui aussi.
+            Interrupteur(stringResource(R.string.profil_preferences_restreindre), restreindre, ReperesPreferences.RESTREINDRE, geste = gesteEnLigne()) {
                 restreindre = it
             }
         }
@@ -104,10 +107,18 @@ fun FeuillePreferences(compte: UserRead, service: ServiceProfil, fermer: () -> U
 
 /** Une case de « Ce que j'affiche » : toute la ligne se touche ; « réglage par défaut » dessous si elle n'a jamais été réglée. */
 @Composable
-private fun Interrupteur(libelle: String, valeur: Boolean, repere: String, parDefaut: Boolean = false, change: (Boolean) -> Unit) {
+private fun Interrupteur(
+    libelle: String,
+    valeur: Boolean,
+    repere: String,
+    parDefaut: Boolean = false,
+    geste: GesteEnLigne = GesteEnLigne(true, Modifier),
+    change: (Boolean) -> Unit,
+) {
     val couleurs = LocalCouleurs.current
     Row(
-        Modifier.fillMaxWidth().heightIn(min = Mise.cible).testTag(repere).toggleable(valeur, role = Role.Switch, onValueChange = change),
+        geste.modifier.fillMaxWidth().heightIn(min = Mise.cible).testTag(repere)
+            .toggleable(valeur, enabled = geste.actif, role = Role.Switch, onValueChange = change),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -117,7 +128,7 @@ private fun Interrupteur(libelle: String, valeur: Boolean, repere: String, parDe
                 Text(stringResource(R.string.profil_preferences_par_defaut), style = MaterialTheme.typography.bodySmall, color = couleurs.textMuted)
             }
         }
-        Switch(checked = valeur, onCheckedChange = null)
+        Switch(checked = valeur, onCheckedChange = null, enabled = geste.actif)
     }
 }
 
