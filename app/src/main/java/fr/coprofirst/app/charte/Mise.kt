@@ -14,8 +14,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 /**
- * Les mesures communes des écrans, comme `Mise` de l'iOS. ⚠️ Divergence déclarée : la
- * cible tactile est de 48 dp, la règle d'Android (44 pt sur iOS).
+ * Les mesures communes des écrans, comme `Mise` de l'iOS. Chacune est PROPRE À L'APP,
+ * déclarée avec sa raison et sa date dans `MesuresTest` ; une mesure dont le site a le jeton
+ * se lit dans `MesuresDuSite` (généré, #2). ⚠️ Divergence déclarée : la cible tactile est de
+ * 48 dp, la règle d'Android (44 pt sur iOS).
  */
 object Mise {
     /** Le rayon d'une carte, d'un champ, d'un message. */
