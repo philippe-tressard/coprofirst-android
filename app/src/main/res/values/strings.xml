@@ -18,6 +18,10 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="adresse_exemple">residence.example.com</string>
     <string name="connexion_reconnue">Résidence reconnue : %1$s</string>
     <string name="connexion_coche">Reconnue</string>
+    <string name="connexion_scanner">Scanner le QR code de la fiche d\'arrivée</string>
+    <string name="scanner_titre">Scanner le QR code</string>
+    <string name="scanner_indisponible">Caméra indisponible</string>
+    <string name="scanner_indisponible_explication">Cet appareil ne peut pas lire de QR code. Saisissez l\'adresse du site.</string>
     <string name="connexion_email">Adresse électronique</string>
     <string name="connexion_email_exemple">vous@example.com</string>
     <string name="connexion_mot_de_passe">Mot de passe</string>

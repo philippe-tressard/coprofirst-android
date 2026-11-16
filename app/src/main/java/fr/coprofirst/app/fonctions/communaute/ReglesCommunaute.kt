@@ -5,6 +5,7 @@ package fr.coprofirst.app.fonctions.communaute
 
 import fr.coprofirst.api.modeles.AnnonceRead
 import fr.coprofirst.api.modeles.IdeeRead
+import fr.coprofirst.app.commun.ConstantesDuServeur
 import fr.coprofirst.app.commun.LibelleTeinte
 import fr.coprofirst.app.commun.texte.TexteDuSite
 import fr.coprofirst.app.navigation.DroitsOnglet
@@ -56,12 +57,12 @@ object ReglesCommunaute {
         table.firstOrNull { it.first == code }?.second ?: LibelleTeinte.brut(code)
 
     /** Sous le seuil du serveur, l'avis dit ce qui a manqué. */
-    fun demandeRemarque(note: Int) = note in TablesCommunaute.NOTE_MIN until TablesCommunaute.NOTE_REMARQUE
+    fun demandeRemarque(note: Int) = note in ConstantesDuServeur.NOTE_MIN until ConstantesDuServeur.NOTE_REMARQUE
 
     /** À partir de l'autre seuil, l'auteur dit s'il accepte la diffusion. */
-    fun demandeConsentement(note: Int) = note >= TablesCommunaute.NOTE_PUBLIABLE
+    fun demandeConsentement(note: Int) = note >= ConstantesDuServeur.NOTE_PUBLIABLE
 
-    fun noteValable(note: Int) = note in TablesCommunaute.NOTE_MIN..TablesCommunaute.NOTE_MAX
+    fun noteValable(note: Int) = note in ConstantesDuServeur.NOTE_MIN..ConstantesDuServeur.NOTE_MAX
 
     /** La boîte à idées : les plus soutenues d'abord, puis le filtre par état (comme le site). */
     fun idees(idees: List<IdeeRead>, statut: String?): List<IdeeRead> =

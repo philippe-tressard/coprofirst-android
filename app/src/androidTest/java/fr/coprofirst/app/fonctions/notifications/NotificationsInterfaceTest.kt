@@ -140,6 +140,8 @@ class NotificationsInterfaceTest {
         attendre("notifications.toutMarquerLu")
         el("notifications.toutMarquerLu").assertIsDisplayed()
         el("notifications.modifier").assertIsDisplayed()
+        // Relais FCM éteint (#23, `RelaisPush`) : l'offre des notifications push ne paraît pas.
+        el("push.offre").assertDoesNotExist()
         attendre(BarreDuHaut.REPERE_SOUS_TITRE)
         el(BarreDuHaut.REPERE_SOUS_TITRE).assertTextEquals("12 non lues")
         toucher("notifications.toutMarquerLu")

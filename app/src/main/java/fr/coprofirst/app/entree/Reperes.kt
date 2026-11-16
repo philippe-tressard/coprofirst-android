@@ -12,4 +12,8 @@ object Reperes {
     const val EMAIL = "connexion.email"
     const val MOT_DE_PASSE = "connexion.motDePasse"
     const val VALIDER = "connexion.valider"
+
+    /** Le bouton du QR code, dans « Votre résidence » (#6), et « OK » de sa feuille. */
+    const val SCANNER = "connexion.scanner"
+    const val SCANNER_FERMER = "scanner.fermer"
 }

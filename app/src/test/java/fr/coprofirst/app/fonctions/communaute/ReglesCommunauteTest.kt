@@ -8,6 +8,7 @@ import fr.coprofirst.api.modeles.CategorieAnnonce
 import fr.coprofirst.api.modeles.IdeeRead
 import fr.coprofirst.api.modeles.StatutAnnonce
 import fr.coprofirst.api.modeles.TypeAnnonce
+import fr.coprofirst.app.commun.ConstantesDuServeur
 import fr.coprofirst.app.navigation.DroitsOnglet
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -33,11 +34,11 @@ class ReglesCommunauteTest {
 
     @Test
     fun lesSeuilsDeLAvisSontCeuxDuServeur() {
-        assertTrue(ReglesCommunaute.demandeRemarque(TablesCommunaute.NOTE_MIN))
-        assertFalse(ReglesCommunaute.demandeRemarque(TablesCommunaute.NOTE_REMARQUE))
+        assertTrue(ReglesCommunaute.demandeRemarque(ConstantesDuServeur.NOTE_MIN))
+        assertFalse(ReglesCommunaute.demandeRemarque(ConstantesDuServeur.NOTE_REMARQUE))
         assertFalse(ReglesCommunaute.demandeRemarque(0))
-        assertTrue(ReglesCommunaute.demandeConsentement(TablesCommunaute.NOTE_PUBLIABLE))
-        assertFalse(ReglesCommunaute.demandeConsentement(TablesCommunaute.NOTE_PUBLIABLE - 1))
+        assertTrue(ReglesCommunaute.demandeConsentement(ConstantesDuServeur.NOTE_PUBLIABLE))
+        assertFalse(ReglesCommunaute.demandeConsentement(ConstantesDuServeur.NOTE_PUBLIABLE - 1))
     }
 
     @Test
