@@ -104,43 +104,6 @@ fun FeuilleSaisie(
     }
 }
 
-/**
- * Un élément ouvert (une idée, une annonce), en feuille pleine hauteur : son titre, ses
- * actions, « Fermer ». ⚠️ Divergence déclarée : l'iOS le pousse dans la pile de navigation ;
- * l'Android n'a pas de pile par menu — la feuille se ferme d'un geste vers le bas ou par
- * le retour, comme la feuille des notifications.
- */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun FeuilleDetail(
-    @StringRes titre: Int,
-    fermer: () -> Unit,
-    actions: @Composable RowScope.() -> Unit = {},
-    contenu: @Composable ColumnScope.() -> Unit,
-) {
-    val couleurs = LocalCouleurs.current
-    val etat = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    ModalBottomSheet(onDismissRequest = fermer, sheetState = etat, containerColor = couleurs.bg) {
-        Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = fermer, modifier = Modifier.testTag(ReperesCommunaute.FERMER)) {
-                Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.communaute_fermer))
-            }
-            Text(
-                stringResource(titre),
-                style = MaterialTheme.typography.titleMedium,
-                color = couleurs.text,
-                modifier = Modifier.weight(1f),
-            )
-            actions()
-        }
-        Column(
-            Modifier.verticalScroll(rememberScrollState()).padding(horizontal = Mise.marge).padding(bottom = 24.dp).navigationBarsPadding(),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            content = contenu,
-        )
-    }
-}
-
 /** Un champ de saisie d'une feuille : son libellé, l'indication du site. */
 @Composable
 fun ChampCommunaute(

@@ -29,6 +29,11 @@ import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.onglets.ContexteOnglet
 import fr.coprofirst.app.commun.onglets.OngletsSurLeSite
 import fr.coprofirst.app.commun.texte.TexteDuSite
+import fr.coprofirst.app.commun.lecture.EtiquetteLieu
+import fr.coprofirst.app.commun.lecture.Lecture
+import fr.coprofirst.app.commun.lecture.LieuServi
+import fr.coprofirst.app.commun.lecture.PastilleLecture
+import fr.coprofirst.app.navigation.Destination
 import fr.coprofirst.app.navigation.OngletsDuSite
 import fr.coprofirst.app.session.ErreurService
 
@@ -40,10 +45,8 @@ data class ListeSondages(val sondages: List<SondageRead>, val peutCreer: Boolean
  * dans l'ordre du serveur. Anonymes, comme sur le site : aucun auteur. « Créer, modifier ou
  * stopper un sondage se fait sur le site » ne se dit qu'à qui le serveur l'ouvre
  * (GET /sondages/gestes → `peut_creer`, #37) ; un droit illisible vaut « non », et la liste
- * se lit quand même.
- *
- * ⚠️ Divergence déclarée : l'iOS ouvre la fiche du sondage (vote, résultats, commentaires) ;
- * elle attend la fiche commune (#70) — d'ici là, un toucher ouvre le sondage sur le site.
+ * se lit quand même. Un toucher ouvre la fiche commune du sondage (vote, résultats,
+ * commentaires) par la porte ; sans elle, le sondage s'ouvre sur le site.
  */
 @Composable
 fun OngletSondages(contexte: ContexteOnglet, service: ServiceCommunaute) {
@@ -61,7 +64,9 @@ fun OngletSondages(contexte: ContexteOnglet, service: ServiceCommunaute) {
         Column(verticalArrangement = Arrangement.spacedBy(Mise.ecart)) {
             ListeCommunaute(liste.sondages, { it.archivee == true }, textes, videAuServeur = liste.sondages.isEmpty()) { sondage ->
                 LigneSondage(sondage) {
-                    lienSondage(sondage.id, adresse)?.let(navigateur::openUri)
+                    if (!contexte.ouvrir(Destination.Element(FICHE_SONDAGE, sondage.id.toString()))) {
+                        lienSondage(sondage.id, adresse)?.let(navigateur::openUri)
+                    }
                 }
             }
             if (liste.peutCreer) {
@@ -89,12 +94,15 @@ internal fun lienSondage(id: Int, adresse: String): String? {
     return OngletsSurLeSite.lien("$route/$id", adresse)
 }
 
-/** Un sondage : la question, son état, sa clôture et ses votants. */
+/** La nature de la fiche d'un sondage, déclarée par la couche commune (`RegistreDesMenus.fiches`). */
+private const val FICHE_SONDAGE = "sondage"
+
+/** Un sondage : la question, son état, sa clôture et ses votants, qui le lit et son lieu. Anonyme : aucun auteur. */
 @Composable
 private fun LigneSondage(sondage: SondageRead, ouvrir: () -> Unit) {
     val couleurs = LocalCouleurs.current
     val cloture = sondage.cloture == true
-    Carte(Modifier.testTag(ReperesCommunaute.sondage(sondage.id)), ouvrir = ouvrir, action = stringResource(R.string.sondages_ouvrir_sur_le_site)) {
+    Carte(Modifier.testTag(ReperesCommunaute.sondage(sondage.id)), ouvrir = ouvrir, action = sondage.question) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(sondage.question, style = MaterialTheme.typography.titleMedium, color = couleurs.text)
             val description = sondage.description?.let(TexteDuSite::apercu).orEmpty()
@@ -113,6 +121,8 @@ private fun LigneSondage(sondage: SondageRead, ouvrir: () -> Unit) {
                 }
                 val votants = sondage.nbVotants ?: 0
                 Etiquette(pluralStringResource(R.plurals.sondages_votants, votants, votants))
+                PastilleLecture(sondage.lecture?.let(Lecture::depuis), masculin = true)
+                EtiquetteLieu(LieuServi.lieu(sondage.perimetreLibelle))
             }
         }
     }
