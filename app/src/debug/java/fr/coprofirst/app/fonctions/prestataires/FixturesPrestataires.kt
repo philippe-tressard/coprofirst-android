@@ -5,7 +5,7 @@ package fr.coprofirst.app.fonctions.prestataires
 
 /**
  * Les réponses du serveur pour « Prestataires », en JSON, telles que les routes les
- * renvoient (contrat 2.0.0, le plancher v3.101.0) — servies par un serveur local aux tests JVM et
+ * renvoient (contrat 2.0.0 et suivants) — servies par un serveur local aux tests JVM et
  * d'interface, et lues par le client GÉNÉRÉ puis par le MÊME branchement que l'app (`lu()`).
  * Celles de l'iOS (`FixturesPrestataires`), à la forme du plancher.
  *

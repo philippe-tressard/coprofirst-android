@@ -21,9 +21,6 @@
   avant (`rolesMisEnAvant`), les statuts qu'un compte peut demander
   (`statutsDemandables`), les options du thème de l'appareil (`optionsTheme`,
   `themeParDefaut`, `cookieTheme`) ;
-- `FichiersDuSite` (paquet `commun.pieces`) : ce qu'est une photo parmi les pièces
-  jointes, le préfixe retiré du nom montré, la famille de chaque extension — comme l'iOS
-  (`scripts/generateurs/fichiers.py`), depuis les constantes `FICHIERS_*` ci-dessous ;
 - `NaturesDuFil` et `NaturesAffaire` (paquet `charte`) : ce que le fil montre de chaque
   type d'élément (`naturesDuFil` : libellé, teinte, pictogramme) et les natures d'une
   affaire (`naturesAffaire`, teinte `teinteNature`), comme l'iOS
@@ -52,25 +49,12 @@ import sys
 
 PAQUET = "fr.coprofirst.app.navigation"
 PAQUET_TEXTE = "fr.coprofirst.app.commun.texte"
-PAQUET_PIECES = "fr.coprofirst.app.commun.pieces"
 PAQUET_CHARTE = "fr.coprofirst.app.charte"
 JETON = re.compile(r"^var\(--([a-z][a-z0-9-]*)\)$")
 # La couleur d'état d'une nature (`--nature-fort: var(--color-…)`) → la classe `badge-*` qui la
 # porte (`teintes` de PastilleTeinte.kt) — la table de l'iOS (`BADGE_PAR_COULEUR`, affaires.py).
 BADGE_PAR_COULEUR = {"info": "badge-blue", "violet": "badge-purple", "orange": "badge-orange",
                      "success": "badge-green", "danger": "badge-red"}
-# Les pièces jointes comme le site les range et les nomme : `EXTENSIONS_IMAGE` (dépliée :
-# `jpe?g` → jpeg, jpg ; `tiff?` → tif, tiff), `PREFIXE_UUID` et les familles de
-# `typeFichier` de coprofirst (front/src/lib/fichiers.ts), NON publiés dans
-# tables-clients.json — l'iOS les lit dans la source du front (`generateurs/fichiers.py`).
-# Mêmes valeurs que sa table générée (v3.101.0). PUBLIÉES depuis coprofirst v3.105.0
-# (`motifImage`, `prefixeStockage`, `famillesFichiers` de constantes-clients.json) : tenues
-# ici tant que le plancher est sous v3.105.0, générées dès qu'il y montera (#169).
-FICHIERS_EXTENSIONS_IMAGE = ("avif", "bmp", "gif", "heic", "heif", "jpeg", "jpg", "png", "tif", "tiff", "webp")
-FICHIERS_LONGUEUR_PREFIXE = 32
-FICHIERS_FAMILLES = (("JPEG", "JPG"), ("XLSX", "EXCEL"), ("XLS", "EXCEL"), ("DOCX", "WORD"), ("DOC", "WORD"),
-                     ("PPTX", "POWERPOINT"), ("PPT", "POWERPOINT"), ("TXT", "TEXTE"))
-EXTENSION = re.compile(r"^[a-z0-9]+$")
 NOM_DE_BALISE = re.compile(r"^[a-z][a-z0-9-]*$")
 RESERVES = {"proprioOuCS": "ProprioOuCS", "nonLocataire": "NonLocataire", "operateur": "Operateur",
             "nonGestionnaire": "NonGestionnaire"}
@@ -225,45 +209,6 @@ def kotlin_balises(tables: dict, source: str) -> str:
         "object BalisesDuSite {",
         f"    val balises: Set<String> = {ensemble(balises)}",
         f"    val attributs: Set<String> = {ensemble(attributs)}",
-        "}",
-        "",
-    ])
-
-
-def kotlin_fichiers(extensions=FICHIERS_EXTENSIONS_IMAGE, prefixe=FICHIERS_LONGUEUR_PREFIXE,
-                    familles=FICHIERS_FAMILLES) -> str:
-    """`FichiersDuSite` : photo ou document, nom montré, type montré — la règle du site."""
-    if (not isinstance(extensions, (list, tuple)) or not extensions or len(set(extensions)) != len(extensions)
-            or not all(isinstance(e, str) and EXTENSION.match(e) for e in extensions)):
-        raise TableInattendue("EXTENSIONS_IMAGE n'est pas une liste d'extensions en minuscules, sans doublon")
-    if not isinstance(prefixe, int) or isinstance(prefixe, bool) or prefixe < 1:
-        raise TableInattendue("PREFIXE_UUID n'est pas une longueur")
-    cles = [c for c, _ in familles] if isinstance(familles, (list, tuple)) else []
-    if (not cles or len(set(cles)) != len(cles)
-            or not all(isinstance(c, str) and isinstance(v, str) and EXTENSION.match(c.lower()) and c == c.upper()
-                       and v.strip() and v == v.upper() for c, v in familles)):
-        raise TableInattendue("les familles de typeFichier ne sont pas des extensions en capitales, sans doublon")
-    return "\n".join([
-        "// GÉNÉRÉ par scripts/generer_tables.py — NE PAS MODIFIER À LA MAIN.",
-        "// Source : coprofirst front/src/lib/fichiers.ts (EXTENSIONS_IMAGE, PREFIXE_UUID, typeFichier),",
-        "// non publiés par tables-clients.json : FICHIERS_* du générateur, aux valeurs de l'iOS.",
-        f"package {PAQUET_PIECES}",
-        "",
-        "/** Les pièces jointes comme le site les range et les nomme. */",
-        "object FichiersDuSite {",
-        "    /** Les extensions d'une image affichable en vignette (`EXTENSIONS_IMAGE`). */",
-        f"    val extensionsImage: Set<String> = {ensemble(list(extensions))}",
-        "",
-        "    /**",
-        "     * Le préfixe que le serveur ajoute au nom téléversé : tant de chiffres",
-        "     * hexadécimaux, puis « _ » (`PREFIXE_UUID`) — retiré du nom montré.",
-        "     */",
-        f"    const val LONGUEUR_PREFIXE: Int = {prefixe}",
-        "",
-        "    /** L'extension en capitales, ramenée à sa famille (`typeFichier`). */",
-        "    val familles: Map<String, String> = mapOf(",
-        *[f"        {chaine(c)} to {chaine(v)}," for c, v in familles],
-        "    )",
         "}",
         "",
     ])
@@ -436,7 +381,6 @@ def main(argv: list[str]) -> int:
             ("fr.coprofirst.app.commun", "TablesCommunes.kt"): kotlin_commun(tables, entree.name),
             ("fr.coprofirst.app.commun", "AvisDuSite.kt"): kotlin_avis(tables, entree.name),
             (PAQUET_TEXTE, "BalisesDuSite.kt"): kotlin_balises(tables, entree.name),
-            (PAQUET_PIECES, "FichiersDuSite.kt"): kotlin_fichiers(),
             (PAQUET_CHARTE, "NaturesDuFil.kt"): kotlin_natures(tables, entree.name),
             (tc.PAQUET_ACCES, "TablesAcces.kt"): tc.kotlin_acces(tables, entree.name),
             ("fr.coprofirst.app.commun", "StatutsAffaire.kt"): tc.kotlin_statuts_affaire(tables, entree.name),
