@@ -37,6 +37,8 @@ data class EtatResidence(
     val onglet: String,
     /** Les droits du compte ; avant la lecture du profil, aucun outil réservé. */
     val droits: DroitsOnglet = DroitsOnglet(),
+    /** Le refus de la mesure d'audience (`opt_out_telemetrie`) ; `null` tant qu'il n'est pas lu. */
+    val refusMesure: Boolean? = null,
 ) {
     companion object {
         const val PLUS = "plus"
@@ -70,8 +72,8 @@ class ParcoursResidence(
      */
     suspend fun relireDroits() {
         try {
-            val droits = DroitsOnglet.depuis(compte.moi())
-            _etat.update { it.copy(droits = droits) }
+            val moi = compte.moi()
+            _etat.update { it.copy(droits = DroitsOnglet.depuis(moi), refusMesure = moi.optOutTelemetrie) }
         } catch (_: ErreurService) {
             // Sans profil : les droits d'avant restent (ceux de tous, à l'ouverture).
         }

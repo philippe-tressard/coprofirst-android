@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import fr.coprofirst.app.commun.GestesDeSortie
+import fr.coprofirst.app.commun.audience.AudienceDeLApp
 import fr.coprofirst.app.commun.pieces.PiecesLocales
 import fr.coprofirst.app.navigation.LienDuSite
 import fr.coprofirst.app.session.AdresseInstallation
@@ -45,6 +46,8 @@ class ParcoursEntree(
     private val effacerLesPieces: () -> Unit = {},
     /** La racine de l'API d'une adresse, pour la session ouverte ; les tests la remplacent par un serveur local. */
     private val baseApi: (AdresseInstallation) -> String = { it.baseApi },
+    /** Avant de fermer une session : ce qui doit encore partir chez elle (la mesure d'audience, #144). */
+    private val avantSortie: suspend () -> Unit = {},
     private val lirePreuve: suspend (AdresseInstallation) -> PreuveHote = { PreuveHote.lire(it) },
 ) : ViewModel(), ActionsEntree, GestesDeSortie {
     private val _etat = MutableStateFlow(EtatEntree())
@@ -181,7 +184,10 @@ class ParcoursEntree(
         val ouverte = _etat.value.ouverte ?: return
         _etat.update { it.copy(ouverte = null, ecran = EcranEntree.Connexion, lien = null) }
         effacerLesPieces()
-        viewModelScope.launch { connexion.deconnecter(ouverte) }
+        viewModelScope.launch {
+            avantSortie()
+            connexion.deconnecter(ouverte)
+        }
     }
 
     /** Comme `Parcours.oublierTout` de l'iOS : chaque session fermée, rien de retenu, l'accueil. */
@@ -192,6 +198,7 @@ class ParcoursEntree(
         connues.vider()
         effacerLesPieces()
         viewModelScope.launch {
+            avantSortie()
             if (ouverte != null) connexion.deconnecter(ouverte)
             sessions.oublierTout()
         }
@@ -232,6 +239,7 @@ class ParcoursEntree(
                 ParcoursEntree(
                     Decouverte(), sessions, Connexion(sessions), InstallationsConnues(stockage),
                     effacerLesPieces = { PiecesLocales.effacer(application) },
+                    avantSortie = { AudienceDeLApp.mesure.vider() },
                 )
             }
         }

@@ -19,6 +19,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -36,7 +37,12 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Pictogrammes
 import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.commun.GestesDeSortie
+import fr.coprofirst.app.commun.audience.CheminsDeLApp
+import fr.coprofirst.app.commun.audience.LocalMesureAudience
+import fr.coprofirst.app.commun.audience.PageVue
 import fr.coprofirst.app.session.SessionOuverte
+import fr.coprofirst.app.session.audience.CheminDuSite
+import fr.coprofirst.app.session.audience.ResidenceMesuree
 
 /**
  * La résidence ouverte, comme `OngletsView` de l'iOS : la barre du bas (les 4 premières
@@ -78,6 +84,12 @@ fun EcranResidence(
     val residence = session.installation.url
     // Le nombre de non lues de la cloche se relit à l'ouverture de la résidence.
     LaunchedEffect(parcours) { parcours.relireNonLues() }
+    // La mesure d'audience (#144) suit la résidence ouverte et le choix relu du compte.
+    val mesure = LocalMesureAudience.current
+    DisposableEffect(mesure, parcours) {
+        mesure?.courante = { ResidenceMesuree(session, parcours.etat.value.refusMesure) }
+        onDispose { mesure?.courante = { null } }
+    }
 
     val enPlus = if (onglet == EtatResidence.PLUS) pageDePlus else null
     val ouverte: PageDeNavigation? = when {
@@ -127,6 +139,13 @@ fun EcranResidence(
         if (!ouvrir(vise)) ouvrir(LienDuSite.FIL)
         lienSuivi()
     }
+    PageVue(
+        when {
+            fiche != null -> CheminsDeLApp.fiche(ficheNature, ficheId)
+            ouverte?.id == PagesDePlus.profil.id -> CheminDuSite.PROFIL
+            else -> ouverte?.let { CheminDuSite.page(it.id) }
+        },
+    )
     CadreResidence(
         titre = barreDuHaut.titre ?: titreFiche ?: ouverte?.titre ?: stringResource(R.string.plus),
         sousTitre = barreDuHaut.sousTitre,

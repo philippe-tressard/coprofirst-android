@@ -49,7 +49,7 @@ import fr.coprofirst.app.session.Installation
 @Composable
 fun EcranProfil(contexte: ContexteDeMenu) {
     val service = remember(contexte.session) { ServiceProfilApi(contexte.session) }
-    EcranProfil(service, contexte.session.installation, contexte.sortie, contexte.apparence)
+    EcranProfil(service, contexte.session.installation, contexte.sortie, contexte.apparence, contexte.relireDroits)
 }
 
 /** Les formulaires du Profil, chacun dans sa feuille. */
@@ -67,7 +67,13 @@ private enum class Feuille { Identite, MotDePasse, DemandeModification }
  * sont pas publiées (coprofirst#2755).
  */
 @Composable
-fun EcranProfil(service: ServiceProfil, installation: Installation, sortie: GestesDeSortie, apparence: Apparence) {
+fun EcranProfil(
+    service: ServiceProfil,
+    installation: Installation,
+    sortie: GestesDeSortie,
+    apparence: Apparence,
+    relireDroits: suspend () -> Unit = {},
+) {
     var feuille by rememberSaveable { mutableStateOf<Feuille?>(null) }
     var phrase by remember { mutableStateOf<Phrase?>(null) }
     LazyColumn(
@@ -83,7 +89,7 @@ fun EcranProfil(service: ServiceProfil, installation: Installation, sortie: Gest
                     SectionSecurite { feuille = Feuille.MotDePasse }
                     SectionApparence(apparence)
                     Note(stringResource(R.string.profil_au_site), Modifier.padding(horizontal = Mise.marge + 4.dp))
-                    SectionDroits(compte, installation, service) { compte = it }
+                    SectionDroits(compte, installation, service, relireDroits) { compte = it }
                     SectionSuppressionCompte(service)
                 }
                 when (feuille) {

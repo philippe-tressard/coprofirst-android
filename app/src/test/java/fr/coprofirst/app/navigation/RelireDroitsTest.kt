@@ -17,6 +17,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import okhttp3.OkHttpClient
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -29,8 +30,8 @@ class RelireDroitsTest {
 
     @After fun rendre() = Dispatchers.resetMain()
 
-    private fun moi(roles: String) = Serializer.kotlinxSerializationJson.decodeFromString<UserRead>(
-        """{"id": 7, "nom": "Essai", "prenom": "Camille", "email": "camille@residence.example.test",
+    private fun moi(roles: String, refus: Boolean = false) = Serializer.kotlinxSerializationJson.decodeFromString<UserRead>(
+        """{"opt_out_telemetrie": $refus, "id": 7, "nom": "Essai", "prenom": "Camille", "email": "camille@residence.example.test",
             "statut": "copropriétaire_résident", "role": "résident", "roles": $roles, "actif": true,
             "onboarding_complete": true, "onboarding_etape": 0, "preferences_notifications": "{}",
             "cree_le": "2026-03-02T10:00:00", "nom_affiche": "Camille ESSAI", "nom_aide_affiche": ""}""",
@@ -55,6 +56,15 @@ class RelireDroitsTest {
         assertTrue("l'administrateur, à l'ouverture", parcours.etat.value.droits.administrateur)
         parcours.relireDroits()
         assertFalse("le rôle retiré : plus d'administration", parcours.etat.value.droits.administrateur)
+    }
+
+    /** Le refus de la mesure d'audience se relit avec les droits : un geste au Profil vaut aussitôt (#144). */
+    @Test
+    fun leRefusDeLaMesureSeRelit() = runTest {
+        val parcours = parcours(Compte(moi("""["résident"]"""), moi("""["résident"]""", refus = true)))
+        assertEquals(false, parcours.etat.value.refusMesure)
+        parcours.relireDroits()
+        assertEquals(true, parcours.etat.value.refusMesure)
     }
 
     @Test
