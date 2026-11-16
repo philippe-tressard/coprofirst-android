@@ -20,6 +20,9 @@ class ResidenceSimuleeCS {
     private val comptes = lire(FixturesEspaceCS.COMPTES)
     private val commandes = lire(FixturesEspaceCS.COMMANDES)
 
+    /** L'annuaire du conseil et du syndic, que les PUT réécrivent. */
+    val annuaire = AnnuaireSimuleCS()
+
     /** Les requêtes reçues : « MÉTHODE /chemin corps ». */
     val recues = mutableListOf<String>()
 
@@ -33,6 +36,7 @@ class ResidenceSimuleeCS {
         compteTraite.matchEntire(route)?.let { m -> return traiterCompte(m.groupValues[1].toInt(), corps) }
         commandeTraitee.matchEntire(route)?.let { m -> return traiterCommande(m.groupValues[1].toInt(), corps) }
         if (methode == "POST" && accueil.matches(route)) return 200 to FixturesEspaceCS.ACCUEIL
+        annuaire.repondre(methode, route, corps)?.let { return it }
         annonceGeste.matchEntire(route)?.let { m -> return gesteAnnonce(methode, m.groupValues[1].toInt(), m.groupValues[2]) }
         return when ("$methode $route") {
             "GET /admin/comptes-en-attente" -> 200 to JsonArray(comptes).toString()
