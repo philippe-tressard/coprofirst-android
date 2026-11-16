@@ -8,6 +8,7 @@ import fr.coprofirst.api.modeles.EtatDemandeSuppression
 import fr.coprofirst.api.modeles.MeUpdate
 import fr.coprofirst.api.modeles.StatutDemandeSuppression
 import fr.coprofirst.api.modeles.UserRead
+import fr.coprofirst.app.commun.ConstantesDuServeur
 import java.time.Instant
 
 /** Une saisie vide part à `null` — le site fait de même. */
@@ -59,13 +60,13 @@ data class SaisieIdentite(
 enum class AttenteMotDePasse { Actuel, Nouveau, Confirmation }
 
 /**
- * ⚠️ Divergence déclarée : l'iOS dit aussi la longueur minimale avant l'envoi ; elle n'est
- * pas publiée dans `tables-clients.json` (coprofirst#2755). Un mot de passe trop court est
- * refusé par la phrase du serveur.
+ * Comme l'iOS (`MotDePasseView.attente`) : le mot de passe actuel, puis un nouveau d'au moins
+ * la longueur du SERVEUR (`ConstantesDuServeur.LONGUEUR_MIN_MOT_DE_PASSE`, générée, #47),
+ * comptée comme lui en caractères (points de code), puis la même confirmation.
  */
 fun attenteMotDePasse(actuel: String, nouveau: String, confirmation: String): AttenteMotDePasse? = when {
     actuel.isEmpty() -> AttenteMotDePasse.Actuel
-    nouveau.isEmpty() -> AttenteMotDePasse.Nouveau
+    nouveau.codePointCount(0, nouveau.length) < ConstantesDuServeur.LONGUEUR_MIN_MOT_DE_PASSE -> AttenteMotDePasse.Nouveau
     nouveau != confirmation -> AttenteMotDePasse.Confirmation
     else -> null
 }
