@@ -124,7 +124,8 @@ class ServiceResidenceTest {
         assertEquals(2, carnet.groupes[0].entrees.size)
         assertEquals(listOf("Contrat d'entretien de l'ascenseur"), carnet.enAlerte.map { it.libelle })
         assertNull("une chaîne vide servie n'est pas un détail", carnet.entrees[1].detail)
-        assertEquals(listOf(Perimetre("bat-a", "Bâtiment A")), service.perimetres())
+        // Le modèle commun (#83), lu par `Perimetre.lus` : actifs seulement.
+        assertEquals(listOf("bat-a" to "Bâtiment A"), service.perimetres().map { it.code to it.libelle })
     }
 
     @Test

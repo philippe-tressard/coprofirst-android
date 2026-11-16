@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.Chargement
+import fr.coprofirst.app.commun.perimetres.Perimetre
 import fr.coprofirst.app.commun.pieces.AvisOuverture
 import fr.coprofirst.app.commun.pieces.rememberOuverture
 import fr.coprofirst.app.commun.onglets.BarreOnglets
