@@ -24,6 +24,7 @@ android {
         // le plus haut qui lui convient : la montre se place au-dessus du téléphone, du même
         // nombre de commits (build racine). Le décalage ne bouge jamais.
         versionCode = versionCode?.plus(DECALAGE_MONTRE)
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     lint {
         // L'icône vient du logo, généré au build par la couche commune (#206) ; la montre la
@@ -57,4 +58,6 @@ dependencies {
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.junit)
+    debugImplementation(libs.compose.ui.test.manifest)
 }
