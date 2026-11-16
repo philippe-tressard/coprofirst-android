@@ -14,6 +14,7 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import fr.coprofirst.app.R
 import fr.coprofirst.app.session.Deverrouillage
 import fr.coprofirst.app.session.Installation
@@ -61,10 +62,10 @@ fun rememberBiometrie(): Biometrie {
 @Composable
 fun rememberDeverrouillage(residence: Installation?): Deverrouillage? {
     val contexte = LocalContext.current
+    val titre = stringResource(R.string.deverrouiller_titre, residence?.nom.orEmpty())
+    val renoncer = stringResource(R.string.retour_mot_de_passe)
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return null
-    val titre = contexte.getString(R.string.deverrouiller_titre, residence?.nom.orEmpty())
     val sousTitre = residence?.adresse?.enSaisie.orEmpty()
-    val renoncer = contexte.getString(R.string.retour_mot_de_passe)
     return remember(contexte, titre, sousTitre, renoncer) {
         Deverrouillage { chiffre, protection -> demander(contexte, chiffre, protection, titre, sousTitre, renoncer) }
     }
