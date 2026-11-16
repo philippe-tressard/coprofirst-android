@@ -175,6 +175,27 @@ fun EcranProfil(service: ServiceProfil) {
 }
 ```
 
+## Tests d'interface — `androidTest/…/commun/Gestes.kt`
+
+Chaque écran a ses tests d'interface (`app/src/androidTest`, serveur local, repères = les
+identifiants d'accessibilité de l'iOS). Trois règles, tenues par `verifier-depot.sh` :
+
+- **Toucher par le geste commun**, jamais `performClick()` (refusé) : `ecran.toucherTag(repère)`,
+  `ecran.toucherTexte(texte)`, `ecran.toucherDescription(description)`, ou `noeud.toucher()`.
+  Le geste ferme le clavier, attend le nœud composé et placé (une ligne de liste paresseuse se
+  fait venir), fait défiler chaque conteneur de l'extérieur vers l'intérieur, attend le nœud
+  immobile, vérifie qu'il est affiché, puis touche. `ecran.amenerTag(repère)` amène sans toucher.
+  Un échec dit où était le nœud.
+- **Règle v2** : `androidx.compose.ui.test.junit4.v2.createComposeRule` (effets au fil
+  principal) ; la v1 est refusée.
+- **Ce qui se lit d'un bloc se cherche par sa description** : un composant qui remplace la
+  sémantique de son texte (`EtiquetteLieu` : « Lieu : … » ; une carte du fil) ne répond pas à
+  `hasText` — `hasTestTag(repère) and hasContentDescription(…, substring = true)` (#129).
+
+Le bilan de la CI (job « Interface ») nomme dans le journal les tests en échec et les cinq
+plus lents, en regard du délai commun (`DELAI_GESTE_MS`, 10 s). Au poste :
+`bash scripts/tests-interface.sh [classe]` (une seule tâche lourde à la fois).
+
 ## Charte — `fr.coprofirst.app.charte`, `ThemeCoproFirst`
 
 | API | Rôle |
