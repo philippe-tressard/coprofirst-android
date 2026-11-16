@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -34,7 +35,8 @@ class ServiceNomsApi(private val session: SessionOuverte) : ServiceNoms {
  * La ligne « Nom affiché » d'une feuille d'édition, comme l'iOS (`NomDeLaSaisie`) : ce que le
  * serveur rendra de la saisie (« jean-baptiste », « fort » → « Jean-Baptiste FORT »), par
  * `ApercuServi` (une rafale = une demande ; la dernière valeur tient tant qu'il n'a pas
- * répondu). `connu` : le nom déjà servi pour la saisie d'origine — il ne se redemande pas.
+ * répondu). `connu` : le nom déjà servi pour la saisie d'ORIGINE (le prénom et le nom du premier
+ * affichage) — il ne se redemande pas tant que la saisie n'a pas changé, et ne vaut plus ensuite.
  * Repère `repere` sur la ligne entière, lue d'un bloc.
  */
 @Composable
@@ -47,7 +49,10 @@ fun NomDeLaSaisie(
     connu: String? = null,
 ) {
     val saisie = (prenom.orEmpty() to nom.orEmpty())
-    ApercuServi(saisie, demander = { (p, n) -> service.nomAffiche(p, n) }, modifier, connue = connu?.let { saisie to it }) { servi ->
+    // `connu` vaut pour la saisie d'ORIGINE, la première vue — jamais pour la courante : un
+    // prénom changé ne doit pas garder l'ancien nom (relevé par l'Espace CS, #123).
+    val origine = remember { saisie }
+    ApercuServi(saisie, demander = { (p, n) -> service.nomAffiche(p, n) }, modifier, connue = connu?.let { origine to it }) { servi ->
         val couleurs = LocalCouleurs.current
         Row(
             Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}.testTag(repere),
