@@ -69,6 +69,20 @@
       "role": "Des annotations de la caméra d'AndroidX (CameraX).",
       "modules": ["com.google.auto.value:auto-value-annotations"],
       "textes": ["LICENSES/Apache-2.0.txt"]
+    },
+    {
+      "nom": "Lucide",
+      "licences": ["ISC", "MIT"],
+      "role": "Les tracés des icônes du site, dessinés dans la gouttière du fil (MIT pour la part issue de Feather).",
+      "fichiers": ["contrat/icones-svg.json"],
+      "textes": ["LICENSES/ISC.txt", "LICENSES/MIT.txt"]
+    },
+    {
+      "nom": "Simple Icons (logo WhatsApp)",
+      "licences": ["CC0-1.0"],
+      "role": "Le tracé du logo WhatsApp, parmi les icônes du site.",
+      "fichiers": ["contrat/icones-svg.json"],
+      "textes": ["LICENSES/CC0-1.0.txt"]
     }
   ]
 }

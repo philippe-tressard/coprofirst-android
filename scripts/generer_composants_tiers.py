@@ -5,7 +5,8 @@
 (`ComposantsTiers`, tenu par `scripts/verifier-dependances.py`).
 
 La déclaration (`app/src/main/tiers/composants.json`) nomme chaque composant, ses
-licences, son rôle, les modules Maven qu'il couvre (motifs `groupe:module`, `*` admis)
+licences, son rôle, les modules Maven qu'il couvre (motifs `groupe:module`, `*` admis) ou
+les fichiers du dépôt qu'il embarque (`fichiers`),
 et les textes qui doivent accompagner chaque copie : l'avis de ses auteurs, puis la
 licence entière. Gradle donne la liste des modules de la variante publiée
 (`releaseRuntimeClasspath`) ; ce script la confronte à la déclaration, et s'ARRÊTE :
@@ -63,7 +64,10 @@ def verifier(declaration: dict, modules: list[str], existe) -> list[dict]:
     for c in composants:
         nom = c.get("nom")
         motifs, licences, textes = c.get("modules") or [], c.get("licences") or [], c.get("textes") or []
-        if not nom or not c.get("role") or not motifs or not licences or not textes:
+        # Un composant qui n'est pas un module Maven : un fichier du dépôt que l'app embarque
+        # (les tracés des icônes du site, #183).
+        fichiers = c.get("fichiers") or []
+        if not nom or not c.get("role") or not (motifs or fichiers) or not licences or not textes:
             raise DeclarationInvalide(f"composant incomplet : {c}")
         siens = []
         for motif in motifs:
@@ -77,7 +81,8 @@ def verifier(declaration: dict, modules: list[str], existe) -> list[dict]:
             if not set(textes_de_licence(licence)) & set(textes):
                 erreurs.append(f"{nom} : la licence {licence} sans son texte ({' ou '.join(textes_de_licence(licence))})")
         erreurs += [f"{nom} : texte introuvable, {t}" for t in textes if not existe(t)]
-        sortie.append({"nom": nom, "licences": licences, "role": c["role"], "modules": sorted(set(siens)),
+        erreurs += [f"{nom} : fichier embarqué introuvable, {f}" for f in fichiers if not existe(f)]
+        sortie.append({"nom": nom, "licences": licences, "role": c["role"], "modules": sorted(set(siens)) + list(fichiers),
                        "textes": [pathlib.PurePosixPath(t).name for t in textes]})
     erreurs += [f"module embarqué sans composant déclaré : {m}" for m in modules if m not in couverts]
     erreurs += [f"{m} couvert par deux composants : {', '.join(n)}" for m, n in couverts.items() if len(n) > 1]

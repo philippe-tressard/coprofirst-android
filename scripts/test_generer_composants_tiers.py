@@ -35,6 +35,17 @@ class ComposantsTiers(unittest.TestCase):
         (c,) = verifier(composant(licences=("MPL-2.0",), textes=("app/src/main/tiers/LICENSE-MPL-2.0.txt",)))
         self.assertEqual(c["textes"], ["LICENSE-MPL-2.0.txt"])
 
+    def test_un_fichier_du_depot_embarque_est_un_composant(self):
+        """#183 : les tracés des icônes du site ne sont pas un module Maven."""
+        icones = {"nom": "Lucide", "licences": ["ISC"], "role": "Les tracés.", "fichiers": ["contrat/icones-svg.json"],
+                  "textes": ["LICENSES/ISC.txt"]}
+        _, c = verifier(composant(), icones)
+        self.assertEqual(c["modules"], ["contrat/icones-svg.json"])
+        with self.assertRaises(g.DeclarationInvalide):
+            verifier(composant(), icones, existe=lambda t: t != "contrat/icones-svg.json")
+        with self.assertRaises(g.DeclarationInvalide):
+            verifier(composant(), {**icones, "fichiers": []})
+
     def test_les_nomenclatures_sont_ecartees(self):
         self.assertEqual(g.embarques(["a:b-bom", "a:b", "", "a:b"]), ["a:b"])
 
