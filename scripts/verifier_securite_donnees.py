@@ -8,12 +8,12 @@
 deux sens :
 
 - `table:envois` — chaque écriture du client généré (`post`, `patch`, `put`, `delete`
-  du contrat) que `app/src/main/java` appelle a sa ligne, et chaque ligne nomme une
+  du contrat) que `app/src/main/java` ou `montre/src/main/java` appelle a sa ligne, et chaque ligne nomme une
   écriture du contrat que l'app appelle. Seule exception, nommée : une ligne marquée
   « à venir (#N) », prête pour l'envoi qu'un ticket ajoute — et refusée dès que l'envoi
   existe : la PR qui l'apporte retire la marque (« à venir » ne ment pas longtemps). Les
   données d'une ligne sont des codes du §3 (ou « — ») ;
-- `table:permissions` — exactement les `uses-permission` du manifeste, une ligne
+- `table:permissions` — exactement les `uses-permission` des manifestes (téléphone, montre), une ligne
   « à venir (#N) » exceptée, sous la même règle.
 
 Un tableau absent ou vide rend INCONNU (sortie 2), jamais conforme.
@@ -30,6 +30,7 @@ import sys
 
 DECLARATION = "docs/play-store/securite-des-donnees.md"
 ECRITURES = ("post", "patch", "put", "delete")
+APPS = ("app", "montre")
 A_VENIR = re.compile(r"à venir \(#\d+\)")
 
 
@@ -112,8 +113,10 @@ def main(argv: list[str]) -> int:
     try:
         texte = (racine / DECLARATION).read_text(encoding="utf-8")
         contrat = json.loads((racine / "contrat/openapi.json").read_text(encoding="utf-8"))
-        source = "\n".join(p.read_text(encoding="utf-8") for p in sorted((racine / "app/src/main/java").rglob("*.kt")))
-        manifeste = (racine / "app/src/main/AndroidManifest.xml").read_text(encoding="utf-8")
+        # Le téléphone ET la montre (#207) : une seule app Google Play, une seule section.
+        source = "\n".join(p.read_text(encoding="utf-8") for app in APPS
+                           for p in sorted((racine / app / "src/main/java").rglob("*.kt")))
+        manifeste = "\n".join((racine / app / "src/main/AndroidManifest.xml").read_text(encoding="utf-8") for app in APPS)
         erreurs = verifier(texte, ecritures_du_contrat(contrat), source, manifeste)
     except (OSError, KeyError, ValueError, Inconnu) as e:
         print(f"❓ INCONNU : sécurité des données — {e}", file=sys.stderr)

@@ -182,6 +182,10 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
 - **Écran** : portrait au téléphone ; sur tablette, pliable déplié ou fenêtre de bureau,
   toutes les orientations et le multi-fenêtre (comme l'iPad). La mise en page grand écran
   (barre latérale, liste et fiche côte à côte) suit les lots de l'iOS (#69).
+- **Montre Wear OS** (`montre/`, en construction, #207) : la même app Google Play, pour
+  la cloche de la dernière résidence ouverte, en lecture seule — pendant de l'Apple Watch.
+  Tant que la liaison au téléphone est éteinte, elle dit « Ouvrez CoproFirst sur le
+  téléphone pour relier la montre ».
 
 Pas encore : les personnages de la démo, le QR code, les liens d'application (tickets
 ouverts).
@@ -197,13 +201,14 @@ sdkmanager "platform-tools" "platforms;android-37.2"
 ```
 
 ```bash
-./gradlew :app:assembleDebug :app:lintDebug :app:testDebugUnitTest :client-api:test
+./gradlew :app:assembleDebug :app:lintDebug :app:testDebugUnitTest :client-api:test \
+  :montre:assembleDebug :montre:lintDebug :montre:testDebugUnitTest
 ```
 
 `JAVA_HOME` et `ANDROID_HOME` (ou `local.properties`, `sdk.dir=…`) doivent désigner
 le JDK 21 et le SDK.
 
-La release pour Google Play (AAB signé par la clé de téléversement, au poste seulement,
+La release pour Google Play (les AAB du téléphone et de la montre, signés par la clé de téléversement, au poste seulement,
 jamais en CI) : `bash scripts/construire-release.sh` — la clé, son rangement et Play
 App Signing sont dans `docs/signature-android.md`.
 
