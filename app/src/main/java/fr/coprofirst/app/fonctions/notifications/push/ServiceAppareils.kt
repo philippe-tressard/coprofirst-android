@@ -40,7 +40,14 @@ interface ServiceAppareils {
 /** Les appareils par le client GÉNÉRÉ. */
 object ServiceAppareilsApi : ServiceAppareils {
     override suspend fun enregistrer(appareil: AppareilPush, session: SessionOuverte) {
-        val corps = AppareilEnregistre(appareil.jeton.valeur, appareil.environnement.servi, appareil.abonnement)
+        // `plateforme` vaut APNS par défaut dans le contrat (2.4.0, coprofirst#2789) : un appareil
+        // Android la dit, sans quoi le relais le prendrait pour un iPhone.
+        val corps = AppareilEnregistre(
+            jeton = appareil.jeton.valeur,
+            abonnement = appareil.abonnement,
+            plateforme = AppareilEnregistre.Plateforme.FCM,
+            environnement = appareil.environnement.servi,
+        )
         session.appeler { base, client -> AppareilsApi(base, client).postAppareils(corps) }
     }
 
