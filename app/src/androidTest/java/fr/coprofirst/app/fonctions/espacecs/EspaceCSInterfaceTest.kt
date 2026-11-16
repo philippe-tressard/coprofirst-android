@@ -118,6 +118,17 @@ class EspaceCSInterfaceTest {
         ecran.onNodeWithTag(repere).performScrollTo().performClick()
     }
 
+    /** Une pastille de choix : touchée jusqu'à ce qu'elle soit retenue (la page peut bouger sous le doigt). */
+    private fun retenir(repere: String) {
+        val retenue = { ecran.onAllNodes(hasTestTag(repere) and isSelected()).fetchSemanticsNodes().isNotEmpty() }
+        repeat(3) {
+            if (retenue()) return
+            atteindre(repere)
+            ecran.waitForIdle()
+        }
+        ecran.waitUntil(DELAI_MS, retenue)
+    }
+
     @Test
     fun lesSixOngletsDuSite() {
         listOf("validations", "badges", "reporting", "annonces-hall", "annuaire", "courriels").forEach {
@@ -185,11 +196,11 @@ class EspaceCSInterfaceTest {
         toucher(ReperesEspaceCS.NOUVELLE_TITRE)
         ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_TITRE).performTextInput("Ascenseur à l'arrêt")
         ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_MESSAGE).performTextInput("Lundi matin.")
-        // Le périmètre : l'arbre servi, le défaut d'abord ; le bâtiment A retenu.
-        val batA = "${ReperesEspaceCS.NOUVELLE_PERIMETRE}.bat_a"
-        atteindre(batA)
-        ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(batA) and isSelected()).fetchSemanticsNodes().isNotEmpty() }
-        atteindre(ReperesEspaceCS.nouvelleFormat("a5"))
+        // Le format d'abord, puis le périmètre : le lieu que le serveur nomme arrive après le
+        // choix et déplace la page — un toucher pris avant ce décalage tombait à côté (CI de #112).
+        retenir(ReperesEspaceCS.nouvelleFormat("a5"))
+        retenir("${ReperesEspaceCS.NOUVELLE_PERIMETRE}.bat_a")
+        attendre("Bâtiment A ›")
         atteindre(ReperesEspaceCS.NOUVELLE_CREER)
         attendre("Annonce A5 créée et envoyée à 1 membre du CS")
         val creation = synchronized(residence) { residence.recues.toList() }.single { it.startsWith("POST /api/annonces-hall ") }
