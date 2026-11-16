@@ -115,7 +115,11 @@ fun NavigationEntree(apparence: Apparence, parcours: ParcoursEntree = viewModel(
                     EcranEntree.EnSavoirPlus -> EcranEnSavoirPlus(parcours)
                     EcranEntree.Demo -> EcranDemo(parcours)
                     EcranEntree.Connexion -> EcranConnexion(etat, parcours)
-                    EcranEntree.Espace -> parcours.sessionOuverte()?.let { EcranResidence(it, parcours, apparence) }
+                    EcranEntree.Espace -> parcours.sessionOuverte()?.let { session ->
+                        // L'écran d'un lien vers CETTE résidence (#147) ; la porte le pose, puis le rend.
+                        val lien = etat.lien?.takeIf { it.adresse == session.installation.adresse }?.destination
+                        EcranResidence(session, parcours, apparence, lien = lien, lienSuivi = parcours::lienSuivi)
+                    }
                 }
             }
         }

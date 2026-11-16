@@ -32,7 +32,8 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
 - **Liens d'application** : un lien vers la démo ou 5Hostachy (une affaire, les
   actualités, l'accueil, la connexion) ouvre l'app — la résidence ouverte si c'est la
   sienne, sinon sa connexion, à son adresse ; une adresse jamais vue se confirme avant
-  le premier mot de passe. L'écran visé ne s'ouvre pas encore (#147) ; les liens à jeton
+  le premier mot de passe. L'écran visé (une affaire, les affaires, une page) s'ouvre
+  ensuite dans sa résidence — le fil si le compte ne voit pas la page ; les liens à jeton
   (vérifier une adresse, choisir un mot de passe) restent au navigateur. Android
   n'associe le lien à l'app que si l'installation sert `assetlinks.json`
   (coprofirst#2788).

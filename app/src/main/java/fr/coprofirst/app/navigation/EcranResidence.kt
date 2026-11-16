@@ -47,7 +47,17 @@ import fr.coprofirst.app.session.SessionOuverte
  * élément — poussée par-dessus la page ouverte — ou à la cloche, par `Aiguillage`.
  */
 @Composable
-fun EcranResidence(session: SessionOuverte, sortie: GestesDeSortie, apparence: Apparence) {
+fun EcranResidence(
+    session: SessionOuverte,
+    sortie: GestesDeSortie,
+    apparence: Apparence,
+    /**
+     * L'écran qu'un lien d'application vise (#147, `LienDuSite`), à l'ouverture de la
+     * résidence ou dans la résidence ouverte ; `lienSuivi` le rend à l'entrée une fois posé.
+     */
+    lien: Destination? = null,
+    lienSuivi: () -> Unit = {},
+) {
     val parcours: ParcoursResidence = viewModel(
         key = session.installation.url,
         factory = viewModelFactory { initializer { ParcoursResidence(session, ServiceCompteApi(session)) } },
@@ -111,6 +121,12 @@ fun EcranResidence(session: SessionOuverte, sortie: GestesDeSortie, apparence: A
         else -> null
     }
     BackHandler(enabled = retour != null) { retour?.invoke() }
+    // Un lien d'application : l'écran visé ; une page que le compte ne voit pas, le fil (l'iOS).
+    LaunchedEffect(lien) {
+        val vise = lien ?: return@LaunchedEffect
+        if (!ouvrir(vise)) ouvrir(LienDuSite.FIL)
+        lienSuivi()
+    }
     CadreResidence(
         titre = barreDuHaut.titre ?: titreFiche ?: ouverte?.titre ?: stringResource(R.string.plus),
         sousTitre = barreDuHaut.sousTitre,
