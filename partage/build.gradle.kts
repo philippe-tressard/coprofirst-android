@@ -3,7 +3,8 @@
 
 /**
  * Ce que le téléphone (`:app`) et la montre Wear OS (`:montre`, #207) partagent, écrit UNE
- * fois (#206) : le client HTTP, les formats du site, l'alerte reçue. Du Kotlin pur — ni
+ * fois (#206) : le client HTTP, les formats du site, l'alerte reçue, le découpage du texte
+ * riche du site (`LectureHTML`, que la montre rend comme le téléphone). Du Kotlin pur — ni
  * Android ni ressources — comme `:client-api`, dont l'alerte lit le modèle.
  *
  * Les pièces gardent leur paquet d'origine (`fr.coprofirst.app.…`) : les déplacer ne renomme

@@ -37,9 +37,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
  * Symbols (`Pictogrammes`). Un nom absent prend le repli — et des tests refusent qu'une
  * page de navigation, une rubrique du fil ou une nature d'affaire générées en manquent.
  *
- * ⚠️ Divergence déclarée : la gouttière du fil de l'iOS dessine les TRACÉS Lucide du site
- * (`icones-svg.json` de coprofirst, #85) ; ce catalogue n'est pas publié avec la release
- * (`tables-clients.json`), l'app Android en reste à leur équivalent de Material.
+ * La gouttière du fil, elle, dessine les TRACÉS Lucide du site, comme l'iOS : `TracesDuSite`,
+ * généré depuis `icones-svg.json`, publié avec la release depuis v3.106.0 (#183). Ailleurs,
+ * comme l'iOS garde ses SF Symbols, l'app garde l'équivalent de Material.
  */
 object Pictogrammes {
     val parNom: Map<String, ImageVector> = mapOf(

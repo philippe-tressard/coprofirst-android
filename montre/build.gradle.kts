@@ -24,11 +24,17 @@ android {
         // le plus haut qui lui convient : la montre se place au-dessus du téléphone, du même
         // nombre de commits (build racine). Le décalage ne bouge jamais.
         versionCode = versionCode?.plus(DECALAGE_MONTRE)
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     lint {
         // L'icône vient du logo, généré au build par la couche commune (#206) ; la montre la
         // reçoit avec la complication (#207, lot 5). Rien n'est publié d'ici là.
         disable += "MissingApplicationIcon"
+        // L'aperçu de la tuile est une CAPTURE de la tuile rendue, prise sur l'émulateur Wear OS
+        // de la CI avec les tests d'interface de la montre (#216, #207) : un dessin fait à la
+        // main recopierait des couleurs. Aucune image Wear OS au poste (rien ne s'y installe
+        // sans la demande de Philippe).
+        disable += "TilePreviews"
     }
 }
 
@@ -39,5 +45,19 @@ dependencies {
     implementation(libs.compose.ui)
     implementation(libs.wear.compose.material3)
     implementation(libs.wear.compose.foundation)
+    implementation(libs.wear.compose.navigation)
+    // La tuile (#207, lot 4) : Tiles et ProtoLayout (AndroidX, Apache-2.0), et le futur
+    // qu'attend TileService, sans Guava.
+    implementation(libs.wear.tiles)
+    implementation(libs.wear.protolayout.material3)
+    implementation(libs.androidx.concurrent.futures)
+    // Le client HTTP, les formats du site, l'alerte reçue : ceux du téléphone (#206).
+    implementation(project(":partage"))
     testImplementation(libs.junit)
+    // Le geste commun des tests d'interface (tests-interface-communs, #216) se compile ici aussi.
+    androidTestImplementation(platform(libs.compose.bom))
+    androidTestImplementation(libs.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.junit)
+    debugImplementation(libs.compose.ui.test.manifest)
 }

@@ -37,6 +37,15 @@ data class DetailSondage(
     /** Ouvert et pas encore voté : la règle de la fiche du site, sur les champs servis. */
     val peutVoter: Boolean get() = !cloture && monVote == null
 
+    /**
+     * Les barres AVANT le vote, au-dessus du formulaire, quand le serveur les rend visibles
+     * (5Hostachy #2803, coprofirst-ios#257) : elles remplacent le décompte posé par choix.
+     */
+    val resultatsAvantVote: Boolean get() = peutVoter && resultatsVisibles
+
+    /** Visibles et le sondage encore ouvert : le décompte peut bouger, les barres le disent. */
+    val resultatsProvisoires: Boolean get() = resultatsVisibles && !cloture
+
     companion object {
         /** Un sondage tel que le contrat le type (`SondageDetail`). */
         fun depuis(lu: SondageDetail, moi: Int?) = DetailSondage(

@@ -24,6 +24,9 @@ zxing = "3.5.4"
 # La montre Wear OS (#207) : Compose pour Wear OS (AndroidX, Apache-2.0). Aucune bibliothèque
 # de Google Play services : vérifié le 16/11/2026 sur leur arbre de dépendances.
 wear-compose = "1.7.1"
+wear-tiles = "1.6.2"
+wear-protolayout = "1.4.2"
+concurrent-futures = "1.3.0"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
@@ -54,6 +57,10 @@ androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "
 zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
 wear-compose-material3 = { module = "androidx.wear.compose:compose-material3", version.ref = "wear-compose" }
 wear-compose-foundation = { module = "androidx.wear.compose:compose-foundation", version.ref = "wear-compose" }
+wear-compose-navigation = { module = "androidx.wear.compose:compose-navigation", version.ref = "wear-compose" }
+wear-tiles = { module = "androidx.wear.tiles:tiles", version.ref = "wear-tiles" }
+wear-protolayout-material3 = { module = "androidx.wear.protolayout:protolayout-material3", version.ref = "wear-protolayout" }
+androidx-concurrent-futures = { module = "androidx.concurrent:concurrent-futures", version.ref = "concurrent-futures" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

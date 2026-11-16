@@ -199,7 +199,10 @@ def autotest() -> bool:
         ok &= verdict_notes("1.0.1", dossier)[0] == OK
         (dossier / "1.0.2.txt").write_text("x" * (NOTES_MAX + 1), encoding="utf-8")
         ok &= verdict_notes("1.0.2", dossier)[0] == ROUGE
-    ok &= jobs_requis(CI.read_text(encoding="utf-8"))[-2:] == ["Interface (émulateur)", "Interface tablette (échantillon)"]
+    # Les jobs d'interface sont requis à la soumission, où qu'ils soient dans ci.yml : le
+    # téléphone, la tablette et la montre Wear OS (#207).
+    ok &= {"Interface (émulateur)", "Interface tablette (échantillon)", "Interface montre (Wear OS)"} \
+        <= set(jobs_requis(CI.read_text(encoding="utf-8")))
     return ok
 
 

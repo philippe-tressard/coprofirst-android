@@ -35,5 +35,17 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- La tuile (#207, lot 4) : le nombre de nouvelles alertes, sans leur contenu. -->
+        <service
+            android:name=".tuile.TuileCloche"
+            android:description="@string/tuile_description"
+            android:exported="true"
+            android:label="@string/tuile_nom"
+            android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
+            <intent-filter>
+                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
+            </intent-filter>
+        </service>
     </application>
 </manifest>

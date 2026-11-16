@@ -32,6 +32,7 @@ reprend la fiche du site (`sondages/[id]/+page.svelte`, `ResultatsSondage.svelte
     <string name="sondage_envoi">Envoi…</string>
     <string name="sondage_vote_enregistre">Vote enregistré</string>
     <string name="sondage_mon_vote">Mon vote ✓</string>
+    <string name="sondage_resultats_provisoires">Résultats provisoires : le sondage est encore ouvert.</string>
     <string name="sondage_resultats_masques">Les résultats de ce sondage ne seront visibles qu\'après sa clôture.</string>
     <string name="sondage_pourcentage">%1$s %%</string>
     <string name="sondage_commentaires">💬 Commentaires (%1$d)</string>

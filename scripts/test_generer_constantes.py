@@ -56,14 +56,16 @@ class Constantes(unittest.TestCase):
         """#74 : ce que constantes-clients.json publie ne se recopie plus dans un générateur."""
         for script in (RACINE / "scripts").glob("generer_*.py"):
             source = script.read_text(encoding="utf-8")
-            # #169 : les règles de fichiers publiées depuis v3.105.0 ne se tiennent plus.
+            # #169 : les règles de fichiers publiées (v3.105.0, v3.106.0) ne se tiennent plus.
             for copie in ("SCHEMAS_DE_LIEN =", "SEUILS_AVIS_TENUS", "FICHIERS_EXTENSIONS_IMAGE", "FICHIERS_LONGUEUR_PREFIXE",
-                          "EXTENSIONS_IMAGE =", "PREFIXE_UUID ="):
+                          "EXTENSIONS_IMAGE =", "PREFIXE_UUID =", "FAMILLES_TENUES"):
                 self.assertNotIn(copie, source, script.name)
 
 
 class Fichiers(unittest.TestCase):
-    """`FichiersDuSite` (#169) : les motifs publiés depuis v3.105.0, les familles tenues."""
+    """`FichiersDuSite` (#169) : les motifs publiés depuis v3.105.0, les familles d'affichage depuis v3.106.0."""
+
+    FAMILLES = [("JPEG", "JPG"), ("XLSX", "EXCEL")]
 
     def motifs(self, **remplace):
         base = {"motifImage": c({"motif": r"\.(jpe?g|png)$", "ignorerCasse": True}),
@@ -72,14 +74,17 @@ class Fichiers(unittest.TestCase):
         return base
 
     def test_les_motifs_publies_deviennent_des_regex(self):
-        texte = g.kotlin_fichiers(self.motifs(), "t")
+        texte = g.kotlin_fichiers(self.motifs(), "t", self.FAMILLES)
         self.assertIn('val motifImage: Regex = Regex("\\\\.(jpe?g|png)\\$", RegexOption.IGNORE_CASE)', texte)
         self.assertIn('val prefixeStockage: Regex = Regex("^[0-9a-f]{32}_")', texte)
         self.assertIn('"XLSX" to "EXCEL",', texte)
 
     def test_le_plancher_se_genere(self):
         publiees = json.loads((RACINE / "contrat" / "constantes-clients.json").read_text(encoding="utf-8"))["constantes"]
-        texte = g.kotlin_fichiers(publiees, "constantes-clients.json")
+        tables = json.loads((RACINE / "contrat" / "tables-clients.json").read_text(encoding="utf-8"))["tables"]
+        texte = g.kotlin_fichiers(publiees, "constantes-clients.json", g.familles_affichage(tables))
+        for cle, valeur in (("JPEG", "JPG"), ("XLS", "EXCEL"), ("DOCX", "WORD"), ("PPT", "POWERPOINT"), ("TXT", "TEXTE")):
+            self.assertIn(f'"{cle}" to "{valeur}",', texte)
         self.assertIn("tiff?", texte)
         self.assertIn("{32}_", texte)
 
@@ -89,7 +94,10 @@ class Fichiers(unittest.TestCase):
                       {"prefixeStockage": c({"motif": "(?P<h>[0-9a-f]{32})_", "ignorerCasse": True})},
                       {"prefixeStockage": c({"motif": "_\\Z", "ignorerCasse": True})}):
             with self.assertRaises(TableInattendue, msg=str(casse)):
-                g.kotlin_fichiers({k: v for k, v in self.motifs(**casse).items() if v is not None}, "t")
+                g.kotlin_fichiers({k: v for k, v in self.motifs(**casse).items() if v is not None}, "t", self.FAMILLES)
+        for mauvais in (None, ["JPG"], {}):
+            with self.assertRaises(TableInattendue, msg=repr(mauvais)):
+                g.familles_affichage({"famillesAffichageFichiers": {"valeur": mauvais}})
         for familles in ((), (("docx", "WORD"),), (("DOC", "word"),), (("DOC", "WORD"), ("DOC", "TEXTE")), (("DOC", " "),)):
             with self.assertRaises(TableInattendue, msg=repr(familles)):
                 g.kotlin_fichiers(self.motifs(), "t", familles)

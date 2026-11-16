@@ -196,7 +196,7 @@ fun EcranProfil(service: ServiceProfil) {
 }
 ```
 
-## Tests d'interface — `androidTest/…/commun/Gestes.kt`
+## Tests d'interface — `tests-interface-communs/…/commun/Gestes.kt` (téléphone et montre, #216)
 
 Chaque écran a ses tests d'interface (`app/src/androidTest`, serveur local, repères = les
 identifiants d'accessibilité de l'iOS). Trois règles, tenues par `verifier-depot.sh` :

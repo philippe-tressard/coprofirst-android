@@ -95,7 +95,7 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   `bash scripts/pipeline.sh` (la CI hors émulateur, lint en erreurs ; `pipeline.sh <tâches>` pour une partie) —
   **au poste, aucun `./gradlew` lourd en direct** : il passe par `pipeline.sh`, sous le verrou commun ; tests d'interface (`app/src/androidTest`, serveur local en HTTPS,
   repères = identifiants d'accessibilité de l'iOS ; tout toucher passe par `toucher`,
-  `androidTest/…/commun/Gestes.kt`, qui amène l'élément à l'écran avant de toucher — un
+  `tests-interface-communs/…/commun/Gestes.kt`, commun au téléphone et à la montre (#216), qui amène l'élément à l'écran avant de toucher — un
   `performClick` direct se perd hors de l'écran, `verifier-depot.sh` le refuse ; règle
   `junit4.v2.createComposeRule`, effets au fil principal — la v1 est refusée) en CI, job « Interface », et au poste
   par `bash scripts/tests-interface.sh` — une seule tâche lourde au poste à la fois

@@ -1,8 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Philippe TRESSARD
 // SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 
-import org.gradle.process.ExecOperations
-import javax.inject.Inject
 
 plugins {
     alias(libs.plugins.android.application)
@@ -23,35 +21,6 @@ android {
     }
 }
 
-/**
- * Ce qui se GÉNÈRE au build par un script Python du dépôt, depuis un fichier recopié à
- * l'octet : les palettes (contrat/tables-clients.json → scripts/generer_charte.py), les
- * constantes du serveur (contrat/constantes-clients.json → scripts/generer_constantes.py), les
- * tables des menus — navigation, texte riche, pièces jointes, natures du fil, et celles
- * de chaque menu (→ scripts/generer_tables*.py, découverts par convention), le registre
- * des menus (fonctions/<menu>/Inscription.kt → scripts/generer_registre.py) et le logo au format d'Android
- * (app/src/main/logo/logo.svg → scripts/generer_logo.py).
- * Rien de généré n'est versionné ; aucune couleur ne s'écrit à la main.
- */
-abstract class GenererDepuisPython : DefaultTask() {
-    /** Ce que le script lit : un fichier, ou les fichiers d'un dossier (les inscriptions). */
-    @get:InputFiles @get:PathSensitive(PathSensitivity.RELATIVE) abstract val lus: ConfigurableFileCollection
-    /** Le chemin passé au script (le fichier, ou le dossier). */
-    @get:Input abstract val entree: Property<String>
-    @get:InputFile abstract val generateur: RegularFileProperty
-    @get:OutputDirectory abstract val sortie: DirectoryProperty
-    /** Ce que le script reçoit après l'entrée et la sortie (la liste des modules embarqués). */
-    @get:Input abstract val arguments: ListProperty<String>
-    @get:Inject abstract val processus: ExecOperations
-
-    @TaskAction
-    fun generer() {
-        sortie.get().asFile.deleteRecursively()
-        processus.exec {
-            commandLine(listOf("python3", "-I", generateur.get().asFile.path, entree.get(), sortie.get().asFile.path) + arguments.get())
-        }
-    }
-}
 
 /**
  * Les modules tiers que l'app EMBARQUE — ceux de la variante publiée (`release`), sans
@@ -74,21 +43,23 @@ abstract class ListerModulesEmbarques : DefaultTask() {
     }
 }
 
-fun generation(nom: String, entree: String, generateur: String, lus: Any = entree) = tasks.register<GenererDepuisPython>(nom) {
-    this.lus.from(rootProject.layout.projectDirectory.files(lus))
-    this.entree.set(rootProject.layout.projectDirectory.file(entree).asFile.path)
-    this.generateur.set(rootProject.layout.projectDirectory.file(generateur))
-    sortie.set(layout.buildDirectory.dir("generated/$nom"))
-    arguments.convention(emptyList())
-}
 
 val genererCharte = generation("genererCharte", "contrat/tables-clients.json", "scripts/generer_charte.py")
 val genererLogo = generation("genererLogo", "app/src/main/logo/logo.svg", "scripts/generer_logo.py")
 val genererTables = generation("genererTables", "contrat/tables-clients.json", "scripts/generer_tables.py")
 // Les constantes du serveur (#74) : ce que l'API applique sans le dire dans le contrat.
-val genererConstantes = generation("genererConstantes", "contrat/constantes-clients.json", "scripts/generer_constantes.py")
+// Les familles d'affichage des fichiers se lisent à côté, dans tables-clients.json (#2798).
+val genererConstantes = generation(
+    "genererConstantes", "contrat/constantes-clients.json", "scripts/generer_constantes.py",
+    lus = listOf("contrat/constantes-clients.json", "contrat/tables-clients.json"),
+)
 // Les mesures du site (#2) : les jetons de longueur, que `MesuresTest` confronte à `Mise`.
 val genererMesures = generation("genererMesures", "contrat/tables-clients.json", "scripts/generer_mesures.py")
+// Les tracés des icônes du site (#183), et leur trait (`attributsTrace`) lu dans tables-clients.json.
+val genererTraces = generation(
+    "genererTraces", "contrat/icones-svg.json", "scripts/generer_traces.py",
+    lus = listOf("contrat/icones-svg.json", "contrat/tables-clients.json"),
+)
 
 // Les natures du fil nomment leurs teintes par les jetons de `Couleurs` : generer_tables.py
 // les lit dans generer_charte.py (`propriete`, jetons portés), qu'il charge par son chemin.
@@ -136,6 +107,7 @@ androidComponents {
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererTables, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererConstantes, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererMesures, GenererDepuisPython::sortie)
+        variante.sources.kotlin?.addGeneratedSourceDirectory(genererTraces, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererRegistre, GenererDepuisPython::sortie)
         genererTablesDesMenus.forEach { variante.sources.kotlin?.addGeneratedSourceDirectory(it, GenererDepuisPython::sortie) }
         variante.sources.res?.addGeneratedSourceDirectory(genererLogo, GenererDepuisPython::sortie)

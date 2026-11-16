@@ -217,7 +217,7 @@ interdire "$HTML_MAIN" "texte HTML rendu hors de commun/texte (vue web, lecteur 
 CLIC_DIRECT='\.performClick\('
 autotest_motif "toucher hors du geste commun" "$CLIC_DIRECT" '        ecran.onNodeWithTag(r).performClick()' '        ecran.toucherTag(r)'
 interdire "$CLIC_DIRECT" "toucher écrit à la main dans un test d'interface — passer par toucher (commun/Gestes.kt)" \
-  '^app/src/androidTest/java/fr/coprofirst/app/commun/Gestes\.kt$' '^app/src/androidTest/.*\.kt$'
+  '^tests-interface-communs/fr/coprofirst/app/commun/Gestes\.kt$' '^((app|montre)/src/androidTest|tests-interface-communs)/.*\.kt$'
 
 # Les tests d'interface ATTENDENT par les attentes communes (commun/Gestes.kt : attendre,
 # attendreTag, attendreTexte, attendreDisparition…, attendreQue) : 24 aides privées les
@@ -225,7 +225,7 @@ interdire "$CLIC_DIRECT" "toucher écrit à la main dans un test d'interface —
 ATTENTE_PRIVEE='private fun (attendre|disparait|disparu|absent)[A-Za-z]*\('
 autotest_motif "attente recopiée" "$ATTENTE_PRIVEE" '    private fun attendre(tag: String) = ecran.waitUntil(DELAI_MS) {' '        ecran.attendreTag(tag)'
 interdire "$ATTENTE_PRIVEE" "attente écrite à la main dans un test d'interface — passer par les attentes de commun/Gestes.kt" \
-  "" '^app/src/androidTest/.*\.kt$'
+  "" '^((app|montre)/src/androidTest|tests-interface-communs)/.*\.kt$'
 
 # La règle des tests d'interface est la v2 (`junit4.v2.createComposeRule`) : ses effets
 # tournent sur un `StandardTestDispatcher`, au fil principal. La v1 (dépréciée) les menait
@@ -234,7 +234,7 @@ interdire "$ATTENTE_PRIVEE" "attente écrite à la main dans un test d'interface
 # multithreaded access to SnapshotStateObserver », par intermittence (CI de #80, #119).
 REGLE_V1='androidx\.compose\.ui\.test\.junit4\.create[A-Za-z]*ComposeRule'
 autotest_motif "règle de test v1" "$REGLE_V1" 'import androidx.compose.ui.test.junit4.createComposeRule' 'import androidx.compose.ui.test.junit4.v2.createComposeRule'
-interdire "$REGLE_V1" "règle de test v1 (dépréciée, effets hors du fil principal) — junit4.v2" "" '^(app|montre)/src/(androidTest|test)/.*\.kt$'
+interdire "$REGLE_V1" "règle de test v1 (dépréciée, effets hors du fil principal) — junit4.v2" "" '^((app|montre)/src/(androidTest|test)|tests-interface-communs)/.*\.kt$'
 
 # La version se DÉDUIT de git (build racine, commun au téléphone et à la montre) : aucune
 # PR ne l'écrit. Un `versionCode`/`versionName` littéral reviendrait au conflit des PR

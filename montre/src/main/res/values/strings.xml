@@ -8,4 +8,23 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 <resources>
     <string name="nom_app" translatable="false">CoproFirst</string>
     <string name="montre_non_reliee">Ouvrez CoproFirst sur le téléphone pour relier la montre</string>
+    <string name="montre_aucune_alerte">Aucune alerte</string>
+    <string name="montre_deja_lues">Déjà lues</string>
+    <string name="montre_deja_lues_repliees">Repliées</string>
+    <string name="montre_deja_lues_ouvertes">Dépliées</string>
+    <string name="montre_urgent">Urgent</string>
+    <string name="montre_chargement">Chargement des alertes</string>
+    <string name="tuile_nom">Alertes</string>
+    <string name="tuile_description">Le nombre de nouvelles alertes de la résidence, sans leur contenu</string>
+    <string name="tuile_alertes_dont">%1$s ·\u00A0%2$s</string>
+    <plurals name="tuile_nouvelles_alertes">
+        <item quantity="one">%d nouvelle alerte</item>
+        <item quantity="many">%d nouvelles alertes</item>
+        <item quantity="other">%d nouvelles alertes</item>
+    </plurals>
+    <plurals name="tuile_dont_urgentes">
+        <item quantity="one">dont %d urgente</item>
+        <item quantity="many">dont %d urgentes</item>
+        <item quantity="other">dont %d urgentes</item>
+    </plurals>
 </resources>
