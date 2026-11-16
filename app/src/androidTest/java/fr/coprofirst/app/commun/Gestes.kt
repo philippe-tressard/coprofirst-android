@@ -39,6 +39,11 @@ import androidx.test.espresso.NoActivityResumedException
  * Et d'abord, le CLAVIER se ferme : juste après une frappe, le bouton au pied d'une feuille
  * est sous lui — le test le croit affiché (la sémantique ignore le clavier) et le toucher
  * tombe sur le clavier (la cause la plus fréquente des rouges du 16/11, #113).
+ *
+ * Et enfin, le nœud doit être IMMOBILE : une page qui se met en place à l'arrivée d'une
+ * donnée servie le déplace, et un toucher calculé sur l'ancienne position tombe à côté
+ * (Espace CS, #112). Le geste attend que sa position soit la même deux lectures de suite.
+ * L'effet du toucher, lui, se vérifie dans le test (« pastille retenue ») : il dépend de lui.
  */
 
 /** Le temps qu'un nœud a pour paraître (chargement servi, animation) : celui des tests. */
@@ -56,7 +61,28 @@ fun SemanticsNodeInteraction.amener(): SemanticsNodeInteraction {
 /** Le geste unique : le clavier fermé, amené à l'écran, vérifié affiché, puis touché. */
 fun SemanticsNodeInteraction.toucher(): SemanticsNodeInteraction {
     fermerLeClavier()
-    return amener().assertIsDisplayed().performClick()
+    return amener().attendreImmobile().assertIsDisplayed().performClick()
+}
+
+/** Le temps qu'un nœud a pour cesser de bouger, et le pas entre deux lectures de sa position. */
+private const val IMMOBILE_MS = 3_000L
+private const val PAS_IMMOBILE_MS = 100L
+
+/**
+ * Attend que la position du nœud soit la même deux lectures de suite (chaque lecture attend
+ * que l'interface soit au repos). Toujours en mouvement au bout de [IMMOBILE_MS] : échec qui
+ * le dit, plutôt qu'un toucher à côté.
+ */
+private fun SemanticsNodeInteraction.attendreImmobile(): SemanticsNodeInteraction {
+    val limite = System.nanoTime() + IMMOBILE_MS * 1_000_000
+    var avant = fetchSemanticsNode().boundsInRoot
+    while (true) {
+        Thread.sleep(PAS_IMMOBILE_MS)
+        val apres = fetchSemanticsNode().boundsInRoot
+        if (apres == avant) return this
+        check(System.nanoTime() < limite) { "Toucher : le nœud bouge encore après $IMMOBILE_MS ms ($avant → $apres)." }
+        avant = apres
+    }
 }
 
 /** Ferme le clavier s'il est ouvert, et attend qu'il le soit ; sans activité au premier plan, rien. */
