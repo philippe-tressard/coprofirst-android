@@ -56,7 +56,7 @@ CoproFirst est un logiciel libre (AGPL-3.0) : son code est public, celui de cett
 |---|---|
 | Catégorie de l'app | Productivité |
 | Tags | Productivité, Gestion de propriété (les plus proches que propose la console) |
-| Adresse e-mail | celle de Philippe, saisie par lui (jamais écrite dans ce dépôt public) |
+| Coordonnées — adresse e-mail (affichée sur la fiche) | `contact@coprofirst.fr` : l'adresse publique du site et de la vitrine, la même que sur l'App Store (décision de Philippe, 16/11/2026) |
 | Site Web | `https://coprofirst.fr` |
 | Règles de confidentialité | `https://coprofirst.fr/confidentialite.html` |
 | Prix | gratuit, sans achat intégré |
