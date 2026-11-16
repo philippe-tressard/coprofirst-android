@@ -53,4 +53,8 @@ dependencies {
     // Le client HTTP, les formats du site, l'alerte reçue : ceux du téléphone (#206).
     implementation(project(":partage"))
     testImplementation(libs.junit)
+    // Le geste commun des tests d'interface (tests-interface-communs, #216) se compile ici aussi.
+    androidTestImplementation(platform(libs.compose.bom))
+    androidTestImplementation(libs.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.test.runner)
 }
