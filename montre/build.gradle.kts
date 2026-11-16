@@ -64,9 +64,9 @@ dependencies {
     androidTestImplementation(libs.androidx.test.junit)
     debugImplementation(libs.compose.ui.test.manifest)
     // L'aperçu de la tuile : la tuile rendue comme sur la montre, écrite par le test (#207).
-    androidTestImplementation(libs.wear.tiles.renderer)
-    // Son thème (ProtoLayoutBaseTheme), que le rendu lit pour ses polices.
-    androidTestImplementation(libs.wear.protolayout.renderer)
+    // En DEBUG, pas en androidTest : le moteur lit son thème et ses polices dans les
+    // ressources de l'APP rendue, et une dépendance de test ne les y met pas. Jamais en release.
+    debugImplementation(libs.wear.tiles.renderer)
     androidTestImplementation(libs.androidx.test.services.storage)
     androidTestUtil(libs.androidx.test.services)
 }
