@@ -41,3 +41,12 @@ path = ["contrat/openapi.json", "contrat/tables-clients.json", "contrat/constant
 precedence = "override"
 SPDX-FileCopyrightText = "2026 Philippe TRESSARD"
 SPDX-License-Identifier = "AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins"
+
+# Le contenu de la vitrine (« En savoir plus », la démo) : site/contenu.json de
+# coprofirst-site (même auteur, seul titulaire des droits), recopié à l'octet par
+# scripts/importer-vitrine.sh. Le JSON n'admet pas d'en-tête.
+[[annotations]]
+path = "app/src/main/assets/vitrine/contenu.json"
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Philippe TRESSARD"
+SPDX-License-Identifier = "AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins"

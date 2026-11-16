@@ -39,6 +39,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: bash scripts/importer-logo.sh --verifier
+      - name: Contenu de la vitrine identique à coprofirst-site
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/importer-vitrine.sh --verifier
       - name: REUSE
         run: |
           python3 -m venv "$RUNNER_TEMP/reuse"

@@ -57,14 +57,26 @@ class ParcoursEntree(
 
     override fun entrer() {
         val derniere = connues.liste.firstOrNull()?.adresse?.enSaisie
-        _etat.update { it.copy(ecran = EcranEntree.Connexion) }
+        _etat.update { it.vers(EcranEntree.Connexion).copy(aideDemo = null) }
         if (_etat.value.saisie.isEmpty() && derniere != null) saisir(derniere, pause = false)
     }
 
-    /** La démonstration : l'écran de connexion, à son adresse (les personnages : #10). */
-    override fun entrerDemo() {
-        _etat.update { it.copy(ecran = EcranEntree.Connexion) }
-        saisir(AdresseInstallation.DEMO.enSaisie, pause = false)
+    /** La démonstration : ses trois rôles (`DemoView` de l'iOS). */
+    override fun entrerDemo() = _etat.update { it.vers(EcranEntree.Demo) }
+
+    override fun enSavoirPlus() = _etat.update { it.vers(EcranEntree.EnSavoirPlus) }
+
+    /**
+     * Un rôle de la démo, comme l'iOS sans route qui serve les identifiants : la connexion,
+     * à l'adresse de la démo, l'identifiant public du rôle (`user-cs@demo.coprofirst.fr`)
+     * pré-rempli, et où lire son mot de passe. La démo ne se confirme pas (`GardeHote`).
+     */
+    override fun choisirPersonnage(code: String, role: String) {
+        val demo = AdresseInstallation.DEMO.enSaisie
+        _etat.update {
+            it.vers(EcranEntree.Connexion).copy(email = "$code@$demo", motDePasse = "", aideDemo = role, erreurConnexion = null)
+        }
+        saisir(demo, pause = false)
     }
 
     override fun saisir(texte: String) = saisir(texte, pause = true)
@@ -97,7 +109,8 @@ class ParcoursEntree(
         reconnaissance?.cancel()
         _etat.update {
             it.copy(
-                ecran = EcranEntree.Connexion, ouverte = null, confirmation = null, venue = null,
+                ecran = EcranEntree.Connexion, pile = emptyList(), aideDemo = null,
+                ouverte = null, confirmation = null, venue = null,
                 motDePasse = "", connexionEnCours = false, erreurConnexion = null, lien = enAttente,
             )
         }
@@ -124,9 +137,13 @@ class ParcoursEntree(
 
     override fun basculerVoirMotDePasse() = _etat.update { it.copy(voirMotDePasse = !it.voirMotDePasse) }
 
+    /** L'écran d'avant ; quitter la connexion y arrête tout ce qui courait. */
     override fun retour() {
-        reconnaissance?.cancel()
-        _etat.update { it.copy(ecran = EcranEntree.Accueil, enCours = false, confirmation = null, venue = null) }
+        if (_etat.value.ecran == EcranEntree.Connexion) {
+            reconnaissance?.cancel()
+            _etat.update { it.copy(enCours = false, confirmation = null, venue = null, aideDemo = null) }
+        }
+        _etat.update { it.copy(ecran = it.pile.lastOrNull() ?: EcranEntree.Accueil, pile = it.pile.dropLast(1)) }
     }
 
     /** Le seul chemin du mot de passe : un hôte à confirmer ouvre la confirmation, RIEN ne part. */
@@ -154,7 +171,7 @@ class ParcoursEntree(
                 _etat.update {
                     it.copy(
                         connexionEnCours = false, motDePasse = "", ouverte = installation, ecran = EcranEntree.Espace,
-                        lien = it.lien?.takeIf { l -> l.adresse == installation.adresse },
+                        pile = emptyList(), aideDemo = null, lien = it.lien?.takeIf { l -> l.adresse == installation.adresse },
                     )
                 }
             } catch (erreur: ErreurService) {
@@ -182,7 +199,7 @@ class ParcoursEntree(
 
     override fun deconnecter() {
         val ouverte = _etat.value.ouverte ?: return
-        _etat.update { it.copy(ouverte = null, ecran = EcranEntree.Connexion, lien = null) }
+        _etat.update { it.copy(ouverte = null, ecran = EcranEntree.Connexion, pile = emptyList(), lien = null) }
         effacerLesPieces()
         viewModelScope.launch {
             avantSortie()

@@ -12,7 +12,15 @@ le logiciel libre de gestion de copropriété — Kotlin et Jetpack Compose.
 
 L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-tressard/coprofirst-ios), aux couleurs de la charte de CoproFirst — celles de la résidence dès qu'elle est reconnue, au clair comme au sombre.
 
-- **Accueil** : « Entrer dans ma résidence » ou « Découvrir la démo ».
+- **Accueil** : « Entrer dans ma résidence », « Découvrir la démo » ou « En savoir plus
+  sur CoproFirst ».
+- **En savoir plus** : la page de coprofirst.fr raccourcie — ce que fait CoproFirst, six
+  fonctions —, avec « Entrer dans ma résidence » et « Essayer la démo » collés en bas. Les
+  textes sont ceux du site (`contenu.json` de coprofirst-site, recopié à l'octet par
+  `scripts/importer-vitrine.sh`), jamais réécrits dans l'app.
+- **La démo** : trois rôles (conseil syndical, copropriétaire, locataire) ; un toucher
+  ouvre la connexion à la démo, l'identifiant public du rôle pré-rempli, et dit où lire
+  son mot de passe (« Voir les identifiants publics », sur coprofirst.fr).
 - **Connectez-vous à votre espace** : l'adresse de la résidence (celle de la fiche
   d'arrivée) se reconnaît pendant la saisie ; une coche paraît dans le champ et le nom
   de la résidence dessous. Sinon, une phrase dit pourquoi (adresse injoignable, pas une
