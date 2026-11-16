@@ -8,8 +8,10 @@ import fr.coprofirst.app.commun.StockageApparence
 import fr.coprofirst.app.session.ClientHttp
 import fr.coprofirst.app.session.Connexion
 import fr.coprofirst.app.session.Decouverte
+import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.InstallationsConnues
 import fr.coprofirst.app.session.PreuveHote
+import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsGardees
 import fr.coprofirst.app.session.SessionsParHote
 import fr.coprofirst.app.session.StockageResidences
@@ -90,6 +92,10 @@ class ServeurDeTest : AutoCloseable {
         override fun lire() = valeur
         override fun ecrire(valeur: String) { this.valeur = valeur }
     })
+
+    /** Une résidence déjà ouverte sur ce serveur, sans passer par l'entrée (un écran de la résidence seul). */
+    fun session(installation: Installation): SessionOuverte =
+        SessionOuverte(installation, SessionsParHote(client), baseApi = { serveur.url("/api").toString() })
 
     /** Le thème de l'appareil, gardé en mémoire le temps du test. */
     fun apparence() = Apparence(object : StockageApparence {
