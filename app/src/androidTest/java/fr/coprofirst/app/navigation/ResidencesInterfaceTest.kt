@@ -4,6 +4,7 @@
 package fr.coprofirst.app.navigation
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -84,6 +85,16 @@ class ResidencesInterfaceTest {
                 .fetchSemanticsNodes().isNotEmpty()
         }
         ecran.onNodeWithTag(REPERE_UNE_AUTRE).assertIsDisplayed()
+    }
+
+    /** #181 : le logement servi en tête du fil ; un toucher ouvre « Mes lots & accès ». */
+    @Test
+    fun leLogementEnTeteDuFilOuvreMesLots() {
+        ecran.waitUntil(DELAI_MS) {
+            ecran.onAllNodes(hasTestTag("fil.lot") and hasContentDescription("Mon logement : Bât. A, T3, 2ème")).fetchSemanticsNodes().isNotEmpty()
+        }
+        ecran.toucherTag("fil.lot")
+        ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag("fil.lot")).fetchSemanticsNodes().isEmpty() }
     }
 
     /** Changer de résidence mène à SA connexion, pré-remplie — sans déconnecter celle qu'on quitte. */

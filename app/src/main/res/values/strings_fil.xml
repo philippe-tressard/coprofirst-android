@@ -21,4 +21,7 @@ Les textes du fil d'activité, écrits une fois — ceux de l'iOS (`FilView`, `C
     <string name="fil_prevu_du_au">prévu du %1$s au %2$s</string>
     <string name="fil_squelette_titre">Une affaire de la résidence</string>
     <string name="fil_squelette_detail">Ce qui s\'est passé, en une ou deux lignes.</string>
+    <!-- Le logement en tête du fil (#181), les mots de l'iOS (`PastilleLogement`). -->
+    <string name="fil_logement">Mon logement : %1$s</string>
+    <string name="fil_logement_ouvre">Ouvre Mes lots &amp; accès</string>
 </resources>

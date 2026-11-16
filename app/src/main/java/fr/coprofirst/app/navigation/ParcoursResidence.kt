@@ -44,6 +44,8 @@ data class EtatResidence(
     val roles: RolesConnus? = null,
     /** La saisie d'une affaire du compte (`saisie_affaire_effective`, #178) ; `null` tant qu'elle n'est pas lue. */
     val saisieAffaire: String? = null,
+    /** Le logement du compte (`libelle_logement`, #181), en tête du fil ; `null` sans lot servi. */
+    val logement: String? = null,
 ) {
     companion object {
         const val PLUS = "plus"
@@ -80,7 +82,10 @@ class ParcoursResidence(
             val moi = compte.moi()
             val roles = RolesConnus(moi.statut.value, (moi.roles.orEmpty() + moi.role.value).distinct())
             _etat.update {
-                it.copy(droits = DroitsOnglet.depuis(moi), refusMesure = moi.optOutTelemetrie, roles = roles, saisieAffaire = moi.saisieAffaireEffective)
+                it.copy(
+                    droits = DroitsOnglet.depuis(moi), refusMesure = moi.optOutTelemetrie, roles = roles,
+                    saisieAffaire = moi.saisieAffaireEffective, logement = moi.libelleLogement?.takeIf { l -> l.isNotBlank() },
+                )
             }
         } catch (_: ErreurService) {
             // Sans profil : les droits d'avant restent (ceux de tous, à l'ouverture).

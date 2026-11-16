@@ -68,7 +68,8 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   En haut à droite, le nom de la résidence (« où suis-je ») ouvre « Résidences » : celle où
   l'on est, ses rôles et « Se déconnecter » ; les autres résidences de l'appareil, chacune
   avec ses rôles, qu'un toucher ouvre sans se déconnecter d'ici ; « Une autre résidence ».
-- **Fil d'activité** (la première page) : ce qui se passe dans la résidence, jour par
+- **Fil d'activité** (la première page) : en tête, son logement, qui ouvre « Mes lots &
+  accès » ; puis ce qui se passe dans la résidence, jour par
   jour (« Aujourd'hui », « Hier », puis la date), le plus récent en tête. Chaque carte
   dit sa rubrique dans sa teinte, l'heure, la nature d'une affaire, le délai et les dates
   d'une affaire datée, le titre et le début du texte, qui la lit et son lieu, ses pièces
