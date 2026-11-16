@@ -2,14 +2,14 @@
 # SPDX-FileCopyrightText: 2026 Philippe TRESSARD
 # SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 #
-# construire-release.sh — l'AAB signé par la clé de TÉLÉVERSEMENT, prêt pour la Play
+# construire-release.sh — les AAB (téléphone, montre #207) signés par la clé de TÉLÉVERSEMENT, prêts pour la Play
 # Console (Play App Signing : Google re-signe avec la clé de l'app). Au poste
 # seulement, jamais en CI (#33) ; il ne téléverse rien : la publication est un geste
 # de Philippe (docs/signature-android.md).
 #
 # Il refuse de construire ce qui ne serait pas `main` tel que publié : une branche,
 # un arbre modifié, ou un `main` local décalé d'origin. La version se déduit au build
-# (versionCode = nombre de commits, app/build.gradle.kts).
+# (versionCode = nombre de commits, build racine ; la montre se place au-dessus).
 #   --verifier : contrôle les prérequis (clé, mot de passe, arbre) sans construire.
 # Un prérequis illisible rend INCONNU (sortie 2), jamais OK.
 set -uo pipefail
@@ -45,13 +45,16 @@ fi
 
 # Sans cache de configuration : le mot de passe n'est écrit nulle part sur le disque.
 COPROFIRST_SIGNATURE_MDP="$MDP" ./gradlew -q --no-configuration-cache --max-workers=2 \
-  -Pcoprofirst.signature.cle="$CLE" :app:afficherVersion :app:bundleRelease || echec "build de la release"
+  -Pcoprofirst.signature.cle="$CLE" :app:afficherVersion :app:bundleRelease :montre:afficherVersion :montre:bundleRelease \
+  || echec "build de la release"
 unset MDP
 
-AAB=app/build/outputs/bundle/release/app-release.aab
-[ -f "$AAB" ] || inconnu "$AAB introuvable après le build"
-jarsigner -verify "$AAB" >/dev/null 2>&1 || echec "$AAB n'est pas signé"
-echo "✅ $AAB"
-echo "   empreinte SHA-256 du certificat de téléversement (à comparer à la Play Console) :"
-keytool -printcert -jarfile "$AAB" 2>/dev/null | grep -E 'SHA256:' | head -1 | sed 's/^[[:space:]]*/   /'
-shasum -a 256 "$AAB" | sed 's/^/   fichier : /'
+# Le téléphone et la montre (#207) : une même app Google Play, deux artefacts, une clé.
+for AAB in app/build/outputs/bundle/release/app-release.aab montre/build/outputs/bundle/release/montre-release.aab; do
+  [ -f "$AAB" ] || inconnu "$AAB introuvable après le build"
+  jarsigner -verify "$AAB" >/dev/null 2>&1 || echec "$AAB n'est pas signé"
+  echo "✅ $AAB"
+  echo "   empreinte SHA-256 du certificat de téléversement (à comparer à la Play Console) :"
+  keytool -printcert -jarfile "$AAB" 2>/dev/null | grep -E 'SHA256:' | head -1 | sed 's/^[[:space:]]*/   /'
+  shasum -a 256 "$AAB" | sed 's/^/   fichier : /'
+done
