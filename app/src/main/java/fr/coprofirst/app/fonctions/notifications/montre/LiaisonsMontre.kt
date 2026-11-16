@@ -6,6 +6,7 @@ package fr.coprofirst.app.fonctions.notifications.montre
 import android.content.Context
 import fr.coprofirst.app.fonctions.notifications.push.ReglagesPreferences
 import fr.coprofirst.app.fonctions.notifications.push.ReglagesPush
+import fr.coprofirst.app.session.AbonneSession
 import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.SessionOuverte
 
@@ -16,19 +17,24 @@ import fr.coprofirst.app.session.SessionOuverte
  * transmet avec l'adresse et le nom de la résidence ; à la FERMETURE, il le retire du serveur
  * et efface la montre.
  *
- * Abonnée au point d'accroche commun de la session (`AbonneSession`, #150). Liaison éteinte
+ * Abonnée au point d'accroche commun de la session (`AbonneSession`, #150, la liste de
+ * `FabriqueParcoursEntree`) ; la résidence se reconnaît à son adresse, jamais à l'identité de
+ * sa `SessionOuverte` (le parcours en crée une à chaque geste). Liaison éteinte
  * (`LiaisonMontre.ACTIF` de la montre, ici `actif`), ses deux gestes ne font rien.
  *
  * Seul l'identifiant de la montre se garde sur le téléphone (`MontresGardees`), jamais le
  * jeton : il ne fait que passer.
  */
 class LiaisonsMontre(
-    private val canal: CanalMontre,
+    fabriqueCanal: () -> CanalMontre,
     private val service: ServiceMontres,
     private val gardees: MontresGardees,
     private val actif: Boolean,
-) {
-    suspend fun residenceOuverte(session: SessionOuverte) {
+) : AbonneSession {
+    /** Créé au premier geste seulement : liaison éteinte, rien ne touche Google Play services. */
+    private val canal by lazy(fabriqueCanal)
+
+    override suspend fun residenceOuverte(session: SessionOuverte) {
         if (!actif || !canal.montreJointe()) return
         val adresse = session.installation.url
         val jeton = gardees.id(adresse)?.let { id -> renouvele(id, session) } ?: service.emettre(session)
@@ -41,7 +47,7 @@ class LiaisonsMontre(
      * refusée, le retrait peut échouer : la montre s'efface quand même, et le serveur fera
      * tomber le jeton (empreinte du compte, expiration).
      */
-    suspend fun residenceFermee(session: SessionOuverte) {
+    override suspend fun residenceFermee(session: SessionOuverte) {
         if (!actif) return
         val adresse = session.installation.url
         val id = gardees.id(adresse) ?: return
@@ -53,7 +59,7 @@ class LiaisonsMontre(
     companion object {
         /** La liaison de l'app : Data Layer, client généré, préférences privées « montre ». */
         fun de(contexte: Context) = LiaisonsMontre(
-            CanalWearable(contexte.applicationContext),
+            { CanalWearable(contexte.applicationContext) },
             ServiceMontresApi,
             MontresGardees(ReglagesPreferences(contexte.applicationContext, FICHIER)),
             LiaisonMontre.ACTIF,

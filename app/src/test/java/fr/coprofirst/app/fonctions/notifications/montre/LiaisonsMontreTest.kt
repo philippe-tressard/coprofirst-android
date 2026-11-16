@@ -51,7 +51,7 @@ class LiaisonsMontreTest {
     private val gardees = MontresGardees(reglages)
     private val canal = Canal()
     private val service = Service()
-    private fun liaisons(actif: Boolean = true) = LiaisonsMontre(canal, service, gardees, actif)
+    private fun liaisons(actif: Boolean = true) = LiaisonsMontre({ canal }, service, gardees, actif)
 
     @Test
     fun eteinte_rienNePart() = runTest {
@@ -60,6 +60,24 @@ class LiaisonsMontreTest {
         liaisons(actif = false).residenceFermee(session)
         assertEquals(emptyList<String>(), service.gestes)
         assertEquals(emptyList<MessageLiaison>(), canal.transmis)
+    }
+
+    @Test
+    fun eteinte_leCanalNEstMemePasCree() = runTest {
+        var cree = false
+        val eteinte = LiaisonsMontre({ cree = true; canal }, service, gardees, actif = false)
+        eteinte.residenceOuverte(session)
+        eteinte.residenceFermee(session)
+        assertEquals(false, cree)
+    }
+
+    @Test
+    fun uneSessionNeuvePourLaMemeResidence_laMemeMontre() = runTest {
+        liaisons().residenceOuverte(session)
+        // Le parcours crée une SessionOuverte NEUVE à chaque geste : seule l'adresse compte.
+        val autre = SessionOuverte(Installation(adresse, "Les Tilleuls"), SessionsParHote(ClientHttp.partage))
+        liaisons().residenceFermee(autre)
+        assertEquals(listOf("emettre", "retirer 7"), service.gestes)
     }
 
     @Test
