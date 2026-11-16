@@ -39,6 +39,8 @@ data class ContexteOnglet(
     val barre: BarreDuHaut,
     /** La porte (#85), celle du menu (`ContexteDeMenu.ouvrir`) : `false` si rien ne la porte. */
     val ouvrir: (Destination) -> Boolean = { false },
+    /** Relit les droits du compte, celui du menu (`ContexteDeMenu.relireDroits`, #87). */
+    val relireDroits: suspend () -> Unit = {},
 )
 
 /**

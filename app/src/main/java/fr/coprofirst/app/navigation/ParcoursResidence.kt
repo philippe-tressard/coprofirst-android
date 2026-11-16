@@ -59,13 +59,21 @@ class ParcoursResidence(
     val etat: StateFlow<EtatResidence> = _etat.asStateFlow()
 
     init {
-        viewModelScope.launch {
-            try {
-                val droits = DroitsOnglet.depuis(compte.moi())
-                _etat.update { it.copy(droits = droits) }
-            } catch (_: ErreurService) {
-                // Sans profil : la barre reste celle de tous ; le serveur tranche de toute façon.
-            }
+        viewModelScope.launch { relireDroits() }
+    }
+
+    /**
+     * Relit les droits du compte (GET /auth/me) — à l'ouverture, et depuis un écran après un
+     * geste qui les change (un rôle qu'on se retire : `ContexteDeMenu.relireDroits`, #87),
+     * comme `rafraichirProfil` de l'iOS. La barre et les onglets suivent aussitôt. Un échec
+     * garde les droits d'avant ; le serveur tranche de toute façon.
+     */
+    suspend fun relireDroits() {
+        try {
+            val droits = DroitsOnglet.depuis(compte.moi())
+            _etat.update { it.copy(droits = droits) }
+        } catch (_: ErreurService) {
+            // Sans profil : les droits d'avant restent (ceux de tous, à l'ouverture).
         }
     }
 
