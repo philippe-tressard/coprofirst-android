@@ -37,9 +37,11 @@ lecture l'emporte, ce fichier et la saisie changent ensemble.
 | Permission (`AndroidManifest.xml`) | À quoi elle sert |
 |---|---|
 | `android.permission.INTERNET` | parler au site de la résidence, en HTTPS seulement (le clair est refusé par le manifeste) |
+| `android.permission.CAMERA` | lire, sur l'appareil, le QR code de la fiche d'arrivée ; l'image ne quitte pas l'appareil — à venir (#6) |
 
-Aucune autre : ni caméra, ni localisation, ni contacts, ni stockage partagé, ni
-notifications tant que #23 n'est pas livré. Le contrôle lit le manifeste du dépôt ; ce
+Aucune autre : ni localisation, ni contacts, ni stockage partagé, ni notifications tant
+que #23 n'est pas livré. « à venir (#N) » : la permission que le ticket ajoute ; le
+contrôle l'accepte avant comme après. Le contrôle lit le manifeste du dépôt ; ce
 que les bibliothèques ajouteraient au manifeste fusionné se relit au build de la release
 (§6).
 

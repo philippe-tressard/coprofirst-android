@@ -12,7 +12,8 @@ deux sens :
   écriture du contrat que l'app appelle. Seule exception, nommée : une ligne marquée
   « à venir (#N) », prête pour l'envoi qu'un ticket ajoute. Les données d'une ligne sont
   des codes du §3 (ou « — ») ;
-- `table:permissions` — exactement les `uses-permission` du manifeste.
+- `table:permissions` — exactement les `uses-permission` du manifeste, une ligne
+  « à venir (#N) » exceptée.
 
 Un tableau absent ou vide rend INCONNU (sortie 2), jamais conforme.
 
@@ -94,9 +95,10 @@ def verifier(texte: str, ecritures: set[str], source: str, manifeste: str) -> li
     erreurs += [f"{e} : déclarée sans être appelée (ou la marquer « à venir (#N) »)"
                 for e in sorted(set(lignes) - utilisees) if not A_VENIR.search(lignes[e])]
     permissions = set(re.findall(r'<uses-permission[^>]*android:name="([^"]+)"', manifeste))
-    declarees = {p.strip("`") for p, _ in tableau(texte, "permissions")}
-    erreurs += [f"{p} : demandée par le manifeste, absente de table:permissions" for p in sorted(permissions - declarees)]
-    erreurs += [f"{p} : déclarée sans être demandée" for p in sorted(declarees - permissions)]
+    declarees = {p.strip("`"): usage for p, usage in tableau(texte, "permissions")}
+    erreurs += [f"{p} : demandée par le manifeste, absente de table:permissions" for p in sorted(permissions - set(declarees))]
+    erreurs += [f"{p} : déclarée sans être demandée (ou la marquer « à venir (#N) »)"
+                for p in sorted(set(declarees) - permissions) if not A_VENIR.search(declarees[p])]
     return erreurs
 
 

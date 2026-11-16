@@ -30,6 +30,7 @@ DECLARATION = """
 | Permission | Usage |
 |---|---|
 | `android.permission.INTERNET` | réseau |
+| `android.permission.CAMERA` | QR — à venir (#6) |
 """
 ECRITURES = {"postAuthLogin", "postAuthLogout", "postAppareils", "postTickets"}
 SOURCE = "auth { postAuthLogin(corps) }\nAuthApi(b, c).postAuthLogout()"
@@ -49,8 +50,9 @@ class SecuriteDesDonnees(unittest.TestCase):
             "ligne sans appel": (DECLARATION.replace("— à venir (#23)", ""), SOURCE, MANIFESTE),
             "donnée hors du §3": (DECLARATION.replace("| `postAuthLogin` | `Nom` |", "| `postAuthLogin` | `Adresse` |"),
                                   SOURCE, MANIFESTE),
-            "permission neuve": (DECLARATION, SOURCE, MANIFESTE + '<uses-permission android:name="android.permission.CAMERA"/>'),
+            "permission neuve": (DECLARATION, SOURCE, MANIFESTE + '<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>'),
             "permission retirée": (DECLARATION, SOURCE, ""),
+            "permission à venir démarquée": (DECLARATION.replace("QR — à venir (#6)", "QR"), SOURCE, MANIFESTE),
             "pas une écriture du contrat": (DECLARATION.replace("`postAuthLogout`", "`postInventee`"), SOURCE, MANIFESTE),
         }
         for nom, (texte, source, manifeste) in cas.items():
