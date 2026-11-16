@@ -122,6 +122,10 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   export de la copropriété). Les autres onglets sont « Sur le site », chacun avec son
   lien ; lancer une tâche ou un export reste au site, et l'écran le dit.
 
+- **Écran** : portrait au téléphone ; sur tablette, pliable déplié ou fenêtre de bureau,
+  toutes les orientations et le multi-fenêtre (comme l'iPad). La mise en page grand écran
+  (barre latérale, liste et fiche côte à côte) suit les lots de l'iOS (#69).
+
 Pas encore : les écrans des pages, le courriel retenu et la
 biométrie, les personnages de la démo, le QR code, les liens d'application (tickets
 ouverts).
