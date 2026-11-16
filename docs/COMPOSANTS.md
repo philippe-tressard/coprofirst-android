@@ -116,6 +116,7 @@ inscription :
 | `SousTitreDeBarre(contexte.barre, texte?)` | `.navigationSubtitle` | Le sous-titre, sous le titre (« 12 non lues ») ; `null` : aucun. Posé par l'écran affiché, retiré quand il le quitte — dans la barre de la résidence comme dans celle d'une `FeuillePleine` (repère `barre.sousTitre`). |
 | `EnTeteDeBarre(titre, sousTitre?)` | — | Le titre (serif, annoncé comme titre) et le sous-titre d'une barre, tels que la résidence et `FeuillePleine` les affichent ; un écran ne l'appelle pas. |
 | `contexte.ouvrir(Destination)`, `RegistreDesMenus.fiches`, `FicheDeMenu` | `parcours.suivre`, `Destination`, `Aiguillage` | La porte : ouvrir une page, la fiche d'un élément ou la cloche depuis un écran. |
+| `LienDuSite.destination(chemin)`, `EcranResidence(lien, lienSuivi)` | `LienUniversel`, `suivreLeLienEnAttente` | Un lien d'application (#147) : son chemin → la `Destination` (le fil pour un chemin inconnu ; `null` pour la connexion), posée à l'ouverture de la résidence ou dans la résidence ouverte ; une page que le compte ne voit pas → le fil. L'adresse et la connexion sont l'affaire de l'entrée (#7). |
 
 ## Session — `fr.coprofirst.app.session`
 
