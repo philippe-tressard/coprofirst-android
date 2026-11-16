@@ -3,10 +3,12 @@
 
 package fr.coprofirst.app.session.audience
 
+import fr.coprofirst.api.VERSION_CONTRAT_PLANCHER
 import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsParHote
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
@@ -16,14 +18,13 @@ import okhttp3.OkHttpClient
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import kotlin.time.Duration.Companion.seconds
 
 /** La mesure d'audience : défaut fermé, rythme du site, bornes du contrat, résidence quittée. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class MesureAudienceTest {
     private val sessions = SessionsParHote(OkHttpClient())
 
-    private fun residence(hote: String, contrat: String? = "2.0.0", refus: Boolean? = false) =
+    private fun residence(hote: String, contrat: String? = VERSION_CONTRAT_PLANCHER, refus: Boolean? = false) =
         ResidenceMesuree(SessionOuverte(Installation("https://$hote", "Résidence", versionContrat = contrat), sessions), refus)
 
     /** Ce qui est parti : (hôte, pages), dans l'ordre. */

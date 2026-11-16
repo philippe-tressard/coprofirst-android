@@ -10,6 +10,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import fr.coprofirst.api.VERSION_CONTRAT_PLANCHER
 import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.commun.toucherTexte
@@ -19,6 +20,7 @@ import fr.coprofirst.app.entree.entrerDansLaResidence
 import fr.coprofirst.app.fonctions.profil.FixturesProfil
 import fr.coprofirst.app.session.audience.MesureAudience
 import fr.coprofirst.app.session.audience.ServiceAudienceApi
+import java.util.concurrent.CopyOnWriteArrayList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -30,7 +32,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * La mesure d'audience branchée (#144), comme l'iOS : deux pages ouvertes, l'app passe en
@@ -54,7 +55,7 @@ class AudienceInterfaceTest {
         override fun dispatch(request: RecordedRequest): MockResponse {
             val chemin = request.url.encodedPath
             return when {
-                chemin.endsWith("/config") -> json(200, """{"site_nom": "Les Glycines", "version_contrat": "2.0.0"}""")
+                chemin.endsWith("/config") -> json(200, """{"site_nom": "Les Glycines", "version_contrat": "$VERSION_CONTRAT_PLANCHER"}""")
                 chemin.endsWith("/auth/login") -> json(200, "{}")
                 chemin.endsWith("/auth/me") ->
                     json(200, FixturesProfil.MOI.replace("\"opt_out_telemetrie\": false", "\"opt_out_telemetrie\": $refus"))
