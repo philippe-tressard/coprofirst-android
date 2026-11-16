@@ -83,12 +83,15 @@ class ParcoursHorsLigneTest {
         Dispatchers.resetMain()
     }
 
+    /** Les résidences dont la session s'est close (#162) : la mesure d'audience y jette sa file. */
+    private val closes = mutableListOf<Installation>()
+
     private fun lancer(): ParcoursEntree {
         val base = { _: Any -> base }
         val sessions = SessionsParHote(OkHttpClient(), gardees, lectures)
         return ParcoursEntree(
             Decouverte(OkHttpClient(), Dispatchers.Unconfined, base), sessions,
-            Connexion(sessions, Dispatchers.Unconfined, base), connues, baseApi = base,
+            Connexion(sessions, Dispatchers.Unconfined, base), connues, baseApi = base, apresSortie = { closes += it },
         ) { PreuveHote.Declaree }.also { it.deverrouillage = Deverrouillage { chiffre, _ -> chiffre } }
     }
 
@@ -152,6 +155,7 @@ class ParcoursHorsLigneTest {
         assertNull(etat.ouverte)
         assertFalse(gardees.contient(hote))
         assertEquals(LectureDisponible.Aucune, lectures.consulter(hote))
+        assertEquals(listOf(residence), closes)
     }
 
     @Test

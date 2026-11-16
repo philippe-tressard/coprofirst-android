@@ -52,13 +52,13 @@ class ParcoursEntreeTest {
         construire()
     }
 
-    private fun construire(avantSortie: suspend () -> Unit = {}) {
+    private fun construire(avantSortie: suspend () -> Unit = {}, apresSortie: (Installation) -> Unit = {}) {
         // Toute adresse mène au serveur local : seule la base de l'API change.
         val base = { _: Any -> serveur.url("/api").toString() }
         val decouverte = Decouverte(OkHttpClient(), Dispatchers.Unconfined, base)
         val sessions = SessionsParHote(OkHttpClient())
         val connexion = Connexion(sessions, Dispatchers.Unconfined, base)
-        parcours = ParcoursEntree(decouverte, sessions, connexion, connues, baseApi = base, avantSortie = avantSortie) { preuve }
+        parcours = ParcoursEntree(decouverte, sessions, connexion, connues, baseApi = base, avantSortie = avantSortie, apresSortie = apresSortie) { preuve }
     }
 
     @After
@@ -352,7 +352,8 @@ class ParcoursEntreeTest {
     @Test
     fun laMesurePartAvantLaDeconnexion() = test {
         var requetesALaMesure = -1
-        construire(avantSortie = { requetesALaMesure = serveur.requestCount })
+        val ordre = mutableListOf<String>()
+        construire(avantSortie = { requetesALaMesure = serveur.requestCount; ordre += "envoyer" }, apresSortie = { ordre += "jeter ${it.url}" })
         connues.retenir(Installation("https://connue.exemple.test", "Connue"))
         pret("connue.exemple.test")
         ok()
@@ -364,6 +365,8 @@ class ParcoursEntreeTest {
         advanceUntilIdle()
         assertEquals("la mesure, avant tout envoi de la déconnexion", avant, requetesALaMesure)
         assertEquals(avant + 1, serveur.requestCount)
+        // #162 : ce qui reste part d'abord ; la session close, ce qui se noterait encore se jette.
+        assertEquals(listOf("envoyer", "jeter https://connue.exemple.test"), ordre)
     }
 
     /** #57 : la session ouverte parle à la même API que la connexion (le serveur local ici). */
