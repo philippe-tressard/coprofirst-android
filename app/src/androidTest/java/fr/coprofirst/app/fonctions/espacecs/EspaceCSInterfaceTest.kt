@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.fonctions.espacecs
 
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isSelected
@@ -175,9 +176,12 @@ class EspaceCSInterfaceTest {
         // à travers la page PUIS la rangée des formats, et attend qu'il soit immobile (#119).
         retenir(ReperesEspaceCS.nouvelleFormat("a5"))
         retenir("${ReperesEspaceCS.NOUVELLE_PERIMETRE}.bat_a")
-        // ⚠️ Attente retirée : attendre("Bâtiment A ›") — le lieu servi par LieuDeLaSaisie ne
-        // paraît pas en 10 s à l'émulateur (#129). À rétablir une fois #129 corrigé ; le corps
-        // envoyé (perimetre_cible) reste vérifié plus bas.
+        // Le lieu que le serveur nomme : il se lit d'un bloc, « Lieu : … » (EtiquetteLieu) —
+        // par sa description, pas par son texte (#129).
+        ecran.waitUntil(DELAI_MS) {
+            ecran.onAllNodes(hasTestTag("${ReperesEspaceCS.NOUVELLE_PERIMETRE}.lieu") and hasContentDescription("Bâtiment A ›", substring = true))
+                .fetchSemanticsNodes().isNotEmpty()
+        }
         ecran.toucherTag(ReperesEspaceCS.NOUVELLE_TITRE)
         ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_TITRE).performTextInput("Ascenseur à l'arrêt")
         ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_MESSAGE).performTextInput("Lundi matin.")

@@ -3,9 +3,11 @@
 
 package fr.coprofirst.app.commun
 
-import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
+import android.os.Build
 import android.view.accessibility.AccessibilityWindowInfo
+import android.view.inputmethod.InputMethodManager
+import android.view.inspector.WindowInspector
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.unit.toSize
@@ -169,18 +171,26 @@ private fun SemanticsNodeInteraction.attendreImmobile(): SemanticsNodeInteractio
 }
 
 /**
- * Ferme le clavier s'il est ouvert, et attend qu'il le soit. Le clavier se voit par la fenêtre
- * de méthode de saisie (UiAutomation), sans attendre qu'une fenêtre de l'app ait le focus :
- * `Espresso.closeSoftKeyboard` attendait jusqu'à 10 s une fenêtre qui ne le prend jamais (une
- * feuille ouverte), et faisait tomber le test. « Retour » ne part que si le clavier est là : il
- * le ferme alors, sans quitter l'écran.
+ * Ferme le clavier s'il est ouvert, et attend qu'il le soit — SANS « Retour ». Le clavier se
+ * voit par sa fenêtre (UiAutomation), sans attendre qu'une fenêtre de l'app ait le focus
+ * (`Espresso.closeSoftKeyboard` attendait 10 s une feuille qui ne le prend jamais). Il se
+ * cache par `InputMethodManager` sur la fenêtre qui a le focus (`WindowInspector`) : un
+ * « Retour » envoyé pendant que le clavier se refermait atteignait l'app, refermait la
+ * feuille ou quittait l'écran (rouges intermittents, #119).
  */
 private fun fermerLeClavier() {
-    val automate = InstrumentationRegistry.getInstrumentation().uiAutomation
+    val instrumentation = InstrumentationRegistry.getInstrumentation()
+    val automate = instrumentation.uiAutomation
     automate.serviceInfo = automate.serviceInfo.apply { flags = flags or AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS }
     fun ouvert() = automate.windows.any { it.type == AccessibilityWindowInfo.TYPE_INPUT_METHOD }
-    if (!ouvert()) return
-    automate.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK)
+    // WindowInspector date de l'API 29 ; les tests tournent sur l'API 35 (CI et poste).
+    if (!ouvert() || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return
+    instrumentation.runOnMainSync {
+        val saisie = instrumentation.targetContext.getSystemService(InputMethodManager::class.java)
+        WindowInspector.getGlobalWindowViews().filter { it.hasWindowFocus() }.forEach { vue ->
+            saisie.hideSoftInputFromWindow(vue.windowToken, 0)
+        }
+    }
     val limite = System.nanoTime() + 2_000_000_000L
     while (ouvert() && System.nanoTime() < limite) Thread.sleep(50)
 }
