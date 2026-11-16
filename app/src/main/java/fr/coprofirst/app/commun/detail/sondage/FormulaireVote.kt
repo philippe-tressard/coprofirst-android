@@ -34,7 +34,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -47,7 +46,6 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.BoutonPlein
 import fr.coprofirst.app.commun.Libelle
-import fr.coprofirst.app.commun.formats.FormatsDuSite
 
 /**
  * Le vote, comme le formulaire de la fiche du site et de l'iOS (`FormulaireVote`) : choisir
@@ -63,7 +61,7 @@ internal fun FormulaireVote(sondage: DetailSondage, vote: VoteSondage, changer: 
     Column(verticalArrangement = Arrangement.spacedBy(Mise.ecart)) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             sondage.options.forEach { option ->
-                LigneChoix(option, vote.option == option.id, sondage.resultatsVisibles) { changer(vote.choisir(option.id)) }
+                LigneChoix(option, vote.option == option.id) { changer(vote.choisir(option.id)) }
             }
         }
         AnimatedVisibility(visible = champLibre, enter = fadeIn(), exit = fadeOut()) {
@@ -101,11 +99,12 @@ internal fun FormulaireVote(sondage: DetailSondage, vote: VoteSondage, changer: 
 }
 
 /**
- * Une réponse possible : le rond qui se coche, le libellé, ✏️ si elle demande une précision,
- * et ses votes quand le serveur les montre. Dite « bouton radio » au lecteur d'écran.
+ * Une réponse possible : le rond qui se coche, le libellé, ✏️ si elle demande une précision.
+ * Ses votes ne se disent pas ici : visibles, les barres sont au-dessus du formulaire
+ * (#218). Dite « bouton radio » au lecteur d'écran.
  */
 @Composable
-private fun LigneChoix(option: OptionSondage, choisie: Boolean, resultats: Boolean, choisir: () -> Unit) {
+private fun LigneChoix(option: OptionSondage, choisie: Boolean, choisir: () -> Unit) {
     val couleurs = LocalCouleurs.current
     val haptique = LocalHapticFeedback.current
     val forme = RoundedCornerShape(Mise.rayon)
@@ -137,16 +136,6 @@ private fun LigneChoix(option: OptionSondage, choisie: Boolean, resultats: Boole
             modifier = Modifier.weight(1f, fill = false),
         )
         if (option.champLibre) Text("✏️", Modifier.semantics { contentDescription = aPreciser })
-        Row(Modifier.weight(1f), horizontalArrangement = Arrangement.End) {
-            val votes = option.nbVotes
-            if (resultats && votes != null) {
-                Text(
-                    pluralStringResource(R.plurals.sondage_votes, votes, FormatsDuSite.nombre(votes)),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = couleurs.textMuted,
-                )
-            }
-        }
     }
 }
 

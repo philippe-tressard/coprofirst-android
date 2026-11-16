@@ -152,6 +152,9 @@ contrôle le refuse dès que l'envoi existe — la PR qui l'apporte retire la ma
 | `postAdminUtilisateursUserIdAccueilArrivant` | `Contenu utilisateur` |
 | `patchAdminUtilisateursUserIdBanCommunaute` | `Autres infos` |
 | `deleteAdminUtilisateursUserId` | — |
+| `postPrestatairesNotations` | `Contenu utilisateur` |
+| `patchPrestatairesNotationsNId` | `Contenu utilisateur` |
+| `deletePrestatairesNotationsNId` | — |
 | `putAdminAnnuaireCs` | `Nom` `E-mail` `Téléphone` |
 | `putAdminAnnuaireSyndic` | `Nom` `E-mail` `Téléphone` |
 
