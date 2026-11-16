@@ -16,6 +16,9 @@ import fr.coprofirst.app.entree.NavigationEntree
 class ActiviteAccueil : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Portrait au téléphone, libre sur grand écran ; un pliable qu'on déplie recrée
+        // l'activité (changement de taille), et l'orientation se redécide (#69).
+        requestedOrientation = Orientation.voulue(resources.configuration.smallestScreenWidthDp)
         enableEdgeToEdge()
         // Un lancement neuf (pas une rotation) : rien ne reste des pièces ouvertes avant.
         if (savedInstanceState == null) PiecesLocales.effacer(applicationContext)

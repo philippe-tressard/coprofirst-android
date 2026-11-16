@@ -127,6 +127,9 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   l'app (« Logiciel libre » sous les mentions) ; le site de CoproFirst, le code du serveur
   et celui de l'app (AGPL §13) ; chaque composant tiers embarqué et sa licence entière —
   la liste est confrontée au build à ce que l'app embarque vraiment.
+- **Écran** : portrait au téléphone ; sur tablette, pliable déplié ou fenêtre de bureau,
+  toutes les orientations et le multi-fenêtre (comme l'iPad). La mise en page grand écran
+  (barre latérale, liste et fiche côte à côte) suit les lots de l'iOS (#69).
 
 Pas encore : les écrans des pages, le courriel retenu et la
 biométrie, les personnages de la démo, le QR code, les liens d'application (tickets
