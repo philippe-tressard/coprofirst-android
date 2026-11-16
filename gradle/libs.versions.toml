@@ -63,6 +63,7 @@ wear-tiles = { module = "androidx.wear.tiles:tiles", version.ref = "wear-tiles" 
 wear-protolayout-material3 = { module = "androidx.wear.protolayout:protolayout-material3", version.ref = "wear-protolayout" }
 androidx-concurrent-futures = { module = "androidx.concurrent:concurrent-futures", version.ref = "concurrent-futures" }
 wear-tiles-renderer = { module = "androidx.wear.tiles:tiles-renderer", version.ref = "wear-tiles" }
+wear-protolayout-renderer = { module = "androidx.wear.protolayout:protolayout-renderer", version.ref = "wear-protolayout" }
 androidx-test-services-storage = { module = "androidx.test.services:storage", version.ref = "androidx-test-services" }
 androidx-test-services = { module = "androidx.test.services:test-services", version.ref = "androidx-test-services" }
 

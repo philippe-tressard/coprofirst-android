@@ -65,6 +65,8 @@ dependencies {
     debugImplementation(libs.compose.ui.test.manifest)
     // L'aperçu de la tuile : la tuile rendue comme sur la montre, écrite par le test (#207).
     androidTestImplementation(libs.wear.tiles.renderer)
+    // Son thème (ProtoLayoutBaseTheme), que le rendu lit pour ses polices.
+    androidTestImplementation(libs.wear.protolayout.renderer)
     androidTestImplementation(libs.androidx.test.services.storage)
     androidTestUtil(libs.androidx.test.services)
 }

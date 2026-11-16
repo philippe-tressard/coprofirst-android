@@ -4,6 +4,7 @@
 package fr.coprofirst.montre
 
 import android.graphics.Bitmap
+import android.view.ContextThemeWrapper
 import android.widget.FrameLayout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
@@ -63,7 +64,10 @@ class ApercuTuileTest {
                 factory = { ctx ->
                     FrameLayout(ctx).also { vue ->
                         cadre = vue
-                        TileRenderer(ctx, ContextCompat.getMainExecutor(ctx)) {}.inflateAsync(mise, TuileCloche.ressources(), vue)
+                        // Le moteur lit ses polices dans le thème de son contexte : celui des tuiles, que la
+                        // montre lui donne, et que l'activité du test n'a pas.
+                        val theme = ContextThemeWrapper(ctx, androidx.wear.protolayout.renderer.R.style.ProtoLayoutBaseTheme)
+                        TileRenderer(theme, ContextCompat.getMainExecutor(ctx)) {}.inflateAsync(mise, TuileCloche.ressources(), vue)
                     }
                 },
                 modifier = Modifier.fillMaxSize().testTag("apercu.tuile"),
