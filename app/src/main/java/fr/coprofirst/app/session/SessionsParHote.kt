@@ -6,16 +6,28 @@ package fr.coprofirst.app.session
 import okhttp3.Cookie
 import okhttp3.CookieJar
 import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
+import java.util.concurrent.TimeUnit
 
 /**
  * Une session HTTP par installation, comme l'iOS (`SessionsParHote`) : les jetons
  * voyagent en cookies posés par le serveur, gardés EN MÉMOIRE seulement, jamais
- * partagés d'un hôte à l'autre. Rien n'est écrit sur l'appareil : une session gardée
- * entre deux lancements viendra avec la biométrie (coffre du compte).
+ * partagés d'un hôte à l'autre. Rien n'est écrit sur l'appareil par eux : une session
+ * gardée entre deux lancements l'est par `gardees`, après l'accord de l'utilisateur (#13).
+ *
+ * @param gardees les sessions gardées sur l'appareil : le jeton qui tourne à chaque
+ *   renouvellement y est remplacé, sans quoi la prochaine ouverture présenterait un jeton
+ *   révoqué.
  */
-class SessionsParHote(private val base: OkHttpClient = ClientHttp.partage) {
+class SessionsParHote(
+    private val base: OkHttpClient = ClientHttp.partage,
+    val gardees: SessionsGardees = SessionsGardees.Indisponibles,
+) {
     private val parHote = mutableMapOf<String, Pot>()
+
+    /** LA porte du renouvellement, une pour toutes les résidences (un verrou par hôte). */
+    val renouvellement = Renouvellement()
 
     /** Le client HTTP de cet hôte : le client commun, avec SES cookies. */
     @Synchronized
@@ -25,6 +37,24 @@ class SessionsParHote(private val base: OkHttpClient = ClientHttp.partage) {
     @Synchronized
     fun cookie(adresse: AdresseInstallation, nom: String): String? =
         parHote[cle(adresse)]?.cookies?.firstOrNull { it.name == nom }?.value
+
+    /**
+     * Pose le jeton de rafraîchissement d'une session gardée, avant de la renouveler —
+     * pour l'hôte de `baseApi` (celui de l'adresse, ou le serveur local des tests).
+     */
+    @Synchronized
+    fun poserJeton(adresse: AdresseInstallation, baseApi: String, jeton: String) {
+        val url = baseApi.toHttpUrl()
+        // Comme le pose le serveur (`COOKIE_OPTS` : Path=/, HttpOnly, Secure) — sécurisé dès
+        // que l'adresse l'est, c'est-à-dire toujours hors des tests (le clair est refusé).
+        val cookie = Cookie.Builder()
+            .name(JETON_RAFRAICHISSEMENT).value(jeton)
+            .hostOnlyDomain(url.host).path("/").httpOnly()
+            .apply { if (url.isHttps) secure() }
+            .expiresAt(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(1))
+            .build()
+        pot(adresse).saveFromResponse(url, listOf(cookie))
+    }
 
     /** Retire la session de cet hôte : la prochaine requête part sans cookie. */
     @Synchronized
@@ -36,6 +66,11 @@ class SessionsParHote(private val base: OkHttpClient = ClientHttp.partage) {
     @Synchronized
     fun oublierTout() {
         parHote.clear()
+    }
+
+    companion object {
+        /** Le cookie du jeton de rafraîchissement, posé par le serveur (`ouvrir_session`). */
+        const val JETON_RAFRAICHISSEMENT = "refresh_token"
     }
 
     private fun pot(adresse: AdresseInstallation): Pot = parHote.getOrPut(cle(adresse)) { Pot(base) }

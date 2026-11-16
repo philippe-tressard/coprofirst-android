@@ -41,8 +41,15 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   premier mot de passe envoyé à une adresse jamais vue, « Vérifiez l'adresse » montre
   l'hôte en entier et dit s'il est reconnu comme une installation CoproFirst ; sinon,
   il faut cocher « Je connais cette adresse… » pour continuer. « Mot de passe oublié ? »
-  et « Demander l'accès » ouvrent le site de la résidence. La session reste en mémoire
-  le temps de l'usage.
+  et « Demander l'accès » ouvrent le site de la résidence. Le courriel de la dernière
+  connexion réussie est retenu, chiffré par le Keystore, et pré-rempli ensuite.
+- **Session gardée** (Android 11 et plus) : après la première connexion, « Ouvrir avec
+  votre empreinte ? » propose de garder la session sur l'appareil ; la feuille dit ce qui
+  la protège vraiment (biométrie, verrouillage de l'appareil, ou rien). Au lancement
+  suivant, l'écran de retour rouvre la dernière résidence par la biométrie, le mot de
+  passe à côté. Une session expirée se renouvelle d'elle-même (POST /auth/refresh, un
+  seul à la fois par hôte). Se déconnecter efface la session gardée ; « Oublier toutes
+  les résidences » efface tout.
 - **La résidence ouverte** : la barre du bas, dans l'ordre et avec les libellés réglés
   par l'administration de la résidence, filtrée selon le compte (Espace CS, Prestataires,
   Délégations, Paramétrage ne paraissent qu'à ceux qui y ont droit) ; « Plus » pour les
@@ -153,8 +160,7 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   toutes les orientations et le multi-fenêtre (comme l'iPad). La mise en page grand écran
   (barre latérale, liste et fiche côte à côte) suit les lots de l'iOS (#69).
 
-Pas encore : les écrans des pages, le courriel retenu et la
-biométrie, les personnages de la démo, le QR code, les liens d'application (tickets
+Pas encore : les personnages de la démo, le QR code, les liens d'application (tickets
 ouverts).
 
 ## Construire

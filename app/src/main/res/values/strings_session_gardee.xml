@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+-->
+<!-- La session gardée sous la biométrie (#13) : les libellés de l'iOS (`FaceIDFeuille`,
+     `RetourView`), « Face ID » rendu par ce qu'offre l'appareil Android. -->
+<resources>
+    <string name="biometrie_nom_empreinte">votre empreinte</string>
+    <string name="biometrie_nom_generique">la biométrie</string>
+
+    <string name="garde_titre_empreinte">Ouvrir avec votre empreinte ?</string>
+    <string name="garde_titre_biometrie">Ouvrir avec la biométrie ?</string>
+    <string name="garde_titre_sans">Garder votre session ?</string>
+    <string name="garde_texte">La prochaine fois, %1$s suffira pour retrouver le fil de %2$s, sans ressaisir votre mot de passe.</string>
+    <string name="garde_texte_sans">La prochaine fois, vous retrouverez le fil de %1$s sans ressaisir votre mot de passe.</string>
+    <string name="garde_activer">Activer</string>
+    <string name="garde_plus_tard">Plus tard</string>
+    <string name="garde_continuer">Continuer</string>
+    <string name="garde_protegee_titre">Protégée par %1$s</string>
+    <string name="garde_protegee_texte">Votre session à %1$s est gardée sur cet appareil ; %2$s seule la rouvre.</string>
+    <string name="garde_code_titre">Protégée par le verrouillage de l\'appareil</string>
+    <string name="garde_code_texte">La biométrie n\'est pas configurée : quiconque connaît le code de cet appareil rouvre votre session. Configurez une empreinte dans les Paramètres pour la protéger davantage.</string>
+    <string name="garde_aucune_titre">Gardée sans protection</string>
+    <string name="garde_aucune_texte">Cet appareil n\'a ni verrouillage de l\'écran ni biométrie : quiconque le tient rouvre votre session. Ajoutez un verrouillage de l\'écran dans les Paramètres pour la protéger.</string>
+    <string name="garde_echec_titre">Session non gardée</string>
+    <string name="garde_echec_texte">Cet appareil n\'a pas pu garder votre session : vous rouvrirez %1$s avec votre mot de passe.</string>
+
+    <string name="retour_ouvrir_empreinte">Ouvrir avec votre empreinte</string>
+    <string name="retour_ouvrir_biometrie">Ouvrir avec la biométrie</string>
+    <string name="retour_ouvrir_espace">Ouvrir mon espace</string>
+    <string name="retour_mot_de_passe">Utiliser le mot de passe</string>
+    <string name="deverrouiller_titre">Ouvrir votre espace à %1$s</string>
+</resources>

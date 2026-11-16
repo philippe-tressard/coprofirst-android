@@ -21,6 +21,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -67,6 +68,11 @@ interface ActionsEntree {
     fun renoncerHote()
     fun deconnecter()
     fun retour()
+    fun ouvrirDOffice()
+    fun ouvrirSessionGardee()
+    fun utiliserMotDePasse()
+    fun activerGarde()
+    fun fermerGarde()
 
     /** Pour les aperçus : aucun geste ne fait rien. */
     object Inertes : ActionsEntree {
@@ -85,6 +91,11 @@ interface ActionsEntree {
         override fun renoncerHote() = Unit
         override fun deconnecter() = Unit
         override fun retour() = Unit
+        override fun ouvrirDOffice() = Unit
+        override fun ouvrirSessionGardee() = Unit
+        override fun utiliserMotDePasse() = Unit
+        override fun activerGarde() = Unit
+        override fun fermerGarde() = Unit
     }
 }
 
@@ -103,11 +114,18 @@ fun NavigationEntree(
     mesure: MesureAudience? = AudienceDeLApp.mesure,
 ) {
     val etat by parcours.etat.collectAsStateWithLifecycle()
+    // La biométrie se demande par l'activité affichée : posée ici, retirée à sa sortie.
+    val deverrouillage = rememberDeverrouillage(etat.reconnue)
+    DisposableEffect(parcours, deverrouillage) {
+        parcours.deverrouillage = deverrouillage
+        onDispose { if (parcours.deverrouillage === deverrouillage) parcours.deverrouillage = null }
+    }
     // Le passage en arrière-plan (le `visibilitychange` du site) : la file part.
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) { mesure?.viderEnArrierePlan() }
     // L'espace d'une résidence ouverte ne se quitte que par « Se déconnecter » ; le retour
-    // système y ferme l'app, comme sur un écran racine — et à l'accueil.
-    BackHandler(enabled = etat.ecran != EcranEntree.Accueil && etat.ecran != EcranEntree.Espace) { parcours.retour() }
+    // système y ferme l'app, comme sur un écran racine — et à l'accueil, et à l'écran de
+    // retour (#13), racine lui aussi.
+    BackHandler(enabled = etat.ecran !in setOf(EcranEntree.Accueil, EcranEntree.Retour, EcranEntree.Espace)) { parcours.retour() }
     // La palette de la résidence s'applique dès qu'elle est reconnue, comme sur iOS.
     val palette = Palettes.pour((etat.ouverte ?: etat.reconnue)?.codePalette)
     // Le thème de l'appareil (Profil › Apparence), appliqué à la racine comme sur iOS.
@@ -131,6 +149,7 @@ private fun Espaces(etat: EtatEntree, parcours: ParcoursEntree, apparence: Appar
             ) { ecran ->
                 when (ecran) {
                     EcranEntree.Accueil -> EcranAccueil(parcours)
+                    EcranEntree.Retour -> EcranRetour(etat, parcours)
                     EcranEntree.EnSavoirPlus -> EcranEnSavoirPlus(parcours)
                     EcranEntree.Demo -> EcranDemo(parcours)
                     EcranEntree.Connexion -> EcranConnexion(etat, parcours)
@@ -140,6 +159,11 @@ private fun Espaces(etat: EtatEntree, parcours: ParcoursEntree, apparence: Appar
                         EcranResidence(session, parcours, apparence, lien = lien, lienSuivi = parcours::lienSuivi)
                     }
                 }
+            }
+            // « Garder la session ? », proposée une fois après la première connexion.
+            val ouverte = etat.ouverte
+            if (etat.proposerGarde && etat.ecran == EcranEntree.Espace && ouverte != null) {
+                FeuilleGardeSession(ouverte, etat, parcours)
             }
         }
     }

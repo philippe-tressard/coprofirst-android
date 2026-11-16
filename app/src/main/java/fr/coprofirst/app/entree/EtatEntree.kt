@@ -9,9 +9,22 @@ import fr.coprofirst.app.session.AdresseInstallation
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.OrigineAdresse
 import fr.coprofirst.app.session.PreuveHote
+import fr.coprofirst.app.session.ProtectionSession
 
-/** Les écrans de l'entrée, dans leur ordre — ceux de l'app iOS (le sens du passage en dépend). */
-enum class EcranEntree { Accueil, EnSavoirPlus, Demo, Connexion, Espace }
+/**
+ * Les écrans de l'entrée, dans leur ordre — ceux de l'app iOS (le sens du passage en
+ * dépend). `Retour` : la dernière résidence, dont la session est gardée sous la biométrie
+ * (`RetourView`) — une racine, comme l'accueil.
+ */
+enum class EcranEntree { Accueil, Retour, EnSavoirPlus, Demo, Connexion, Espace }
+
+/** Ce qu'a rendu « Activer » sur la feuille de la session gardée. */
+sealed interface IssueGarde {
+    data class Gardee(val protection: ProtectionSession) : IssueGarde
+
+    /** L'appareil n'a pas pu garder la session : le mot de passe, la prochaine fois. */
+    data object Echec : IssueGarde
+}
 
 /** Ce que montrent les écrans de l'entrée. */
 data class EtatEntree(
@@ -39,6 +52,17 @@ data class EtatEntree(
     val confirmation: ConfirmationHote? = null,
     /** La résidence où une session est ouverte. */
     val ouverte: Installation? = null,
+    /** L'utilisateur a choisi le mot de passe : la connexion ne redemande pas la biométrie. */
+    val parMotDePasse: Boolean = false,
+    /** La reprise d'une session gardée court (biométrie, puis POST /auth/refresh). */
+    val repriseEnCours: Boolean = false,
+    /** Pourquoi la dernière reprise n'a pas abouti (réseau…) ; la session reste gardée. */
+    val erreurReprise: ErreurService? = null,
+    /** La feuille « Garder la session ? », proposée une fois après la première connexion. */
+    val proposerGarde: Boolean = false,
+    /** Ce qu'a rendu « Activer » ; `null` : la question. */
+    val issueGarde: IssueGarde? = null,
+    val activationEnCours: Boolean = false,
     /** L'adresse lue dans un QR ou venue d'un lien, et d'où : elle se confirme TOUJOURS. */
     val venue: AdresseVenue? = null,
     /** L'écran qu'un lien d'application vise, en attente que sa résidence soit ouverte (#147). */

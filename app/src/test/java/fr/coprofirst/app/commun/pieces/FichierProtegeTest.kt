@@ -92,6 +92,7 @@ class FichierProtegeTest {
     @Test
     fun chaqueRefusDitSaPhrase() = runTest {
         servir(401)
+        servir(401) // POST /auth/refresh refusé (#13)
         assertEquals(ErreurService.SessionExpiree, echec("/uploads/a.jpg"))
         servir(404)
         assertEquals(ErreurService.Introuvable, echec("/uploads/a.jpg"))
