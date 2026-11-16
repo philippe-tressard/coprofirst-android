@@ -3,12 +3,16 @@
 
 package fr.coprofirst.app.session
 
+import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import okhttp3.Cookie
 import okhttp3.CookieJar
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
-import java.util.concurrent.TimeUnit
 
 /**
  * Une session HTTP par installation, comme l'iOS (`SessionsParHote`) : les jetons
@@ -30,6 +34,19 @@ class SessionsParHote(
 
     /** LA porte du renouvellement, une pour toutes les résidences (un verrou par hôte). */
     val renouvellement = Renouvellement()
+
+    private val _refusees = MutableSharedFlow<AdresseInstallation>(extraBufferCapacity = 8, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+
+    /**
+     * Les sessions que le serveur refuse en cours d'usage, renouvellement compris (#201) :
+     * l'entrée quitte la résidence. Comme `SessionsRefusees` de l'iOS.
+     */
+    val refusees: SharedFlow<AdresseInstallation> = _refusees.asSharedFlow()
+
+    /** Signale le refus — `SessionOuverte` seule : la session est déjà effacée de l'appareil. */
+    fun signalerRefus(adresse: AdresseInstallation) {
+        _refusees.tryEmit(adresse)
+    }
 
     /** Le client HTTP de cet hôte : le client commun, avec SES cookies. */
     @Synchronized
@@ -62,6 +79,18 @@ class SessionsParHote(
     @Synchronized
     fun oublier(adresse: AdresseInstallation) {
         parHote.remove(cle(adresse))
+    }
+
+    /**
+     * LA porte de l'effacement de ce qu'une session laisse sur l'appareil — ses cookies, le
+     * jeton gardé et les lectures gardées, jamais l'un sans l'autre : la déconnexion, une
+     * session que le serveur refuse (à la reprise, en cours d'usage, #201). Comme
+     * `oublierCeQuiEstGarde` de l'iOS.
+     */
+    fun oublierLaSession(adresse: AdresseInstallation) {
+        gardees.supprimer(adresse.cleCoffre)
+        lectures?.effacer(adresse.cleCoffre)
+        oublier(adresse)
     }
 
     /** Retire la session de chaque hôte. */

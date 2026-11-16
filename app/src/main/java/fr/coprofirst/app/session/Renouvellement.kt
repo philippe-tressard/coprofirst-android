@@ -67,7 +67,8 @@ val AdresseInstallation.cleCoffre: String get() = enSaisie
 
 /**
  * POST /auth/refresh par le client généré, sur la session HTTP de l'hôte : `true` si le
- * serveur a renouvelé, `false` s'il refuse (jeton expiré, révoqué) ; le réseau remonte.
+ * serveur a renouvelé, `false` s'il refuse (jeton expiré, révoqué) — la session est alors
+ * effacée de l'appareil (`oublierLaSession`) ; le réseau remonte.
  * Le jeton tourne : une session gardée reçoit le neuf, dans le même geste — aucune
  * annulation ne peut séparer la réponse du serveur de la mise à jour de l'appareil.
  * À n'appeler que par `Renouvellement.renouveler`.
@@ -76,8 +77,9 @@ internal fun SessionsParHote.rafraichir(adresse: AdresseInstallation, baseApi: S
     try {
         AuthApi(baseApi, client(adresse)).postAuthRefresh()
     } catch (_: ClientException) {
-        // Session refusée : rien de ce compte ne reste lisible hors ligne.
-        lectures?.effacer(adresse.cleCoffre)
+        // Session refusée : rien d'elle ne reste — ni jeton gardé (plus d'empreinte proposée
+        // sur une session morte), ni lecture hors ligne. Qui attendait ce refus le reçoit.
+        oublierLaSession(adresse)
         return false
     }
     val cle = adresse.cleCoffre
