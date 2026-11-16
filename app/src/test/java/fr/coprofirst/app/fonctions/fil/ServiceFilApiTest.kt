@@ -66,6 +66,7 @@ class ServiceFilApiTest {
     @Test
     fun uneSessionExpireeSeDit() = runTest {
         repondre(401, "{}")
+        repondre(401, "{}") // POST /auth/refresh refusé (#13)
         try {
             service.fil()
             fail("refusé")

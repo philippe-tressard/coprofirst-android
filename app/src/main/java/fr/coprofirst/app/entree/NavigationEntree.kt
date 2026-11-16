@@ -21,6 +21,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.fillMaxSize
@@ -49,6 +50,11 @@ interface ActionsEntree {
     fun renoncerHote()
     fun deconnecter()
     fun retour()
+    fun ouvrirDOffice()
+    fun ouvrirSessionGardee()
+    fun utiliserMotDePasse()
+    fun activerGarde()
+    fun fermerGarde()
 
     /** Pour les aperçus : aucun geste ne fait rien. */
     object Inertes : ActionsEntree {
@@ -64,6 +70,11 @@ interface ActionsEntree {
         override fun renoncerHote() = Unit
         override fun deconnecter() = Unit
         override fun retour() = Unit
+        override fun ouvrirDOffice() = Unit
+        override fun ouvrirSessionGardee() = Unit
+        override fun utiliserMotDePasse() = Unit
+        override fun activerGarde() = Unit
+        override fun fermerGarde() = Unit
     }
 }
 
@@ -77,6 +88,12 @@ private const val DUREE_MS = 220
 @Composable
 fun NavigationEntree(apparence: Apparence, parcours: ParcoursEntree = viewModel(factory = ParcoursEntree.Fabrique)) {
     val etat by parcours.etat.collectAsStateWithLifecycle()
+    // La biométrie se demande par l'activité affichée : posée ici, retirée à sa sortie.
+    val deverrouillage = rememberDeverrouillage(etat.reconnue)
+    DisposableEffect(parcours, deverrouillage) {
+        parcours.deverrouillage = deverrouillage
+        onDispose { if (parcours.deverrouillage === deverrouillage) parcours.deverrouillage = null }
+    }
     // L'espace d'une résidence ouverte ne se quitte que par « Se déconnecter » ; le retour
     // système y ferme l'app, comme sur un écran racine.
     BackHandler(enabled = etat.ecran == EcranEntree.Connexion) { parcours.retour() }
@@ -98,9 +115,15 @@ fun NavigationEntree(apparence: Apparence, parcours: ParcoursEntree = viewModel(
             ) { ecran ->
                 when (ecran) {
                     EcranEntree.Accueil -> EcranAccueil(parcours)
+                    EcranEntree.Retour -> EcranRetour(etat, parcours)
                     EcranEntree.Connexion -> EcranConnexion(etat, parcours)
                     EcranEntree.Espace -> parcours.sessionOuverte()?.let { EcranResidence(it, parcours, apparence) }
                 }
+            }
+            // « Garder la session ? », proposée une fois après la première connexion.
+            val ouverte = etat.ouverte
+            if (etat.proposerGarde && etat.ecran == EcranEntree.Espace && ouverte != null) {
+                FeuilleGardeSession(ouverte, etat, parcours)
             }
         }
     }

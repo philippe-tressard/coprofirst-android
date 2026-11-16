@@ -10,6 +10,7 @@ import fr.coprofirst.app.session.Connexion
 import fr.coprofirst.app.session.Decouverte
 import fr.coprofirst.app.session.InstallationsConnues
 import fr.coprofirst.app.session.PreuveHote
+import fr.coprofirst.app.session.SessionsGardees
 import fr.coprofirst.app.session.SessionsParHote
 import fr.coprofirst.app.session.StockageResidences
 import mockwebserver3.MockResponse
@@ -62,22 +63,33 @@ class ServeurDeTest : AutoCloseable {
         .sslSocketFactory(clientTls.sslSocketFactory(), clientTls.trustManager)
         .build()
 
-    fun parcours(preuve: PreuveHote = PreuveHote.Declaree): ParcoursEntree {
+    /**
+     * Le parcours d'entrée, sur ce serveur. Par défaut, un appareil qui ne garde aucune
+     * session (pas de « Garder la session ? ») et n'a ouvert aucune résidence ; `gardees` et
+     * `connues` posent un passage précédent (#13).
+     */
+    fun parcours(
+        preuve: PreuveHote = PreuveHote.Declaree,
+        gardees: SessionsGardees = SessionsGardees.Indisponibles,
+        connues: InstallationsConnues = residencesEnMemoire(),
+    ): ParcoursEntree {
         val base = { _: Any -> serveur.url("/api").toString() }
-        val stockage = object : StockageResidences {
-            private var valeur: String? = null
-            override fun lire() = valeur
-            override fun ecrire(valeur: String) { this.valeur = valeur }
-        }
-        val sessions = SessionsParHote(client)
+        val sessions = SessionsParHote(client, gardees)
         return ParcoursEntree(
             Decouverte(client, baseApi = base),
             sessions,
             Connexion(sessions, baseApi = base),
-            InstallationsConnues(stockage),
+            connues,
             baseApi = base,
         ) { preuve }
     }
+
+    /** Des résidences connues (et un coffre) gardées en mémoire, le temps du test. */
+    fun residencesEnMemoire() = InstallationsConnues(object : StockageResidences {
+        private var valeur: String? = null
+        override fun lire() = valeur
+        override fun ecrire(valeur: String) { this.valeur = valeur }
+    })
 
     /** Le thème de l'appareil, gardé en mémoire le temps du test. */
     fun apparence() = Apparence(object : StockageApparence {

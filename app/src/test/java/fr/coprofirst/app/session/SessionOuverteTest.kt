@@ -51,6 +51,7 @@ class SessionOuverteTest {
     @Test
     fun chaqueEchecADitSaPhrase() = runTest {
         repondre(401)
+        repondre(401) // POST /auth/refresh refusé : la session est bien expirée (#13)
         assertEquals(ErreurService.SessionExpiree, echec())
         repondre(404)
         assertEquals(ErreurService.Introuvable, echec())
