@@ -4,6 +4,7 @@
 package fr.coprofirst.app.entree
 
 import fr.coprofirst.app.session.ErreurService
+import fr.coprofirst.app.navigation.Destination
 import fr.coprofirst.app.session.AdresseInstallation
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.OrigineAdresse
@@ -36,6 +37,8 @@ data class EtatEntree(
     val ouverte: Installation? = null,
     /** L'adresse lue dans un QR ou venue d'un lien, et d'où : elle se confirme TOUJOURS. */
     val venue: AdresseVenue? = null,
+    /** L'écran qu'un lien d'application vise, en attente que sa résidence soit ouverte (#147). */
+    val lien: LienEnAttente? = null,
 ) {
     /** « Se connecter » répond : une résidence reconnue, un courriel, un mot de passe. */
     val connexionPossible: Boolean
@@ -55,3 +58,9 @@ data class ConfirmationHote(
 
 /** Une adresse que l'utilisateur n'a pas écrite (QR, lien) et son origine, pour la garde de l'hôte. */
 data class AdresseVenue(val adresse: AdresseInstallation, val origine: OrigineAdresse)
+
+/**
+ * L'écran qu'un lien vise dans SA résidence (`Parcours.porte.enAttente` de l'iOS) : il ne se
+ * pose que dans la résidence à cette adresse — celui d'une autre résidence tombe.
+ */
+data class LienEnAttente(val adresse: AdresseInstallation, val destination: Destination)

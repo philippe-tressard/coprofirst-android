@@ -21,6 +21,14 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   adresse. L'icône du QR code, dans le champ, lit celui de la fiche d'arrivée avec la
   caméra (demandée à ce moment-là, l'image lue sur l'appareil, ni gardée ni envoyée) ;
   une adresse scannée se confirme toujours avant le premier mot de passe.
+- **Liens d'application** : un lien vers la démo ou 5Hostachy (une affaire, les
+  actualités, l'accueil, la connexion) ouvre l'app — la résidence ouverte si c'est la
+  sienne, sinon sa connexion, à son adresse ; une adresse jamais vue se confirme avant
+  le premier mot de passe. L'écran visé (une affaire, les affaires, une page) s'ouvre
+  ensuite dans sa résidence — le fil si le compte ne voit pas la page ; les liens à jeton
+  (vérifier une adresse, choisir un mot de passe) restent au navigateur. Android
+  n'associe le lien à l'app que si l'installation sert `assetlinks.json`
+  (coprofirst#2788).
 - **Se connecter** : adresse électronique et mot de passe, sous la résidence. Avant le
   premier mot de passe envoyé à une adresse jamais vue, « Vérifiez l'adresse » montre
   l'hôte en entier et dit s'il est reconnu comme une installation CoproFirst ; sinon,

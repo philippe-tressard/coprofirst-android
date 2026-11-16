@@ -10,6 +10,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import fr.coprofirst.app.commun.GestesDeSortie
 import fr.coprofirst.app.commun.pieces.PiecesLocales
+import fr.coprofirst.app.navigation.LienDuSite
 import fr.coprofirst.app.session.AdresseInstallation
 import fr.coprofirst.app.session.Connexion
 import fr.coprofirst.app.session.Decouverte
@@ -65,15 +66,51 @@ class ParcoursEntree(
 
     override fun saisir(texte: String) = saisir(texte, pause = true)
 
-    override fun lireQR(texte: String) = recevoir(texte, OrigineAdresse.Scan)
+    override fun lireQR(texte: String) {
+        AdresseInstallation.normaliser(texte)?.let { recevoir(it, OrigineAdresse.Scan) }
+    }
+
+    /**
+     * Un lien d'application (#7), comme `Parcours.suivre` de l'iOS. Vers la résidence
+     * ouverte : elle reste. Vers une autre : la connexion, à son adresse — la session
+     * ouverte est quittée sans être fermée (`changer` de l'iOS). Une résidence connue s'y
+     * reprend comme d'habitude ; un hôte jamais vu se découvre puis se confirme TOUJOURS
+     * avant le premier mot de passe (`OrigineAdresse.Lien`). Rien ne part de plus.
+     *
+     * L'écran que le lien vise (une affaire, une page — `LienDuSite`) attend que sa
+     * résidence soit ouverte, puis la porte le pose (#147) ; dans la résidence ouverte, tout
+     * de suite. `/auth/connexion` ne vise que la connexion.
+     */
+    fun suivreLien(lien: String) {
+        val adresse = LienDApplication.adresse(lien) ?: return
+        val enAttente = LienDuSite.destination(LienDApplication.chemin(lien))?.let { LienEnAttente(adresse, it) }
+        val etat = _etat.value
+        if (etat.ouverte?.adresse == adresse ||
+            (etat.ecran == EcranEntree.Connexion && etat.reconnue?.adresse == adresse)
+        ) {
+            _etat.update { it.copy(lien = enAttente) }
+            return
+        }
+        reconnaissance?.cancel()
+        _etat.update {
+            it.copy(
+                ecran = EcranEntree.Connexion, ouverte = null, confirmation = null, venue = null,
+                motDePasse = "", connexionEnCours = false, erreurConnexion = null, lien = enAttente,
+            )
+        }
+        if (connues.liste.any { it.adresse == adresse }) saisir(adresse.enSaisie, pause = false)
+        else recevoir(adresse, OrigineAdresse.Lien)
+    }
+
+    /** La porte a posé l'écran du lien : il ne se repose pas. */
+    fun lienSuivi() = _etat.update { it.copy(lien = null) }
 
     /**
      * Une adresse que l'utilisateur n'a pas écrite : elle remplit le champ et se reconnaît
      * sans attendre, et son origine suit jusqu'à « Se connecter » — où la garde exige
      * toujours la confirmation de l'hôte, résidence connue ou démonstration comprise.
      */
-    private fun recevoir(texte: String, origine: OrigineAdresse) {
-        val adresse = AdresseInstallation.normaliser(texte) ?: return
+    private fun recevoir(adresse: AdresseInstallation, origine: OrigineAdresse) {
         _etat.update { it.copy(venue = AdresseVenue(adresse, origine)) }
         saisir(adresse.enSaisie, pause = false)
     }
@@ -110,7 +147,13 @@ class ParcoursEntree(
             try {
                 connexion.connecter(installation, etat.email, etat.motDePasse)
                 connues.retenir(installation)
-                _etat.update { it.copy(connexionEnCours = false, motDePasse = "", ouverte = installation, ecran = EcranEntree.Espace) }
+                // Le lien d'une autre résidence tombe : l'utilisateur est allé ailleurs.
+                _etat.update {
+                    it.copy(
+                        connexionEnCours = false, motDePasse = "", ouverte = installation, ecran = EcranEntree.Espace,
+                        lien = it.lien?.takeIf { l -> l.adresse == installation.adresse },
+                    )
+                }
             } catch (erreur: ErreurService) {
                 _etat.update { it.copy(connexionEnCours = false, erreurConnexion = erreur) }
             }
@@ -136,7 +179,7 @@ class ParcoursEntree(
 
     override fun deconnecter() {
         val ouverte = _etat.value.ouverte ?: return
-        _etat.update { it.copy(ouverte = null, ecran = EcranEntree.Connexion) }
+        _etat.update { it.copy(ouverte = null, ecran = EcranEntree.Connexion, lien = null) }
         effacerLesPieces()
         viewModelScope.launch { connexion.deconnecter(ouverte) }
     }
