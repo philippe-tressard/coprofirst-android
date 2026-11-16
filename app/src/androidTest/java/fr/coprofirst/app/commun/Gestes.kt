@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.commun
 
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.test.SemanticsMatcher
@@ -14,10 +15,10 @@ import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.NoActivityResumedException
+import androidx.test.platform.app.InstrumentationRegistry
 
 /*
  * LE geste des tests d'interface : un toucher ne s'injecte qu'à l'écran. Un élément hors de
@@ -29,10 +30,10 @@ import androidx.test.espresso.NoActivityResumedException
  * Les trois cas :
  * - `LazyColumn` / `LazyRow` : la ligne n'existe pas tant qu'elle n'est pas composée —
  *   `performScrollToNode` sur chaque liste (`hasScrollToNodeAction`) la fait composer ;
- * - `Column(Modifier.verticalScroll)`, `Row(Modifier.horizontalScroll)` (la barre d'onglets) :
- *   le nœud existe, hors de la vue — `performScrollTo` le ramène ;
- * - rien qui défile (`NavigationBar`, une feuille, une confirmation) : `performScrollTo`
- *   échouerait (« no parent layout with a Scroll SemanticsAction ») — il est sauté.
+ * - `Column(Modifier.verticalScroll)`, `Row(Modifier.horizontalScroll)` (la barre d'onglets),
+ *   et leurs imbrications (une rangée horizontale sous le pli d'une page) : le nœud existe,
+ *   hors de la vue — chaque ancêtre défilant le ramène, de l'extérieur vers l'intérieur ;
+ * - rien qui défile (`NavigationBar`, une feuille, une confirmation) : rien à faire défiler.
  * Puis `assertIsDisplayed()` : un nœud que rien n'a pu ramener à l'écran échoue ICI, en
  * disant lequel, au lieu d'un toucher perdu.
  *
@@ -52,16 +53,61 @@ const val DELAI_GESTE_MS = 10_000L
 /** Le pas d'attente entre deux recherches, quand le nœud n'est pas encore là. */
 private const val PAS_MS = 250L
 
-/** Fait défiler jusqu'au nœud s'il est dans un conteneur qui défile ; sinon, rien. */
+/**
+ * Fait défiler CHAQUE ancêtre défilant, de l'extérieur vers l'intérieur, jusqu'au nœud : la
+ * page jusqu'à la rangée, puis la rangée jusqu'à l'élément. `performScrollTo` ne fait défiler
+ * que l'ancêtre le plus proche : une pastille d'une rangée horizontale sous le pli d'une page
+ * verticale restait hors de l'écran (Espace CS, #112). Sans ancêtre défilant : rien.
+ */
 fun SemanticsNodeInteraction.amener(): SemanticsNodeInteraction {
-    if (fetchSemanticsNode("Le nœud à amener à l'écran est introuvable.").aUnAncetreDefilant()) performScrollTo()
+    val ancetres = fetchSemanticsNode("Le nœud à amener à l'écran est introuvable.").ancetresDefilants().map { it.id }
+    for (id in ancetres.asReversed()) {
+        val noeud = fetchSemanticsNode()
+        val ancetre = noeud.ancetresDefilants().firstOrNull { it.id == id } ?: continue
+        val (dx, dy) = ecart(noeud.boundsInRoot, ancetre.boundsInRoot)
+        if (dx != 0f || dy != 0f) {
+            InstrumentationRegistry.getInstrumentation().runOnMainSync {
+                ancetre.config[SemanticsActions.ScrollBy].action?.invoke(dx, dy)
+            }
+        }
+    }
     return this
+}
+
+/** Les ancêtres qui défilent, du plus proche au plus lointain. */
+private fun SemanticsNode.ancetresDefilants(): List<SemanticsNode> =
+    generateSequence(parent) { it.parent }.filter { SemanticsActions.ScrollBy in it.config }.toList()
+
+/** Ce qu'il faut faire défiler pour que `cible` entre dans `vue` (par le bord le plus proche). */
+private fun ecart(cible: Rect, vue: Rect): Pair<Float, Float> {
+    fun axe(debut: Float, fin: Float, vueDebut: Float, vueFin: Float) = when {
+        debut < vueDebut -> debut - vueDebut
+        fin > vueFin -> minOf(fin - vueFin, debut - vueDebut)
+        else -> 0f
+    }
+    return axe(cible.left, cible.right, vue.left, vue.right) to axe(cible.top, cible.bottom, vue.top, vue.bottom)
 }
 
 /** Le geste unique : le clavier fermé, amené à l'écran, vérifié affiché, puis touché. */
 fun SemanticsNodeInteraction.toucher(): SemanticsNodeInteraction {
     fermerLeClavier()
-    return amener().attendreImmobile().assertIsDisplayed().performClick()
+    return amener().attendreImmobile().afficheOuDitOu().performClick()
+}
+
+/**
+ * `assertIsDisplayed`, qui en cas d'échec dit OÙ était le nœud (sa place, celle de ses
+ * ancêtres défilants) : un « non affiché » nu ne dit pas s'il était sous le pli, sous une
+ * barre ou hors de la fenêtre.
+ */
+private fun SemanticsNodeInteraction.afficheOuDitOu(): SemanticsNodeInteraction {
+    try {
+        assertIsDisplayed()
+    } catch (e: AssertionError) {
+        val noeud = fetchSemanticsNode()
+        val ancetres = noeud.ancetresDefilants().joinToString { it.boundsInWindow.toString() }
+        throw AssertionError("${e.message} — nœud ${noeud.boundsInWindow}, ancêtres défilants [$ancetres]", e)
+    }
+    return this
 }
 
 /** Le temps qu'un nœud a pour cesser de bouger, et le pas entre deux lectures de sa position. */
@@ -92,15 +138,6 @@ private fun fermerLeClavier() {
     } catch (_: NoActivityResumedException) {
         // Pas d'écran au premier plan : pas de clavier non plus.
     }
-}
-
-private fun SemanticsNode.aUnAncetreDefilant(): Boolean {
-    var noeud = parent
-    while (noeud != null) {
-        if (SemanticsActions.ScrollBy in noeud.config) return true
-        noeud = noeud.parent
-    }
-    return false
 }
 
 /**
