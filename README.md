@@ -154,6 +154,10 @@ sdkmanager "platform-tools" "platforms;android-37.2"
 `JAVA_HOME` et `ANDROID_HOME` (ou `local.properties`, `sdk.dir=…`) doivent désigner
 le JDK 21 et le SDK.
 
+La release pour Google Play (AAB signé par la clé de téléversement, au poste seulement,
+jamais en CI) : `bash scripts/construire-release.sh` — la clé, son rangement et Play
+App Signing sont dans `docs/signature-android.md`.
+
 ## Contrat d'API
 
 `contrat/openapi.json` est la pièce jointe de la release de coprofirst au plancher
