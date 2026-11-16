@@ -80,7 +80,7 @@ class ResidencesInterfaceTest {
         ecran.attendreTexte("MES AUTRES RÉSIDENCES")
         ecran.onNodeWithTag(repereAutre(tilleuls)).assertIsDisplayed()
         ecran.waitUntil(DELAI_MS) {
-            ecran.onAllNodes(hasTestTag(repereAutre(tilleuls)) and hasText("Les Tilleuls", substring = true), useUnmergedTree = true)
+            ecran.onAllNodes(hasTestTag(repereAutre(tilleuls)) and hasText("Les Tilleuls", substring = true))
                 .fetchSemanticsNodes().isNotEmpty()
         }
         ecran.onNodeWithTag(REPERE_UNE_AUTRE).assertIsDisplayed()
