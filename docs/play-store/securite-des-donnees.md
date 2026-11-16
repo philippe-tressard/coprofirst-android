@@ -55,8 +55,10 @@ Play services, que seule une app de même identifiant et de même signature lit.
 efface l'élément de données dès qu'elle l'a gardé.
 **Lecture prudente** : Google Play services peut acheminer par ses serveurs, et pas
 seulement de proche en proche. Ce dépôt déclare donc ce jeton comme un `ID appareil`
-**partagé avec Google**, pour l'acheminement seulement, comme le jeton FCM. C'est à
-Philippe de retenir cette lecture (#207).
+**partagé avec Google**, pour l'acheminement seulement, comme le jeton FCM. Lecture retenue le 17/11/2026
+(coordination, #207) : une fiche qui déclare un peu trop ne cause aucun tort, une qui
+déclare trop peu expose à un retrait par Google. Philippe peut la revoir en remplissant le
+formulaire Play.
 
 ⚠️ Lecture prudente, pas un avis juridique ; c'est à Philippe de la retenir. Si une autre
 lecture l'emporte, ce fichier et la saisie changent ensemble.
