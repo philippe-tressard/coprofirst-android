@@ -193,4 +193,9 @@ class TexteDuSiteTest {
             assertEquals(saisi, TexteDuSite.saisi(TexteDuSite.html(saisi = saisi)))
         }
     }
+
+    @Test
+    fun uneImageDevientSonTexteDeRemplacement() {
+        assertEquals("Plan du parking", TexteDuSite.apercu("<p><img src=\"https://x.fr/p.png\" alt=\"Plan du parking\"></p>"))
+    }
 }

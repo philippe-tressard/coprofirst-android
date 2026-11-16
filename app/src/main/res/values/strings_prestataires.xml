@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 <!-- « Prestataires » (#19) : les libellés de l'iOS (TextesPrestataires), mot pour mot. -->
 <resources>
     <string name="prestataires_reserve">Les prestataires et leurs contrats sont réservés au conseil syndical.</string>
-    <string name="prestataires_gestes_sur_le_site">Ajouter ou corriger une fiche, un contrat ou un relevé, noter un prestataire, archiver : ces gestes du conseil syndical se font sur le site de la résidence.</string>
+    <string name="prestataires_gestes_sur_le_site">Ajouter ou corriger une fiche, un contrat ou un relevé, archiver : ces gestes du conseil syndical se font sur le site de la résidence.</string>
     <string name="prestataires_archives">📁 Archives (%1$s)</string>
     <string name="prestataires_deplier_fiche">Déplie la fiche</string>
     <string name="prestataires_replier_fiche">Replie la fiche</string>
@@ -79,4 +79,34 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="prestataires_replier_avis">Replie l\'avis</string>
     <string name="prestataires_deplier_exercice">Déplie l\'exercice</string>
     <string name="prestataires_replier_exercice">Replie l\'exercice</string>
+    <!-- Noter, corriger, retirer un avis (#209) : les mots du site et de l'iOS (TextesSaisieAvis). -->
+    <string name="notation_noter">⭐ Noter</string>
+    <string name="notation_titre_noter">Noter</string>
+    <string name="notation_modifier">Modifier cet avis</string>
+    <string name="notation_retirer">Retirer cet avis</string>
+    <string name="notation_etat_groupe">État de l\'intervention</string>
+    <string name="notation_commentaire_libre">Commentaire libre</string>
+    <string name="notation_aide_libre">(facultatif, sauf pour « Mauvais »)</string>
+    <string name="notation_choisir_etat">Choisissez l\'état : Mauvais, Neutre ou Excellent</string>
+    <string name="notation_mauvais_sans_commentaire">Un avis « Mauvais » doit être justifié par un commentaire</string>
+    <string name="notation_confirmer_ajout_refus">Confirmez l\'ajout de %1$s à l\'affaire choisie</string>
+    <string name="notation_enregistree">Notation enregistrée</string>
+    <string name="notation_modifie">Avis modifié</string>
+    <string name="notation_retire">Avis retiré.</string>
+    <string name="notation_affaire_concernee">Affaire concernée</string>
+    <string name="notation_recherche_affaire">Numéro, titre, équipement, mot du suivi…</string>
+    <string name="notation_changer">Changer</string>
+    <string name="notation_avec">Avec %1$s</string>
+    <string name="notation_ce_prestataire">ce prestataire</string>
+    <string name="notation_autres_affaires">Autres affaires</string>
+    <string name="notation_recherche_en_cours">Recherche dans le suivi, les messages et les pièces jointes…</string>
+    <string name="notation_aucune_affaire">Aucune affaire ne correspond.</string>
+    <string name="notation_sans_affaire">Sans affaire, l’avis porte sur le prestataire en général.</string>
+    <string name="notation_ajouter">Ajouter %1$s comme intervenant de « %2$s » (son avis y sera rattaché)</string>
+    <string name="notation_confirmer_retrait">Retirer l’avis</string>
+    <string name="notation_retirer_de">Retirer l’avis de %1$s</string>
+    <string name="notation_ce_membre">ce membre</string>
+    <string name="notation_un_membre">un membre du CS</string>
+    <string name="notation_retrait_etat">État « %1$s » de %2$s</string>
+    <string name="notation_retrait_definitif">La suppression est définitive, et la moyenne du prestataire sera recalculée.</string>
 </resources>

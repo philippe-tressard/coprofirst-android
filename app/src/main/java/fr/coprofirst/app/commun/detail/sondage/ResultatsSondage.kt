@@ -44,7 +44,8 @@ import fr.coprofirst.app.commun.formats.FormatsDuSite
 /**
  * Les résultats d'un sondage, comme l'iOS (`ResultatsSondage`, `ResultatsSondage.svelte` du
  * site) : une barre par réponse, son pourcentage et ses votes, « Mon vote ✓ », et sous chaque
- * option à préciser les réponses libres des votants. Masqués, ils ne sont pas des barres
+ * option à préciser les réponses libres des votants ; le sondage encore ouvert, « Résultats
+ * provisoires » en tête (`provisoires` du site, #218). Masqués, ils ne sont pas des barres
  * vides : le serveur n'envoie pas les décomptes, et « 0 vote » se lirait « personne n'a voté ».
  */
 @Composable
@@ -53,6 +54,14 @@ internal fun ResultatsSondage(sondage: DetailSondage) {
     Carte {
         if (sondage.resultatsVisibles) {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                if (sondage.resultatsProvisoires) {
+                    Text(
+                        stringResource(R.string.sondage_resultats_provisoires),
+                        style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic),
+                        color = couleurs.textMuted,
+                        modifier = Modifier.testTag(ReperesSondage.RESULTATS_PROVISOIRES),
+                    )
+                }
                 sondage.options.forEach { option ->
                     LigneResultat(option, sondage.totalVotes, mienne = option.id == sondage.monVote)
                 }

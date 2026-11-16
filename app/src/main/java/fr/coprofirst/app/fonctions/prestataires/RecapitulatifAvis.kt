@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -62,22 +63,42 @@ object ReperesAvis {
  * « non notée » sinon. Un badge porte un chevron (un avis replié se VOIT dépliable) et
  * déplie, sous la ligne, l'auteur, la date et le commentaire — un seul à la fois.
  *
- * Lecture seule, comme l'iOS : corriger (`peut_modifier`) et retirer un avis restent sur le
- * site — aucun droit de retrait n'est servi. Illisible, le récapitulatif se tait : la fiche
+ * Les gestes (#209), comme l'iOS : en tête, « ⭐ Noter » (le conseil, sur une fiche non
+ * archivée) ; dans l'avis déplié, « Modifier cet avis » selon `peut_modifier` servi et
+ * « Retirer cet avis » pour le conseil (`est_moderateur` servi). Après un geste, le
+ * récapitulatif ET la liste se relisent. Illisible, le récapitulatif se tait : la fiche
  * reste lisible sans lui.
  */
 @Composable
-internal fun RecapitulatifAvis(prestataire: Prestataire, service: ServicePrestataires) {
+internal fun RecapitulatifAvis(prestataire: Prestataire, service: ServicePrestataires, archive: Boolean, gestes: GestesAvis) {
     var exercices by remember(prestataire.id) { mutableStateOf<List<ExerciceAvis>>(emptyList()) }
     var exerciceOuvert by rememberSaveable(prestataire.id) { mutableStateOf<Int?>(null) }
     var avisOuvert by rememberSaveable(prestataire.id) { mutableStateOf<Int?>(null) }
-    LaunchedEffect(prestataire.id) {
+    var lecture by remember(prestataire.id) { mutableIntStateOf(0) }
+    var corrige by remember(prestataire.id) { mutableStateOf<AvisPrestataire?>(null) }
+    var aRetirer by remember(prestataire.id) { mutableStateOf<AvisPrestataire?>(null) }
+    // Le récapitulatif se relit après un geste, la liste aussi (`gestes.apres`).
+    val apres = GestesAvis(gestes.conseil, gestes.avis) {
+        lecture++
+        gestes.apres()
+    }
+    LaunchedEffect(prestataire.id, lecture) {
         exercices = try {
             service.interventions(prestataire.id)
         } catch (_: ErreurService) {
             emptyList()
         }
         if (exerciceOuvert == null) exerciceOuvert = exercices.firstOrNull()?.annee
+    }
+    if (gestes.conseil && !archive) BoutonNoter(prestataire, null, service, apres)
+    corrige?.let { avis ->
+        FeuilleAvis(ModeAvis.Corriger(avis), prestataire, service, apres) {
+            corrige = null
+            gestes.avis.feuilleFermee()
+        }
+    }
+    aRetirer?.let { avis ->
+        ConfirmationRetrait(avis, service, apres, fermer = { aRetirer = null }) { avisOuvert = null }
     }
     if (exercices.isEmpty()) return
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -87,7 +108,9 @@ internal fun RecapitulatifAvis(prestataire: Prestataire, service: ServicePrestat
             EnteteExercice(exercice, ouvert) { exerciceOuvert = if (ouvert) null else exercice.annee }
             Depliage(ouvert) {
                 exercice.lignes.forEach { ligne ->
-                    LigneAvis(ligne, avisOuvert) { id -> avisOuvert = if (avisOuvert == id) null else id }
+                    LigneAvis(ligne, avisOuvert, { id -> avisOuvert = if (avisOuvert == id) null else id }) { avis ->
+                        GestesDeLAvis(avis, retirable = gestes.conseil, modifier = { corrige = avis }, retirer = { aRetirer = avis })
+                    }
                 }
             }
         }
@@ -141,7 +164,12 @@ private fun nombres(exercice: ExerciceAvis): String {
 }
 
 @Composable
-private fun LigneAvis(ligne: LigneIntervention, avisOuvert: Int?, basculer: (Int) -> Unit) {
+private fun LigneAvis(
+    ligne: LigneIntervention,
+    avisOuvert: Int?,
+    basculer: (Int) -> Unit,
+    gestesDe: @Composable (AvisPrestataire) -> Unit,
+) {
     val couleurs = LocalCouleurs.current
     val titre = ligne.titre ?: stringResource(R.string.prestataires_avis_sans_affaire)
     Column(Modifier.padding(start = RETRAIT).padding(vertical = 2.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -161,7 +189,10 @@ private fun LigneAvis(ligne: LigneIntervention, avisOuvert: Int?, basculer: (Int
             }
             ligne.avis.forEach { avis -> BadgeAvis(avis, avisOuvert == avis.id) { basculer(avis.id) } }
         }
-        ligne.avis.firstOrNull { it.id == avisOuvert }?.let { DetailAvis(it) }
+        ligne.avis.firstOrNull { it.id == avisOuvert }?.let {
+            DetailAvis(it)
+            gestesDe(it)
+        }
     }
 }
 

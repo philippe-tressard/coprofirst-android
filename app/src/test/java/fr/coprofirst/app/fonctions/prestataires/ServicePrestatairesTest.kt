@@ -10,6 +10,9 @@ import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsParHote
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.jsonObject
 import mockwebserver3.Dispatcher
 import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
@@ -17,9 +20,11 @@ import mockwebserver3.RecordedRequest
 import okhttp3.OkHttpClient
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.Instant
 
 /**
  * Chaque lecture part par SA route du contrat, par le client généré, et les réponses du
@@ -35,7 +40,7 @@ class ServicePrestatairesTest {
                 val (code, corps) = if (equipementsEnPanne && chemin.endsWith("/equipements")) {
                     500 to "{}"
                 } else {
-                    simules.repondre(request.method, chemin)
+                    simules.repondre(request.method, chemin, request.body?.utf8().orEmpty())
                 }
                 return MockResponse.Builder().code(code).addHeader("Content-Type", "application/json").body(corps).build()
             }
@@ -136,6 +141,57 @@ class ServicePrestatairesTest {
         depot.donnees(1)
         assertEquals("tirer pour actualiser relit", 2, simules.recues.count { it == "GET /api/prestataires" })
     }
+
+
+    @Test
+    fun leDepotRelitApresUnGesteSurUnAvis() = runTest {
+        val depot = DepotPrestataires(service)
+        depot.donnees(0)
+        depot.oublier()
+        depot.donnees(0)
+        assertEquals("le nombre d'avis est servi avec la liste", 2, simules.recues.count { it == "GET /api/prestataires" })
+    }
+
+    @Test
+    fun noterEnvoieLAvisEtSaConfirmation() = runTest {
+        val saisie = SaisieAvis(etat = "mauvais", commentaire = "  Retard de trois semaines ", affaire = 52, confirmeAjout = true)
+        service.noter(saisie.creation(prestataire = 1, contrat = null, ajoutRequis = true))
+        val envoye = json(simules.corps.getValue("POST /prestataires/notations"))
+        assertEquals("1", envoye.getValue("prestataire_id").toString())
+        assertEquals("\"mauvais\"", envoye.getValue("etat").toString())
+        assertEquals("\"Retard de trois semaines\"", envoye.getValue("commentaire").toString())
+        assertEquals("52", envoye.getValue("ticket_id").toString())
+        assertEquals("true", envoye.getValue("confirmer_ajout").toString())
+        assertFalse("hors contrat, aucun contrat_id", envoye.containsKey("contrat_id"))
+    }
+
+    @Test
+    fun remettreSansAffaireEnvoieUnNullExplicite() = runTest {
+        val avant = AvisPrestataire(12, "excellent", "Astreinte joignable de nuit.", creeLe = Instant.EPOCH, peutModifier = true, ticketId = 45)
+        val saisie = SaisieAvis.corrigeant(avant).copy(affaire = null)
+        service.corriger(12, saisie.correction(avant, ajoutRequis = false))
+        val envoye = json(simules.corps.getValue("PATCH /prestataires/notations/12"))
+        assertEquals("ticket_id: null EXPLICITE (#99, model_fields_set)", JsonNull, envoye["ticket_id"])
+        assertFalse("rien d'autre n'a changé : rien d'autre ne part", envoye.containsKey("etat") || envoye.containsKey("commentaire"))
+    }
+
+    @Test
+    fun retirerEtLesAffairesParLeursRoutes() = runTest {
+        service.retirer(12)
+        assertEquals(listOf(45, 38, 52), service.affairesANoter(1).map { it.id })
+        assertEquals(listOf(52), service.rechercherAffaires("toiture"))
+        assertTrue(
+            simules.recues.containsAll(
+                listOf(
+                    "DELETE /api/prestataires/notations/12",
+                    "GET /api/prestataires/affaires-a-noter?prestataire_id=1",
+                    "GET /api/tickets/recherche?q=toiture",
+                ),
+            ),
+        )
+    }
+
+    private fun json(texte: String) = Json.parseToJsonElement(texte).jsonObject
 
     @Test(expected = ErreurService::class)
     fun uneFicheIllisibleEstUneErreur() = runTest {

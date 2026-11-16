@@ -4,7 +4,9 @@
 package fr.coprofirst.app.commun.detail.sondage
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasTestTag
@@ -12,6 +14,7 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.unit.Density
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.commun.AvisDuGeste
@@ -19,6 +22,7 @@ import fr.coprofirst.app.commun.AvisEphemere
 import fr.coprofirst.app.commun.CibleSignalement
 import fr.coprofirst.app.commun.ReperesSignalement
 import fr.coprofirst.app.commun.amenerTag
+import fr.coprofirst.app.commun.attendreDisparition
 import fr.coprofirst.app.commun.attendreDisparitionTag
 import fr.coprofirst.app.commun.attendreTag
 import fr.coprofirst.app.commun.attendreTexte
@@ -28,7 +32,6 @@ import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsParHote
 import org.junit.Assert.assertEquals
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -45,13 +48,16 @@ class FicheSondageInterfaceTest {
     val ecran = createComposeRule()
     private val serveur = SondageSimule()
 
-    @Before
-    fun ouvrir() {
+    /** La fiche `id`, en clair ou en sombre, au texte normal ou très grand (`echelle`). */
+    private fun ouvrir(id: Int = 12, sombre: Boolean = false, echelle: Float = 1f) {
         val session = SessionOuverte(Installation("https://residence.example.test", "Les Glycines"), SessionsParHote())
         val avis = AvisDuGeste()
         ecran.setContent {
-            ThemeCoproFirst {
-                AvisEphemere(avis, Modifier.fillMaxSize()) { FicheSondage(12, session, avis, service = serveur) }
+            val densite = LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(densite.density, fontScale = echelle)) {
+                ThemeCoproFirst(sombre = sombre) {
+                    AvisEphemere(avis, Modifier.fillMaxSize()) { FicheSondage(id, session, avis, service = serveur) }
+                }
             }
         }
         ecran.attendreTag(ReperesSondage.QUESTION)
@@ -59,6 +65,7 @@ class FicheSondageInterfaceTest {
 
     @Test
     fun unVoteAPreciserCommenteSousLaCharte() {
+        ouvrir()
         ecran.attendreTag(ReperesSondage.TOTAL, "29 votes")
         ecran.attendreTag(ReperesSondage.MANQUE, "Sélectionnez une option")
 
@@ -80,10 +87,43 @@ class FicheSondageInterfaceTest {
         ecran.attendreTag(ReperesSondage.TOTAL, "30 votes")
         ecran.attendreTag(ReperesReponses.ENTETE, "COMMENTAIRES (4)")
         ecran.attendreTexte("Vote enregistré")
+        // Voté, le sondage encore ouvert : les barres restent provisoires (#218).
+        ecran.attendreTag(ReperesSondage.RESULTATS_PROVISOIRES)
+    }
+
+    /**
+     * Visibles avant la clôture (#218, 5Hostachy #2803) : les barres passent au-dessus du vote
+     * et se disent provisoires ; les choix ne portent plus leur décompte. En sombre, très grand texte.
+     */
+    @Test
+    fun lesResultatsProvisoiresPassentAuDessusDuVote() {
+        ouvrir(sombre = true, echelle = 2f)
+        ecran.attendreTag(ReperesSondage.RESULTATS_PROVISOIRES, "Résultats provisoires : le sondage est encore ouvert.")
+        ecran.attendreTag(ReperesSondage.resultat(1), "14")
+        ecran.attendreDisparition(hasText("14 votes"))
+        ecran.amenerTag(ReperesSondage.option(1))
+    }
+
+    /** Masqués : rien avant la clôture, ni barre ni mention. */
+    @Test
+    fun desResultatsMasquesNeParaissentPasAvantLeVote() {
+        ouvrir(id = 11)
+        ecran.amenerTag(ReperesSondage.option(21))
+        ecran.attendreDisparitionTag(ReperesSondage.RESULTATS_PROVISOIRES)
+        ecran.attendreDisparitionTag(ReperesSondage.resultat(21))
+    }
+
+    /** Clos : les barres, sans la mention « provisoires ». */
+    @Test
+    fun unSondageClosNEstPlusProvisoire() {
+        ouvrir(id = 9)
+        ecran.amenerTag(ReperesSondage.resultat(25))
+        ecran.attendreDisparitionTag(ReperesSondage.RESULTATS_PROVISOIRES)
     }
 
     @Test
     fun leFilDesCommentairesSeLitSeCompleteEtSeModere() {
+        ouvrir()
         ecran.attendreTag(ReperesReponses.ENTETE, "COMMENTAIRES (3)")
         ecran.amenerTag(ReperesReponses.SAISIE).performTextInput("Je viendrai avec des chaises")
         ecran.toucherTag(ReperesReponses.ENVOYER)

@@ -48,9 +48,4 @@ class LectureHTMLTest {
         assertEquals(mapOf("alt" to "Plan", "src" to "a.png"), jeton.attributs)
         assertTrue(LectureHTML.jetons("<p class=\"coupé").isEmpty())
     }
-
-    @Test
-    fun uneImageDevientSonTexteDeRemplacement() {
-        assertEquals("Plan du parking", TexteDuSite.apercu("<p><img src=\"https://x.fr/p.png\" alt=\"Plan du parking\"></p>"))
-    }
 }
