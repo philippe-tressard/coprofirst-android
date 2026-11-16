@@ -210,6 +210,12 @@ dependencies {
     // L'œil du mot de passe (Visibility) : seules les icônes utilisées restent après R8.
     implementation(libs.compose.material.icons.extended)
     implementation(libs.compose.ui.tooling.preview)
+    // Le QR code de la fiche d'arrivée (#6) : la caméra (CameraX) et le décodage (ZXing),
+    // libres tous deux et sur l'appareil seul — aucun service de Google Play.
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+    implementation(libs.zxing.core)
     debugImplementation(libs.compose.ui.tooling)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

@@ -40,6 +40,9 @@ interface ActionsEntree {
     fun entrer()
     fun entrerDemo()
     fun saisir(texte: String)
+
+    /** Le texte d'un QR code lu par la caméra (#6) : il remplit « Votre résidence ». */
+    fun lireQR(texte: String)
     fun saisirEmail(texte: String)
     fun saisirMotDePasse(texte: String)
     fun basculerVoirMotDePasse()
@@ -55,6 +58,7 @@ interface ActionsEntree {
         override fun entrer() = Unit
         override fun entrerDemo() = Unit
         override fun saisir(texte: String) = Unit
+        override fun lireQR(texte: String) = Unit
         override fun saisirEmail(texte: String) = Unit
         override fun saisirMotDePasse(texte: String) = Unit
         override fun basculerVoirMotDePasse() = Unit

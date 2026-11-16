@@ -3,8 +3,11 @@
 
 package fr.coprofirst.app.entree
 
+import androidx.compose.ui.test.assertHasClickAction
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -56,6 +59,18 @@ class ParcoursEntreeInterfaceTest {
         champ.performTextInput("residence.exemple.test")
         attendre("Les Glycines")
         champ.assertIsFocused()
+    }
+
+    /**
+     * #6 : le QR code de la fiche d'arrivée s'ouvre DANS « Votre résidence », comme l'iOS. La
+     * caméra elle-même ne se teste pas à l'émulateur ; la lecture (`LecteurQRTest`) et la
+     * garde après un scan (`ParcoursEntreeTest`) se testent sans elle.
+     */
+    @Test
+    fun leQRCodeSOuvreDepuisLeChampResidence() {
+        ecran.onNode(hasTestTag(Reperes.SCANNER) and hasContentDescription("Scanner le QR code de la fiche d'arrivée"))
+            .assertIsDisplayed()
+            .assertHasClickAction()
     }
 
     /** Un hôte jamais vu se confirme avant tout mot de passe, puis la session s'ouvre et se ferme. */

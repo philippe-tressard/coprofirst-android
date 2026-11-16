@@ -5,10 +5,15 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 -->
 <!-- Un droit neuf se déclare aussi dans la section « Sécurité des données » de Google
      Play (standards/14 §3 bis). INTERNET : lire l'API de la résidence donnée par
-     l'utilisateur, rien d'autre. -->
+     l'utilisateur, rien d'autre. CAMERA (#6) : lire le QR code de la fiche d'arrivée,
+     demandée à l'ouverture du scanner seulement ; l'image est lue sur l'appareil, ni
+     gardée ni envoyée — rien n'est « collecté » au sens de Google Play. La caméra n'est
+     pas exigée : sans elle, l'adresse se saisit. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera.any" android:required="false" />
 
     <application
         android:allowBackup="false"
