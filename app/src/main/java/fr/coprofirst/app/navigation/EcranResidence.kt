@@ -143,16 +143,16 @@ fun EcranResidence(session: SessionOuverte, sortie: GestesDeSortie, apparence: A
             fiche != null && titreFiche != null && id != null -> {
                 // La fiche reçoit une page à son titre : elle n'est pas une page de la barre.
                 val page = PageDeNavigation(ficheNature.orEmpty(), "", titreFiche, titreFiche, "")
-                fiche.ecran(ContexteDeMenu(page, session, etat.droits, sortie, apparence, barreDuHaut, ouvrir), id)
+                fiche.ecran(ContexteDeMenu(page, session, etat.droits, sortie, apparence, barreDuHaut, ouvrir, parcours::relireDroits), id)
             }
-            ouverte != null -> RegistreDesMenus.Ecran(ContexteDeMenu(ouverte, session, etat.droits, sortie, apparence, barreDuHaut, ouvrir))
+            ouverte != null -> RegistreDesMenus.Ecran(ContexteDeMenu(ouverte, session, etat.droits, sortie, apparence, barreDuHaut, ouvrir, parcours::relireDroits))
             else -> ListeDePlus(plus, ouvrir = { pageDePlus = it })
         }
     }
     if (clocheOuverte && notifications != null) {
         FeuilleNotifications(
             notifications,
-            contexte = { barre -> ContexteDeMenu(notifications, session, etat.droits, sortie, apparence, barre, ouvrir) },
+            contexte = { barre -> ContexteDeMenu(notifications, session, etat.droits, sortie, apparence, barre, ouvrir, parcours::relireDroits) },
             fermer = { clocheOuverte = false },
         )
     }

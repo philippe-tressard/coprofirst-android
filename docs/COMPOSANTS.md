@@ -82,7 +82,7 @@ jamais sur ces droits seuls), `sortie` (`GestesDeSortie` : `deconnecter()`,
 `oublierTout()` — toujours confirmés par `ConfirmationDeSortie`), `apparence`
 (`Apparence` : le thème de l'appareil, `choix`, `options`, `choisir(valeur)`) et `barre`
 (la barre du haut : `ActionsDeBarre(contexte) { IconButton(…) }` y pose les actions de
-l'écran — le `toolbar` de l'iOS ; elles se retirent quand l'écran se quitte). Le titre de la page est posé par la barre : l'écran n'en
+l'écran — le `toolbar` de l'iOS ; elles se retirent quand l'écran se quitte). `relireDroits()` relit les droits du compte (GET /auth/me) après un geste qui les change — un rôle qu'on se retire : la barre et les onglets suivent aussitôt (`rafraichirProfil` de l'iOS, #87). Le titre de la page est posé par la barre : l'écran n'en
 pose pas. Une page sans ligne au registre affiche « Bientôt ».
 
 **La porte** (#85) — `contexte.ouvrir(destination)` mène d'un écran ailleurs, sans toucher à

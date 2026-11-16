@@ -72,11 +72,6 @@ import kotlinx.coroutines.launch
  *
  * Un geste réussi ferme la fiche, et son annonce suit la fermeture ; refusé, la phrase du
  * serveur reste dans la fiche.
- *
- * ⚠️ Divergence déclarée : l'iOS relit le profil du lecteur après un geste de rôle sur son
- * propre compte (ses droits changent aussitôt) ; l'app Android n'a pas encore de quoi
- * relire les droits du compte depuis un écran — ils le sont à la prochaine ouverture de
- * la résidence (#87).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -244,6 +239,8 @@ private fun GestesDuCompte(
             roleAConfirmer = null
             geste {
                 etat.changerRole(compte, offert)
+                // Un rôle qu'on se retire à soi-même vaut aussitôt : les droits se relisent (#87).
+                contexte.relireDroits()
                 PhraseAvis(ressources.getString(TextesRoles.annonce(offert), TextesRoles.libelle(offert.role), nom))
             }
         }

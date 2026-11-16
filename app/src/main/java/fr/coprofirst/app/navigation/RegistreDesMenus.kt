@@ -28,6 +28,8 @@ data class ContexteDeMenu(
      * garde alors son repli, « Voir sur le site » par exemple.
      */
     val ouvrir: (Destination) -> Boolean = { false },
+    /** Relit les droits du compte (un rôle changé) : la barre et les onglets suivent (#87). */
+    val relireDroits: suspend () -> Unit = {},
 )
 
 /** L'écran d'une page de menu. */
