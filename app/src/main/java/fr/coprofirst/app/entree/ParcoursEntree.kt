@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import fr.coprofirst.app.commun.GestesDeSortie
+import fr.coprofirst.app.commun.ResidenceConnue
 import fr.coprofirst.app.commun.audience.AudienceDeLApp
 import fr.coprofirst.app.commun.pieces.PiecesLocales
 import android.os.Build
@@ -394,6 +395,26 @@ class ParcoursEntree(
             if (!connexion.deconnecter(ouverte)) _etat.update { it.copy(avisSortie = AvisSortie.SessionInjoignable) }
         }
     }
+
+    override fun changerDeResidence(installation: Installation?) {
+        // Les pages vues partent tant que la session les rattache au compte ; elle reste ouverte.
+        viewModelScope.launch { avantSortie() }
+        reconnaissance?.cancel()
+        _etat.update {
+            it.copy(
+                ecran = EcranEntree.Connexion, pile = emptyList(), ouverte = null, consultation = null, confirmation = null,
+                venue = null, proposerGarde = false, issueGarde = null, lien = null, aideDemo = null, reconnue = null,
+                saisie = "", email = "", motDePasse = "", parMotDePasse = false, connexionEnCours = false,
+                erreurConnexion = null, avisSortie = null,
+            )
+        }
+        // Reconnue de nouveau : son courriel pré-rempli, sa session gardée rouverte par la biométrie.
+        installation?.adresse?.let { saisir(it.enSaisie, pause = false) }
+    }
+
+    override fun residencesConnues(): List<ResidenceConnue> = connues.liste.map { ResidenceConnue(it, connues.roles(it)) }
+
+    override fun noterRoles(installation: Installation, statut: String?, roles: List<String>) = connues.noterRoles(installation, statut, roles)
 
     /**
      * Comme `Parcours.oublierTout` de l'iOS : la session de CHAQUE résidence connue fermée sur

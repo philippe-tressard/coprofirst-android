@@ -80,6 +80,9 @@ fun EcranResidence(
     var ficheId by rememberSaveable { mutableStateOf<String?>(null) }
     val barreDuHaut = remember { BarreDuHaut() }
     var clocheOuverte by rememberSaveable { mutableStateOf(false) }
+    var residencesOuvertes by rememberSaveable { mutableStateOf(false) }
+    // Ce que le compte est ici, relu : retenu pour la feuille « Résidences » de l'appareil (#180).
+    LaunchedEffect(etat.roles) { etat.roles?.let { sortie.noterRoles(session.installation, it.statut, it.roles) } }
     val notifications = Cloche.page
     val residence = session.installation.url
     // Le nombre de non lues de la cloche se relit à l'ouverture de la résidence.
@@ -152,6 +155,7 @@ fun EcranResidence(
         retour = retour,
         barreDuHaut = barreDuHaut,
         cloche = {
+            PastilleResidence(session.installation) { residencesOuvertes = true }
             if (notifications != null) BoutonCloche(notifications, CompteurNonLues.partage.nombre(residence)) { clocheOuverte = true }
         },
         barre = {
@@ -183,6 +187,9 @@ fun EcranResidence(
             ouverte != null -> RegistreDesMenus.Ecran(ContexteDeMenu(ouverte, session, etat.droits, sortie, apparence, barreDuHaut, ouvrir, parcours::relireDroits))
             else -> ListeDePlus(plus, ouvrir = { pageDePlus = it })
         }
+    }
+    if (residencesOuvertes) {
+        FeuilleResidences(session.installation, etat.roles, sortie, parcours::relireDroits) { residencesOuvertes = false }
     }
     if (clocheOuverte && notifications != null) {
         FeuilleNotifications(

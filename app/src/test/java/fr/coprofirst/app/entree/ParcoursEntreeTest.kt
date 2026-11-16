@@ -28,6 +28,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -414,6 +415,44 @@ class ParcoursEntreeTest {
         advanceUntilIdle()
         assertEquals(EcranEntree.Espace, parcours.etat.value.ecran)
         assertNull("une connexion réussie efface l'avis", parcours.etat.value.avisSortie)
+    }
+
+    /**
+     * #180 : changer de résidence quitte l'ouverte SANS la déconnecter — aucun POST
+     * /auth/logout — et mène à la connexion de l'autre, reconnue de nouveau ; « Une autre
+     * résidence » mène à la connexion vierge.
+     */
+    @Test
+    fun changerDeResidenceSansSeDeconnecter() = test {
+        val autre = Installation("https://autre.exemple.test", "Autre")
+        connues.retenir(autre)
+        connues.retenir(Installation("https://connue.exemple.test", "Connue"))
+        pret("connue.exemple.test")
+        ok()
+        parcours.seConnecter()
+        advanceUntilIdle()
+        residence("Autre")
+        parcours.changerDeResidence(autre)
+        advanceUntilIdle()
+        val etat = parcours.etat.value
+        assertEquals(EcranEntree.Connexion, etat.ecran)
+        assertNull(etat.ouverte)
+        assertEquals("autre.exemple.test", etat.saisie)
+        assertEquals("Autre", etat.reconnue?.nom)
+        val chemins = List(serveur.requestCount) { serveur.takeRequest().url.encodedPath }
+        assertTrue("aucune déconnexion", chemins.none { it.endsWith("/auth/logout") })
+        parcours.changerDeResidence(null)
+        assertEquals("", parcours.etat.value.saisie)
+        assertNull(parcours.etat.value.reconnue)
+    }
+
+    /** #180 : les résidences retenues, avec les rôles relus de chacune. */
+    @Test
+    fun lesResidencesConnuesPortentLeursRoles() = test {
+        val a = Installation("https://a.exemple.test", "A")
+        connues.retenir(a)
+        parcours.noterRoles(a, "locataire", emptyList())
+        assertEquals(listOf("locataire"), parcours.residencesConnues().map { it.roles?.statut })
     }
 
     /** #144 : ce qui reste de la mesure d'audience part AVANT que la session se ferme. */
