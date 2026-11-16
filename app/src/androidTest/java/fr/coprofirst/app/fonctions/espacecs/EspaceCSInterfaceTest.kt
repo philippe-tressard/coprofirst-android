@@ -124,10 +124,24 @@ class EspaceCSInterfaceTest {
         val retenue = { ecran.onAllNodes(hasTestTag(repere) and isSelected()).fetchSemanticsNodes().isNotEmpty() }
         repeat(3) {
             if (retenue()) return
-            atteindre(repere)
+            attendreRepere(repere)
+            ecran.onNodeWithTag(repere).performScrollTo()
+            attendreImmobile(repere)
+            ecran.onNodeWithTag(repere).performClick()
             ecran.waitForIdle()
         }
         ecran.waitUntil(DELAI_MS, retenue)
+    }
+
+    /** Attend que le nœud ne bouge plus (deux lectures de sa position identiques), 3 s au plus. */
+    private fun attendreImmobile(repere: String) {
+        var avant = ecran.onNodeWithTag(repere).fetchSemanticsNode().boundsInRoot
+        repeat(30) {
+            Thread.sleep(100)
+            val apres = ecran.onNodeWithTag(repere).fetchSemanticsNode().boundsInRoot
+            if (apres == avant) return
+            avant = apres
+        }
     }
 
     @Test
@@ -194,16 +208,17 @@ class EspaceCSInterfaceTest {
     @Test
     fun creerPuisArchiverUneAnnonce() {
         atteindre(ReperesOnglets.onglet("annonces-hall"))
-        toucher(ReperesEspaceCS.NOUVELLE_TITRE)
-        ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_TITRE).performTextInput("Ascenseur à l'arrêt")
-        ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_MESSAGE).performTextInput("Lundi matin.")
-        // Le clavier, ouvert par la frappe, couvre le bas de la page : un toucher s'y perdait.
-        Espresso.closeSoftKeyboard()
-        // Le format d'abord, puis le périmètre : le lieu que le serveur nomme arrive après le
-        // choix et déplace la page ; chaque pastille est touchée jusqu'à être retenue.
+        // Le format et le périmètre AVANT toute frappe : le clavier, ouvert par la frappe, couvre
+        // le bas de la page (la sémantique l'ignore) et le toucher tombait sur lui (CI de #112).
+        // Le lieu que le serveur nomme arrive après le choix et déplace la page : chaque
+        // pastille est touchée immobile, jusqu'à être retenue.
         retenir(ReperesEspaceCS.nouvelleFormat("a5"))
         retenir("${ReperesEspaceCS.NOUVELLE_PERIMETRE}.bat_a")
         attendre("Bâtiment A ›")
+        toucher(ReperesEspaceCS.NOUVELLE_TITRE)
+        ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_TITRE).performTextInput("Ascenseur à l'arrêt")
+        ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_MESSAGE).performTextInput("Lundi matin.")
+        Espresso.closeSoftKeyboard()
         atteindre(ReperesEspaceCS.NOUVELLE_CREER)
         attendre("Annonce A5 créée et envoyée à 1 membre du CS")
         val creation = synchronized(residence) { residence.recues.toList() }.single { it.startsWith("POST /api/annonces-hall ") }
