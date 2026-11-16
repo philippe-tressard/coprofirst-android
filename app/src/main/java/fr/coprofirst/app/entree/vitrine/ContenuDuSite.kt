@@ -48,4 +48,6 @@ data class BlocDeContenu(
 fun premierePhrase(texte: String): String =
     FIN_DE_PHRASE.find(texte)?.let { texte.substring(0, it.range.last + 1) } ?: texte
 
-private val FIN_DE_PHRASE = Regex("""(?U)[.!?…](?=\s+\p{Lu})""")
+// Les espaces insécables du site comptent comme des espaces. Pas de drapeau `(?U)` : Android
+// ne le connaît pas (l'expression ne se compilerait pas, et le fichier ne s'initialiserait pas).
+private val FIN_DE_PHRASE = Regex("""[.!?…](?=[\s  ]+\p{Lu})""")

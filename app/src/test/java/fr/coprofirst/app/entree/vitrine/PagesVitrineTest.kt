@@ -69,5 +69,6 @@ class PagesVitrineTest {
         assertEquals("« Où en est ma demande ? »", premierePhrase("« Où en est ma demande ? »"))
         assertEquals("Vraiment ?", premierePhrase("Vraiment ? Oui."))
         assertEquals("Sans fin", premierePhrase("Sans fin"))
+        assertEquals("Avant l'insécable.", premierePhrase("Avant l'insécable.\u00A0Après."))
     }
 }
