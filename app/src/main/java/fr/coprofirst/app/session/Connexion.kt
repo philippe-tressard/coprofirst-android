@@ -88,9 +88,54 @@ class Connexion(
         }
         if (!renouvelee) {
             sessions.oublier(adresse)
-            sessions.gardees.supprimer(cle)
+            oublierCeQuiEstGarde(adresse)
             throw ReprisePerdue
         }
+    }
+
+    /**
+     * Entrer sans réseau, la biométrie passée (la reprise a échoué faute de réseau) : la
+     * dernière lecture gardée s'ouvre en CONSULTATION — plus rien ne part vers cet hôte,
+     * hors la reprise de sa session. Une lecture trop ancienne est effacée, et dite.
+     */
+    fun consulterHorsLigne(installation: Installation): LectureDisponible {
+        val adresse = installation.adresse ?: return LectureDisponible.Aucune
+        return sessions.lectures?.consulter(adresse.cleCoffre) ?: LectureDisponible.Aucune
+    }
+
+    /**
+     * Le réseau est revenu : la session se rouvre sans redemander la biométrie (le jeton lu
+     * à l'entrée attend dans la session HTTP), et la consultation se referme. Un refus du
+     * serveur efface la session gardée et les lectures, et lève `ReprisePerdue`.
+     */
+    suspend fun reprendreEnLigne(installation: Installation) {
+        val adresse = installation.adresse ?: throw ReprisePerdue
+        val base = baseApi(adresse)
+        val renouvelee = withContext(fond) {
+            try {
+                sessions.renouvellement.renouveler(adresse.cleCoffre) { sessions.rafraichir(adresse, base) }
+            } catch (annulation: CancellationException) {
+                throw annulation
+            } catch (erreur: Exception) {
+                throw ErreurService.depuis(erreur)
+            }
+        }
+        if (!renouvelee) {
+            sessions.oublier(adresse)
+            oublierCeQuiEstGarde(adresse)
+            throw ReprisePerdue
+        }
+        sessions.lectures?.quitterLaConsultation(adresse.cleCoffre)
+    }
+
+    /**
+     * LA porte de l'effacement de ce qu'une session laisse sur l'appareil — le jeton gardé
+     * et les lectures gardées, jamais l'un sans l'autre : la déconnexion, une session que le
+     * serveur refuse. Comme `oublierCeQuiEstGarde` de l'iOS.
+     */
+    private fun oublierCeQuiEstGarde(adresse: AdresseInstallation) {
+        sessions.gardees.supprimer(adresse.cleCoffre)
+        sessions.lectures?.effacer(adresse.cleCoffre)
     }
 
     /**
@@ -101,7 +146,7 @@ class Connexion(
         val adresse = installation.adresse ?: return
         withContext(fond) {
             runCatching { AuthApi(baseApi(adresse), sessions.client(adresse)).postAuthLogout() }
-            sessions.gardees.supprimer(adresse.cleCoffre)
+            oublierCeQuiEstGarde(adresse)
             sessions.oublier(adresse)
         }
     }

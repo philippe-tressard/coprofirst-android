@@ -10,12 +10,14 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
      gardée ni envoyée — rien n'est « collecté » au sens de Google Play. La caméra n'est
      pas exigée : sans elle, l'adresse se saisit. USE_BIOMETRIC (#13) : rouvrir une
      session gardée par l'invite biométrique du système — l'app ne reçoit aucune donnée
-     biométrique. -->
+     biométrique. ACCESS_NETWORK_STATE (#28) : savoir si l'appareil est en ligne, pour
+     dire « Hors ligne » et rouvrir la session au retour du réseau ; rien n'est transmis. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-feature android:name="android.hardware.camera.any" android:required="false" />
 
     <application

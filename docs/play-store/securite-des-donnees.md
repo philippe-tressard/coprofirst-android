@@ -39,6 +39,7 @@ lecture l'emporte, ce fichier et la saisie changent ensemble.
 | `android.permission.INTERNET` | parler au site de la résidence, en HTTPS seulement (le clair est refusé par le manifeste) |
 | `android.permission.CAMERA` | lire, sur l'appareil, le QR code de la fiche d'arrivée ; l'image ne quitte pas l'appareil |
 | `android.permission.USE_BIOMETRIC` | rouvrir la session gardée au Keystore ; l'app ne reçoit que la réponse du système |
+| `android.permission.ACCESS_NETWORK_STATE` | savoir si le réseau est là, pour la consultation hors ligne ; rien ne quitte l'appareil |
 
 Aucune autre : ni localisation, ni contacts, ni stockage partagé, ni notifications tant
 que #23 ne les demande. « à venir (#N) » : la permission que le ticket ajoute, refusée
