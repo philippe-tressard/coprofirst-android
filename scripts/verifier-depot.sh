@@ -299,6 +299,17 @@ while IFS= read -r f; do
     || echec "$f : la navigation nomme un menu — il s'inscrit dans son paquet (fonctions/<menu>/Inscription.kt, #109)"
 done < <(grep -E '^app/src/main/java/fr/coprofirst/app/navigation/.*\.kt$' <<< "$FICHIERS")
 
+# Chaque module que settings.gradle.kts inclut a son build SUIVI : le .gitignore est une
+# liste blanche, un dossier de module neuf y reste exclu tant qu'on ne l'a pas ré-inclus,
+# et seuls les fichiers déplacés par `git mv` passent (constaté deux fois le 16/11/2026 :
+# montre/ avant #211, partage/ dans #214).
+modules=$(grep -oE '"[:][a-z][a-z0-9-]*"' settings.gradle.kts | tr -d '":')
+[ -n "$modules" ] || echec "settings.gradle.kts : aucun module lu — la règle des modules suivis ne s'exerce pas"
+for m in $modules; do
+  grep -qx "$m/build.gradle.kts" <<< "$FICHIERS" \
+    || echec "module :$m inclus mais $m/build.gradle.kts n'est pas suivi — .gitignore : !/$m/, puis git add $m"
+done
+
 ! grep -q '^\.claude/worktrees/' <<< "$FICHIERS" || echec ".claude/worktrees/ suivi : git rm -r --cached .claude/worktrees"
 
 if [ "$ECHECS" -gt 0 ]; then
