@@ -12,6 +12,7 @@ import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.ProtectionSession
 import fr.coprofirst.app.session.SessionsGardeesEnMemoire
+import mockwebserver3.MockResponse
 import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -71,7 +72,11 @@ class SessionGardeeInterfaceTest {
         ecran.setContent { NavigationEntree(serveur.apparence(), parcours) }
         serveur.residence("Les Glycines")
         ecran.entrerDansLaResidence("residence.exemple.test", "Les Glycines") {
-            serveur.repondre(200) // POST /auth/login
+            // POST /auth/login : le serveur pose le jeton de rafraîchissement, que « Activer » garde.
+            serveur.serveur.enqueue(
+                MockResponse.Builder().code(200).addHeader("Content-Type", "application/json")
+                    .addHeader("Set-Cookie", "refresh_token=r1; Path=/; Secure; HttpOnly").body("{}").build(),
+            )
             serveur.repondre(404) // GET /auth/me
         }
         ecran.toucherTag(ReperesGarde.ACTIVER)
