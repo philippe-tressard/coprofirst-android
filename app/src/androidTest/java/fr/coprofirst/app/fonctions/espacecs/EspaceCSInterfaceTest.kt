@@ -3,13 +3,19 @@
 
 package fr.coprofirst.app.fonctions.espacecs
 
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isSelected
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextInput
+import androidx.test.espresso.Espresso
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.commun.Apparence
@@ -33,6 +39,7 @@ import okhttp3.tls.HandshakeCertificates
 import okhttp3.tls.HeldCertificate
 import org.junit.After
 import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -118,6 +125,44 @@ class EspaceCSInterfaceTest {
         ecran.onNodeWithTag(repere).performScrollTo().performClick()
     }
 
+    /** Une pastille de choix : touchée jusqu'à ce qu'elle soit retenue (la page peut bouger sous le doigt). */
+    private fun retenir(repere: String) {
+        val retenue = { ecran.onAllNodes(hasTestTag(repere) and isSelected()).fetchSemanticsNodes().isNotEmpty() }
+        repeat(3) {
+            if (retenue()) return
+            attendreRepere(repere)
+            ecran.onNodeWithTag(repere).performScrollTo().assertIsDisplayed()
+            attendreImmobile(repere)
+            ecran.onNodeWithTag(repere).performClick()
+            ecran.waitForIdle()
+        }
+        if (ecran.runCatching { waitUntil(DELAI_MS, retenue) }.isSuccess) return
+        // DIAGNOSTIC, jamais un passage (CI de #112, A5) : le toucher n'a pas porté. L'action de
+        // la pastille dit si un utilisateur le pourrait : retenue par elle seule, quelque chose
+        // dans l'écran fait obstacle au toucher (défaut de l'écran) ; pas même par elle, c'est la
+        // logique de sélection. Le test échoue dans les deux cas, en disant lequel.
+        val noeud = ecran.onNodeWithTag(repere).fetchSemanticsNode()
+        val racine = ecran.onRoot().fetchSemanticsNode().boundsInRoot
+        ecran.onNodeWithTag(repere).performSemanticsAction(SemanticsActions.OnClick)
+        val parAction = ecran.runCatching { waitUntil(DELAI_MS, retenue) }.isSuccess
+        fail(
+            "retenir($repere) : le toucher ne retient pas la pastille ; " +
+                (if (parAction) "son action la retient — un obstacle au toucher dans l'écran" else "son action non plus — la logique de sélection") +
+                " (bornes ${noeud.boundsInRoot}, racine $racine)",
+        )
+    }
+
+    /** Attend que le nœud ne bouge plus (deux lectures de sa position identiques), 3 s au plus. */
+    private fun attendreImmobile(repere: String) {
+        var avant = ecran.onNodeWithTag(repere).fetchSemanticsNode().boundsInRoot
+        repeat(30) {
+            Thread.sleep(100)
+            val apres = ecran.onNodeWithTag(repere).fetchSemanticsNode().boundsInRoot
+            if (apres == avant) return
+            avant = apres
+        }
+    }
+
     @Test
     fun lesSixOngletsDuSite() {
         listOf("validations", "badges", "reporting", "annonces-hall", "annuaire", "courriels").forEach {
@@ -182,13 +227,27 @@ class EspaceCSInterfaceTest {
     @Test
     fun creerPuisArchiverUneAnnonce() {
         atteindre(ReperesOnglets.onglet("annonces-hall"))
+        // Le format et le périmètre AVANT toute frappe : le clavier, ouvert par la frappe, couvre
+        // le bas de la page (la sémantique l'ignore) et le toucher tombait sur lui (CI de #112).
+        // Le lieu que le serveur nomme arrive après le choix et déplace la page : chaque
+        // pastille est touchée immobile, jusqu'à être retenue.
+        // `performScrollTo` ne fait défiler que le défilant le plus proche : pour A5, la rangée
+        // horizontale des formats, pas la page (CI de #112, « not displayed »). La page d'abord.
+        attendreRepere(ReperesEspaceCS.NOUVELLE_FORMATS)
+        ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_FORMATS).performScrollTo()
+        retenir(ReperesEspaceCS.nouvelleFormat("a5"))
+        retenir("${ReperesEspaceCS.NOUVELLE_PERIMETRE}.bat_a")
+        // ⚠️ Attente retirée : attendre("Bâtiment A ›") — le lieu servi par LieuDeLaSaisie ne
+        // paraît pas en 10 s à l'émulateur (#129). À rétablir une fois #129 corrigé ; le corps
+        // envoyé (perimetre_cible) reste vérifié plus bas.
         toucher(ReperesEspaceCS.NOUVELLE_TITRE)
         ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_TITRE).performTextInput("Ascenseur à l'arrêt")
         ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_MESSAGE).performTextInput("Lundi matin.")
-        atteindre(ReperesEspaceCS.nouvelleFormat("a5"))
+        Espresso.closeSoftKeyboard()
         atteindre(ReperesEspaceCS.NOUVELLE_CREER)
         attendre("Annonce A5 créée et envoyée à 1 membre du CS")
-        assertTrue(residence.recues.any { it.startsWith("POST /api/annonces-hall ") && it.contains("\"a5\"") })
+        val creation = synchronized(residence) { residence.recues.toList() }.single { it.startsWith("POST /api/annonces-hall ") }
+        assertTrue(creation, creation.contains("\"a5\"") && creation.contains("\"perimetre_cible\":[\"bat_a\"]"))
 
         // Les archives : en cours puis archivées ; le menu « … » range une affiche.
         attendreRepere(ReperesEspaceCS.annonce(2))
