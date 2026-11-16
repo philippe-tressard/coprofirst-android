@@ -54,6 +54,7 @@ androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "
 zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
 wear-compose-material3 = { module = "androidx.wear.compose:compose-material3", version.ref = "wear-compose" }
 wear-compose-foundation = { module = "androidx.wear.compose:compose-foundation", version.ref = "wear-compose" }
+wear-compose-navigation = { module = "androidx.wear.compose:compose-navigation", version.ref = "wear-compose" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
