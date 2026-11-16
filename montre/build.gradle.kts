@@ -39,5 +39,8 @@ dependencies {
     implementation(libs.compose.ui)
     implementation(libs.wear.compose.material3)
     implementation(libs.wear.compose.foundation)
+    implementation(libs.wear.compose.navigation)
+    // Le client HTTP, les formats du site, l'alerte reçue : ceux du téléphone (#206).
+    implementation(project(":partage"))
     testImplementation(libs.junit)
 }
