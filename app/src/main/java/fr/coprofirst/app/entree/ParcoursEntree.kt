@@ -334,7 +334,7 @@ class ParcoursEntree(
                 _etat.update {
                     it.copy(
                         connexionEnCours = false, motDePasse = "", ouverte = installation, ecran = EcranEntree.Espace,
-                        proposerGarde = proposer,
+                        proposerGarde = proposer, avisSortie = null,
                         // Le lien d'une autre résidence tombe : l'utilisateur est allé ailleurs.
                         pile = emptyList(), aideDemo = null, lien = it.lien?.takeIf { l -> l.adresse == installation.adresse },
                     )
@@ -391,13 +391,20 @@ class ParcoursEntree(
         viewModelScope.launch {
             avantSortie()
             apresSortie(ouverte)
-            connexion.deconnecter(ouverte)
+            if (!connexion.deconnecter(ouverte)) _etat.update { it.copy(avisSortie = AvisSortie.SessionInjoignable) }
         }
     }
 
-    /** Comme `Parcours.oublierTout` de l'iOS : chaque session fermée, rien de retenu, l'accueil. */
+    /**
+     * Comme `Parcours.oublierTout` de l'iOS : la session de CHAQUE résidence connue fermée sur
+     * son serveur (#177), rien de retenu, l'accueil — et si certaines n'ont pas répondu, la
+     * connexion le dit. Une session gardée sous la biométrie ne se lit pas sans elle : celles
+     * des résidences non ouvertes partent sans leur jeton, comme sur l'iOS, et le serveur les
+     * révoque à leur expiration.
+     */
     override fun oublierTout() {
         val ouverte = _etat.value.ouverte
+        val residences = (listOfNotNull(ouverte) + connues.liste).distinctBy { it.url }
         reconnaissance?.cancel()
         _etat.value = EtatEntree()
         connues.vider()
@@ -406,8 +413,13 @@ class ParcoursEntree(
         effacerLesPieces()
         viewModelScope.launch {
             avantSortie()
-            if (ouverte != null) connexion.deconnecter(ouverte)
+            var injoignables = 0
+            for (residence in residences) {
+                apresSortie(residence)
+                if (!connexion.deconnecter(residence)) injoignables++
+            }
             sessions.oublierTout()
+            if (injoignables > 0) _etat.update { it.copy(avisSortie = AvisSortie.ResidencesInjoignables) }
         }
     }
 

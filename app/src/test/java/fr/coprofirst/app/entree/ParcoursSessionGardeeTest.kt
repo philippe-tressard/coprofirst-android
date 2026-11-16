@@ -187,6 +187,7 @@ class ParcoursSessionGardeeTest {
         connues.retenirIdentifiant("a@exemple.test", residence)
         gardees.garder(hote, "r1")
         val parcours = lancer()
+        repondre(200) // POST /auth/logout (#177)
         parcours.oublierTout()
         advanceUntilIdle()
         assertEquals(EtatEntree(), parcours.etat.value)

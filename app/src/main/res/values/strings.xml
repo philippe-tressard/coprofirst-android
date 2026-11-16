@@ -36,6 +36,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="connexion_voir_mot_de_passe">Afficher le mot de passe</string>
     <string name="connexion_cacher_mot_de_passe">Masquer le mot de passe</string>
     <string name="connexion_oublie">Mot de passe oublié ?</string>
+    <!-- Une sortie sans réponse du serveur (#177), les mots de l'iOS (`Parcours.deconnecter`, `oublierTout`). -->
+    <string name="sortie_injoignable">Le serveur n\'a pas répondu : la session est effacée de cet appareil, il la révoquera à son expiration.</string>
+    <string name="sortie_injoignables">Certaines résidences n\'ont pas répondu : leurs sessions sont effacées de cet appareil.</string>
     <string name="connexion_valider">Se connecter</string>
     <string name="connexion_pas_de_compte">Pas encore de compte ?</string>
     <string name="connexion_demander_acces">Demander l\'accès</string>

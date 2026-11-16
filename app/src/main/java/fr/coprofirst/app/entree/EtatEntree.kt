@@ -75,6 +75,8 @@ data class EtatEntree(
     val venue: AdresseVenue? = null,
     /** L'écran qu'un lien d'application vise, en attente que sa résidence soit ouverte (#147). */
     val lien: LienEnAttente? = null,
+    /** Une sortie dont le serveur n'a pas été joint (#177), dite sur la connexion jusqu'à la suivante. */
+    val avisSortie: AvisSortie? = null,
 ) {
     /** Vers cet écran, celui-ci gardé pour le retour. */
     fun vers(suivant: EcranEntree): EtatEntree = copy(ecran = suivant, pile = pile + ecran)
@@ -82,6 +84,15 @@ data class EtatEntree(
     /** « Se connecter » répond : une résidence reconnue, un courriel, un mot de passe. */
     val connexionPossible: Boolean
         get() = reconnue != null && email.isNotBlank() && motDePasse.isNotEmpty() && !connexionEnCours
+}
+
+/** Ce que la connexion dit d'une sortie sans réponse du serveur (`Parcours.avis` de l'iOS). */
+enum class AvisSortie {
+    /** « Se déconnecter » : la résidence n'a pas répondu. */
+    SessionInjoignable,
+
+    /** « Oublier toutes les résidences » : certaines n'ont pas répondu. */
+    ResidencesInjoignables,
 }
 
 /** L'écran de confirmation de l'hôte : l'hôte, puis la preuve qu'il sert. */

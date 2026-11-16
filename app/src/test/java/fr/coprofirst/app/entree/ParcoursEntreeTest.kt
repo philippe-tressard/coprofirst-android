@@ -348,6 +348,74 @@ class ParcoursEntreeTest {
         assertEquals(emptyList<Installation>(), connues.liste)
     }
 
+    /**
+     * #177 : comme `Parcours.oublierTout` de l'iOS, CHAQUE résidence connue reçoit POST
+     * /auth/logout — pas seulement l'ouverte —, et l'écran n'a rien à dire quand toutes répondent.
+     */
+    @Test
+    fun oublierToutFermeLaSessionDeChaqueResidence() = test {
+        connues.retenir(Installation("https://autre.exemple.test", "Autre"))
+        connues.retenir(Installation("https://connue.exemple.test", "Connue"))
+        pret("connue.exemple.test")
+        ok()
+        parcours.seConnecter()
+        advanceUntilIdle()
+        ok() // POST /auth/logout, la résidence ouverte
+        ok() // POST /auth/logout, l'autre
+        parcours.oublierTout()
+        advanceUntilIdle()
+        val sorties = List(serveur.requestCount) { serveur.takeRequest().url.encodedPath }.filter { it.endsWith("/auth/logout") }
+        assertEquals(2, sorties.size)
+        assertNull(parcours.etat.value.avisSortie)
+    }
+
+    /** #177 : une résidence qui ne répond pas est dite (« Certaines résidences n'ont pas répondu… ») ; tout est effacé quand même. */
+    @Test
+    fun oublierToutDitLesResidencesInjoignables() = test {
+        connues.retenir(Installation("https://autre.exemple.test", "Autre"))
+        connues.retenir(Installation("https://connue.exemple.test", "Connue"))
+        serveur.enqueue(MockResponse.Builder().code(503).build())
+        ok()
+        parcours.oublierTout()
+        advanceUntilIdle()
+        assertEquals(AvisSortie.ResidencesInjoignables, parcours.etat.value.avisSortie)
+        assertEquals(emptyList<Installation>(), connues.liste)
+    }
+
+    /** #177 : une session déjà morte côté serveur (401) n'est pas un serveur injoignable. */
+    @Test
+    fun seDeconnecterSurUneSessionDejaMorteNeDitRien() = test {
+        connues.retenir(Installation("https://connue.exemple.test", "Connue"))
+        pret("connue.exemple.test")
+        ok()
+        parcours.seConnecter()
+        advanceUntilIdle()
+        serveur.enqueue(MockResponse.Builder().code(401).addHeader("Content-Type", "application/json").body("{}").build())
+        parcours.deconnecter()
+        advanceUntilIdle()
+        assertNull(parcours.etat.value.avisSortie)
+    }
+
+    /** #177 : un serveur injoignable à la déconnexion est dit sur l'écran de connexion ; la connexion suivante l'efface. */
+    @Test
+    fun seDeconnecterSansReponseLeDitPuisLaConnexionLEfface() = test {
+        connues.retenir(Installation("https://connue.exemple.test", "Connue"))
+        pret("connue.exemple.test")
+        ok()
+        parcours.seConnecter()
+        advanceUntilIdle()
+        serveur.enqueue(MockResponse.Builder().code(503).build())
+        parcours.deconnecter()
+        advanceUntilIdle()
+        assertEquals(AvisSortie.SessionInjoignable, parcours.etat.value.avisSortie)
+        pret("connue.exemple.test")
+        ok()
+        parcours.seConnecter()
+        advanceUntilIdle()
+        assertEquals(EcranEntree.Espace, parcours.etat.value.ecran)
+        assertNull("une connexion réussie efface l'avis", parcours.etat.value.avisSortie)
+    }
+
     /** #144 : ce qui reste de la mesure d'audience part AVANT que la session se ferme. */
     @Test
     fun laMesurePartAvantLaDeconnexion() = test {

@@ -86,6 +86,7 @@ fun EcranConnexion(etat: EtatEntree, parcours: ActionsEntree) {
             )
             ChampResidence(etat, parcours::saisir, scanner = { scanner = true })
             etat.aideDemo?.let { AideDemo(it) }
+            etat.avisSortie?.let { AvisDeSortie(it) }
             ChampsIdentifiants(etat, parcours)
         }
     }
@@ -149,6 +150,36 @@ private fun ChampResidence(etat: EtatEntree, saisir: (String) -> Unit, scanner: 
         }
     }
 }
+
+/**
+ * Une sortie dont le serveur n'a pas été joint (#177), comme l'avis de l'iOS sur la
+ * connexion (`parcours.avis`) : la session est effacée de l'appareil, le serveur la
+ * révoquera à son expiration. Une information, pas une erreur — sur `neutreFond`.
+ */
+@Composable
+private fun AvisDeSortie(avis: AvisSortie) {
+    val couleurs = LocalCouleurs.current
+    Row(
+        Modifier.fillMaxWidth().background(couleurs.neutreFond, RoundedCornerShape(Mise.rayon)).padding(14.dp)
+            .semantics(mergeDescendants = true) {}.testTag(REPERE_AVIS_SORTIE),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Icon(Icons.Filled.Info, contentDescription = null, tint = couleurs.text, modifier = Modifier.size(20.dp))
+        Text(
+            stringResource(
+                when (avis) {
+                    AvisSortie.SessionInjoignable -> R.string.sortie_injoignable
+                    AvisSortie.ResidencesInjoignables -> R.string.sortie_injoignables
+                },
+            ),
+            style = MaterialTheme.typography.bodyMedium,
+            color = couleurs.text,
+        )
+    }
+}
+
+/** Le repère de l'avis de sortie, pour les tests d'interface. */
+const val REPERE_AVIS_SORTIE = "connexion.avisSortie"
 
 /** L'aide de la démo, comme l'iOS (`AideDemo`) : où lire le mot de passe public du rôle choisi. */
 @Composable
