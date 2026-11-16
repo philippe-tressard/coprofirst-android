@@ -31,12 +31,10 @@ from generer_tables import TableInattendue, chaine  # noqa: E402
 
 PAQUET = "fr.coprofirst.app.commun"
 PAQUET_PIECES = "fr.coprofirst.app.commun.pieces"
-# La famille montrée de chaque extension (`typeFichier` de front/src/lib/fichiers.ts), aux
-# valeurs de l'iOS : la seule règle des fichiers que la release ne publie pas encore — le
-# `famillesFichiers` publié décrit le TÉLÉVERSEMENT (types, plafonds), pas l'affichage.
-# Tenue ici jusqu'à philippe-tressard/coprofirst#2798, puis générée.
-FAMILLES_TENUES = (("JPEG", "JPG"), ("XLSX", "EXCEL"), ("XLS", "EXCEL"), ("DOCX", "WORD"), ("DOC", "WORD"),
-                   ("PPTX", "POWERPOINT"), ("PPT", "POWERPOINT"), ("TXT", "TEXTE"))
+# La famille montrée de chaque extension (`FAMILLES_AFFICHAGE` de front/src/lib/fichiers.ts)
+# se lit dans `famillesAffichageFichiers` de tables-clients.json, publiée depuis v3.106.0
+# (coprofirst#2798) : le générateur lit ce fichier à côté des constantes.
+TABLES = "tables-clients.json"
 EXTENSION = re.compile(r"^[A-Z0-9]+$")
 NOTES = ("noteMin", "noteMax", "noteRemarque", "notePubliable")
 
@@ -106,7 +104,15 @@ def motif(constantes: dict, nom: str) -> str:
     return f"Regex({chaine(texte)}" + (", RegexOption.IGNORE_CASE)" if casse else ")")
 
 
-def kotlin_fichiers(constantes: dict, source: str, familles=FAMILLES_TENUES) -> str:
+def familles_affichage(tables: dict) -> list[tuple[str, str]]:
+    """`famillesAffichageFichiers` : {EXTENSION: famille montrée}."""
+    v = tables.get("famillesAffichageFichiers", {}).get("valeur")
+    if not isinstance(v, dict) or not v:
+        raise TableInattendue(f"famillesAffichageFichiers : forme inattendue ({v!r})")
+    return list(v.items())
+
+
+def kotlin_fichiers(constantes: dict, source: str, familles: list[tuple[str, str]]) -> str:
     """`FichiersDuSite` : photo ou document, nom montré, type montré — la règle du site."""
     image, prefixe = motif(constantes, "motifImage"), motif(constantes, "prefixeStockage")
     cles = [c for c, _ in familles] if isinstance(familles, (list, tuple)) else []
@@ -116,7 +122,7 @@ def kotlin_fichiers(constantes: dict, source: str, familles=FAMILLES_TENUES) -> 
         raise TableInattendue("les familles de typeFichier ne sont pas des extensions en capitales, sans doublon")
     return "\n".join([
         "// GÉNÉRÉ par scripts/generer_constantes.py — NE PAS MODIFIER À LA MAIN.",
-        f"// Source : {source} (motifImage, prefixeStockage) ; familles : FAMILLES_TENUES (coprofirst#2798).",
+        f"// Source : {source} (motifImage, prefixeStockage) et {TABLES} (famillesAffichageFichiers).",
         f"package {PAQUET_PIECES}",
         "",
         "/** Les pièces jointes comme le site les range et les nomme. */",
@@ -127,7 +133,7 @@ def kotlin_fichiers(constantes: dict, source: str, familles=FAMILLES_TENUES) -> 
         "    /** Le préfixe technique d'un fichier stocké, retiré du nom montré (`prefixeStockage`). */",
         f"    val prefixeStockage: Regex = {prefixe}",
         "",
-        "    /** L'extension en capitales, ramenée à sa famille (`typeFichier`) — tenue, coprofirst#2798. */",
+        "    /** L'extension en capitales, ramenée à sa famille (`typeFichier`, `famillesAffichageFichiers`). */",
         "    val familles: Map<String, String> = mapOf(",
         *[f"        {chaine(c)} to {chaine(v)}," for c, v in familles],
         "    )",
@@ -145,7 +151,8 @@ def main(argv: list[str]) -> int:
         constantes = json.loads(entree.read_text(encoding="utf-8"))["constantes"]
         fichiers = {
             (PAQUET, "ConstantesDuServeur.kt"): kotlin(constantes, entree.name),
-            (PAQUET_PIECES, "FichiersDuSite.kt"): kotlin_fichiers(constantes, entree.name),
+            (PAQUET_PIECES, "FichiersDuSite.kt"): kotlin_fichiers(
+                constantes, entree.name, familles_affichage(json.loads((entree.parent / TABLES).read_text(encoding="utf-8"))["tables"])),
         }
     except (KeyError, TableInattendue) as e:
         print(f"❌ {entree.name} : {e}", file=sys.stderr)

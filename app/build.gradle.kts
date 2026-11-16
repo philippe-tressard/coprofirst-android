@@ -86,7 +86,11 @@ val genererCharte = generation("genererCharte", "contrat/tables-clients.json", "
 val genererLogo = generation("genererLogo", "app/src/main/logo/logo.svg", "scripts/generer_logo.py")
 val genererTables = generation("genererTables", "contrat/tables-clients.json", "scripts/generer_tables.py")
 // Les constantes du serveur (#74) : ce que l'API applique sans le dire dans le contrat.
-val genererConstantes = generation("genererConstantes", "contrat/constantes-clients.json", "scripts/generer_constantes.py")
+// Les familles d'affichage des fichiers se lisent à côté, dans tables-clients.json (#2798).
+val genererConstantes = generation(
+    "genererConstantes", "contrat/constantes-clients.json", "scripts/generer_constantes.py",
+    lus = listOf("contrat/constantes-clients.json", "contrat/tables-clients.json"),
+)
 // Les mesures du site (#2) : les jetons de longueur, que `MesuresTest` confronte à `Mise`.
 val genererMesures = generation("genererMesures", "contrat/tables-clients.json", "scripts/generer_mesures.py")
 
