@@ -145,6 +145,8 @@ androidComponents {
 
 dependencies {
     implementation(project(":client-api"))
+    // Le client HTTP, les formats du site, l'alerte reçue : partagés avec la montre (#206).
+    implementation(project(":partage"))
     implementation(libs.okhttp)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.lifecycle.viewmodel.compose)

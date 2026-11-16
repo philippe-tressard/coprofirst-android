@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
   • un écran Compose, un parcours, un libellé  → standards/11 ; l'écran iOS
     correspondant (coprofirst-ios) est la référence de parcours, pas du code à recopier
   • un appel à l'API                            → le client GÉNÉRÉ (client-api/) avec
-    session/ClientHttp.kt ; une route absente = un ticket dans coprofirst
+    partage/…/session/ClientHttp.kt ; une route absente = un ticket dans coprofirst
   • une couleur, une taille, un format          → généré depuis coprofirst, jamais recopié
   • une dépendance, une image, une police       → REUSE.toml, licence compatible (standards/14 §6)
   • le logo de CoproFirst                       → LicenseRef-CoproFirst-Logo : recopié à

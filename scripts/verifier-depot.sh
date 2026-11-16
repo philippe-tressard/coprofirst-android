@@ -25,6 +25,8 @@
 #   7 octies. aucun séparateur du site (· — →) suivi d'une espace sécable ni recopié (#117) ;
 #   7 nonies. aucune version de contrat écrite dans les tests ni l'API simulée (#203) ;
 #   7 decies. aucune dépendance Google Play services ni Firebase que la licence ne nomme ;
+#   7 undecies. un seul client HTTP, ClientHttp.partage, dans les deux apps (#206) ;
+#   7 duodecies. chaque module inclus a son build.gradle.kts suivi par git ;
 #   8. un seul bouton plein, `BoutonPlein` (commun/Boutons.kt) ;
 #   9. les générateurs du build passent leurs tests (scripts/test_*.py) ;
 #  10. aucun chemin de .claude/worktrees/ suivi.
@@ -111,7 +113,7 @@ autotest_motif() {
 # ressources des deux apps (téléphone, montre #207, ressources-communes/). Une dispense qui ne couvre plus aucun motif échoue : une
 # exception sans objet se retire.
 interdire() {
-  local f motif dispense=${3:-} perimetre=${4:-'^((app|montre)/src/main|ressources-communes)/.*\.(kt|xml)$'}
+  local f motif dispense=${3:-} perimetre=${4:-'^((app|montre|partage)/src/main|ressources-communes)/.*\.(kt|xml)$'}
   while IFS= read -r f; do
     [ -f "$f" ] || continue
     motif=$(premier_motif "$1" "$f")
@@ -191,13 +193,13 @@ while IFS= read -r f; do
   [ -f "$f" ] || continue
   fautes=$(feuille_mi_hauteur "$f")
   [ -z "$fautes" ] || echec "$f : feuille ouverte à mi-hauteur — sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true) ($fautes)"
-done < <(grep -E '^(app|montre)/src/main/.*\.kt$' <<< "$FICHIERS")
+done < <(grep -E '^(app|montre|partage)/src/main/.*\.kt$' <<< "$FICHIERS")
 
 # Les dates et les nombres s'écrivent par `FormatsDuSite`, seul, à la règle du site
 # (fr-FR, Paris) : aucun écran ne compose son propre format.
 FORMAT_MAIN='DateTimeFormatter|SimpleDateFormat|NumberFormat|DecimalFormat|String\.format\(|"%[0-9.]*[df]"'
 autotest_motif "formats" "$FORMAT_MAIN" 'val t = DateTimeFormatter.ofPattern("dd/MM")' 'val t = FormatsDuSite.dateCourte(instant)'
-interdire "$FORMAT_MAIN" "format de date ou de nombre écrit à la main — passer par FormatsDuSite" '^app/src/main/java/fr/coprofirst/app/commun/formats/FormatsDuSite\.kt$'
+interdire "$FORMAT_MAIN" "format de date ou de nombre écrit à la main — passer par FormatsDuSite" '^partage/src/main/kotlin/fr/coprofirst/app/commun/formats/FormatsDuSite\.kt$'
 
 # Le texte riche du site passe par SA porte, `commun/texte` (`TexteDuSite`, `TexteRiche`) :
 # un lecteur maison sur la liste blanche générée, qui ne charge ni n'exécute rien. Une vue
@@ -253,6 +255,21 @@ autotest_motif "contrat écrit" "$CONTRAT_ECRIT" '    """{"site_nom": "G", "vers
 autotest_motif "contrat écrit (Installation)" "$CONTRAT_ECRIT" '    Installation(a, "G", versionContrat = "2.1.0")' '    mapOf("version_contrat" to "99.0.0")'
 interdire "$CONTRAT_ECRIT" "version de contrat écrite à la main — VERSION_CONTRAT_PLANCHER" "" '^app/src/(test|androidTest|debug)/.*\.kt$'
 
+# UN client HTTP pour le téléphone ET la montre (#206) : `ClientHttp.partage`, qui ne suit
+# aucune redirection. Un client construit ailleurs échapperait à ces réglages.
+CLIENT_NEUF='OkHttpClient[[:space:]]*\([[:space:]]*\)|OkHttpClient\.Builder[[:space:]]*\('
+autotest_motif "client HTTP neuf" "$CLIENT_NEUF" '    val c = OkHttpClient.Builder().build()' '    val c = ClientHttp.partage.newBuilder().build()'
+interdire "$CLIENT_NEUF" "client HTTP construit hors de ClientHttp — passer par ClientHttp.partage" '^partage/src/main/kotlin/fr/coprofirst/app/session/ClientHttp\.kt$'
+
+# Un module inclus est un module SUIVI : la liste blanche du .gitignore doit l'ouvrir, sinon
+# ses fichiers neufs restent sur le poste, verts en local, absents de la PR (#211, #214).
+modules=$(grep -oE '":[a-z-]+"' settings.gradle.kts | tr -d '":')
+[ -n "$modules" ] || echec "settings.gradle.kts : aucun module lu (include)"
+for m in $modules; do
+  grep -qx "$m/build.gradle.kts" <<< "$FICHIERS" \
+    || echec "$m/build.gradle.kts : module inclus mais non suivi — ouvrir !/$m/ dans .gitignore, puis git add $m"
+done
+
 # Les hôtes FICTIFS sont des noms réservés (RFC 2606/6761 : `.test`, `.invalid`,
 # `example.com`), jamais `exemple.fr` ni `exemple.org`, qui sont de VRAIS domaines : un
 # test qui partirait vers eux enverrait des cookies de test à un tiers (constaté, #57),
@@ -289,6 +306,10 @@ python3 -I scripts/verifier_dependances_google.py --autotest >/dev/null \
   || echec "verifier_dependances_google.py : autotest en échec"
 python3 -I scripts/verifier_dependances_google.py \
   || echec "une dépendance Google n'est pas permise par la licence (python3 -I scripts/verifier_dependances_google.py)"
+
+# Le contrôle avant soumission (#4) se prouve : il départage un vert, un rouge et un INCONNU.
+python3 -I scripts/controle_avant_soumission.py --autotest >/dev/null \
+  || echec "controle_avant_soumission.py : autotest en échec"
 
 # Un séparateur du site (· — →) ne finit jamais une ligne (#117) : il se lit dans la table
 # générée `Separateur`, et une ressource l'écrit suivi de `\u00A0`, confronté à la table.

@@ -185,7 +185,8 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
 - **Montre Wear OS** (`montre/`, en construction, #207) : la même app Google Play, pour
   la cloche de la dernière résidence ouverte, en lecture seule — pendant de l'Apple Watch.
   Tant que la liaison au téléphone est éteinte, elle dit « Ouvrez CoproFirst sur le
-  téléphone pour relier la montre ».
+  téléphone pour relier la montre ». Ce que la montre partage avec le téléphone vit dans
+  `partage/` (#206) : le client HTTP, les formats du site, l'alerte reçue — écrits une fois.
 
 Pas encore : les personnages de la démo, le QR code, les liens d'application (tickets
 ouverts).
