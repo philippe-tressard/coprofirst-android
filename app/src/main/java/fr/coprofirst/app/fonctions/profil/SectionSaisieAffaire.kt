@@ -26,6 +26,7 @@ import fr.coprofirst.api.modeles.UserRead
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.MessageErreur
+import fr.coprofirst.app.commun.Section
 import fr.coprofirst.app.commun.gesteEnLigne
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.launch
@@ -47,7 +48,7 @@ fun SectionSaisieAffaire(compte: UserRead, service: ServiceProfil, relireDroits:
     var refus by remember { mutableStateOf<ErreurService?>(null) }
     val options = TablesProfil.optionsSaisie
     val detail = options.firstOrNull { it.code == servi }?.detail
-    SectionProfil(stringResource(R.string.profil_saisie), note = detail?.let { stringResource(R.string.profil_saisie_note, it) }) {
+    Section(stringResource(R.string.profil_saisie), note = detail?.let { stringResource(R.string.profil_saisie_note, it) }) {
         Column {
             val geste = gesteEnLigne()
             SingleChoiceSegmentedButtonRow(geste.modifier.fillMaxWidth().testTag(ReperesSaisie.CHOIX)) {

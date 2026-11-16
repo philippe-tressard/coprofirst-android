@@ -24,6 +24,9 @@ import fr.coprofirst.app.commun.AvisEphemere
 import fr.coprofirst.app.commun.LocalSaisieAffaire
 import fr.coprofirst.app.commun.amenerTag
 import fr.coprofirst.app.commun.apercu.SaisieLecture
+import fr.coprofirst.app.commun.attendreDisparitionTag
+import fr.coprofirst.app.commun.attendreTag
+import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.lecture.Lecture
 import fr.coprofirst.app.commun.perimetres.Perimetre
@@ -204,53 +207,41 @@ class AffairesInterfaceTest {
         return service
     }
 
-    private fun attendre(tag: String) = ecran.waitUntil(DELAI_MS) {
-        ecran.onAllNodes(hasTestTag(tag), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()
-    }
-
-    private fun disparait(tag: String) = ecran.waitUntil(DELAI_MS) {
-        ecran.onAllNodes(hasTestTag(tag), useUnmergedTree = true).fetchSemanticsNodes().isEmpty()
-    }
-
-    private fun attendreTexte(texte: String) = ecran.waitUntil(DELAI_MS) {
-        ecran.onAllNodes(hasText(texte, substring = true), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()
-    }
-
     private fun el(tag: String): SemanticsNodeInteraction = ecran.onNodeWithTag(tag, useUnmergedTree = true)
 
     /** La liste montre les affaires actives ; le filtre « Suivi » retient un état, son compte sur la pastille. */
     @Test
     fun laListeSeFiltreParSuivi() {
         ouvrir()
-        attendre(ReperesAffaires.carte("A-0001"))
+        ecran.attendreTag(ReperesAffaires.carte("A-0001"), useUnmergedTree = true)
         el(ReperesAffaires.carte("A-0002")).assertIsDisplayed()
-        disparait(ReperesAffaires.carte("A-0004"))
+        ecran.attendreDisparitionTag(ReperesAffaires.carte("A-0004"), useUnmergedTree = true)
         el(ReperesAffaires.suivi("ouvert")).toucher()
-        disparait(ReperesAffaires.carte("A-0002"))
+        ecran.attendreDisparitionTag(ReperesAffaires.carte("A-0002"), useUnmergedTree = true)
         el(ReperesAffaires.carte("A-0001")).assertIsDisplayed()
         el(ReperesAffaires.suivi(null)).toucher()
-        attendre(ReperesAffaires.carte("A-0002"))
+        ecran.attendreTag(ReperesAffaires.carte("A-0002"), useUnmergedTree = true)
     }
 
     /** La recherche interroge le serveur et propose les archives qu'elle a trouvées. */
     @Test
     fun laRechercheProposeLesArchives() {
         ouvrir()
-        attendre(ReperesAffaires.carte("A-0001"))
+        ecran.attendreTag(ReperesAffaires.carte("A-0001"), useUnmergedTree = true)
         el(ReperesAffaires.RECHERCHE).performTextInput("porte")
-        attendre(ReperesAffaires.INCLURE_ARCHIVES)
-        attendreTexte("Aucune affaire trouvée")
+        ecran.attendreTag(ReperesAffaires.INCLURE_ARCHIVES, useUnmergedTree = true)
+        ecran.attendreTexte("Aucune affaire trouvée", useUnmergedTree = true)
     }
 
     /** L'appui long offre « Archiver » (`peut_archiver` servi) : la carte part aux Archives. */
     @Test
     fun uneAffaireSArchive() {
         val service = ouvrir()
-        attendre(ReperesAffaires.carte("A-0002"))
+        ecran.attendreTag(ReperesAffaires.carte("A-0002"), useUnmergedTree = true)
         el(ReperesAffaires.carte("A-0002")).performTouchInput { longClick() }
-        attendre(ReperesAffaires.archiver("A-0002"))
+        ecran.attendreTag(ReperesAffaires.archiver("A-0002"), useUnmergedTree = true)
         el(ReperesAffaires.archiver("A-0002")).toucher()
-        disparait(ReperesAffaires.carte("A-0002"))
+        ecran.attendreDisparitionTag(ReperesAffaires.carte("A-0002"), useUnmergedTree = true)
         assertEquals(listOf(2), service.archivees)
     }
 
@@ -258,18 +249,18 @@ class AffairesInterfaceTest {
     @Test
     fun uneCarteSeDeplaceAuKanban() {
         val service = ouvrir()
-        attendre("onglet.kanban")
+        ecran.attendreTag("onglet.kanban", useUnmergedTree = true)
         el("onglet.kanban").toucher()
-        attendre(ReperesAffaires.carteKanban("A-0001"))
-        attendreTexte("2 affaires suivies")
+        ecran.attendreTag(ReperesAffaires.carteKanban("A-0001"), useUnmergedTree = true)
+        ecran.attendreTexte("2 affaires suivies", useUnmergedTree = true)
         el(ReperesAffaires.carteKanban("A-0001")).performTouchInput { longClick() }
-        attendre(ReperesAffaires.deplacer("A-0001", "syndic"))
+        ecran.attendreTag(ReperesAffaires.deplacer("A-0001", "syndic"), useUnmergedTree = true)
         el(ReperesAffaires.deplacer("A-0001", "syndic")).toucher()
         ecran.waitUntil(DELAI_MS) { service.deplacements == listOf(1 to "en_cours") }
         el(ReperesAffaires.carteKanban("A-0002")).performTouchInput { longClick() }
-        attendre(ReperesAffaires.deplacer("A-0002", "termine"))
+        ecran.attendreTag(ReperesAffaires.deplacer("A-0002", "termine"), useUnmergedTree = true)
         el(ReperesAffaires.deplacer("A-0002", "termine")).toucher()
-        attendre(ReperesAffaires.CLORE_SANS_FUSION)
+        ecran.attendreTag(ReperesAffaires.CLORE_SANS_FUSION, useUnmergedTree = true)
         el(ReperesAffaires.CLORE_SANS_FUSION).toucher()
         ecran.waitUntil(DELAI_MS) { service.deplacements.lastOrNull() == (2 to "résolu") }
     }
@@ -278,29 +269,29 @@ class AffairesInterfaceTest {
     @Test
     fun unLocataireNAPasDeKanban() {
         ouvrir(DroitsOnglet(locataire = true))
-        attendre("onglet.archives")
-        disparait("onglet.kanban")
+        ecran.attendreTag("onglet.archives", useUnmergedTree = true)
+        ecran.attendreDisparitionTag("onglet.kanban", useUnmergedTree = true)
     }
 
     /** Les Archives se rangent par année : la plus récente ouverte, les autres repliées. */
     @Test
     fun lesArchivesSeReplientParAnnee() {
         ouvrir()
-        attendre("onglet.archives")
+        ecran.attendreTag("onglet.archives", useUnmergedTree = true)
         el("onglet.archives").toucher()
-        attendre(ReperesAffaires.archive("A-0005"))
-        disparait(ReperesAffaires.archive("A-0004"))
+        ecran.attendreTag(ReperesAffaires.archive("A-0005"), useUnmergedTree = true)
+        ecran.attendreDisparitionTag(ReperesAffaires.archive("A-0004"), useUnmergedTree = true)
         // 400 jours plus tôt : toujours une autre année que 20 jours plus tôt.
         val annee = Instant.now().minus(400, ChronoUnit.DAYS).atZone(FormatsDuSite.PARIS).year
         el(ReperesAffaires.annee(annee)).toucher()
-        attendre(ReperesAffaires.archive("A-0004"))
+        ecran.attendreTag(ReperesAffaires.archive("A-0004"), useUnmergedTree = true)
     }
 
     /** Une carte ouvre sa fiche par la porte. */
     @Test
     fun uneCarteOuvreSaFicheParLaPorte() {
         ouvrir()
-        attendre(ReperesAffaires.carte("A-0001"))
+        ecran.attendreTag(ReperesAffaires.carte("A-0001"), useUnmergedTree = true)
         el(ReperesAffaires.carte("A-0001")).toucher()
         ecran.waitUntil(DELAI_MS) { fiches == listOf(1) }
     }
@@ -309,26 +300,26 @@ class AffairesInterfaceTest {
     @Test
     fun laFicheMontreLeFilEtLesMessages() {
         ouvrirFiche(1)
-        attendre(ReperesAffaires.etape(EtapeFil.Cle.Suite))
-        attendreTexte("Ouvert → Chez le syndic")
-        attendre(ReperesAffaires.message(41))
+        ecran.attendreTag(ReperesAffaires.etape(EtapeFil.Cle.Suite), useUnmergedTree = true)
+        ecran.attendreTexte("Ouvert → Chez le syndic", useUnmergedTree = true)
+        ecran.attendreTag(ReperesAffaires.message(41), useUnmergedTree = true)
         el(ReperesAffaires.element("suite.31")).toucher()
-        attendreTexte("Le syndic est prévenu.")
+        ecran.attendreTexte("Le syndic est prévenu.", useUnmergedTree = true)
     }
 
     /** « Nouvelle affaire » : catégorie, titre, description, puis Envoyer — l'affaire paraît en tête. */
     @Test
     fun uneNouvelleAffaireSEnvoie() {
         val service = ouvrir()
-        attendre(ReperesNouvelle.NOUVELLE)
+        ecran.attendreTag(ReperesNouvelle.NOUVELLE, useUnmergedTree = true)
         el(ReperesNouvelle.NOUVELLE).toucher()
-        attendre(ReperesChamps.NOUVELLE.categorie("panne"))
+        ecran.attendreTag(ReperesChamps.NOUVELLE.categorie("panne"), useUnmergedTree = true)
         el(ReperesNouvelle.DEPUIS_LE_SITE).assertExists()
         el(ReperesChamps.NOUVELLE.categorie("panne")).toucher()
         el(ReperesChamps.NOUVELLE.titre).performTextInput("Interphone muet")
         el(ReperesChamps.NOUVELLE.description).performTextInput("Le bouton du 3e ne sonne plus.")
         el(ReperesNouvelle.ENVOYER).toucher()
-        attendre(ReperesAffaires.carte("A-0009"))
+        ecran.attendreTag(ReperesAffaires.carte("A-0009"), useUnmergedTree = true)
         assertEquals("copro", service.creees.single().perimetre)
         assertEquals("panne", service.creees.single().categorie)
     }
@@ -340,22 +331,22 @@ class AffairesInterfaceTest {
     @Test
     fun enSaisieEssentielleCeQuiNEstPasEssentielSeRange() {
         val service = ouvrir(saisie = "essentielle")
-        attendre(ReperesNouvelle.NOUVELLE)
+        ecran.attendreTag(ReperesNouvelle.NOUVELLE, useUnmergedTree = true)
         el(ReperesNouvelle.NOUVELLE).toucher()
-        attendre(ReperesChamps.NOUVELLE.categorie("panne"))
+        ecran.attendreTag(ReperesChamps.NOUVELLE.categorie("panne"), useUnmergedTree = true)
         el(ReperesChamps.NOUVELLE.categorie("panne")).toucher()
         el(ReperesChamps.NOUVELLE.modeSaisie).assertExists()
         ecran.onNodeWithTag(ReperesChamps.NOUVELLE.plusDeDetails).assert(hasText("Plus de détails (1 section)", substring = true))
         el(ReperesChamps.NOUVELLE.urgente).assertDoesNotExist()
         el(ReperesChamps.NOUVELLE.lieu).assertExists()
         el(ReperesChamps.NOUVELLE.plusDeDetails).toucher()
-        attendre(ReperesChamps.NOUVELLE.urgente)
+        ecran.attendreTag(ReperesChamps.NOUVELLE.urgente, useUnmergedTree = true)
         el(ReperesChamps.NOUVELLE.categorie("question")).toucher()
         ecran.onNodeWithTag(ReperesChamps.NOUVELLE.plusDeDetails).assert(hasText("Plus de détails (2 sections)", substring = true))
         el(ReperesChamps.NOUVELLE.titre).performTextInput("Horaires du local vélos")
         el(ReperesChamps.NOUVELLE.description).performTextInput("Le local ferme-t-il la nuit ?")
         el(ReperesNouvelle.ENVOYER).toucher()
-        attendre(ReperesAffaires.carte("A-0009"))
+        ecran.attendreTag(ReperesAffaires.carte("A-0009"), useUnmergedTree = true)
         assertEquals("le lieu rangé part à son défaut", "copro", service.creees.single().perimetre)
     }
 
@@ -363,9 +354,9 @@ class AffairesInterfaceTest {
     @Test
     fun enSaisieCompleteToutResteASonRang() {
         ouvrir(saisie = "complete")
-        attendre(ReperesNouvelle.NOUVELLE)
+        ecran.attendreTag(ReperesNouvelle.NOUVELLE, useUnmergedTree = true)
         el(ReperesNouvelle.NOUVELLE).toucher()
-        attendre(ReperesChamps.NOUVELLE.categorie("question"))
+        ecran.attendreTag(ReperesChamps.NOUVELLE.categorie("question"), useUnmergedTree = true)
         el(ReperesChamps.NOUVELLE.categorie("question")).toucher()
         el(ReperesChamps.NOUVELLE.modeSaisie).assert(hasText("Saisie complète", substring = true))
         el(ReperesChamps.NOUVELLE.plusDeDetails).assertDoesNotExist()
@@ -379,9 +370,9 @@ class AffairesInterfaceTest {
     @Test
     fun quiLaLiraSeDitDesLaCategorieChoisie() {
         val service = ouvrir()
-        attendre(ReperesNouvelle.NOUVELLE)
+        ecran.attendreTag(ReperesNouvelle.NOUVELLE, useUnmergedTree = true)
         el(ReperesNouvelle.NOUVELLE).toucher()
-        attendre(ReperesChamps.NOUVELLE.categorie("panne"))
+        ecran.attendreTag(ReperesChamps.NOUVELLE.categorie("panne"), useUnmergedTree = true)
         ecran.amenerTag(ReperesNouvelle.QUI_LA_LIRA).assert(hasText("Elle se dit dès la catégorie choisie.", substring = true))
         el(ReperesChamps.NOUVELLE.categorie("panne")).toucher()
         ecran.waitUntil(DELAI_MS) {
@@ -394,32 +385,32 @@ class AffairesInterfaceTest {
     @Test
     fun uneSaisieEntameeDemandeAvantDAbandonner() {
         ouvrir()
-        attendre(ReperesNouvelle.NOUVELLE)
+        ecran.attendreTag(ReperesNouvelle.NOUVELLE, useUnmergedTree = true)
         el(ReperesNouvelle.NOUVELLE).toucher()
-        attendre(ReperesChamps.NOUVELLE.titre)
+        ecran.attendreTag(ReperesChamps.NOUVELLE.titre, useUnmergedTree = true)
         el(ReperesChamps.NOUVELLE.titre).performTextInput("Brouillon")
         ecran.onNode(hasText("Annuler")).toucher()
-        attendre(ReperesNouvelle.ABANDONNER)
+        ecran.attendreTag(ReperesNouvelle.ABANDONNER, useUnmergedTree = true)
         el(ReperesNouvelle.ABANDONNER).toucher()
-        disparait(ReperesChamps.NOUVELLE.titre)
+        ecran.attendreDisparitionTag(ReperesChamps.NOUVELLE.titre, useUnmergedTree = true)
     }
 
     /** Au bandeau de la fiche : une Suite qui change l'état, puis — hors conseil — Répondre. */
     @Test
     fun laFicheAjouteUneSuiteEtRepond() {
         val service = ouvrirFiche(1)
-        attendre(repereGeste(GesteAffaire.Suite))
+        ecran.attendreTag(repereGeste(GesteAffaire.Suite), useUnmergedTree = true)
         el(repereGeste(GesteAffaire.Suite)).toucher()
-        attendre(ReperesFeuilles.suiteEtat("en_cours"))
+        ecran.attendreTag(ReperesFeuilles.suiteEtat("en_cours"), useUnmergedTree = true)
         el(ReperesFeuilles.suiteEtat("en_cours")).toucher()
         el(ReperesFeuilles.SUITE_ENREGISTRER).toucher()
-        attendreTexte("Statut mis à jour")
+        ecran.attendreTexte("Statut mis à jour", useUnmergedTree = true)
         assertEquals("en_cours", service.suites.single().second.statut)
         el(repereGeste(GesteAffaire.Repondre)).toucher()
-        attendre(ReperesFeuilles.REPONDRE_TEXTE)
+        ecran.attendreTag(ReperesFeuilles.REPONDRE_TEXTE, useUnmergedTree = true)
         el(ReperesFeuilles.REPONDRE_TEXTE).performTextInput("Merci !")
         el(ReperesFeuilles.REPONDRE_ENVOYER).toucher()
-        attendreTexte("Réponse envoyée")
+        ecran.attendreTexte("Réponse envoyée", useUnmergedTree = true)
         assertEquals(listOf(1 to "Merci !"), service.reponses)
     }
 
@@ -427,22 +418,22 @@ class AffairesInterfaceTest {
     @Test
     fun uneEntreeDeLaSuiteSeCorrigeEtSeSupprime() {
         val service = ouvrirFiche(1)
-        attendre(ReperesAffaires.gestesSuite(31))
+        ecran.attendreTag(ReperesAffaires.gestesSuite(31), useUnmergedTree = true)
         el(ReperesAffaires.gestesSuite(31)).toucher()
-        attendre(ReperesAffaires.gesteSuite(GesteSuite.Modifier))
+        ecran.attendreTag(ReperesAffaires.gesteSuite(GesteSuite.Modifier), useUnmergedTree = true)
         el(ReperesAffaires.gesteSuite(GesteSuite.Modifier)).toucher()
-        attendre(ReperesFeuilles.SUITE_TEXTE)
+        ecran.attendreTag(ReperesFeuilles.SUITE_TEXTE, useUnmergedTree = true)
         el(ReperesFeuilles.SUITE_TEXTE).performTextReplacement("Le syndic est prévenu. Relancé.")
         el(ReperesFeuilles.SUITE_ENREGISTRER).toucher()
-        attendre(ReperesAffaires.APPLIQUER)
-        attendreTexte("L'affaire a avancé depuis")
+        ecran.attendreTag(ReperesAffaires.APPLIQUER, useUnmergedTree = true)
+        ecran.attendreTexte("L'affaire a avancé depuis", useUnmergedTree = true)
         el(ReperesAffaires.APPLIQUER).toucher()
         ecran.waitUntil(DELAI_MS) { service.suites.lastOrNull()?.second?.statut == "en_cours" }
         assertEquals(true, service.corrections.single().contenuHtml?.contains("Relancé"))
         el(ReperesAffaires.gestesSuite(31)).toucher()
-        attendre(ReperesAffaires.gesteSuite(GesteSuite.Supprimer))
+        ecran.attendreTag(ReperesAffaires.gesteSuite(GesteSuite.Supprimer), useUnmergedTree = true)
         el(ReperesAffaires.gesteSuite(GesteSuite.Supprimer)).toucher()
-        attendre(ReperesAffaires.CONFIRMER_SUPPRESSION)
+        ecran.attendreTag(ReperesAffaires.CONFIRMER_SUPPRESSION, useUnmergedTree = true)
         el(ReperesAffaires.CONFIRMER_SUPPRESSION).toucher()
         ecran.waitUntil(DELAI_MS) { service.supprimees == listOf(31) }
     }
@@ -451,13 +442,13 @@ class AffairesInterfaceTest {
     @Test
     fun uneAffaireSeModifie() {
         val service = ouvrirFiche(1)
-        attendre(repereGeste(GesteAffaire.Modifier))
+        ecran.attendreTag(repereGeste(GesteAffaire.Modifier), useUnmergedTree = true)
         el(repereGeste(GesteAffaire.Modifier)).toucher()
-        attendre(ReperesChamps.MODIFIER.titre)
+        ecran.attendreTag(ReperesChamps.MODIFIER.titre, useUnmergedTree = true)
         // Le champ est déjà rempli : on remplace son texte (une frappe s'écrirait au début).
         el(ReperesChamps.MODIFIER.titre).performTextReplacement("Fuite au local vélos")
         el(ReperesNouvelle.MODIFIER_ENREGISTRER).toucher()
-        attendreTexte("Affaire modifiée")
+        ecran.attendreTexte("Affaire modifiée", useUnmergedTree = true)
         assertEquals(listOf(EditionAffaire(titre = "Fuite au local vélos")), service.editions)
     }
 
@@ -468,17 +459,17 @@ class AffairesInterfaceTest {
     @Test
     fun lesPrestatairesDUneAffaireSeChoisissent() {
         val service = ouvrirFiche(1)
-        attendre(repereGeste(GesteAffaire.Modifier))
+        ecran.attendreTag(repereGeste(GesteAffaire.Modifier), useUnmergedTree = true)
         el(repereGeste(GesteAffaire.Modifier)).toucher()
-        attendre(ReperesPrestatairesAffaire.ligne(AffairesSimulees.ASCENSEURS))
+        ecran.attendreTag(ReperesPrestatairesAffaire.ligne(AffairesSimulees.ASCENSEURS), useUnmergedTree = true)
         el(ReperesPrestatairesAffaire.AJOUTER).toucher()
-        attendre(ReperesPrestatairesAffaire.choix(AffairesSimulees.PLOMBERIE))
+        ecran.attendreTag(ReperesPrestatairesAffaire.choix(AffairesSimulees.PLOMBERIE), useUnmergedTree = true)
         el(ReperesPrestatairesAffaire.choix(AffairesSimulees.PLOMBERIE)).toucher()
-        attendre(ReperesPrestatairesAffaire.ligne(AffairesSimulees.PLOMBERIE))
+        ecran.attendreTag(ReperesPrestatairesAffaire.ligne(AffairesSimulees.PLOMBERIE), useUnmergedTree = true)
         el(ReperesPrestatairesAffaire.retirer(AffairesSimulees.ASCENSEURS)).toucher()
-        disparait(ReperesPrestatairesAffaire.ligne(AffairesSimulees.ASCENSEURS))
+        ecran.attendreDisparitionTag(ReperesPrestatairesAffaire.ligne(AffairesSimulees.ASCENSEURS), useUnmergedTree = true)
         el(ReperesNouvelle.MODIFIER_ENREGISTRER).toucher()
-        attendreTexte("Affaire modifiée")
+        ecran.attendreTexte("Affaire modifiée", useUnmergedTree = true)
         assertEquals(listOf(EditionAffaire(prestataires = listOf(5))), service.editions)
     }
 

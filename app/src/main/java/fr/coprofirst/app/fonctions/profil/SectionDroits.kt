@@ -31,6 +31,8 @@ import fr.coprofirst.api.modeles.UserRead
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.commun.Note
+import fr.coprofirst.app.commun.Section
 import fr.coprofirst.app.commun.gesteEnLigne
 import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.Installation
@@ -72,7 +74,7 @@ fun SectionDroits(
         }
     }
 
-    SectionProfil(stringResource(R.string.profil_droits)) {
+    Section(stringResource(R.string.profil_droits)) {
         Note(stringResource(R.string.profil_droits_texte))
         LigneAction(stringResource(R.string.profil_politique), "profil.droits.politique") {
             liens.openUri(installation.url.trimEnd('/') + "/" + CHEMIN_POLITIQUE)

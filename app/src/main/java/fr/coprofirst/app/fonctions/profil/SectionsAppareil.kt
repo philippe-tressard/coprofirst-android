@@ -32,6 +32,7 @@ import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.commun.ConfirmationDeSortie
 import fr.coprofirst.app.commun.GesteDeSortie
 import fr.coprofirst.app.commun.GestesDeSortie
+import fr.coprofirst.app.commun.Section
 
 /**
  * « Apparence », comme l'iOS : Automatique / Clair / Sombre (`OPTIONS_THEME`), un réglage
@@ -41,7 +42,7 @@ import fr.coprofirst.app.commun.GestesDeSortie
 @Composable
 fun SectionApparence(apparence: Apparence) {
     val choix by apparence.choix.collectAsStateWithLifecycle()
-    SectionProfil(stringResource(R.string.profil_apparence), note = stringResource(R.string.profil_apparence_note)) {
+    Section(stringResource(R.string.profil_apparence), note = stringResource(R.string.profil_apparence_note)) {
         SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().testTag("profil.theme")) {
             apparence.options.forEachIndexed { i, option ->
                 SegmentedButton(
@@ -65,7 +66,7 @@ fun SectionApparence(apparence: Apparence) {
 fun SectionSortie(nomResidence: String, sortie: GestesDeSortie) {
     var geste by remember { mutableStateOf<GesteDeSortie?>(null) }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionProfil(titre = null) {
+        Section(titre = null) {
             LigneAction(stringResource(R.string.se_deconnecter), "profil.deconnecter", detruit = true) {
                 geste = GesteDeSortie.Deconnecter(nomResidence)
             }

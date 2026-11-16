@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.MessageErreur
+import fr.coprofirst.app.commun.Note
+import fr.coprofirst.app.commun.Section
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.phrase
 import fr.coprofirst.app.session.ErreurService
@@ -55,7 +57,7 @@ fun SectionSuppressionCompte(service: ServiceProfil) {
             erreur = e
         }
     }
-    SectionProfil(stringResource(R.string.profil_supprimer_compte)) {
+    Section(stringResource(R.string.profil_supprimer_compte)) {
         val lu = etat
         val demande = lu?.demande
         when {
@@ -136,7 +138,7 @@ private fun FeuilleSuppression(etat: EtatSuppressionCompte, fermer: () -> Unit, 
             }
         },
     ) {
-        SectionProfil(titre = null) {
+        Section(titre = null) {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 etat.consequences.forEach { Text(it, style = MaterialTheme.typography.bodyMedium) }
             }

@@ -10,6 +10,9 @@ import android.view.inputmethod.InputMethodManager
 import android.view.inspector.WindowInspector
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.ComposeTimeoutException
+import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.printToString
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.test.SemanticsMatcher
@@ -248,7 +251,49 @@ fun ComposeTestRule.toucherTexte(texte: String, substring: Boolean = false) = to
 /** Par description (une icône sans texte : « Retour »). */
 fun ComposeTestRule.toucherDescription(description: String) = toucher(hasContentDescription(description))
 
+/**
+ * Attend qu'un nœud réponde au critère — LA seule attente des tests d'interface (#139) : un
+ * test ne réécrit pas `waitUntil { onAllNodes(…) }` dans une aide privée, `verifier-depot.sh`
+ * le refuse. `useUnmergedTree` : un repère posé sous un nœud fusionné.
+ */
+fun ComposeTestRule.attendre(critere: SemanticsMatcher, useUnmergedTree: Boolean = false, delaiMs: Long = DELAI_GESTE_MS) =
+    waitUntil(delaiMs) { onAllNodes(critere, useUnmergedTree).fetchSemanticsNodes().isNotEmpty() }
+
+/** Attend qu'aucun nœud ne réponde plus au critère : un élément retiré, une feuille fermée. */
+fun ComposeTestRule.attendreDisparition(critere: SemanticsMatcher, useUnmergedTree: Boolean = false, delaiMs: Long = DELAI_GESTE_MS) =
+    waitUntil(delaiMs) { onAllNodes(critere, useUnmergedTree).fetchSemanticsNodes().isEmpty() }
+
+/** Par repère ; `texte` : le repère, et ce texte en lui (une partie suffit). */
+fun ComposeTestRule.attendreTag(
+    repere: String,
+    texte: String? = null,
+    useUnmergedTree: Boolean = false,
+    delaiMs: Long = DELAI_GESTE_MS,
+) = attendre(if (texte == null) hasTestTag(repere) else hasTestTag(repere) and hasText(texte, substring = true), useUnmergedTree, delaiMs)
+
+fun ComposeTestRule.attendreDisparitionTag(repere: String, useUnmergedTree: Boolean = false) =
+    attendreDisparition(hasTestTag(repere), useUnmergedTree)
+
 /** Attend qu'un texte affiché apparaisse (une partie suffit). */
-fun ComposeTestRule.attendreTexte(texte: String, delaiMs: Long = DELAI_GESTE_MS) = waitUntil(delaiMs) {
-    onAllNodes(hasText(texte, substring = true)).fetchSemanticsNodes().isNotEmpty()
+fun ComposeTestRule.attendreTexte(texte: String, delaiMs: Long = DELAI_GESTE_MS, useUnmergedTree: Boolean = false) =
+    attendre(hasText(texte, substring = true), useUnmergedTree, delaiMs)
+
+/** Attend une description (une carte lue d'un bloc, une icône, un document qui la porte). */
+fun ComposeTestRule.attendreDescription(texte: String) = attendre(hasContentDescription(texte, substring = true))
+
+/** Un texte affiché, ou la description d'un élément qui le remplace (`LigneDocument`). */
+fun ComposeTestRule.attendreTexteOuDescription(texte: String) =
+    attendre(hasText(texte, substring = true) or hasContentDescription(texte, substring = true))
+
+/**
+ * Attend une condition nommée : l'échec dit ce qu'on attendait, `contexte` ce que le test en
+ * sait, et l'arbre de l'écran — le rapport de la CI le garde.
+ */
+fun ComposeTestRule.attendreQue(quoi: String, delaiMs: Long = DELAI_GESTE_MS, contexte: () -> String = { "" }, condition: () -> Boolean) {
+    try {
+        waitUntil(delaiMs, condition)
+    } catch (e: ComposeTimeoutException) {
+        val dit = contexte().takeIf { it.isNotEmpty() }?.let { " ; $it" }.orEmpty()
+        throw AssertionError("$quoi : non vu en $delaiMs ms$dit\n${onRoot().printToString(maxDepth = Int.MAX_VALUE)}", e)
+    }
 }

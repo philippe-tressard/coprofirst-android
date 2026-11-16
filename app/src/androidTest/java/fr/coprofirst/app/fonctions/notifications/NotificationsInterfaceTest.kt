@@ -19,6 +19,9 @@ import fr.coprofirst.api.NOTIFICATIONS_SELECTION_PAR_REQUETE
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.commun.REPERE_AVIS
 import fr.coprofirst.app.commun.amenerTag
+import fr.coprofirst.app.commun.attendreDisparitionTag
+import fr.coprofirst.app.commun.attendreTag
+import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.toucher
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.navigation.ActionsDeclarees
@@ -114,18 +117,6 @@ class NotificationsInterfaceTest {
         return boite
     }
 
-    private fun attendre(tag: String) = ecran.waitUntil(DELAI_MS) {
-        ecran.onAllNodes(hasTestTag(tag)).fetchSemanticsNodes().isNotEmpty()
-    }
-
-    private fun attendreTexte(texte: String) = ecran.waitUntil(DELAI_MS) {
-        ecran.onAllNodes(hasText(texte, substring = true)).fetchSemanticsNodes().isNotEmpty()
-    }
-
-    private fun disparait(tag: String) = ecran.waitUntil(DELAI_MS) {
-        ecran.onAllNodes(hasTestTag(tag)).fetchSemanticsNodes().isEmpty()
-    }
-
     private fun el(tag: String): SemanticsNodeInteraction = ecran.onNodeWithTag(tag, useUnmergedTree = true)
 
     private fun toucher(tag: String) = ecran.toucherTag(tag, useUnmergedTree = true)
@@ -137,16 +128,16 @@ class NotificationsInterfaceTest {
     @Test
     fun toutSeMarqueLu() {
         ouvrir()
-        attendre("notifications.toutMarquerLu")
+        ecran.attendreTag("notifications.toutMarquerLu")
         el("notifications.toutMarquerLu").assertIsDisplayed()
         el("notifications.modifier").assertIsDisplayed()
         // Relais FCM éteint (#23, `RelaisPush`) : l'offre des notifications push ne paraît pas.
         el("push.offre").assertDoesNotExist()
-        attendre(BarreDuHaut.REPERE_SOUS_TITRE)
+        ecran.attendreTag(BarreDuHaut.REPERE_SOUS_TITRE)
         el(BarreDuHaut.REPERE_SOUS_TITRE).assertTextEquals("12 non lues")
         toucher("notifications.toutMarquerLu")
-        disparait("notifications.toutMarquerLu")
-        disparait(BarreDuHaut.REPERE_SOUS_TITRE)
+        ecran.attendreDisparitionTag("notifications.toutMarquerLu")
+        ecran.attendreDisparitionTag(BarreDuHaut.REPERE_SOUS_TITRE)
     }
 
     /**
@@ -156,18 +147,18 @@ class NotificationsInterfaceTest {
     @Test
     fun plusieursNotificationsSeSuppriment() {
         val boite = ouvrir()
-        attendre("notifications.modifier")
+        ecran.attendreTag("notifications.modifier")
         toucher("notifications.modifier")
-        attendre("notifications.supprimerSelection")
+        ecran.attendreTag("notifications.supprimerSelection")
         el("notifications.supprimerSelection").assertIsNotEnabled()
         listOf(5, 4, 3).forEach { ecran.toucherTag("notification.$it") }
-        attendreTexte("Supprimer (3)")
+        ecran.attendreTexte("Supprimer (3)")
         el("notifications.supprimerSelection").assertIsDisplayed().toucher()
-        attendre("notifications.confirmerSuppression")
+        ecran.attendreTag("notifications.confirmerSuppression")
         toucher("notifications.confirmerSuppression")
-        disparait("notification.5")
+        ecran.attendreDisparitionTag("notification.5")
         assertEquals(listOf(3), boite.selections)
-        attendreTexte("10 non lues")
+        ecran.attendreTexte("10 non lues")
         toucher("notifications.modifier")
         ecran.amenerTag("notification.2").assertIsDisplayed()
     }
@@ -176,15 +167,15 @@ class NotificationsInterfaceTest {
     @Test
     fun lesLuesSeSupprimentDUnGeste() {
         ouvrir()
-        attendre("notifications.supprimerLues")
+        ecran.attendreTag("notifications.supprimerLues")
         el("notifications.supprimerLues").assertIsDisplayed().toucher()
-        attendreTexte("Les 138 notifications lues")
+        ecran.attendreTexte("Les 138 notifications lues")
         toucher("notifications.confirmerSuppression")
-        attendreTexte("Notifications lues supprimées")
+        ecran.attendreTexte("Notifications lues supprimées")
         el(REPERE_AVIS).assertIsDisplayed()
-        disparait("notification.3")
+        ecran.attendreDisparitionTag("notification.3")
         ecran.amenerTag("notification.5").assertIsDisplayed()
-        disparait("notifications.supprimerLues")
+        ecran.attendreDisparitionTag("notifications.supprimerLues")
     }
 
     /** Plus d'alertes choisies qu'une requête n'en accepte : tout part, sans erreur. */
@@ -192,13 +183,13 @@ class NotificationsInterfaceTest {
     fun uneGrandeSelectionSeSupprimeEntiere() {
         val nombre = NOTIFICATIONS_SELECTION_PAR_REQUETE + 20
         val boite = ouvrir(BoiteSimulee(nombre))
-        attendre("notifications.modifier")
+        ecran.attendreTag("notifications.modifier")
         toucher("notifications.modifier")
         toucher("notifications.toutSelectionner")
-        attendreTexte("Supprimer ($nombre)")
+        ecran.attendreTexte("Supprimer ($nombre)")
         toucher("notifications.supprimerSelection")
         toucher("notifications.confirmerSuppression")
-        attendreTexte("Aucune notification")
+        ecran.attendreTexte("Aucune notification")
         assertEquals(listOf(NOTIFICATIONS_SELECTION_PAR_REQUETE, 20), boite.selections)
     }
 

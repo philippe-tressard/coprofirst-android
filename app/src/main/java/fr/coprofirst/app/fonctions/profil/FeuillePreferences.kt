@@ -33,6 +33,8 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.GesteEnLigne
+import fr.coprofirst.app.commun.Note
+import fr.coprofirst.app.commun.Section
 import fr.coprofirst.app.commun.gesteEnLigne
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.launch
@@ -77,14 +79,14 @@ fun FeuillePreferences(compte: UserRead, service: ServiceProfil, fermer: () -> U
             }
         },
     ) {
-        SectionProfil(null, note = stringResource(R.string.profil_preferences_restreindre_note)) {
+        Section(null, note = stringResource(R.string.profil_preferences_restreindre_note)) {
             // Comme l'iOS : la restriction se grise en consultation hors ligne ; les cases suivent « Enregistrer », grisé lui aussi.
             Interrupteur(stringResource(R.string.profil_preferences_restreindre), restreindre, ReperesPreferences.RESTREINDRE, geste = gesteEnLigne()) {
                 restreindre = it
             }
         }
         TablesProfil.canauxNotifications.forEach { canal ->
-            SectionProfil(canal.titre) {
+            Section(canal.titre) {
                 listOf(canal.mon to R.string.profil_preferences_mon, canal.autres to R.string.profil_preferences_autres).forEach { (cle, libelle) ->
                     Interrupteur(
                         stringResource(libelle),

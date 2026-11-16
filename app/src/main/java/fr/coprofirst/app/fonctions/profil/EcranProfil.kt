@@ -39,9 +39,11 @@ import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.GestesDeSortie
+import fr.coprofirst.app.commun.LigneValeur
 import fr.coprofirst.app.commun.PageHorsLigne
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.Roles
+import fr.coprofirst.app.commun.Section
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.gesteEnLigne
 import fr.coprofirst.app.navigation.ContexteDeMenu
@@ -90,7 +92,7 @@ fun EcranProfil(
                     SectionSecurite { feuille = Feuille.MotDePasse }
                     SectionSaisieAffaire(compte, service, relireDroits) { compte = it }
                     SectionApparence(apparence)
-                    SectionProfil(null) {
+                    Section(null) {
                         LigneAction(stringResource(R.string.profil_preferences), ReperesPreferences.OUVRIR) { feuille = Feuille.Preferences }
                     }
                     SectionDroits(compte, installation, service, relireDroits) { compte = it }
@@ -118,7 +120,7 @@ fun EcranProfil(
 @Composable
 private fun SqueletteProfil(installation: Installation) {
     Column(Modifier.padding(vertical = Mise.marge)) {
-        SectionProfil(stringResource(R.string.profil_residence)) {
+        Section(stringResource(R.string.profil_residence)) {
             Text(installation.nom, style = MaterialTheme.typography.titleMedium)
             LigneValeur(stringResource(R.string.profil_profil_utilisateur), "—")
             LigneValeur(stringResource(R.string.profil_batiment), "—")
@@ -131,7 +133,7 @@ private fun SqueletteProfil(installation: Installation) {
 @Composable
 private fun SectionResidence(installation: Installation, compte: UserRead, demander: () -> Unit) {
     val couleurs = LocalCouleurs.current
-    SectionProfil(stringResource(R.string.profil_residence)) {
+    Section(stringResource(R.string.profil_residence)) {
         Column(Modifier.padding(vertical = 4.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(installation.nom, style = MaterialTheme.typography.titleMedium, color = couleurs.text)
             compte.libelleLogement?.takeIf { it.isNotBlank() }?.let { logement ->
@@ -171,7 +173,7 @@ private fun SectionResidence(installation: Installation, compte: UserRead, deman
 @Composable
 private fun SectionIdentite(compte: UserRead, modifier: () -> Unit) {
     val couleurs = LocalCouleurs.current
-    SectionProfil(stringResource(R.string.profil_informations), note = stringResource(R.string.profil_photo_au_site)) {
+    Section(stringResource(R.string.profil_informations), note = stringResource(R.string.profil_photo_au_site)) {
         Column(Modifier.padding(vertical = 2.dp).semantics(mergeDescendants = true) {}) {
             Text(
                 FormatsDuSite.nom(compte.nomAffiche, compte.prenom, compte.nom),
@@ -191,7 +193,7 @@ private fun SectionIdentite(compte: UserRead, modifier: () -> Unit) {
 
 @Composable
 private fun SectionSecurite(modifier: () -> Unit) {
-    SectionProfil(stringResource(R.string.profil_securite)) {
+    Section(stringResource(R.string.profil_securite)) {
         LigneAction(stringResource(R.string.profil_modifier_mot_de_passe), "profil.motDePasse", onClick = modifier)
     }
 }

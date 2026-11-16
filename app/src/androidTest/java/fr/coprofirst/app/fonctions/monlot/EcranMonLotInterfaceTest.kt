@@ -12,6 +12,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.ThemeCoproFirst
+import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.commun.toucherTexte
 import fr.coprofirst.app.navigation.ActionsDeclarees
@@ -77,33 +78,29 @@ class EcranMonLotInterfaceTest {
     @After
     fun fermer() = serveur.close()
 
-    private fun attendre(texte: String) = ecran.waitUntil(DELAI_MS) {
-        ecran.onAllNodes(hasText(texte, substring = true)).fetchSemanticsNodes().isNotEmpty()
-    }
-
     @Test
     fun lesQuatreOngletsSOuvrent() {
-        attendre("Caractéristiques")
+        ecran.attendreTexte("Caractéristiques")
         ecran.toucherTag(ReperesMonLot.lot(417))
-        attendre("Sous-sol A")
+        ecran.attendreTexte("Sous-sol A")
         ecran.toucherTag(ReperesMonLot.onglet("badges"))
-        attendre("A4F21C07")
+        ecran.attendreTexte("A4F21C07")
         ecran.toucherTag(ReperesMonLot.onglet("telecommandes"))
-        attendre("TC-2048")
+        ecran.attendreTexte("TC-2048")
         // Le compte simulé est au conseil syndical : la gestion locative lui est ouverte.
         ecran.toucherTag(ReperesMonLot.onglet("location"))
-        attendre("Locataire DU LOT 15")
+        ecran.attendreTexte("Locataire DU LOT 15")
         ecran.toucherTexte("📁 Archives", substring = true)
-        attendre("Ancien locataire DU LOT 15")
+        ecran.attendreTexte("Ancien locataire DU LOT 15")
     }
 
     @Test
     fun signalerPerduPuisDeclarer() {
-        attendre("Caractéristiques")
+        ecran.attendreTexte("Caractéristiques")
         ecran.toucherTag(ReperesMonLot.onglet("badges"))
         ecran.toucherTag(ReperesMonLot.perdu(12))
         ecran.toucherTag(ReperesMonLot.PERDU_CONFIRMER)
-        attendre("Signalement enregistré")
+        ecran.attendreTexte("Signalement enregistré")
         ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(ReperesMonLot.perdu(12))).fetchSemanticsNodes().isEmpty() }
 
         ecran.toucherTag(ReperesMonLot.GESTES)
@@ -111,24 +108,24 @@ class EcranMonLotInterfaceTest {
         ecran.toucherTag(ReperesMonLot.DECLARER_CODE)
         ecran.onNodeWithTag(ReperesMonLot.DECLARER_CODE).performTextInput("TC-7777")
         ecran.toucherTag(ReperesMonLot.ENREGISTRER)
-        attendre("Accès enregistré")
+        ecran.attendreTexte("Accès enregistré")
         ecran.toucherTag(ReperesMonLot.onglet("telecommandes"))
-        attendre("TC-7777") // la liste est relue
+        ecran.attendreTexte("TC-7777") // la liste est relue
     }
 
     @Test
     fun nouvelAccesNeProposeQueSesLots() {
-        attendre("Caractéristiques")
+        ecran.attendreTexte("Caractéristiques")
         ecran.toucherTag(ReperesMonLot.onglet("badges"))
         ecran.toucherTag(ReperesMonLot.GESTES)
         ecran.toucherTag(ReperesMonLot.DEMANDER)
-        attendre("Nouvelle demande d'accès")
+        ecran.attendreTexte("Nouvelle demande d'accès")
         ecran.toucherTag(ReperesMonLot.ENREGISTRER)
-        attendre("Sélectionnez un lot") // un lot est exigé
-        attendre("Lot 450")
+        ecran.attendreTexte("Sélectionnez un lot") // un lot est exigé
+        ecran.attendreTexte("Lot 450")
         ecran.toucherTexte("Lot 15")
         ecran.toucherTag(ReperesMonLot.ENREGISTRER)
-        attendre("Demande envoyée au conseil syndical")
+        ecran.attendreTexte("Demande envoyée au conseil syndical")
     }
 
     private companion object {

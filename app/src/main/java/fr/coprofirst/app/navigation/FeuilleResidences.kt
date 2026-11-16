@@ -51,6 +51,7 @@ import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.LogoResidence
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.Roles
+import fr.coprofirst.app.commun.Section
 import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.RolesConnus
@@ -111,7 +112,7 @@ internal fun FeuilleResidences(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Mise.marge, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
-            Section(stringResource(R.string.residence_vous_etes_ici)) {
+            Section(stringResource(R.string.residence_vous_etes_ici), enRetrait = false) {
                 Column(Modifier.semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     LigneResidence(ouverte, grand = true)
                     RolesDe(roles)
@@ -122,7 +123,7 @@ internal fun FeuilleResidences(
                 }
             }
             if (autres.isNotEmpty()) {
-                Section(stringResource(R.string.residence_autres)) {
+                Section(stringResource(R.string.residence_autres), enRetrait = false) {
                     autres.forEachIndexed { i, autre ->
                         if (i > 0) HorizontalDivider(color = couleurs.border)
                         Column(
@@ -149,14 +150,6 @@ internal fun FeuilleResidences(
         }
     }
     ConfirmationDeSortie(geste, sortie) { geste = null }
-}
-
-@Composable
-private fun Section(titre: String, contenu: @Composable () -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Libelle(titre, Modifier.padding(start = 4.dp).semantics { heading() })
-        Carte { contenu() }
-    }
 }
 
 /** Le logo, le nom et l'hôte d'une résidence (`LigneResidence` de l'iOS). */
