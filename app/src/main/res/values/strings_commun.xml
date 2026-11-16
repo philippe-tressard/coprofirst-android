@@ -33,6 +33,9 @@ ceux de l'iOS (`OngletSurLeSite`, `TextesFeuille`, `ChampRecherche`, `feuilleNot
     <string name="lieu_en_clair">Lieu : %1$s</string>
     <!-- Le nom d'une saisie, rendu par le serveur (`NomDeLaSaisie`, `TextesApercus.nomAffiche` de l'iOS). -->
     <string name="apercu_nom_affiche">Nom affiché</string>
+    <!-- « Qui la lira » d'une saisie (#179), `TextesApercus` de l'iOS. -->
+    <string name="apercu_qui_la_lira">Qui la lira</string>
+    <string name="apercu_selon_la_categorie">Elle se dit dès la catégorie choisie.</string>
     <string name="perimetres_preciser">Préciser dans %1$s</string>
     <string name="perimetres_facultatif">" — facultatif"</string>
 

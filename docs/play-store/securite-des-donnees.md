@@ -103,6 +103,7 @@ contrôle le refuse dès que l'envoi existe — la PR qui l'apporte retire la ma
 | `postTicketsTicketIdMessages` | `Messages` |
 | `postSignalements` | `Contenu utilisateur` |
 | `postPerimetresLibelle` | `Contenu utilisateur` |
+| `postLecturesApercu` | `Contenu utilisateur` |
 | `postNomsAffiche` | `Nom` |
 | `postReglementQuestions` | `Contenu utilisateur` |
 | `postAnnonces` | `Contenu utilisateur` |

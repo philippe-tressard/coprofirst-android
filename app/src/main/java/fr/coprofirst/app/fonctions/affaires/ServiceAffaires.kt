@@ -14,6 +14,8 @@ import fr.coprofirst.api.routes.LotsApi
 import fr.coprofirst.api.routes.PointsConseilApi
 import fr.coprofirst.api.routes.PrestatairesApi
 import fr.coprofirst.api.routes.TicketsApi
+import fr.coprofirst.app.commun.apercu.ServiceLectures
+import fr.coprofirst.app.commun.apercu.ServiceLecturesApi
 import fr.coprofirst.app.commun.perimetres.ServicePerimetres
 import fr.coprofirst.app.commun.perimetres.ServicePerimetresApi
 import fr.coprofirst.app.commun.texte.TexteDuSite
@@ -26,7 +28,7 @@ import kotlinx.coroutines.coroutineScope
  * Ce que « Mes affaires » demande à la résidence ouverte, comme l'iOS (`ServiceAffaires`) —
  * les lieux compris (`ServicePerimetres`, commun).
  */
-interface ServiceAffaires : ServicePerimetres {
+interface ServiceAffaires : ServicePerimetres, ServiceLectures {
     /** GET /tickets : les affaires lisibles par le compte. */
     suspend fun affaires(): List<Affaire>
 
@@ -77,7 +79,10 @@ interface ServiceAffaires : ServicePerimetres {
 }
 
 /** Le service par le client généré, sur la session de la résidence — aucune route écrite à la main. */
-class ServiceAffairesApi(private val session: SessionOuverte) : ServiceAffaires, ServicePerimetres by ServicePerimetresApi(session) {
+class ServiceAffairesApi(private val session: SessionOuverte) :
+    ServiceAffaires,
+    ServicePerimetres by ServicePerimetresApi(session),
+    ServiceLectures by ServiceLecturesApi(session) {
     private suspend fun <R> tickets(requete: TicketsApi.() -> R): R =
         session.appeler { base, client -> TicketsApi(base, client).requete() }
 

@@ -31,6 +31,19 @@ class InstallationsConnuesTest {
         assertEquals(listOf(b, a), InstallationsConnues(stockage).liste)
     }
 
+    /** #180 : les rôles d'une résidence, au coffre, pour la feuille « Résidences » ; oubliés avec tout. */
+    @Test
+    fun lesRolesDeChaqueResidenceSeRetiennentEtSOublientAvecTout() {
+        val coffre = CoffreEnMemoire()
+        val connues = InstallationsConnues(EnMemoire(), coffre).apply { retenir(a); retenir(b) }
+        connues.noterRoles(a, "proprietaire_occupant", listOf("conseil_syndical"))
+        assertEquals(RolesConnus("proprietaire_occupant", listOf("conseil_syndical")), connues.roles(a))
+        assertEquals(null, connues.roles(b))
+        assertEquals("relus d'un lancement à l'autre", connues.roles(a), InstallationsConnues(EnMemoire(), coffre).roles(a))
+        connues.vider()
+        assertEquals(null, connues.roles(a))
+    }
+
     @Test
     fun stockageIllisibleOuAdresseInvalideIgnores() {
         assertEquals(emptyList<Installation>(), InstallationsConnues(EnMemoire("pas du json")).liste)

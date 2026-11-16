@@ -57,6 +57,12 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 
     <string name="plus">Plus</string>
     <string name="se_deconnecter">Se déconnecter</string>
+    <!-- « Où suis-je » et la feuille « Résidences » (#180), les mots de l'iOS (`PastilleOuSuisJe`, `FeuilleResidence`). -->
+    <string name="residence_pastille">Résidence : %1$s — changer de résidence</string>
+    <string name="residence_feuille_titre">Résidences</string>
+    <string name="residence_vous_etes_ici">Vous êtes ici</string>
+    <string name="residence_autres">Mes autres résidences</string>
+    <string name="residence_une_autre">Une autre résidence</string>
     <string name="annuler">Annuler</string>
     <string name="sortie_deconnecter_titre">Se déconnecter de %1$s ?</string>
     <string name="sortie_deconnecter_message">Vous reviendrez à l\'écran de connexion.</string>

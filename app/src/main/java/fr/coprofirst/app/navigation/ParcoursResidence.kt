@@ -9,6 +9,7 @@ import fr.coprofirst.api.modeles.UserRead
 import fr.coprofirst.api.routes.AuthApi
 import fr.coprofirst.api.routes.NotificationsApi
 import fr.coprofirst.app.session.ErreurService
+import fr.coprofirst.app.session.RolesConnus
 import fr.coprofirst.app.session.SessionOuverte
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -39,6 +40,8 @@ data class EtatResidence(
     val droits: DroitsOnglet = DroitsOnglet(),
     /** Le refus de la mesure d'audience (`opt_out_telemetrie`) ; `null` tant qu'il n'est pas lu. */
     val refusMesure: Boolean? = null,
+    /** Le statut et les rôles du compte ici (GET /auth/me), pour « Vous êtes ici » (#180) ; `null` tant qu'ils ne sont pas lus. */
+    val roles: RolesConnus? = null,
     /** La saisie d'une affaire du compte (`saisie_affaire_effective`, #178) ; `null` tant qu'elle n'est pas lue. */
     val saisieAffaire: String? = null,
 ) {
@@ -75,7 +78,10 @@ class ParcoursResidence(
     suspend fun relireDroits() {
         try {
             val moi = compte.moi()
-            _etat.update { it.copy(droits = DroitsOnglet.depuis(moi), refusMesure = moi.optOutTelemetrie, saisieAffaire = moi.saisieAffaireEffective) }
+            val roles = RolesConnus(moi.statut.value, (moi.roles.orEmpty() + moi.role.value).distinct())
+            _etat.update {
+                it.copy(droits = DroitsOnglet.depuis(moi), refusMesure = moi.optOutTelemetrie, roles = roles, saisieAffaire = moi.saisieAffaireEffective)
+            }
         } catch (_: ErreurService) {
             // Sans profil : les droits d'avant restent (ceux de tous, à l'ouverture).
         }
