@@ -10,6 +10,7 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isSelected
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performSemanticsAction
@@ -37,6 +38,7 @@ import okhttp3.tls.HandshakeCertificates
 import okhttp3.tls.HeldCertificate
 import org.junit.After
 import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -133,13 +135,20 @@ class EspaceCSInterfaceTest {
             ecran.onNodeWithTag(repere).performClick()
             ecran.waitForIdle()
         }
-        if (retenue()) return
-        // Le toucher n'a pas porté (CI de #112, A5) : l'action de la pastille, puis le constat
-        // de ce qui a fait obstacle, dans le message.
+        if (ecran.runCatching { waitUntil(DELAI_MS, retenue) }.isSuccess) return
+        // DIAGNOSTIC, jamais un passage (CI de #112, A5) : le toucher n'a pas porté. L'action de
+        // la pastille dit si un utilisateur le pourrait : retenue par elle seule, quelque chose
+        // dans l'écran fait obstacle au toucher (défaut de l'écran) ; pas même par elle, c'est la
+        // logique de sélection. Le test échoue dans les deux cas, en disant lequel.
         val noeud = ecran.onNodeWithTag(repere).fetchSemanticsNode()
+        val racine = ecran.onRoot().fetchSemanticsNode().boundsInRoot
         ecran.onNodeWithTag(repere).performSemanticsAction(SemanticsActions.OnClick)
-        ecran.waitUntil(DELAI_MS, retenue)
-        println("retenir($repere) : retenue par son action seule ; bornes ${noeud.boundsInRoot}, racine ${noeud.layoutInfo.coordinates.size}")
+        val parAction = ecran.runCatching { waitUntil(DELAI_MS, retenue) }.isSuccess
+        fail(
+            "retenir($repere) : le toucher ne retient pas la pastille ; " +
+                (if (parAction) "son action la retient — un obstacle au toucher dans l'écran" else "son action non plus — la logique de sélection") +
+                " (bornes ${noeud.boundsInRoot}, racine $racine)",
+        )
     }
 
     /** Attend que le nœud ne bouge plus (deux lectures de sa position identiques), 3 s au plus. */
