@@ -33,12 +33,20 @@ import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.charte.Mouvement
 import fr.coprofirst.app.charte.Palettes
+import fr.coprofirst.app.entree.vitrine.EcranDemo
+import fr.coprofirst.app.entree.vitrine.EcranEnSavoirPlus
 import fr.coprofirst.app.navigation.EcranResidence
 
 /** Les gestes des écrans de l'entrée — une interface, pour que les aperçus s'en passent. */
 interface ActionsEntree {
     fun entrer()
     fun entrerDemo()
+
+    /** « En savoir plus sur CoproFirst » : la vitrine (#10). */
+    fun enSavoirPlus()
+
+    /** Un rôle de la démo : la connexion, son identifiant public pré-rempli (#10). */
+    fun choisirPersonnage(code: String, role: String)
     fun saisir(texte: String)
 
     /** Le texte d'un QR code lu par la caméra (#6) : il remplit « Votre résidence ». */
@@ -57,6 +65,8 @@ interface ActionsEntree {
     object Inertes : ActionsEntree {
         override fun entrer() = Unit
         override fun entrerDemo() = Unit
+        override fun enSavoirPlus() = Unit
+        override fun choisirPersonnage(code: String, role: String) = Unit
         override fun saisir(texte: String) = Unit
         override fun lireQR(texte: String) = Unit
         override fun saisirEmail(texte: String) = Unit
@@ -82,8 +92,8 @@ private const val DUREE_MS = 220
 fun NavigationEntree(apparence: Apparence, parcours: ParcoursEntree = viewModel(factory = ParcoursEntree.Fabrique)) {
     val etat by parcours.etat.collectAsStateWithLifecycle()
     // L'espace d'une résidence ouverte ne se quitte que par « Se déconnecter » ; le retour
-    // système y ferme l'app, comme sur un écran racine.
-    BackHandler(enabled = etat.ecran == EcranEntree.Connexion) { parcours.retour() }
+    // système y ferme l'app, comme sur un écran racine — et à l'accueil.
+    BackHandler(enabled = etat.ecran != EcranEntree.Accueil && etat.ecran != EcranEntree.Espace) { parcours.retour() }
     // La palette de la résidence s'applique dès qu'elle est reconnue, comme sur iOS.
     val palette = Palettes.pour((etat.ouverte ?: etat.reconnue)?.codePalette)
     // Le thème de l'appareil (Profil › Apparence), appliqué à la racine comme sur iOS.
@@ -102,6 +112,8 @@ fun NavigationEntree(apparence: Apparence, parcours: ParcoursEntree = viewModel(
             ) { ecran ->
                 when (ecran) {
                     EcranEntree.Accueil -> EcranAccueil(parcours)
+                    EcranEntree.EnSavoirPlus -> EcranEnSavoirPlus(parcours)
+                    EcranEntree.Demo -> EcranDemo(parcours)
                     EcranEntree.Connexion -> EcranConnexion(etat, parcours)
                     EcranEntree.Espace -> parcours.sessionOuverte()?.let { EcranResidence(it, parcours, apparence) }
                 }

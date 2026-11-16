@@ -9,12 +9,16 @@ import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.OrigineAdresse
 import fr.coprofirst.app.session.PreuveHote
 
-/** Les écrans de l'entrée, dans leur ordre — ceux de l'app iOS. */
-enum class EcranEntree { Accueil, Connexion, Espace }
+/** Les écrans de l'entrée, dans leur ordre — ceux de l'app iOS (le sens du passage en dépend). */
+enum class EcranEntree { Accueil, EnSavoirPlus, Demo, Connexion, Espace }
 
 /** Ce que montrent les écrans de l'entrée. */
 data class EtatEntree(
     val ecran: EcranEntree = EcranEntree.Accueil,
+    /** Les écrans sous celui-ci, que le retour retrouve (la pile de navigation de l'iOS). */
+    val pile: List<EcranEntree> = emptyList(),
+    /** Le rôle de la démo choisi (« Conseil syndical ») : où lire son mot de passe public. */
+    val aideDemo: String? = null,
     /** L'adresse saisie dans « Votre résidence ». */
     val saisie: String = "",
     /** La reconnaissance court. */
@@ -37,6 +41,9 @@ data class EtatEntree(
     /** L'adresse lue dans un QR ou venue d'un lien, et d'où : elle se confirme TOUJOURS. */
     val venue: AdresseVenue? = null,
 ) {
+    /** Vers cet écran, celui-ci gardé pour le retour. */
+    fun vers(suivant: EcranEntree): EtatEntree = copy(ecran = suivant, pile = pile + ecran)
+
     /** « Se connecter » répond : une résidence reconnue, un courriel, un mot de passe. */
     val connexionPossible: Boolean
         get() = reconnue != null && email.isNotBlank() && motDePasse.isNotEmpty() && !connexionEnCours

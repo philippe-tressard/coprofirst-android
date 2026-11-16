@@ -118,14 +118,29 @@ class ParcoursEntreeTest {
         assertEquals("5Hostachy", parcours.etat.value.reconnue?.nom)
     }
 
+    /** #10 : la démo, ses rôles, puis la connexion à son adresse, l'identifiant du rôle pré-rempli. */
     @Test
-    fun laDemoOuvreLaConnexionASonAdresse() = test {
+    fun unRoleDeLaDemoOuvreLaConnexionASonAdresse() = test {
         residence("Résidence Les Glycines")
+        parcours.enSavoirPlus()
         parcours.entrerDemo()
+        assertEquals(EcranEntree.Demo, parcours.etat.value.ecran)
+        parcours.choisirPersonnage("user-cs", "Conseil syndical")
         advanceUntilIdle()
         assertEquals(EcranEntree.Connexion, parcours.etat.value.ecran)
         assertEquals("demo.coprofirst.fr", parcours.etat.value.saisie)
+        assertEquals("user-cs@demo.coprofirst.fr", parcours.etat.value.email)
+        assertEquals("Conseil syndical", parcours.etat.value.aideDemo)
         assertEquals("Résidence Les Glycines", parcours.etat.value.reconnue?.nom)
+        // Le retour refait le chemin à l'envers : la démo, la vitrine, l'accueil.
+        parcours.retour()
+        assertEquals(EcranEntree.Demo, parcours.etat.value.ecran)
+        assertNull(parcours.etat.value.aideDemo)
+        parcours.retour()
+        assertEquals(EcranEntree.EnSavoirPlus, parcours.etat.value.ecran)
+        parcours.retour()
+        assertEquals(EcranEntree.Accueil, parcours.etat.value.ecran)
+        assertEquals(emptyList<EcranEntree>(), parcours.etat.value.pile)
     }
 
     @Test

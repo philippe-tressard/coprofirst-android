@@ -9,6 +9,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,10 +18,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -28,6 +31,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -39,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -52,8 +57,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
+import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.ThemeCoproFirst
+import fr.coprofirst.app.entree.vitrine.ContenuVitrine
 import fr.coprofirst.app.session.Installation
 
 /**
@@ -78,6 +85,7 @@ fun EcranConnexion(etat: EtatEntree, parcours: ActionsEntree) {
                 modifier = Modifier.semantics { heading() },
             )
             ChampResidence(etat, parcours::saisir, scanner = { scanner = true })
+            etat.aideDemo?.let { AideDemo(it) }
             ChampsIdentifiants(etat, parcours)
         }
     }
@@ -138,6 +146,32 @@ private fun ChampResidence(etat: EtatEntree, saisir: (String) -> Unit, scanner: 
             exit = fadeOut(tween(120)) + shrinkVertically(tween(120)),
         ) {
             NomReconnu(etat.reconnue)
+        }
+    }
+}
+
+/** L'aide de la démo, comme l'iOS (`AideDemo`) : où lire le mot de passe public du rôle choisi. */
+@Composable
+private fun AideDemo(role: String) {
+    val couleurs = LocalCouleurs.current
+    val site = LocalUriHandler.current
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(couleurs.primaryLight, RoundedCornerShape(Mise.rayon))
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Icon(Icons.Filled.Info, contentDescription = null, tint = couleurs.primary, modifier = Modifier.size(20.dp))
+            Text(stringResource(R.string.demo_aide, role), style = MaterialTheme.typography.bodyMedium, color = couleurs.text)
+        }
+        TextButton(onClick = { site.openUri(ContenuVitrine.PAGE_IDENTIFIANTS_DEMO) }) {
+            Text(
+                stringResource(R.string.demo_identifiants),
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = couleurs.primary,
+            )
         }
     }
 }
