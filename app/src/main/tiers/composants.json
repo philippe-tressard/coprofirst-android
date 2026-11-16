@@ -83,6 +83,13 @@
       "role": "Le tracé du logo WhatsApp, parmi les icônes du site.",
       "fichiers": ["contrat/icones-svg.json"],
       "textes": ["LICENSES/CC0-1.0.txt"]
+    },
+    {
+      "nom": "Google Play services (Wearable)",
+      "licences": ["LicenseRef-Android-SDK"],
+      "role": "Le lien entre le téléphone et la montre Wear OS (Data Layer). Bibliothèque propriétaire de Google, permise par le point 4 de la licence de l'app.",
+      "modules": ["com.google.android.gms:*"],
+      "textes": ["app/src/main/tiers/LICENSE-LicenseRef-Android-SDK.txt"]
     }
   ]
 }

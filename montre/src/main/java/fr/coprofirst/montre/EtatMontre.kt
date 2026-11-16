@@ -3,6 +3,7 @@
 
 package fr.coprofirst.montre
 
+import fr.coprofirst.app.fonctions.notifications.montre.LiaisonMontre
 /** Ce que la montre montre en s'ouvrant. La cloche elle-même vient avec les écrans (#207, lot 3). */
 sealed interface EtatMontre {
     /** Jamais reliée, ou liaison éteinte : « Ouvrez CoproFirst sur le téléphone pour relier la montre ». */
