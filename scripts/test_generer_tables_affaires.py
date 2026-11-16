@@ -28,9 +28,6 @@ def tables(**remplace):
         "optionsTicket": t(["epingle"]),
         "optionsPublication": t([{"cle": "epingle", "action": "Épingler", "etat": "Épinglée", "aide": "En tête."},
                                  {"cle": "brouillon", "action": "Réserver", "etat": "CS", "aide": "Au conseil."}]),
-        "statutsTicket": t([{"value": "ouvert", "label": "Ouvert", "badge": "badge-blue"}]),
-        "statutsTicketHistoriques": t({"fermé": {"label": "Fermé", "badge": "badge-gray"}}),
-        "statutsTicketSansCycle": t({"publie": {"label": "Publiée", "badge": "badge-blue"}}),
     }
     base.update(remplace)
     return base
@@ -43,8 +40,8 @@ class TablesAffaires(unittest.TestCase):
         self.assertIn('GroupeDeSuivi("en_cours", "En cours", setOf("en_ag", "en_cours")),', texte)
         # La teinte d'une colonne est un JETON de la palette, jamais une couleur.
         self.assertIn('"syndic" to { it.kanbanSyndic },', texte)
-        for code, badge in (("ouvert", "badge-blue"), ("fermé", "badge-gray"), ("publie", "badge-blue")):
-            self.assertIn(f'"{code}" to "{badge}",', texte)
+        # La pastille du statut est commune (StatutsAffaire, generer_tables.py, #92).
+        self.assertNotIn("pastillesStatut", texte)
         self.assertIn('const val COLONNE_VIDE = "Aucune affaire"', texte)
         # Les options du site pour une affaire, et elles seules.
         self.assertIn('OptionAffaire("epingle", "Épingler", "Épinglée", "En tête."),', texte)
@@ -53,7 +50,6 @@ class TablesAffaires(unittest.TestCase):
     def test_ce_qui_change_de_forme_arrete(self):
         for casse in ({"groupesSuivi": t([{"value": "x", "label": "X"}])},
                       {"colonnesKanban": t([{"id": "ag", "color": "#123456"}])},
-                      {"statutsTicketHistoriques": t([])},
                       {"motColonneVide": t(None)},
                       {"optionsTicket": t(["inconnue"])}):
             with self.assertRaises(g.TableInattendue, msg=str(casse)):
@@ -62,7 +58,7 @@ class TablesAffaires(unittest.TestCase):
     def test_le_plancher_se_genere(self):
         publiees = json.loads((RACINE / "contrat" / "tables-clients.json").read_text(encoding="utf-8"))["tables"]
         texte = g.kotlin(publiees, "tables-clients.json")
-        for attendu in ('"annule" to { it.kanbanAnnule }', '"chez_prestataire" to ', 'OptionAffaire("urgente"'):
+        for attendu in ('"annule" to { it.kanbanAnnule }', 'OptionAffaire("urgente"'):
             self.assertIn(attendu, texte)
 
 

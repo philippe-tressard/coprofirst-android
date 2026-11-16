@@ -4,6 +4,7 @@
 package fr.coprofirst.app.fonctions.espacecs
 
 import fr.coprofirst.app.charte.Palettes
+import fr.coprofirst.app.commun.StatutsAffaire
 import fr.coprofirst.app.navigation.Destination
 import fr.coprofirst.app.navigation.RegistreDesMenus
 import kotlinx.coroutines.test.runTest
@@ -30,7 +31,7 @@ class ServiceReportingTest {
         assertEquals(listOf(12, 18, 31), suivi.affaires.map { it.id })
         val fuite = suivi.affaires[0]
         assertEquals("badge-red", fuite.teinteAge)
-        assertEquals("badge-orange", fuite.teinteStatut)
+        assertEquals("badge-orange", StatutsAffaire.pastilles[fuite.statut])  // la teinte commune (#92)
         assertEquals("Chez le syndic", fuite.libelleStatut)
         assertTrue(fuite.apercuIA)
         assertEquals("Nouveau message depuis le dernier résumé", fuite.evolution)

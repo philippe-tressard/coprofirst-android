@@ -121,7 +121,6 @@ strings_validations.xml.
         <item quantity="many">%1$s jours</item>
         <item quantity="other">%1$s jours</item>
     </plurals>
-    <string name="espacecs_reporting_statut">Statut : %1$s</string>
 
     <!-- Reporting › Renouvellements (VueRenouvellements*) -->
     <string name="espacecs_renouvellements_titre">Renouvellements</string>

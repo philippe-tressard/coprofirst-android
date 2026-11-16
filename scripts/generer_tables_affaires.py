@@ -16,8 +16,7 @@ publie dans `tables-clients.json` :
   (`categorieActualite`) ;
 - les options de mise en avant d'une affaire (`optionsTicket`, `OPTIONS_TICKET`), avec
   leurs mots (`optionsPublication`, `OPTIONS_PUBLICATION`) ;
-- la pastille (`badge-*`) de chaque statut (`statutsTicket`, `statutsTicketHistoriques`,
-  `statutsTicketSansCycle`) — la teinte seule : le libellé est SERVI.
+La pastille du statut d'une affaire est commune (`StatutsAffaire`, scripts/generer_tables.py, #92).
 
 Une table qui change de forme : la génération s'arrête.
 
@@ -60,17 +59,6 @@ def jeton(var: str) -> str:
     return tete + "".join(p.capitalize() for p in suite)
 
 
-def pastilles(tables: dict) -> list[tuple[str, str]]:
-    sortie = [(texte(s, "value", "statutsTicket"), texte(s, "badge", "statutsTicket"))
-              for s in valeur(tables, "statutsTicket")]
-    for nom in ("statutsTicketHistoriques", "statutsTicketSansCycle"):
-        table = valeur(tables, nom)
-        if not isinstance(table, dict):
-            raise TableInattendue(f"{nom} n'est pas une table")
-        sortie += [(code, texte(v, "badge", nom)) for code, v in table.items()]
-    return sortie
-
-
 def options(tables: dict) -> list[tuple[str, str, str, str]]:
     cles = valeur(tables, "optionsTicket")
     if not isinstance(cles, list) or not cles:
@@ -98,7 +86,7 @@ def kotlin(tables: dict, source: str) -> str:
     l = [
         "// GÉNÉRÉ par scripts/generer_tables_affaires.py — NE PAS MODIFIER À LA MAIN.",
         f"// Source : {source} (groupesSuivi, colonnesKanban, motColonneVide, categorieActualite,",
-        "// optionsTicket, optionsPublication, statutsTicket, statutsTicketHistoriques, statutsTicketSansCycle).",
+        "// optionsTicket, optionsPublication).",
         f"package {PAQUET}",
         "",
         "import androidx.compose.ui.graphics.Color",
@@ -118,10 +106,6 @@ def kotlin(tables: dict, source: str) -> str:
           "    /** Les options de mise en avant d'une affaire, dans l'ordre du site (`OPTIONS_TICKET`, `OPTIONS_PUBLICATION`). */",
           "    val options: List<OptionAffaire> = listOf("]
     l += [f"        OptionAffaire({chaine(c)}, {chaine(a)}, {chaine(e)}, {chaine(d)})," for c, a, e, d in options(tables)]
-    l += ["    )", "",
-          "    /** La pastille (`badge-*`) de chaque statut — la teinte seule : le libellé est servi. */",
-          "    val pastillesStatut: Map<String, String> = mapOf("]
-    l += [f"        {chaine(c)} to {chaine(b)}," for c, b in pastilles(tables)]
     l += ["    )", "",
           "    /** Ce qu'une colonne vide affiche (`MOT_COLONNE_VIDE`). */",
           f"    const val COLONNE_VIDE = {chaine(vide)}",

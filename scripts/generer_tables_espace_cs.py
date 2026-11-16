@@ -13,8 +13,6 @@ du site, qui les publie dans `tables-clients.json` :
 - `civilites` (`CIVILITES`, une fiche de l'annuaire) ;
 - `teinteAge`, `modesSuivi`, `etatsVisite`, `motifsEvolution`, `motifEvolutionParDefaut`
   (le reporting) ;
-- `statutsTicket` (`STATUTS_TICKET`) : la TEINTE du statut d'une affaire (le libellé est
-  servi avec l'affaire) — provisoire, jusqu'à la pastille commune (#92) ;
 - `tranchesRepartition` (`BarresCroisees.svelte`) : la couleur de chaque tranche, en
   JETONS de la charte (`serie-1` → `serie1` de `Couleurs`) — deux jetons, des hachures.
 
@@ -107,8 +105,6 @@ def kotlin(tables: dict, source: str) -> str:
                for c, v in table_de(tables, "etatsVisite").items()]
     motifs = [(c, texte(m, "motifsEvolution")) for c, m in table_de(tables, "motifsEvolution").items()]
     defaut = texte(valeur(tables, "motifEvolutionParDefaut"), "motifEvolutionParDefaut")
-    statuts = [(texte(t.get("value"), "statutsTicket"), texte(t.get("badge"), "statutsTicket"))
-               for t in liste_de(tables, "statutsTicket")]
 
     def teintes(nom: str, entrees: list, doc: str) -> list[str]:
         return [f"    /** {doc} */", f"    val {nom}: Map<String, LibelleTeinte> = mapOf("] + [
@@ -121,7 +117,7 @@ def kotlin(tables: dict, source: str) -> str:
     l = [
         "// GÉNÉRÉ par scripts/generer_tables_espace_cs.py — NE PAS MODIFIER À LA MAIN.",
         f"// Source : {source} (verdictsReleve, teinteDuTon, formatsAffiche, civilites, teinteAge,",
-        "// modesSuivi, etatsVisite, motifsEvolution, motifEvolutionParDefaut, statutsTicket, tranchesRepartition).",
+        "// modesSuivi, etatsVisite, motifsEvolution, motifEvolutionParDefaut, tranchesRepartition).",
         f"package {PAQUET}",
         "",
         "import androidx.compose.ui.graphics.Color",
@@ -140,9 +136,6 @@ def kotlin(tables: dict, source: str) -> str:
     l += paires("modesSuivi", modes, "Les modes du Suivi des affaires, dans l'ordre du site (`MODES_SUIVI`).")
     l += teintes("etatsVisite", visites, "L'état d'une visite d'entretien, calculé au serveur (`ETATS_VISITE`).")
     l += paires("motifsEvolution", motifs, "Ce que le signal « a évolué » dit d'une affaire (`MOTIFS_EVOLUTION`).",
-                "Map<String, String> = mapOf(")
-    l += paires("teintesStatutAffaire", statuts,
-                "La teinte du statut d'une affaire (`STATUTS_TICKET`) ; le libellé est servi. Provisoire (#92).",
                 "Map<String, String> = mapOf(")
     l += ["    /** Un motif inconnu ou absent (`MOTIF_EVOLUTION_PAR_DEFAUT`). */",
           f"    const val MOTIF_EVOLUTION_PAR_DEFAUT: String = {chaine(defaut)}", ""]

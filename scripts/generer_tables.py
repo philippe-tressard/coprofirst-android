@@ -54,7 +54,6 @@ PAQUET = "fr.coprofirst.app.navigation"
 PAQUET_TEXTE = "fr.coprofirst.app.commun.texte"
 PAQUET_PIECES = "fr.coprofirst.app.commun.pieces"
 PAQUET_CHARTE = "fr.coprofirst.app.charte"
-PAQUET_ACCES = "fr.coprofirst.app.commun.acces"
 JETON = re.compile(r"^var\(--([a-z][a-z0-9-]*)\)$")
 # La couleur d'état d'une nature (`--nature-fort: var(--color-…)`) → la classe `badge-*` qui la
 # porte (`teintes` de PastilleTeinte.kt) — la table de l'iOS (`BADGE_PAR_COULEUR`, affaires.py).
@@ -426,30 +425,6 @@ def kotlin_natures(tables: dict, source: str) -> str:
     ])
 
 
-def kotlin_acces(tables: dict, source: str) -> str:
-    """`TablesAcces` : l'état d'un accès et ses deux familles, communs à deux menus (#79)."""
-    statuts = [(texte(s, "val", "statutsAcces"), texte(s, "label", "statutsAcces"), texte(s, "badge", "statutsAcces"))
-               for s in valeur(tables, "statutsAcces")]
-    types = [(texte(t, "val", "typesAcces"), texte(t, "label", "typesAcces")) for t in valeur(tables, "typesAcces")]
-    return "\n".join([
-        "// GÉNÉRÉ par scripts/generer_tables.py — NE PAS MODIFIER À LA MAIN.",
-        f"// Source : {source} (statutsAcces, typesAcces).",
-        f"package {PAQUET_ACCES}",
-        "",
-        "import fr.coprofirst.app.commun.LibelleTeinte",
-        "",
-        "/** Ce que le site écrit d'un badge ou d'une télécommande et que le contrat ne sert pas (`types-acces.ts`). */",
-        "object TablesAcces {",
-        *teintes("statutsAcces", statuts, "L'état d'un badge ou d'une télécommande (`STATUTS_ACCES`)."),
-        "    /** Les deux familles d'accès, dans l'ordre du site (`TYPES_ACCES`) : code → libellé. */",
-        "    val typesAcces: List<Pair<String, String>> = listOf(",
-        *[f"        {chaine(c)} to {chaine(lib)}," for c, lib in types],
-        "    )",
-        "}",
-        "",
-    ])
-
-
 def main(argv: list[str]) -> int:
     if len(argv) != 3:
         print(__doc__.strip().splitlines()[-1], file=sys.stderr)
@@ -457,6 +432,10 @@ def main(argv: list[str]) -> int:
     entree, sortie = pathlib.Path(argv[1]), pathlib.Path(argv[2])
     try:
         tables = json.loads(entree.read_text(encoding="utf-8"))["tables"]
+        # Les tables communes à plusieurs menus (accès, statut d'une affaire) : leur module.
+        sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+        import tables_communes as tc  # noqa: E402 — chargé ici : il importe ce module-ci
+
         fichiers = {
             (PAQUET, "TablesDuSite.kt"): kotlin(tables, entree.name),
             ("fr.coprofirst.app.commun", "TablesCommunes.kt"): kotlin_commun(tables, entree.name),
@@ -464,7 +443,8 @@ def main(argv: list[str]) -> int:
             (PAQUET_TEXTE, "BalisesDuSite.kt"): kotlin_balises(tables, entree.name),
             (PAQUET_PIECES, "FichiersDuSite.kt"): kotlin_fichiers(),
             (PAQUET_CHARTE, "NaturesDuFil.kt"): kotlin_natures(tables, entree.name),
-            (PAQUET_ACCES, "TablesAcces.kt"): kotlin_acces(tables, entree.name),
+            (tc.PAQUET_ACCES, "TablesAcces.kt"): tc.kotlin_acces(tables, entree.name),
+            ("fr.coprofirst.app.commun", "StatutsAffaire.kt"): tc.kotlin_statuts_affaire(tables, entree.name),
         }
     except TableInattendue as e:
         print(f"❌ {entree.name} : {e}", file=sys.stderr)

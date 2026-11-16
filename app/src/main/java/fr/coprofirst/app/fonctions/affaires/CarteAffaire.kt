@@ -30,7 +30,6 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -43,7 +42,7 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.MessageErreur
-import fr.coprofirst.app.commun.PastilleTeinte
+import fr.coprofirst.app.commun.PastilleStatut
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.lecture.EtiquetteLieu
 import fr.coprofirst.app.commun.lecture.Lecture
@@ -51,20 +50,6 @@ import fr.coprofirst.app.commun.lecture.PastilleLecture
 import fr.coprofirst.app.commun.lecture.enClair
 import fr.coprofirst.app.commun.texte.TexteDuSite
 import fr.coprofirst.app.session.ErreurService
-
-/**
- * Le statut d'une affaire en pastille (`BadgeEtatAffaire` du site), comme l'iOS
- * (`PastilleStatut`) : la teinte par son CODE (`TablesAffaires.pastillesStatut`, générée),
- * le libellé EN CLAIR que l'appelant tient du serveur.
- */
-@Composable
-fun PastilleStatut(statut: String, libelle: String, modifier: Modifier = Modifier, compacte: Boolean = false) {
-    val vocal = stringResource(R.string.affaires_statut_vocal, libelle)
-    PastilleTeinte(
-        libelle, TablesAffaires.pastillesStatut[statut] ?: "badge-gray",
-        modifier.semantics { contentDescription = vocal }, compacte = compacte,
-    )
-}
 
 /**
  * Une carte d'affaire touchable : un toucher l'ouvre, un appui long ouvre ses `gestes`.

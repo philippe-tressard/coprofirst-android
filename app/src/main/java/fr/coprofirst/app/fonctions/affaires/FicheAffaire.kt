@@ -49,6 +49,7 @@ import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.Libelle
+import fr.coprofirst.app.commun.PastilleStatut
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.lecture.EtiquetteLieu
