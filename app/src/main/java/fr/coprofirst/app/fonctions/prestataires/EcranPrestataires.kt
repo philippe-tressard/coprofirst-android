@@ -18,6 +18,7 @@ import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.onglets.CadreAOnglets
 import fr.coprofirst.app.commun.onglets.ContexteOnglet
 import fr.coprofirst.app.commun.onglets.PageAOnglets
+import fr.coprofirst.app.commun.texte.Separateur
 import fr.coprofirst.app.navigation.ContexteDeMenu
 
 /** Les repères des tests d'interface : les identifiants d'accessibilité de l'iOS. */
@@ -89,7 +90,7 @@ private fun SquelettePrestataires() {
         repeat(LIGNES_SQUELETTE) {
             Carte {
                 Text("Un prestataire de la résidence", style = MaterialTheme.typography.titleMedium)
-                Text("Maintenance · Ascenseurs", style = MaterialTheme.typography.bodyMedium)
+                Text("Maintenance${Separateur.point}Ascenseurs", style = MaterialTheme.typography.bodyMedium)
             }
         }
     }

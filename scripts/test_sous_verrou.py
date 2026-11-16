@@ -10,6 +10,7 @@ verrou (la CI), la commande tourne telle quelle ; son code de sortie est rendu.
 
 import os
 import pathlib
+import re
 import subprocess
 import sys
 import tempfile
@@ -57,11 +58,20 @@ class SansVerrou(unittest.TestCase):
         self.assertEqual((r.returncode, r.stdout.strip()), (3, "seule"))
 
 
+# Une ligne qui LANCE Gradle (une mention dans un texte ou un motif ne compte pas).
+LANCE_GRADLE = re.compile(r"^[ \t]*(?:exec[ \t]+|\S.*(?:&&|\|\||;)[ \t]*)?(?:\w+=\S*[ \t]+)*\./gradlew\b", re.MULTILINE)
+
+
 class TachesLourdes(unittest.TestCase):
     """Les scripts du dépôt qui lancent Gradle ou l'émulateur passent par l'enveloppe."""
 
     def test_chaque_tache_lourde_prend_le_verrou(self):
-        for script in ("tests-interface.sh", "construire-release.sh"):
+        # Découverts, pas listés : tout script qui lance Gradle (16/11/2026 : un Gradle en
+        # direct a tourné pendant un xcodebuild). Les autres passent par l'un d'eux.
+        lourds = sorted(f.name for f in (RACINE / "scripts").glob("*.sh")
+                        if LANCE_GRADLE.search(f.read_text(encoding="utf-8")))
+        self.assertEqual(["construire-release.sh", "pipeline.sh", "tests-interface.sh"], lourds)
+        for script in lourds:
             texte = (RACINE / "scripts" / script).read_text(encoding="utf-8")
             self.assertIn(f"exec bash scripts/sous-verrou.sh", texte, script)
             self.assertIn(f"-- bash scripts/{script}", texte, f"{script} se relance lui-même sous le verrou")

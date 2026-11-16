@@ -4,12 +4,13 @@
 package fr.coprofirst.app.fonctions.admin
 
 import androidx.annotation.StringRes
+import fr.coprofirst.api.modeles.FiltreGestionnaire as FiltreLu
 import fr.coprofirst.api.modeles.IndicateursTelemetrie
+import fr.coprofirst.api.modeles.TableauTelemetrie as TableauLu
 import fr.coprofirst.app.R
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.texte.Separateur
 import java.time.Instant
-import fr.coprofirst.api.modeles.FiltreGestionnaire as FiltreLu
-import fr.coprofirst.api.modeles.TableauTelemetrie as TableauLu
 
 /** Les quatre vues du site : le jour, 30 jours, 12 mois, 10 ans par année (`scope` de la route). */
 enum class PorteeTelemetrie(val code: String, @StringRes val libelle: Int) {
@@ -153,7 +154,7 @@ object LecturesTelemetrie {
 
     /** L'accès d'une page du palmarès : « Site web 12 · App iPhone 3 » (le nombre ne quitte pas son libellé). */
     fun accesDe(page: TableauTelemetrie.PageVue): String =
-        page.canaux.joinToString(" · ") { "${it.libelle}\u00A0${FormatsDuSite.nombre(it.vues)}" }
+        page.canaux.joinToString(Separateur.point) { "${it.libelle}\u00A0${FormatsDuSite.nombre(it.vues)}" }
 
     private fun morceaux(label: String): List<Int> = label.split("-").mapNotNull(String::toIntOrNull)
 

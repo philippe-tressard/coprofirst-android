@@ -156,7 +156,7 @@ class EspaceCSInterfaceTest {
         ecran.attendreTexte("Les 50 derniers messages")
         ecran.toucherTag(ReperesEspaceCS.courriel(40))
         ecran.attendreTexte("Aucune affaire ne porte le numéro TK-E000066")
-        ecran.attendreTexte("Camille Essai · envoyé le")
+        ecran.attendreTexte("Camille Essai ·\u00A0envoyé le")
         ecran.toucherTag(ReperesEspaceCS.courriel(41))
         ecran.attendreTag(ReperesEspaceCS.courrielAffaire(41))
         ecran.attendreTexte("Affaire #TK-A00012")

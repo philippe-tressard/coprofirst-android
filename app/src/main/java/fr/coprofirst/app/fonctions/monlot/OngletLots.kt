@@ -46,6 +46,7 @@ import fr.coprofirst.app.commun.Pastille
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.annuaire.Coordonnees
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.texte.Separateur
 
 /**
  * L'onglet « Mes lots » : la vue dépend de ce que l'on est, comme le site
@@ -210,7 +211,7 @@ private fun CarteLocataire(groupe: GroupesDeBaux.Groupe, lots: List<LotDuCompte>
             groupe.baux.forEach { bail ->
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     lots.firstOrNull { it.id == bail.lotId }?.let { lot ->
-                        Text("${lot.intitule} · ${lot.typeLu}", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium))
+                        Text("${lot.intitule}${Separateur.point}${lot.typeLu}", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium))
                     }
                     val entree = FormatsDuSite.dateCourte(bail.dateEntree)
                     Text(

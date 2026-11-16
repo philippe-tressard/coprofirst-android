@@ -42,6 +42,7 @@ import fr.coprofirst.app.commun.pieces.AvisOuverture
 import fr.coprofirst.app.commun.pieces.LigneDocument
 import fr.coprofirst.app.commun.pieces.Ouverture
 import fr.coprofirst.app.commun.pieces.rememberOuverture
+import fr.coprofirst.app.commun.texte.Separateur
 import fr.coprofirst.app.commun.texte.TexteRiche
 import fr.coprofirst.app.session.ErreurService
 
@@ -100,7 +101,7 @@ private fun resume(contrats: List<Contrat>): String {
     val n = FormatsDuSite.nombre(contrats.size)
     val actifs = stringResource(if (contrats.size > 1) R.string.prestataires_contrats_actifs else R.string.prestataires_contrats_actifs_un, n)
     val sans = ReglesPrestataires.sansEcheance(contrats)
-    return if (sans == 0) actifs else actifs + " · " + stringResource(R.string.prestataires_sans_echeance_compte, FormatsDuSite.nombre(sans))
+    return if (sans == 0) actifs else actifs + Separateur.point + stringResource(R.string.prestataires_sans_echeance_compte, FormatsDuSite.nombre(sans))
 }
 
 /** La carte d'un contrat (`CarteContrat.svelte`) : ses capsules, puis, dépliée, son détail et ses documents. */

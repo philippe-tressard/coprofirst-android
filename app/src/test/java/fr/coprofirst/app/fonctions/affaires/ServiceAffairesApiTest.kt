@@ -189,7 +189,7 @@ class ServiceAffairesApiTest {
         val fiche = service.affaire(4)
         assertEquals("A-0004", fiche.numero)
         assertEquals(1, fiche.suites.size)
-        assertEquals("Ouvert → Résolu", fiche.suites.single().changementDEtat(fiche.referentiels))
+        assertEquals("Ouvert →\u00A0Résolu", fiche.suites.single().changementDEtat(fiche.referentiels))
         assertTrue(fiche.messages.single().deMoi)
         assertNull(fiche.comptesRendus)
         assertEquals(true, fiche.synthese?.validee)

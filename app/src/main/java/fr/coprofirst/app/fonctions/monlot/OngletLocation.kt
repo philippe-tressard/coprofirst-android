@@ -45,6 +45,7 @@ import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.annuaire.Coordonnees
 import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.texte.Separateur
 import fr.coprofirst.app.commun.texte.TexteRiche
 
 /**
@@ -165,6 +166,6 @@ private fun LigneObjet(objet: ObjetRemis) {
             Text(objet.libelle, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium), color = couleurs.text)
             PastilleTeinte(LibellesMonLot.statutObjet(objet.statut), compacte = true)
         }
-        Text(details.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = couleurs.textMuted)
+        Text(details.joinToString(Separateur.point), style = MaterialTheme.typography.bodySmall, color = couleurs.textMuted)
     }
 }

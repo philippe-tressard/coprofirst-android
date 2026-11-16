@@ -126,7 +126,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="nouvelle_lieu">Lieu</string>
     <string name="nouvelle_non_precise">Non précisé</string>
     <string name="nouvelle_bogue">Un bogue concerne le site, pas un lieu de la copropriété.</string>
-    <string name="nouvelle_urgente_avertissement">Une affaire urgente laisse une trace de votre signalement ; elle n\'alerte pas les secours. En cas de danger : 15 (SAMU) · 17 (Police secours) · 18 (Sapeurs-pompiers) · 112 (urgences).</string>
+    <string name="nouvelle_urgente_avertissement">Une affaire urgente laisse une trace de votre signalement ; elle n\'alerte pas les secours. En cas de danger : 15 (SAMU) ·\u00A017 (Police secours) ·\u00A018 (Sapeurs-pompiers) ·\u00A0112 (urgences).</string>
     <string name="nouvelle_depuis_le_site">Depuis le site</string>
     <string name="nouvelle_pieces_au_site">Les photos et les documents s\'ajoutent depuis le site.</string>
     <string name="nouvelle_reserve_au_site">L\'équipement, la date, l\'intervenant, les destinataires et les affaires liées aussi.</string>
@@ -181,7 +181,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="affaires_mode_essentielle">Saisie essentielle</string>
     <string name="affaires_mode_complete">Saisie complète</string>
     <string name="affaires_mode_phrase">%1$s. À changer dans votre profil.</string>
-    <string name="affaires_mode_phrase_rangees">%1$s — les autres sections sont dans « Plus de détails ». À changer dans votre profil.</string>
+    <string name="affaires_mode_phrase_rangees">%1$s —\u00A0les autres sections sont dans « Plus de détails ». À changer dans votre profil.</string>
     <plurals name="affaires_plus_de_details">
         <item quantity="one">Plus de détails (%1$d section)</item>
         <item quantity="many">Plus de détails (%1$d sections)</item>

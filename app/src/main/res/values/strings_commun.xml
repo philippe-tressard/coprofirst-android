@@ -37,7 +37,7 @@ ceux de l'iOS (`OngletSurLeSite`, `TextesFeuille`, `ChampRecherche`, `feuilleNot
     <string name="apercu_qui_la_lira">Qui la lira</string>
     <string name="apercu_selon_la_categorie">Elle se dit dès la catégorie choisie.</string>
     <string name="perimetres_preciser">Préciser dans %1$s</string>
-    <string name="perimetres_facultatif">" — facultatif"</string>
+    <string name="perimetres_facultatif">" —\u00A0facultatif"</string>
 
     <!-- Le fil des réponses (`FilReponses` de l'iOS, `Reponses.svelte` du site). -->
     <string name="reponses_repondre_entete">💬 Répondre</string>

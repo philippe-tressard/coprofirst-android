@@ -31,6 +31,7 @@ import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.RangeeDeChiffres
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.texte.Separateur
 
 /**
  * Reporting › Renouvellements (`VueRenouvellements.svelte`), comme l'iOS
@@ -102,7 +103,7 @@ private fun LigneContrat(contrat: ContratAEcheance, dansLAnnee: Boolean) {
                 stringResource(R.string.espacecs_renouvellements_note, FormatsDuSite.nombre(it), FormatsDuSite.nombre(contrat.nbNotations))
             }
             val numero = contrat.numeroContrat?.let { stringResource(R.string.espacecs_renouvellements_numero, it) }
-            Text(listOfNotNull(contrat.prestataireNom, numero, note).joinToString(" · "), style = MaterialTheme.typography.bodyMedium, color = c.textMuted)
+            Text(listOfNotNull(contrat.prestataireNom, numero, note).joinToString(Separateur.point), style = MaterialTheme.typography.bodyMedium, color = c.textMuted)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 if (dansLAnnee && contrat.urgence == "preavis") {
                     PastilleTeinte(stringResource(R.string.espacecs_renouvellements_preavis_en_cours), "badge-orange")
@@ -112,7 +113,7 @@ private fun LigneContrat(contrat: ContratAEcheance, dansLAnnee: Boolean) {
                 if (contrat.reconduit) PastilleTeinte(stringResource(R.string.espacecs_renouvellements_reconduit), "badge-purple")
             }
             if (contrat.dateFin != null) {
-                val dates = "${FormatsDuSite.date(contrat.dateDebut)} → ${FormatsDuSite.date(contrat.dateFin)}"
+                val dates = "${FormatsDuSite.date(contrat.dateDebut)}${Separateur.fleche}${FormatsDuSite.date(contrat.dateFin)}"
                 val periode = contrat.datePreavis?.let { stringResource(R.string.espacecs_renouvellements_preavis_des, dates, FormatsDuSite.date(it)) } ?: dates
                 Text(periode, style = MaterialTheme.typography.bodySmall, color = c.textMuted)
             }
@@ -168,7 +169,7 @@ private fun LigneDiagnostic(diagnostic: DiagnosticAEcheanceLu, annee: Int) {
                 Text(diagnostic.nom, style = MaterialTheme.typography.titleMedium, color = c.text, modifier = Modifier.weight(1f))
                 EtatDiagnostic(diagnostic, annee)
             }
-            Text(listOfNotNull(diagnostic.code, diagnostic.frequence).joinToString(" · "), style = MaterialTheme.typography.bodyMedium, color = c.textMuted)
+            Text(listOfNotNull(diagnostic.code, diagnostic.frequence).joinToString(Separateur.point), style = MaterialTheme.typography.bodyMedium, color = c.textMuted)
             Text(stringResource(R.string.espacecs_renouvellements_dernier_rapport, FormatsDuSite.date(diagnostic.dernierRapportLe)), style = MaterialTheme.typography.bodySmall, color = c.textMuted)
             if (!diagnostic.permanent) {
                 Text(stringResource(R.string.espacecs_renouvellements_prochaine_echeance, FormatsDuSite.date(diagnostic.prochaineEcheance)), style = MaterialTheme.typography.bodySmall, color = c.textMuted)

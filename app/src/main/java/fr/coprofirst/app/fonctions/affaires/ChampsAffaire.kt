@@ -61,6 +61,7 @@ import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.perimetres.LieuDeLaSaisie
 import fr.coprofirst.app.commun.perimetres.Perimetre
+import fr.coprofirst.app.commun.texte.Separateur
 import fr.coprofirst.app.commun.texte.TexteDuSite
 import fr.coprofirst.app.session.ErreurService
 
@@ -251,7 +252,7 @@ private fun ChoixCategorie(categories: List<ReferentielsAffaires.Categorie>, cho
                     .selectable(retenue, enabled = actif, role = Role.RadioButton) { choisir(categorie.code) }
                     .testTag(reperes.categorie(categorie.code))
                     .clearAndSetSemantics {
-                        contentDescription = "${categorie.libelle} — ${categorie.description}"
+                        contentDescription = "${categorie.libelle}${Separateur.tiret}${categorie.description}"
                         selected = retenue
                     }
                     .padding(12.dp),

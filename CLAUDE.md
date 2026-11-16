@@ -84,13 +84,13 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   un hôte jamais vu se confirme avant tout envoi. Le plancher du contrat (`VERSION_CONTRAT_PLANCHER`)
   est généré depuis `contrat/openapi.json` ; une installation qui sert un contrat plus
   ancien ne s'ouvre pas.
-- **Sauvegarde** : rien ne quitte l'appareil (`res/xml/regles_extraction.xml`,
-  `regles_sauvegarde.xml`) — la session se relit par l'API.
+- **Sauvegarde** : rien ne quitte l'appareil (`ressources-communes/xml/regles_extraction.xml`,
+  `regles_sauvegarde.xml`, communes au téléphone et à la montre) — la session se relit par l'API.
 - **Contrôles** : `bash scripts/verifier-depot.sh` (500 lignes, encodage, modes,
   syntaxe, LICENSE, couleurs et requêtes écrites à la main) et `reuse lint`, rejoués par le hook
   pre-commit (armé par `git config core.hooksPath .githooks`) et par la CI ;
-  `./gradlew :app:assembleDebug :app:assembleRelease :app:lintDebug :app:testDebugUnitTest :client-api:test`
-  (lint en erreurs) ; tests d'interface (`app/src/androidTest`, serveur local en HTTPS,
+  `bash scripts/pipeline.sh` (la CI hors émulateur, lint en erreurs ; `pipeline.sh <tâches>` pour une partie) —
+  **au poste, aucun `./gradlew` lourd en direct** : il passe par `pipeline.sh`, sous le verrou commun ; tests d'interface (`app/src/androidTest`, serveur local en HTTPS,
   repères = identifiants d'accessibilité de l'iOS ; tout toucher passe par `toucher`,
   `androidTest/…/commun/Gestes.kt`, qui amène l'élément à l'écran avant de toucher — un
   `performClick` direct se perd hors de l'écran, `verifier-depot.sh` le refuse ; règle

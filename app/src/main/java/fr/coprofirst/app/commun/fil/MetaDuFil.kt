@@ -7,6 +7,8 @@ import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.lecture.Lecture
 import fr.coprofirst.app.commun.lecture.LieuServi
 import fr.coprofirst.app.commun.pieces.PiecesJointes
+import fr.coprofirst.app.commun.texte.Separateur
+import java.time.Instant
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -14,7 +16,6 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.intOrNull
-import java.time.Instant
 
 /**
  * Ce que l'app relit de `meta` d'un élément du fil — un dictionnaire LIBRE du contrat
@@ -83,13 +84,10 @@ data class EcheanceDuFil(
     /** « mar. 17 nov. », puis « → 19 nov. » sur plusieurs jours. */
     fun dates(maintenant: Instant = Instant.now()): String {
         val premier = FormatsDuSite.jourCourt(debut, maintenant = maintenant)
-        return fin?.let { premier + FLECHE + FormatsDuSite.jourCourt(it, semaine = false, maintenant = maintenant) } ?: premier
+        return fin?.let { premier + Separateur.fleche + FormatsDuSite.jourCourt(it, semaine = false, maintenant = maintenant) } ?: premier
     }
 
     companion object {
-        /** `SEPARATEUR.fleche` du site : une espace, la flèche, une espace insécable. */
-        const val FLECHE = " →\u00A0"
-
         /** La règle de la vignette du site : rien sans échéance ni début ; la fin, seulement sur plusieurs jours. */
         fun lire(affaire: JsonObject): EcheanceDuFil? {
             val echeance = affaire["echeance"] as? JsonObject ?: return null
