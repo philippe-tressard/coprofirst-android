@@ -7,6 +7,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.isOn
 import androidx.compose.ui.test.isSelected
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -110,18 +111,18 @@ class AdminInterfaceTest {
     fun laTelemetrieChangeDeVue() {
         ouvrir(administrateur)
         ecran.onNodeWithTag(ReperesOnglets.onglet("telemetry")).performScrollTo().performClick()
-        ecran.waitUntil(DELAI_MS) { service.portees.isNotEmpty() }
-        ecran.onNodeWithTag(ReperesAdmin.GRAPHE).performScrollTo().assertIsDisplayed()
-        // Le graphe a fait défiler la page : la pastille revient à l'écran avant d'être touchée.
-        ecran.onNodeWithTag(ReperesAdmin.vue(PorteeTelemetrie.Mois)).performScrollTo().performClick()
-        // D'abord l'écran (le toucher est-il arrivé ?), puis la relecture qu'il déclenche ;
-        // un échec dit les vues demandées et l'arbre affiché.
-        attendre("la pastille « Mois » retenue") {
+        // La page bouge à l'arrivée du tableau (filtre, graphe) : on ne touche qu'une fois
+        // le graphe affiché, puis jusqu'à voir la pastille retenue, essais bornés (#112).
+        attendre("le premier tableau") { existe(ReperesAdmin.GRAPHE) }
+        toucherJusquA("la pastille « Mois » retenue", ReperesAdmin.vue(PorteeTelemetrie.Mois)) {
             ecran.onAllNodes(hasTestTag(ReperesAdmin.vue(PorteeTelemetrie.Mois)) and isSelected()).fetchSemanticsNodes().isNotEmpty()
         }
-        attendre("la relecture « Mois »") { service.portees.lastOrNull() == PorteeTelemetrie.Mois }
-        ecran.onNodeWithTag(ReperesAdmin.FILTRE).performScrollTo().performClick()
-        ecran.waitUntil(DELAI_MS) { service.sans.lastOrNull() == true }
+        attendre("la relecture « Mois »") { service.portees.lastOrNull() == PorteeTelemetrie.Mois && existe(ReperesAdmin.GRAPHE) }
+        // Le filtre est une bascule : on juge l'écran (activé), pas la relecture, pour ne pas le rebasculer.
+        toucherJusquA("le filtre activé", ReperesAdmin.FILTRE) {
+            ecran.onAllNodes(hasTestTag(ReperesAdmin.FILTRE) and isOn()).fetchSemanticsNodes().isNotEmpty()
+        }
+        attendre("la relecture sans le gestionnaire") { service.sans.lastOrNull() == true }
     }
 
     @Test
@@ -168,6 +169,19 @@ class AdminInterfaceTest {
         ecran.waitUntil(DELAI_MS) { service.lectures.contains("rejeter-42-Bail non fourni") }
     }
 
+    private fun existe(repere: String) = ecran.onAllNodesWithTag(repere).fetchSemanticsNodes().isNotEmpty()
+
+    /** Toucher ce repère jusqu'à voir `vu`, au plus `ESSAIS` fois : un toucher tombé à côté d'une page qui bougeait se rejoue. */
+    private fun toucherJusquA(quoi: String, repere: String, vu: () -> Boolean) {
+        repeat(ESSAIS) {
+            if (vu()) return
+            ecran.onNodeWithTag(repere).performScrollTo().performClick()
+            ecran.waitForIdle()
+            if (runCatching { ecran.waitUntil(DELAI_MS / ESSAIS, vu) }.isSuccess) return
+        }
+        attendre(quoi, vu)
+    }
+
     /** Attendre, et sur un échec dire ce que l'écran montrait (le rapport de la CI le garde). */
     private fun attendre(quoi: String, condition: () -> Boolean) {
         try {
@@ -181,6 +195,9 @@ class AdminInterfaceTest {
     private companion object {
         /** L'émulateur de la CI est lent : le délai des autres tests d'interface. */
         const val DELAI_MS = 10_000L
+
+        /** Les touchers rejoués au plus, quand la page bougeait sous le doigt. */
+        const val ESSAIS = 3
     }
 
     /** La résidence simulée : des réponses inventées, aucun nom ni machine réels. Lue par le fil du test, écrite par celui de l'écran. */
