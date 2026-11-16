@@ -20,7 +20,7 @@ import sys
 import re
 import xml.etree.ElementTree as ET
 
-GESTES = pathlib.Path(__file__).resolve().parent.parent / "app/src/androidTest/java/fr/coprofirst/app/commun/Gestes.kt"
+GESTES = pathlib.Path(__file__).resolve().parent.parent / "tests-interface-communs/fr/coprofirst/app/commun/Gestes.kt"
 LES_PLUS_LENTS = 5
 
 
