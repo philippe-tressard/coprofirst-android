@@ -3,6 +3,7 @@
 
 package fr.coprofirst.montre
 
+import fr.coprofirst.app.fonctions.notifications.montre.LiaisonMontre
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

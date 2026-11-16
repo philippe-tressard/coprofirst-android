@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Philippe TRESSARD
 // SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 
-package fr.coprofirst.montre
+package fr.coprofirst.app.fonctions.notifications.montre
 
 /**
  * Le drapeau de la liaison téléphone ↔ montre (#207). ÉTEINT : la montre ne se relie pas,
@@ -16,7 +16,8 @@ package fr.coprofirst.montre
  * 3. la section « Sécurité des données » de Google Play et la politique de confidentialité
  *    disent ce que la montre reçoit et lit.
  *
- * Comme `RelaisPush` côté téléphone.
+ * UN drapeau pour les deux côtés : le téléphone ne demande ni ne transmet rien, la montre
+ * n'ouvre rien (`:partage`). Comme `RelaisPush` pour le push.
  */
 object LiaisonMontre {
     const val ACTIF: Boolean = false

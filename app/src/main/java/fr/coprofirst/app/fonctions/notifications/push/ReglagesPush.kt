@@ -19,9 +19,9 @@ interface ReglagesPush {
     fun toutes(): Map<String, String>
 }
 
-/** Les réglages dans les préférences privées de l'app (`push`). */
-class ReglagesPreferences(contexte: Context) : ReglagesPush {
-    private val preferences = contexte.getSharedPreferences("push", Context.MODE_PRIVATE)
+/** Les réglages dans les préférences privées de l'app (`push` ; la montre a les siennes, `montre`). */
+class ReglagesPreferences(contexte: Context, fichier: String = "push") : ReglagesPush {
+    private val preferences = contexte.getSharedPreferences(fichier, Context.MODE_PRIVATE)
 
     override fun lire(cle: String): String? = preferences.getString(cle, null)
 
