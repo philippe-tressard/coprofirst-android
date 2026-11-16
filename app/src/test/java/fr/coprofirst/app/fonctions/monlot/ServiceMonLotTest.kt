@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.fonctions.monlot
 
+import fr.coprofirst.app.commun.acces.TypeAcces
 import fr.coprofirst.app.navigation.DroitsOnglet
 import fr.coprofirst.app.session.AdresseInstallation
 import fr.coprofirst.app.session.ErreurService

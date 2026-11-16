@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Philippe TRESSARD
 // SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 
-package fr.coprofirst.app.fonctions.espacecs
+package fr.coprofirst.app.commun.validations
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
@@ -31,32 +31,40 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
+import fr.coprofirst.app.commun.AlerteChiffre
 import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.Chargement
+import fr.coprofirst.app.commun.Chiffre
 import fr.coprofirst.app.commun.MessageErreur
+import fr.coprofirst.app.commun.RangeeDeChiffres
 import fr.coprofirst.app.commun.Roles
+import fr.coprofirst.app.commun.acces.LibellesAcces
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.onglets.ContexteOnglet
-import fr.coprofirst.app.fonctions.monlot.LibellesMonLot
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.launch
 
 /**
- * « Comptes & accès » (onglet `validations`), comme l'iOS (`OngletComptesCS`) : la FILE DE
- * TRAVAIL du conseil — deux compteurs, les comptes à valider, puis les demandes de badges et
- * de télécommandes. Chaque ligne s'approuve ou se rejette ; l'approbation d'un compte
- * demande s'il s'agit d'un nouvel arrivant (feuille), celle d'une commande les codes remis.
+ * LA FILE DE TRAVAIL du conseil, comme l'iOS (`Commun/Validations`, `OngletComptesCS`) :
+ * deux compteurs, les comptes à valider, puis les demandes de badges et de télécommandes.
+ * Chaque ligne s'approuve ou se rejette ; l'approbation d'un compte demande s'il s'agit
+ * d'un nouvel arrivant (feuille), celle d'une commande les codes remis.
+ *
+ * Prête à poser dans n'importe quelle page à onglets : « Comptes & accès » (onglet
+ * `validations`) de l'Espace CS et « À traiter » du Paramétrage (#26) l'ouvrent toutes
+ * deux. Signature STABLE : elle ne dépend que du contexte de l'onglet (session, avis,
+ * actualisation), d'aucun état du menu qui la pose.
  */
 @Composable
-fun OngletValidations(contexte: ContexteOnglet) {
+fun OngletComptesCS(contexte: ContexteOnglet) {
     val service = remember(contexte.session) { ServiceValidationsApi(contexte.session) }
-    OngletValidations(service, contexte.avis, contexte.actualisation)
+    OngletComptesCS(service, contexte.avis, contexte.actualisation)
 }
 
-/** La même file, sur un service donné : « À traiter » du Paramétrage (#26) l'ouvre aussi. */
+/** La même file, sur un service donné. */
 @Composable
-fun OngletValidations(service: ServiceValidations, avis: AvisDuGeste, actualisation: Int) {
+fun OngletComptesCS(service: ServiceValidations, avis: AvisDuGeste, actualisation: Int) {
     Chargement(charger = { service.file() }, cle = actualisation, squelette = { SqueletteFile() }) { file, _ ->
         val etat = remember(file) { EtatValidations(service, file) }
         FileValidations(etat, avis)
@@ -148,8 +156,8 @@ private fun Compteurs(comptes: Int, commandes: Int) {
     val alerte = { n: Int -> if (n > 0) AlerteChiffre.Avertissement else null }
     val grand = MaterialTheme.typography.displaySmall
     RangeeDeChiffres { m ->
-        Chiffre(comptes, stringResource(R.string.espacecs_comptes_a_valider), m, alerte(comptes), grand, ReperesEspaceCS.COMPTEUR_COMPTES)
-        Chiffre(commandes, stringResource(R.string.espacecs_demandes_d_acces), m, alerte(commandes), grand, ReperesEspaceCS.COMPTEUR_COMMANDES)
+        Chiffre(comptes, stringResource(R.string.espacecs_comptes_a_valider), m, alerte(comptes), grand, ReperesValidations.COMPTEUR_COMPTES)
+        Chiffre(commandes, stringResource(R.string.espacecs_demandes_d_acces), m, alerte(commandes), grand, ReperesValidations.COMPTEUR_COMMANDES)
     }
 }
 
@@ -172,7 +180,7 @@ private fun Vide(texte: Int) {
 @Composable
 private fun CarteCompte(compte: CompteEnAttente, enCours: Boolean, approuver: () -> Unit, rejeter: () -> Unit) {
     val c = LocalCouleurs.current
-    CarteDeFile(ReperesEspaceCS.compte(compte.id), enCours, approuver, rejeter) {
+    CarteDeFile(ReperesValidations.compte(compte.id), enCours, approuver, rejeter) {
         Text(compte.nomAffiche, style = MaterialTheme.typography.titleMedium, color = c.text)
         Text(
             listOfNotNull(Roles.statut(compte.statut).libelle, compte.batimentNom).joinToString(" — "),
@@ -193,10 +201,10 @@ private fun CarteCompte(compte: CompteEnAttente, enCours: Boolean, approuver: ()
 @Composable
 private fun CarteCommande(commande: CommandeEnAttente, enCours: Boolean, approuver: () -> Unit, rejeter: () -> Unit) {
     val c = LocalCouleurs.current
-    CarteDeFile(ReperesEspaceCS.commande(commande.id), enCours, approuver, rejeter) {
+    CarteDeFile(ReperesValidations.commande(commande.id), enCours, approuver, rejeter) {
         Text(commande.demandeurNom, style = MaterialTheme.typography.titleMedium, color = c.text)
         Text(
-            listOfNotNull(commande.batiment, commande.lot, LibellesMonLot.typeAcces(commande.type), FormatsDuSite.nombre(commande.quantite))
+            listOfNotNull(commande.batiment, commande.lot, LibellesAcces.typeAcces(commande.type), FormatsDuSite.nombre(commande.quantite))
                 .joinToString(" · "),
             style = MaterialTheme.typography.bodyMedium,
             color = c.textMuted,
@@ -217,4 +225,17 @@ private fun SqueletteFile() {
             }
         }
     }
+}
+
+/** Les repères des tests d'interface de la file : les identifiants d'accessibilité de l'iOS. */
+object ReperesValidations {
+    const val COMPTEUR_COMPTES = "cs.compteur.comptes"
+    const val COMPTEUR_COMMANDES = "cs.compteur.commandes"
+    fun compte(id: Int) = "cs.compte.$id"
+    fun commande(id: Int) = "cs.commande.$id"
+    const val REJET_CONFIRMER = "cs.rejet.confirmer"
+    const val COMMANDE_CODES = "cs.commande.codes"
+    const val COMMANDE_ACCEPTER = "cs.commande.accepter"
+    const val NOUVEL_ARRIVANT = "cs.validation.nouvel-arrivant"
+    const val VALIDATION_ENREGISTRER = "cs.validation.enregistrer"
 }

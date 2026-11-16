@@ -16,6 +16,7 @@ import fr.coprofirst.api.routes.AccesApi
 import fr.coprofirst.api.routes.AuthApi
 import fr.coprofirst.api.routes.BailleurApi
 import fr.coprofirst.api.routes.LotsApi
+import fr.coprofirst.app.commun.acces.TypeAcces
 import fr.coprofirst.app.navigation.DroitsOnglet
 import fr.coprofirst.app.session.SessionOuverte
 

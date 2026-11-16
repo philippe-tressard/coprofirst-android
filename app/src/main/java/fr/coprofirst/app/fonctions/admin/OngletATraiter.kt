@@ -42,8 +42,8 @@ import fr.coprofirst.app.commun.PhraseAvis
 import fr.coprofirst.app.commun.Roles
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.onglets.ContexteOnglet
-import fr.coprofirst.app.fonctions.espacecs.CarteDeFile
-import fr.coprofirst.app.fonctions.espacecs.OngletComptesCS
+import fr.coprofirst.app.commun.validations.CarteDeFile
+import fr.coprofirst.app.commun.validations.OngletComptesCS
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.launch
 

@@ -46,6 +46,7 @@ import fr.coprofirst.app.commun.AvisEphemere
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.MessageErreur
+import fr.coprofirst.app.commun.acces.TypeAcces
 import fr.coprofirst.app.commun.onglets.BarreOnglets
 import fr.coprofirst.app.commun.texte.TexteDuSite
 import fr.coprofirst.app.navigation.ActionsDeBarre

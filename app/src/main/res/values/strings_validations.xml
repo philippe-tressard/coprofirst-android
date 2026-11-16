@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+
+Les textes de la file de travail du conseil (commun/validations, #79), écrits une fois —
+ceux du site (ValidationCompte, #lib/comptes.ts, #lib/commandes-acces.ts), repris de l'iOS
+(Commun/Validations, TextesComptesCS). Les identifiants gardent leur préfixe d'origine
+(`espacecs_`) : « Comptes & accès » de l'Espace CS et « À traiter » du Paramétrage les lisent.
+-->
+<resources>
+    <!-- Les gestes -->
+    <string name="espacecs_approuver">Approuver</string>
+    <string name="espacecs_rejeter">Rejeter</string>
+    <string name="espacecs_annuler">Annuler</string>
+
+    <!-- La file -->
+    <string name="espacecs_comptes_a_valider">Compte(s) à valider</string>
+    <string name="espacecs_demandes_d_acces">Demande(s) d\'accès</string>
+    <string name="espacecs_titre_comptes">Comptes en attente de validation</string>
+    <string name="espacecs_aucun_compte">Aucun compte en attente.</string>
+    <string name="espacecs_titre_commandes">Demandes d\'accès (badges / télécommandes)</string>
+    <string name="espacecs_aucune_commande">Aucune demande en attente.</string>
+    <string name="espacecs_aide">Aidé : %1$s</string>
+    <string name="espacecs_nouvel_arrivant">Nouvel Arrivant</string>
+    <string name="espacecs_nouvel_arrivant_aide">À cocher uniquement pour un nouveau résident qui emménage dans la copropriété. Déclenche automatiquement : message de bienvenue, envoi des consignes de copropriété, demande d\'étiquette de boîte aux lettres auprès du syndic, et demande d\'ajout sur l\'interphone auprès du Conseil Syndical.</string>
+    <string name="espacecs_nouvel_arrivant_mise_en_garde">Ne pas cocher pour un résident existant qui crée simplement son compte.</string>
+    <string name="espacecs_batiment_logement">Bâtiment / logement</string>
+    <string name="espacecs_batiment_indication">Ex: Bât. A, Apt. 12…</string>
+    <string name="espacecs_ancien_resident">Ancien résident</string>
+    <string name="espacecs_ancien_resident_indication">Nom de l\'ancien occupant…</string>
+    <string name="espacecs_accueil_envoye">Actions d\'accueil envoyées (bienvenue, consignes, demandes syndic/CS).</string>
+    <string name="espacecs_rejeter_compte">Rejeter le compte de %1$s ?</string>
+    <string name="espacecs_compte_rejete">Compte rejeté</string>
+    <string name="espacecs_accepter_commande">Accepter la commande</string>
+    <string name="espacecs_accepter_message">Les codes des badges remis seront posés sur le lot commandé. Laissez vide si vous ne les connaissez pas encore.</string>
+    <string name="espacecs_codes_libelle">Codes, séparés par des virgules</string>
+    <string name="espacecs_codes_indication">4521, 417D5927</string>
+    <string name="espacecs_accepter">Accepter</string>
+    <string name="espacecs_rejeter_commande">Rejeter la demande de %1$s ?</string>
+    <string name="espacecs_commande_approuvee">Commande approuvée</string>
+    <string name="espacecs_commande_rejetee">Commande rejetée</string>
+</resources>

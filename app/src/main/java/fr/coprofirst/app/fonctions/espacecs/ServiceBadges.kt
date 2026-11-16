@@ -5,8 +5,8 @@ package fr.coprofirst.app.fonctions.espacecs
 
 import fr.coprofirst.api.modeles.AccesAdminOut
 import fr.coprofirst.api.routes.AccesApi
+import fr.coprofirst.app.commun.acces.TypeAcces
 import fr.coprofirst.app.commun.texte.Recherche
-import fr.coprofirst.app.fonctions.monlot.TypeAcces
 import fr.coprofirst.app.session.SessionOuverte
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope

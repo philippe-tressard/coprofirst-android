@@ -13,6 +13,19 @@ par la session qui tient la couche commune — jamais un contournement local.
 Chaque composant reprend le comportement de son pendant iOS (nommé entre parenthèses) :
 l'app iOS est la référence fonctionnelle (`CLAUDE.md`).
 
+## Sommaire
+
+Ce document porte les règles et le socle (navigation, session, écran, charte). La suite :
+
+- [`composants/presentation.md`](composants/presentation.md) — avis éphémère, pages à
+  onglets, cloche, formats, texte du site, pièces jointes, feuille pleine ;
+- [`composants/contenus.md`](composants/contenus.md) — qui la lit et où, périmètres, aperçu
+  servi, personnes de l'annuaire, fil des réponses, signalement, fiche d'un sondage, accès,
+  file des validations.
+
+Un chapitre neuf va dans le fichier de son thème ; aucun ne dépasse 500 lignes
+(`verifier-depot.sh`).
+
 ## Règles
 
 1. **Un écran = un paquet, qui s'inscrit lui-même (#109).** Le paquet
@@ -142,6 +155,8 @@ class ServiceProfilApi(private val session: SessionOuverte) : ServiceProfil {
 | `ChampRecherche(texte, changer, indication, repere)` | `ChampRecherche` | Le champ de recherche d'une liste, DANS la page (pas dans la barre) : loupe, indication, croix « Effacer la recherche ». Le filtre : `Recherche.contientTousLesMots`. |
 | `BoutonsFeuille(envoi, repere, annuler, libelle?, actif?) { envoyer }` | `BoutonsFeuille` | Le pied d'une feuille de saisie : « Enregistrer » (ou `libelle`) en `BoutonPlein`, « Enregistrement… » pendant l'envoi, puis « Annuler ». |
 | `FlowCapsules(espace?) { … }` | `FlowCapsules`, `FlowEtiquettes` | Des `PastilleTeinte(…, compacte = true)` côte à côte, qui passent à la ligne au bord (6 dp) ; `espace = 8.dp` pour des `Pastille` touchables. |
+| `Chiffre(valeur, libelle, modifier?, alerte?, style?, repere?)`, `AlerteChiffre` | `CompteurFile`, `Chiffre` | Un chiffre (`kpi-card` du site) : la valeur (`FormatsDuSite.nombre`) et ce qu'elle compte ; `alerte` le teinte — `Avertissement` (orange, une file à traiter), `Danger` (rouge, un retard). Les compteurs de la file de travail et du Reporting. |
+| `RangeeDeChiffres { m -> … }`, `GRANDE_ECHELLE` | `ViewThatFits` | Des chiffres côte à côte, de même largeur (`m` : leur `Modifier`) ; l'un sous l'autre dès l'échelle de texte `GRANDE_ECHELLE` (1,5 : les tailles d'accessibilité de l'iOS), que suit aussi tout ce qui va côte à côte. |
 
 ⚠️ Divergence déclarée : `BoutonsFeuille` est au pied de la feuille, sous le pouce — l'iOS
 les pose dans la barre de la feuille ; une feuille d'Android n'en a pas.
@@ -159,297 +174,6 @@ fun EcranProfil(service: ServiceProfil) {
     }
 }
 ```
-
-## Avis éphémère — `fr.coprofirst.app.commun`
-
-La phrase brève qui suit un geste (le « toast » du site) : l'écran la DIT, seul
-`AvisEphemere` la montre. Elle monte du bas (fondu seul quand les animations de l'appareil
-sont coupées), reste `AvisDuSite.DUREE_MS` — **générée** depuis `dureeToastMs` de
-`tables-clients.json` (`DUREE_TOAST_MS` du site, 4 s), comme l'iOS (`AvisDuSite`) —, puis
-se retire. Elle est annoncée au lecteur d'écran (région vivante) et suivie d'un retour
-haptique selon son ton. Une phrase dite remplace celle qui est à l'écran ; le retrait d'une
-phrase n'efface jamais celle qui l'a remplacée.
-
-| API | Pendant iOS | Usage |
-|---|---|---|
-| `AvisDuGeste()` | `AvisDuGeste` | L'avis d'un écran : `dire(texte, ton = TonAvis.Succes)`, `dire(PhraseAvis)` ; `texte`, `phrase` (lus par l'avis seul). |
-| `avis.direApresFermeture(texte, ton)`, `avis.feuilleFermee()` | idem | Dite par une FEUILLE : la phrase attend que la feuille soit fermée (`feuilleFermee()` dans son `fermer`) — sinon elle passerait derrière. |
-| `TonAvis` (`Succes`, `Avertissement`, `Erreur`, `Info`), `TonAvis.depuis(v)` | `TonAvis` | Le ton du site (`success`, `warning`, `error`, `info`) : le pictogramme et le retour haptique ; un ton servi inconnu se dit en `Info`. |
-| `AvisEphemere(avis) { contenu }` | `.avisEphemere(avis)` | Le contenu, et l'avis en bas, par-dessus (repère `avis`). Le cadre à onglets le pose déjà : un onglet dit `contexte.avis.dire(…)`. |
-
-⚠️ Divergence déclarée : la bulle garde les couleurs de l'avis du site quel que soit le ton
-(`text` à 92 %, `textInverse`), comme l'iOS ; `teinteDuTon` de `tables-clients.json` est
-celle des verdicts du journal (`journal-verdicts.ts`), pas celle de l'avis.
-
-```kotlin
-val avis = remember { AvisDuGeste() }
-val ressources = LocalResources.current
-AvisEphemere(avis, Modifier.fillMaxSize()) {
-    // … un geste réussi :
-    avis.dire(ressources.getString(R.string.monlot_acces_enregistre))
-}
-```
-
-## Pages à onglets — `fr.coprofirst.app.commun.onglets`
-
-Une page du site à onglets (Espace CS, Paramétrage…) déclare sa TABLE d'onglets ; le cadre
-fait le reste, comme `CadreAOnglets` de l'iOS : barre d'onglets dans l'ordre du site,
-filtrée par les droits du compte (`OngletsDuSite.ouverts(page, droits)`), descriptif de
-l'onglet (généré), défilement, « tirer pour actualiser », avis éphémère, « page réservée »
-si le compte n'en ouvre aucun. Le titre est celui de la barre du haut : le cadre n'en pose
-pas. L'onglet rend son CONTENU — une `Column`, jamais une `LazyColumn` (le cadre défile).
-
-| API | Pendant iOS | Usage |
-|---|---|---|
-| `CadreAOnglets(contexte, page)` | `CadreAOnglets` | Le cadre ; repères `onglet.<id>`, `onglets.reservee`. |
-| `PageAOnglets(id, ecrans, reserve, renvoieAuSite = false)` | `PageAOnglets` | `ecrans` : id d'onglet du site → `@Composable (ContexteOnglet) -> Unit`, une ligne par onglet ; `reserve` : la phrase (`@StringRes`) de la page réservée. `renvoieAuSite` : la barre n'offre que les onglets inscrits, puis « Sur le site ». `descriptifs`, `routes` : ceux du site par défaut. |
-| `ContexteOnglet` | `ContexteOnglet` | Ce qu'un onglet reçoit : `page`, `onglet`, `session`, `droits`, `avis` (`avis.dire(…)`), `actualisation` (augmente à chaque « tirer pour actualiser » : `Chargement(cle = contexte.actualisation)`), `barre` (`ActionsDeBarre(contexte.barre) { … }`), `ouvrir` (la porte du menu : `contexte.ouvrir(Destination.Element("affaire", id))`). |
-| `BarreOnglets(onglets, actif, marges?) { choisir }` | `BarreOnglets` | La barre seule, pour une page qui garde sa mise en page (Mes lots & accès, Prestataires, Résidence) : `Pastille` qui défilent de côté, repères `onglet.<id>`. |
-| `OngletBientot(onglet)` | `OngletBientot` | Un onglet du site que l'app ne porte pas encore : « Bientôt » (posé par le cadre). |
-| `OngletSurLeSite(onglets, descriptifs, routes, adresse)` | `OngletSurLeSite` | Les onglets laissés au site, chacun avec son lien (repère `site.onglet.<id>`), ouvert par le navigateur à l'adresse de la résidence (posé par le cadre). |
-| `OngletsSurLeSite.lien(route, adresse)` | `OngletSurLeSite.lien` | L'adresse d'un onglet sur le site, sous celle de la résidence (qui peut porter un chemin) ; `null` pour ce qui n'est pas un chemin. |
-| `OngletsDeLaPage(page, portes, renvoieAuSite, droits, surLeSite)` | — | La logique de la barre (`barre`, `ailleurs`, `actif(choisi)`), testée sur la JVM. |
-
-```kotlin
-// fonctions/espacecs/EcranEspaceCS.kt — inscrit par InscriptionEspaceCS : "espace-cs" to { EcranEspaceCS(it) }
-@Composable
-fun EcranEspaceCS(contexte: ContexteDeMenu) = CadreAOnglets(
-    contexte,
-    PageAOnglets(
-        "espace-cs",
-        mapOf(
-            "validations" to { onglet -> OngletValidations(onglet) },
-
-            "badges" to { onglet -> OngletBadges(onglet) },
-        ),
-        reserve = R.string.espacecs_reserve,
-    ),
-)
-
-@Composable
-fun OngletValidations(contexte: ContexteOnglet) {
-    val service = remember(contexte.session) { ServiceEspaceCSApi(contexte.session) }
-    Chargement(charger = { service.aValider() }, cle = contexte.actualisation, squelette = { … }) { comptes, recharger ->
-        Column(verticalArrangement = Arrangement.spacedBy(Mise.ecart)) { … contexte.avis.dire(…) … }
-    }
-}
-```
-
-## Cloche — `fr.coprofirst.app.navigation`
-
-| API | Pendant iOS | Usage |
-|---|---|---|
-| `BoutonCloche(page) { ouvrir }` | `ClocheNotifications` | Dans la barre du haut de chaque page de la résidence (posée par `EcranResidence`, après les actions de l'écran ; repère `cloche`). |
-| `FeuilleNotifications(page, contexte, fermer)` | `.feuilleNotifications` | La page `notifications` DU REGISTRE (`RegistreDesMenus`), en feuille : son titre, les actions que son écran déclare (`ActionsDeBarre` : la barre de la feuille), « OK » (repère `notifications.ok`). |
-| `Cloche.page` | — | La page des notifications (`PagesParDefaut.horsMenu`, générée) ; absente : pas de cloche. |
-
-⚠️ Divergence déclarée : pas de point « non lues » sur la cloche — l'iOS le compte en
-relisant toute la liste (GET /notifications) ; aucune route du contrat ne sert ce nombre.
-Il reste dit en tête de la page des notifications.
-
-## Formats — `fr.coprofirst.app.commun.formats.FormatsDuSite`
-
-Les formats du site (`FormatsDuSite`), fr-FR, à l'heure de Paris ; « — » pour une
-valeur absente. Dates : `date`, `dateCourte`, `dateLongue`, `dateHeure`,
-`dateHeureCourte`, `heure`, `jourCourt`, `jourIso` (envoyé), `moisAnnee`, `moisCourt`,
-`relatif` (« hier », « il y a 3 jours », comme `.relative(presentation: .named)` de l'iOS) —
-chacune prend un `Instant` ou la chaîne ISO servie (`lire` la lit comme le navigateur).
-Nombres : `nombre`, `montant`, `octets`. Personnes : `nom(affiche, prenom, nom)` — le
-`nom_affiche` servi d'abord, jamais composé dans un écran.
-
-## Texte du site — `fr.coprofirst.app.commun.texte`
-
-Le HTML riche du site (descriptions, textes du fil, suites, sondages — l'éditeur Tiptap)
-ne s'affiche **jamais** tel quel, et ne se convertit nulle part ailleurs qu'ici : un
-lecteur maison, sur la liste blanche du site, qui ne charge ni n'exécute rien. Une vue web
-ou le lecteur HTML d'Android sont refusés par `verifier-depot.sh`.
-
-| API | Pendant iOS | Usage |
-|---|---|---|
-| `TexteRiche(html, style?, couleur?)` | `TexteRiche` | Le texte riche d'un détail : gras, italique, souligné, barré, code, titres, citations, `br`, `hr`, listes à puces et numérotées avec **retrait suspendu**, liens en `primary` (ouverts par le système). `style` : `bodyLarge` par défaut ; `couleur` : `text`. |
-| `TexteDuSite.apercu(html)` | `.apercu` | Le texte simple d'une carte : balises retirées, entités décodées, paragraphes en espaces (la vue tronque ensuite). |
-| `TexteDuSite.riche(html)`, `.blocs(html)` | `.riche`, `.blocs` | Les mêmes en `AnnotatedString` (pour un `Text` seul) ou bloc par bloc (`BlocDuSite` : `niveau`, `marqueur`, `texte`, `ecart`). `blocs(html).isEmpty()` : rien à montrer. |
-| `TexteDuSite.html(saisi = …)` | `.html(saisi:)` | Un texte SAISI dans l'app → le HTML de l'éditeur du site (`<p>`, `<br>`, `<` échappé). À envoyer tel quel. |
-| `TexteDuSite.saisi(html)` | `.saisi(html:)` | Le texte à réécrire d'un HTML servi — `null` si le réenregistrer perdrait sa mise en forme : l'écran le montre sans champ, avec `TexteDuSite.MISE_EN_FORME_AU_SITE`. |
-| `TexteDuSite.lienSur(href)` | `.lienSur` | L'adresse si elle est absolue, d'un schéma de `BalisesDuSite.schemasDeLien`, sans caractère de contrôle ; sinon `null` (texte inerte). |
-| `BalisesDuSite` | `BalisesDuSite` | La liste blanche, **générée** (`scripts/generer_tables.py`) : `balises`, `attributs` (`balisesAdmises`, `attributsAdmis` de `tables-clients.json`), `schemasDeLien` (`http`, `https`, `mailto` — pas encore publiés par coprofirst : tenus par le générateur). |
-| `Recherche.contientTousLesMots(champs, recherche)` | `Recherche` | Le filtre d'une liste : tous les mots, dans n'importe quel ordre, sans accents ni casse, sur ce que la ligne affiche. |
-
-Exemple :
-
-```kotlin
-Carte { Text(TexteDuSite.apercu(affaire.description), maxLines = 3, overflow = TextOverflow.Ellipsis) }
-TexteRiche(affaire.description, style = MaterialTheme.typography.bodyMedium)
-val texte = TexteDuSite.saisi(affaire.description) // null : montrer, ne pas proposer de champ
-```
-
-## Pièces jointes — `fr.coprofirst.app.commun.pieces`
-
-Les photos et documents joints à un élément (affaire, suite, message, carte du fil,
-annonce) se rangent, se nomment et s'ouvrent ici, et nulle part ailleurs. **Pas d'ajout
-de pièce** dans l'app, comme l'iOS : l'écran dit qu'elles s'ajoutent depuis le site.
-
-| API | Pendant iOS | Usage |
-|---|---|---|
-| `PiecesJointes(urls)` | `PiecesJointes(urls:)` | Toutes les URL servies ensemble (`photosUrls + fichiersUrls`) → `photos`, `documents` (l'extension décide), dans l'ordre servi, sans doublon ; `vide`, `nombre`, `enClair` (« 2 photos, 1 pièce jointe », pour le lecteur d'écran d'une carte). |
-| `Fichiers.estImage`, `.nomAffiche`, `.typeAffiche`, `.nomSansExtension`, `.nomSur` | `Fichiers` | Les règles du site (`fichiers.ts`) : nom montré sans le préfixe de téléversement, type « PDF », « WORD »…, nom sûr pour le disque. |
-| `FichiersDuSite` | `FichiersDuSite` | **Générée** (`scripts/generer_tables.py`) : `extensionsImage`, `LONGUEUR_PREFIXE`, `familles` — pas encore publiées par coprofirst : tenues par le générateur, aux valeurs de l'iOS. |
-| `PiecesJointesVue(pieces, session, format = Grand\|Compact)` | `PiecesJointesView` | Un élément OUVERT : intitulé « Pièces jointes · N » (`Grand`), mosaïque des photos, puis lignes des documents ; un toucher ouvre la pièce. `Compact` : sous une suite ou un message, sans intitulé. Rien sans pièce. |
-| `VignettePieces(pieces, session)` | `VignettePieces` | Une carte FERMÉE : la première photo et « +N », ou un trombone et le nombre de documents. Décorative : la carte dit `pieces.enClair`. |
-| `PhotoProtegee(chemin, session, remplir?)` | `PhotoProtegee` | Une photo de `/uploads/` (avatar, photo de fiche…) : lue par la session, décodée à la taille du cadre, gardée en mémoire seulement. |
-| `MosaiquePhotos(chemins, session, hauteur, enCours, ouvrir)` | `MosaiquePhotos` | La mosaïque seule (1, 2, ou 1 grande + 2 petites et « +N »). |
-| `LigneDocument(nom, enCours, taille?, ouvrir)` | `LigneDocument` | Un document : type, nom sans extension, taille (`FormatsDuSite.octets`) si connue. `nom` : le chemin servi ou `fichier_nom`. |
-| `rememberOuverture(session)` → `Ouverture` ; `AvisOuverture(ouverture)` | `quickLookPreview`, `DocumentView` | Ouvrir en grand : `piece(chemin)` (une pièce jointe), `document(id, nom)` (un document, par le client généré) ou `fichier(sous, cle, nom, defaut) { base, client -> …Api(base, client).get…Tlcharger(id) }` (tout fichier servi par une route : un rapport, un export) — copie dans le cache de l'app, puis l'app de l'appareil qui sait la montrer ; `enCours`, `echec` (session expirée, aucune app pour ce type…), dit par `AvisOuverture`. |
-| `SessionOuverte.fichierProtege(chemin)` | `fichierProtege` | LA porte des fichiers de `/uploads/` (hors contrat) : l'hôte de la session et lui seul, sans redirection, erreurs en `ErreurService`. Dispensée nommément par `verifier-depot.sh`. |
-| `PiecesLocales.fichierServi(session, sous, cle, nom, defaut) { base, client -> … }` | `fichierServi` | Un fichier servi par une ROUTE (rapport…) que le client généré télécharge, rangé dans le cache sous un nom sûr. |
-| `PiecesLocales.effacer(contexte)` | `Fichiers.effacerLesCopies` | Copies et photos en mémoire effacées : au lancement, à la déconnexion, à « Oublier toutes les résidences » (déjà branché). |
-
-⚠️ Divergences déclarées : Android n'a pas d'aperçu intégré comme Coup d'œil — la pièce
-s'ouvre dans l'app de l'appareil (`ACTION_VIEW`, droit de lecture sur CE fichier) ; une
-photo touchée s'ouvre seule (l'iOS feuillette toutes celles de l'élément) ; sous Android 8,
-une photo n'est pas redressée selon son orientation EXIF.
-
-Exemple :
-
-```kotlin
-val pieces = remember(affaire) { PiecesJointes(affaire.photosUrls.orEmpty() + affaire.fichiersUrls) }
-PiecesJointesVue(pieces, contexte.session)                                   // l'affaire ouverte
-PiecesJointesVue(PiecesJointes(message.fichiersUrls), contexte.session, format = FormatPieces.Compact)
-Carte(Modifier.semantics { pieces.enClair?.let { stateDescription = it } }, ouvrir = ouvrir) {
-    Row { Text(titre, Modifier.weight(1f)); VignettePieces(pieces, contexte.session) }   // une carte fermée
-}
-
-val ouverture = rememberOuverture(contexte.session)                          // un document du fil
-LigneDocument(document.fichierNom, ouverture.enCours == "document-${document.id}", taille = document.tailleOctets) {
-    ouverture.document(document.id, document.fichierNom)
-}
-AvisOuverture(ouverture)
-```
-
-## Qui la lit, et où — `fr.coprofirst.app.commun.lecture`
-
-« Qui la lit » et le lieu d'un contenu (affaire, ligne du fil, annonce, idée, sondage), tels
-que le serveur les SERT (`lecture`, `perimetre_libelle`) — jamais recomposés : la règle est
-celle du serveur seul.
-
-| API | Pendant iOS | Usage |
-|---|---|---|
-| `Lecture`, `Lecture.depuis(servie)`, `Lecture.lire(json)` | `Lecture` | La pastille servie : par le type généré d'une route, ou relue dans un `meta` libre (le fil) — illisible, `null`, sans emporter le reste. `phraseEntiere` : la bulle, puis ceux qui ne lisent pas. |
-| `Lecture.aMontrer(l)` | `Lecture.aMontrer` | La pastille à montrer : `null` quand personne n'est exclu (`par_defaut`) ou qu'elle n'est pas servie. |
-| `PastilleLecture(lecture, masculin = false, memeParDefaut = false)` | `PastilleLecture` | Sur une carte : teinte `badge-blue`, pictogrammes des lecteurs, libellé court, cadenas. Ne s'ouvre pas ; le lecteur d'écran lit « Qui la lit : … ». `masculin` : un sondage (« Qui le lit ») ; `memeParDefaut` : une saisie. |
-| `LectureDetaillee(lecture, masculin)` | `LectureDetaillee` | Sur un détail : l'intitulé, la pastille, le titre, la phrase entière (repère `lecture.detail`). |
-| `EtiquetteLieu(lieu, style?, couleur?)`, `LieuServi.lieu(perimetreLibelle)` | `EtiquetteLieu`, `LieuServi` | Le lieu servi, avec l'épingle ; `""` (le périmètre par défaut) ou absent : rien. |
-| `enClair(lecture, masculin)`, `enClair(lieu)` | `.enClair` | Les mêmes en une phrase, pour le libellé d'une carte au lecteur d'écran. |
-
-## Périmètres — `fr.coprofirst.app.commun.perimetres`
-
-Le lieu d'un contenu (annonce du hall, affaire, actualité) se choisit dans l'arbre servi
-(GET /perimetres), ici et nulle part ailleurs : un écran garde le `ChoixDePerimetres`,
-`ChoixPerimetres` le dessine, la règle est pure et testée sur la JVM. Le périmètre par
-défaut est celui que le serveur désigne (`par_defaut`) ; le nom d'une sélection est
-celui du serveur (POST /perimetres/libelle), jamais composé par l'app.
-
-| API | Pendant iOS | Usage |
-|---|---|---|
-| `Perimetre(code, libelle, profondeur, selectionnable, parDefaut, parent, libelleCourt, description, niveauxLibres)` | `Perimetre` | LE modèle d'un périmètre. `Perimetre.lu(PerimetreRead)`, `Perimetre.lus(liste)` (actifs seulement), `Perimetre.aSaisir(perimetres, garder?)` (ce qu'un sélecteur propose : `niveaux_libres` servi ; `garder` : le lieu déjà enregistré d'un contenu qu'on modifie), `Perimetre.codeParDefaut(perimetres)`. |
-| `ServicePerimetres` : `perimetres()`, `lieu(codes)` ; `ServicePerimetresApi(session)` | `ServicePerimetres`, `ServiceApercus.lieu` | L'arbre (GET /perimetres) et le nom d'une sélection (POST /perimetres/libelle), par le client généré. Un service de menu peut le réaliser par délégation. |
-| `ArbreDesPerimetres(noeuds)` | `ArbreDesPerimetres` | `defaut`, `tetes` (racines ciblables et enfants d'un regroupement, hors défaut), `espaces(tete)`, `tete(code)`, `noeud(code)`. |
-| `ChoixDePerimetres(codes, touchee)` | `ChoixDePerimetres` | Immuable : chaque geste rend le nouvel état. `basculer(code, arbre)` (la table en cinq lignes du site), `choisirDefaut(arbre)`, `estDefaut`, `ouverte` (la tête dont la rangée se montre), `espacesRetenus`, `teteRetenue`, `libelleDeTete` (« Bâtiment A › Hall · Toit »), `aide` (la `description` du seul code retenu). |
-| `ChoixPerimetres(arbre, choix, changer, repere, service?)` | `ChoixPerimetres` | Les pastilles des têtes (défaut d'abord), « Préciser dans <tête> — facultatif » et ses espaces dans une surface bordée (fondu et léger glissement, 220 ms ; fondu seul sous « Supprimer les animations »), l'aide, puis le lieu servi si `service`. Retour haptique de sélection. Repères : `"$repere.<code>"` par pastille, `"$repere.lieu"`. |
-| `LieuDeLaSaisie(codes, service, repere)` | `LieuDeLaSaisie` | Le lieu d'une sélection, nommé par le serveur, dit par `EtiquetteLieu` (`commun/lecture`) ; sa ligne réservée, invisible, avant la première réponse. |
-
-```kotlin
-val service = remember(contexte.session) { ServicePerimetresApi(contexte.session) }
-Chargement(charger = { ArbreDesPerimetres(service.perimetres()) }, squelette = { … }) { arbre, _ ->
-    var choix by remember(arbre) { mutableStateOf(ChoixDePerimetres().choisirDefaut(arbre)) }
-    ChoixPerimetres(arbre, choix, { choix = it }, repere = "nouvelle-annonce-hall.perimetre", service = service)
-    // à l'envoi : perimetreCible = choix.codes.toList()
-}
-```
-
-⚠️ Divergence déclarée : l'iOS range `lieu` dans `ServiceApercus` (avec « qui la lira » et
-« Nom affiché », pas encore portés) ; ici, il vit dans `ServicePerimetres`.
-
-## Aperçu servi — `fr.coprofirst.app.commun.apercu`
-
-Un formulaire ne compose pas une règle d'affichage sur ce qu'on saisit : il la DEMANDE au
-serveur (le lieu choisi, demain « qui la lira », « Nom affiché »). Le mécanisme est écrit
-une fois.
-
-| API | Pendant iOS | Usage |
-|---|---|---|
-| `ApercuServi(entree, demander, connue?) { valeur -> … }` | `ApercuServi` | `valeur` : celle que le serveur a rendue pour `entree`, ou la dernière tant qu'il n'a pas répondu ; `null` avant la première. Fondu court (aucun sous « Supprimer les animations »). Le contenu réserve sa place. |
-| `EtatApercu(connue?, pause?)` : `saisie(entree, portee, demander)`, `valeur`, `abandonner()` | `EtatApercu` | Délai de 150 ms (`DELAI_MS`, une rafale = une demande), réponse périmée ignorée, valeur déjà servie jamais redemandée, échec tu. |
-
-⚠️ Divergence déclarée : l'iOS ne fait pas partir la demande hors ligne ni en consultation ;
-l'Android n'a pas encore ces états — la demande part, échoue, et se tait.
-
-## Personnes de l'annuaire — `fr.coprofirst.app.commun.annuaire`
-
-Une même personne a un même rendu (standards/11 §14) : l'Annuaire des résidents et
-l'« Annuaire CS & Syndic » de l'Espace CS.
-
-| API | Pendant iOS | Usage |
-|---|---|---|
-| `Annuaire` (`ConseilSyndical`, `Syndic`, `Membre` : `nomComplet`, `initiales`, `telephones`…), `AnnuaireLu.lu()` | `Annuaire` | L'annuaire servi (GET /admin/annuaire), lu du type généré ; `groupesCS` : les membres par bâtiment. |
-| `CarteContact(personne, medaillons, session, principal = false) { détail }` | `CarteContact` | La carte d'une personne : avatar (photo protégée ou initiales), nom servi, médaillons, liseré d'accent pour le principal, puis le détail de la section. |
-| `medaillonsDuConseil(membre, site)`, `medaillonsDuSyndic(membre)`, `Medaille` | idem | Les rôles mis en avant : gestionnaire du site, président ; interlocuteur principal. |
-| `Coordonnees(personne)`, `Coordonnees(email, telephones, titre?)` | `Coordonnees` | Courriel et numéros touchables (`mailto:`, `tel:`), repères `ReperesContact.COURRIEL`, `.APPELER` — aussi les baux de « Mes lots & accès ». |
-
-L'aperçu servi a aussi `NomDeLaSaisie(prenom, nom, service, repere, connu?)` : la ligne
-« Nom affiché » d'une feuille d'édition, rendue par le serveur (POST /noms/affiche,
-`ServiceNoms` / `ServiceNomsApi(session)`), jamais composée ici — `NomDeLaSaisie` de l'iOS.
-
-## Fil des réponses — `fr.coprofirst.app.commun.reponses`
-
-Les réponses d'une idée, d'une annonce, les commentaires d'un sondage (`ReponseCommunauteRead`,
-le type du contrat — texte brut, jamais du HTML). Les droits sont SERVIS : l'écran ne les
-recalcule pas.
-
-| API | Pendant iOS | Usage |
-|---|---|---|
-| `FilReponses(reponses, moi, gestes, modifier?, invite?, entete?)` | `FilReponses` | Une `Column` (dans la page qui défile) : l'en-tête (repère `reponses.entete` ; « 💬 Répondre », « 💬 3 réponses » par défaut — `entete: @Composable (Int) -> String` le remplace), chaque réponse (repère `reponse.<id>` ; le conseil syndical sur le fond bleu, ⭐), puis le champ (`reponses.saisie`, `invite` : « Votre réponse… » par défaut) et la flèche (`reponses.envoyer`). « Supprimer » suit `peut_supprimer` servi et se **confirme** dans le fil (« Supprimer définitivement », `reponses.confirmerSuppression`) ; « Signaler » ne s'offre que sur les réponses des autres (`moi` : l'id de GET /auth/me ; `null` : partout). |
-| `GestesReponses(publier, retirer, signaler)` | `GestesReponses` | Ce que le fil fait au serveur, dit par l'écran : `publier: suspend (String) -> Boolean` (`false` : le texte reste dans le champ), `retirer: suspend (ReponseCommunauteRead) -> Unit` (après la confirmation), `signaler: (ReponseCommunauteRead) -> Unit` (ouvre la boîte de l'écran, `SignalementAuConseil`). |
-| `Reponses.peutSupprimer(r)`, `.peutSignaler(r, moi)`, `.estCs(r)`, `.auteur(r)`, `.aPublier(texte)` | `ReponseCommunaute` | Les règles, testées sur la JVM. |
-| `ReperesReponses` | — | Les repères de l'iOS ; plus `reponse.<id>.actions` (le « ⋮ »), `reponse.<id>.supprimer`, `reponse.<id>.signaler`. |
-| `enteteReponses(n)` | `FilReponses.enteteReponses` | L'en-tête par défaut. |
-
-⚠️ Divergence déclarée : les gestes d'une réponse sont sous son « ⋮ » ; l'iOS les offre au
-balayage et au menu contextuel (Compose n'a pas d'actions de balayage dans une liste).
-
-## Signaler au conseil syndical — `fr.coprofirst.app.commun`
-
-| API | Pendant iOS | Usage |
-|---|---|---|
-| `SignalementAuConseil(cible, envoyer, fermer)` | `.signalementAuConseil` | La boîte des mots du site (`signaler()`) : paraît tant que `cible: C?` n'est pas `null` ; motif **obligatoire** (`signalement.motif`) ; « Signaler » (`signalement.envoyer`) rend `envoyer(cible, motif sans blancs)` et ferme ; « Annuler » ferme. L'écran envoie et dit « Signalement transmis au conseil syndical » (`R.string.signalement_transmis`). |
-| `CibleSignalement(type, id)`, `CibleSignalement.commentaire(id)` | `CibleSignalement` | `cible_type`, `cible_id` de POST /signalements — le type que le site envoie. |
-| `ServiceSignalements`, `ServiceSignalementsApi(session)` | `ServiceSignalements` | `suspend signalerAuConseil(cible, motif)` — POST /signalements par le client généré. Le service d'un écran qui signale en hérite (`ServiceSignalements by ServiceSignalementsApi(session)`). |
-
-```kotlin
-var signale by remember { mutableStateOf<ReponseCommunauteRead?>(null) }
-FilReponses(idee.reponses, moi, GestesReponses(publier = { … }, retirer = { … }, signaler = { signale = it }))
-SignalementAuConseil(signale, envoyer = { r, motif ->
-    portee.launch { service.signalerAuConseil(CibleSignalement.commentaire(r.id), motif); avis.dire(…) }
-}, fermer = { signale = null })
-```
-
-## Fiche d'un sondage — `fr.coprofirst.app.commun.detail.sondage`
-
-| API | Pendant iOS | Usage |
-|---|---|---|
-| `FicheSondage(id, session, avis, modifier?, service?)` | `SondageView` | La fiche, qui défile seule : l'en-tête (état, clôture, question `sondage.question`, description, total `sondage.total`), puis le vote s'il est ouvert (`sondage.option.<id>`, `sondage.precision`, `sondage.commentaire`, `sondage.charte`, `sondage.voter`, ce qui manque `sondage.manque`) ou les résultats (`sondage.resultat.<id>` ; masqués : `sondage.resultatsMasques`), puis les commentaires (`FilReponses`, signalement compris). Chaque geste dit sa phrase par `avis` (celle du serveur s'il refuse) et la fiche se relit. L'écran pose `AvisEphemere(avis)` autour. `service` : `ServiceSondageApi(session)` par défaut. |
-| `PageSondage(id, session, service?)` | `NavigationLink → SondageView` | La fiche en page poussée, avec son avis : la fiche « sondage » du registre (`RegistreDesMenus.fiches`) — s'ouvre de partout par `contexte.ouvrir(Destination.Element("sondage", id))`. |
-| `ServiceSondage` (`: ServiceSignalements`), `ServiceSondageApi(session)` | `ServiceSondage` | `sondage(id)` (GET /sondages/{id} et /auth/me ensemble ; un compte illisible n'empêche pas la fiche), `voter(vote, sondage)`, `commenter(texte, sondage)`, `supprimerCommentaire(id, sondage)`. |
-| `DetailSondage`, `OptionSondage`, `VoteSondage`, `CalculsSondage.pourcentage` | `DetailSondage`, `VoteSondage`… | Le modèle : `peutVoter`, `totalVotes` ; `VoteSondage.choisir(id)` (vide la précision), `manque(champLibre)` (`@StringRes`, l'ordre du site), `corps()` (les textes vides ne partent pas). |
-| `SondageSimule`, `FixturesSondage` (source `debug`) | `ServiceSimule`, `FixturesSondage` | Le serveur simulé et les fiches de l'iOS, pour les tests et les aperçus. |
-
-
-## Feuille pleine — `fr.coprofirst.app.commun`
-
-| API | Pendant iOS | Usage |
-|---|---|---|
-| `FeuillePleine(titre, repereOk, fermer, actions?) { contenu }` | feuille `.large` | Une feuille pleine hauteur qui porte un écran : titre, `actions` (sa barre), « OK » (`repereOk`) ; le contenu défile seul. Les notifications de la cloche et la fiche d'un sondage. |
-| `ErreurService.phrase(ressources)` | `.phrase` | La phrase d'une erreur hors composition (l'avis d'un geste échoué). |
 
 ## Charte — `fr.coprofirst.app.charte`, `ThemeCoproFirst`
 

@@ -9,20 +9,15 @@ import fr.coprofirst.api.modeles.BailLocataireOut
 import fr.coprofirst.api.modeles.BailOut
 import fr.coprofirst.api.modeles.LotRead
 import fr.coprofirst.api.modeles.ObjetOut
+import fr.coprofirst.app.commun.acces.TypeAcces
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 
-/**
+/*
  * Ce que « Mes lots & accès » affiche, lu des types GÉNÉRÉS (`LotRead`, `AccesPorteur`,
  * `BailOut`…) par UN branchement chacun (`lu()`) — le même pour le service réel et pour
- * les réponses de test, comme l'iOS (`LotDuCompte.init(_:)`).
+ * les réponses de test, comme l'iOS (`LotDuCompte.init(_:)`). La famille d'un accès est
+ * commune : `TypeAcces` (commun/acces).
  */
-enum class TypeAcces(val code: String) {
-    Vigik("vigik"),
-    Telecommande("telecommande"),
-    ;
-
-    val libelle: String get() = LibellesMonLot.typeAcces(code)
-}
 
 /** Un lot du compte (`LotRead`, lu dans `/lots/mes-lots`). */
 data class LotDuCompte(

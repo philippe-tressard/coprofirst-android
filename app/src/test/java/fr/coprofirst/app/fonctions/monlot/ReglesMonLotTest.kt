@@ -4,6 +4,7 @@
 package fr.coprofirst.app.fonctions.monlot
 
 import fr.coprofirst.app.commun.LibelleTeinte
+import fr.coprofirst.app.commun.acces.LibellesAcces
 import fr.coprofirst.app.navigation.DroitsOnglet
 import fr.coprofirst.app.navigation.OngletsDuSite
 import fr.coprofirst.app.navigation.RegistreDesMenus
@@ -73,12 +74,12 @@ class ReglesMonLotTest {
 
     @Test
     fun lesLibellesViennentDesTablesGenerees() {
-        assertEquals(LibelleTeinte("Perdu", "badge-red"), LibellesMonLot.statutAcces("perdu"))
+        assertEquals(LibelleTeinte("Perdu", "badge-red"), LibellesAcces.statutAcces("perdu"))
         assertEquals("En cours de sortie", LibellesMonLot.statutBail("en_cours_sortie").libelle)
-        assertEquals("📡 Télécommande parking", LibellesMonLot.typeAcces("telecommande"))
+        assertEquals("📡 Télécommande parking", LibellesAcces.typeAcces("telecommande"))
         // Une valeur inconnue s'affiche brute : un libellé manquant doit se voir.
-        assertEquals(LibelleTeinte("inconnu", "badge-gray"), LibellesMonLot.statutAcces("inconnu"))
-        assertEquals("badge_rfid", LibellesMonLot.typeAcces("badge_rfid"))
+        assertEquals(LibelleTeinte("inconnu", "badge-gray"), LibellesAcces.statutAcces("inconnu"))
+        assertEquals("badge_rfid", LibellesAcces.typeAcces("badge_rfid"))
     }
 
     /** `lotTypeLabel`, `etageLabel` ne sont pas recopiés : le libellé servi, sinon la donnée brute. */
