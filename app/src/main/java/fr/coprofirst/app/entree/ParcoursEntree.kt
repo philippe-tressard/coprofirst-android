@@ -18,14 +18,14 @@ import fr.coprofirst.app.session.GardeHote
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.InstallationsConnues
 import fr.coprofirst.app.session.LectureDisponible
-import fr.coprofirst.app.session.Reseau
-import fr.coprofirst.app.session.cleCoffre
 import fr.coprofirst.app.session.OrigineAdresse
 import fr.coprofirst.app.session.PreuveHote
 import fr.coprofirst.app.session.RepriseAnnulee
 import fr.coprofirst.app.session.ReprisePerdue
+import fr.coprofirst.app.session.Reseau
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsParHote
+import fr.coprofirst.app.session.cleCoffre
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -79,6 +79,7 @@ class ParcoursEntree(
     private var repriseEnLigneEnCours = false
 
     init {
+        viewModelScope.launch { sessions.refusees.collect(::sessionRefusee) }
         // Au lancement, comme l'iOS (`purgerLesLectures`) : rien ne reste d'une lecture
         // périmée, ni d'une résidence dont la session n'est plus gardée.
         sessions.lectures?.purger(
@@ -247,17 +248,37 @@ class ParcoursEntree(
                 connexion.reprendreEnLigne(ouverte)
                 _etat.update { if (it.ouverte == ouverte) it.copy(consultation = null) else it }
             } catch (_: ReprisePerdue) {
-                if (_etat.value.ouverte == ouverte) {
-                    apresSortie(ouverte)
-                    effacerLesPieces()
-                    versLeMotDePasse(ouverte)
-                    _etat.update { it.copy(ouverte = null, consultation = null, erreurConnexion = ErreurService.SessionExpiree) }
-                }
+                if (_etat.value.ouverte == ouverte) quitterLaSessionRefusee(ouverte)
             } catch (_: ErreurService) {
                 // Toujours sans réseau : la consultation continue.
             } finally {
                 repriseEnLigneEnCours = false
             }
+        }
+    }
+
+    /**
+     * Le serveur refuse la session ouverte en cours d'usage, renouvellement compris (#201,
+     * coprofirst-ios#248) : la connexion pré-remplie, la raison dite, au lieu d'un
+     * « Réessayer » sans issue sur chaque écran. Une seule fois, même si plusieurs écrans
+     * sont refusés ensemble ; en consultation, la reprise en ligne en décide.
+     */
+    private fun sessionRefusee(adresse: AdresseInstallation) {
+        val etat = _etat.value
+        val ouverte = etat.ouverte ?: return
+        if (ouverte.adresse == adresse && etat.consultation == null) quitterLaSessionRefusee(ouverte)
+    }
+
+    /** Quitter la résidence dont le serveur refuse la session : ce qui restait d'elle se jette. */
+    private fun quitterLaSessionRefusee(installation: Installation) {
+        apresSortie(installation)
+        effacerLesPieces()
+        versLeMotDePasse(installation)
+        _etat.update {
+            it.copy(
+                ouverte = null, consultation = null, proposerGarde = false, issueGarde = null,
+                erreurConnexion = ErreurService.SessionExpiree,
+            )
         }
     }
 
