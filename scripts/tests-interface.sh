@@ -49,7 +49,12 @@ for _ in $(seq 1 200); do
   a shell cat /data/local/tmp/resultat.txt 2>/dev/null | grep -q 'INSTRUMENTATION_CODE' && break
 done
 RESULTAT=$(a shell cat /data/local/tmp/resultat.txt 2>/dev/null)
-grep -E 'AssertionError|Failed to assert|FAILURES|^OK \(|Tests run' <<< "$RESULTAT"
+# Le résultat ENTIER reste au poste (l'émulateur s'éteint et l'emporte) : le nom de chaque
+# test en échec et sa pile s'y lisent ; ici, le test en échec puis son message.
+mkdir -p app/build/outputs && printf '%s\n' "$RESULTAT" > app/build/outputs/tests-interface-resultat.txt
+awk '/INSTRUMENTATION_STATUS: class=/{c=$0} /INSTRUMENTATION_STATUS: test=/{t=$0} /INSTRUMENTATION_STATUS: stack=/{sub(/.*class=/,"",c); sub(/.*test=/,"",t); print "✗ " c "." t; print "  " $0}' <<< "$RESULTAT" | sed 's/INSTRUMENTATION_STATUS: stack=//'
+grep -E 'FAILURES|^OK \(|Tests run' <<< "$RESULTAT"
+echo "Résultat entier : app/build/outputs/tests-interface-resultat.txt"
 if grep -q '^OK (' <<< "$RESULTAT"; then exit 0; fi
 if grep -q 'FAILURES' <<< "$RESULTAT"; then exit 1; fi
 echo "❓ INCONNU : aucun résultat lu (instrumentation interrompue ?)" >&2

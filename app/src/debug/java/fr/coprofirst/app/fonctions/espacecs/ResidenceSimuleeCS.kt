@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.fonctions.espacecs
 
+import fr.coprofirst.app.commun.perimetres.FixturesPerimetres
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.int
@@ -47,6 +48,11 @@ class ResidenceSimuleeCS {
             "GET /courriels-affaires" -> 200 to FixturesAnnoncesCourriels.JOURNAL
             "GET /suivi-affaires" -> 200 to if (chemin.contains("mode=entretien")) FixturesReporting.ENTRETIEN else FixturesReporting.AFFAIRES
             "GET /reporting/renouvellements" -> 200 to FixturesReporting.RENOUVELLEMENTS
+            "GET /perimetres" -> 200 to FixturesPerimetres.ARBRE
+            "POST /perimetres/libelle" -> {
+                val codes = Json.parseToJsonElement(corps).jsonObject["codes"]?.jsonArray?.map { it.jsonPrimitive.content }.orEmpty()
+                200 to FixturesPerimetres.libelle(codes)
+            }
             "GET /annonces-hall" -> 200 to if (chemin.contains("archivees=true")) {
                 FixturesAnnoncesCourriels.ARCHIVEES
             } else {

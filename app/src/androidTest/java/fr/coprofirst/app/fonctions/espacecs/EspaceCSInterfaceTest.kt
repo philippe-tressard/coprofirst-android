@@ -5,6 +5,7 @@ package fr.coprofirst.app.fonctions.espacecs
 
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isSelected
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTextInput
@@ -99,6 +100,13 @@ class EspaceCSInterfaceTest {
     private fun disparu(repere: String) =
         ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(repere)).fetchSemanticsNodes().isEmpty() }
 
+    /** Une pastille de choix : touchée par le geste commun, puis attendue retenue. */
+    private fun retenir(repere: String) {
+        val retenue = { ecran.onAllNodes(hasTestTag(repere) and isSelected()).fetchSemanticsNodes().isNotEmpty() }
+        if (!retenue()) ecran.toucherTag(repere)
+        ecran.waitUntil(DELAI_MS, retenue)
+    }
+
     @Test
     fun lesSixOngletsDuSite() {
         listOf("validations", "badges", "reporting", "annonces-hall", "annuaire", "courriels").forEach {
@@ -163,13 +171,20 @@ class EspaceCSInterfaceTest {
     @Test
     fun creerPuisArchiverUneAnnonce() {
         ecran.toucherTag(ReperesOnglets.onglet("annonces-hall"))
+        // Le format et le périmètre AVANT toute frappe (#112). toucher() amène A5 à l'écran
+        // à travers la page PUIS la rangée des formats, et attend qu'il soit immobile (#119).
+        retenir(ReperesEspaceCS.nouvelleFormat("a5"))
+        retenir("${ReperesEspaceCS.NOUVELLE_PERIMETRE}.bat_a")
+        // ⚠️ Attente retirée : attendre("Bâtiment A ›") — le lieu servi par LieuDeLaSaisie ne
+        // paraît pas en 10 s à l'émulateur (#129). À rétablir une fois #129 corrigé ; le corps
+        // envoyé (perimetre_cible) reste vérifié plus bas.
         ecran.toucherTag(ReperesEspaceCS.NOUVELLE_TITRE)
         ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_TITRE).performTextInput("Ascenseur à l'arrêt")
         ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_MESSAGE).performTextInput("Lundi matin.")
-        ecran.toucherTag(ReperesEspaceCS.nouvelleFormat("a5"))
         ecran.toucherTag(ReperesEspaceCS.NOUVELLE_CREER)
         attendre("Annonce A5 créée et envoyée à 1 membre du CS")
-        assertTrue(residence.recues.any { it.startsWith("POST /api/annonces-hall ") && it.contains("\"a5\"") })
+        val creation = synchronized(residence) { residence.recues.toList() }.single { it.startsWith("POST /api/annonces-hall ") }
+        assertTrue(creation, creation.contains("\"a5\"") && creation.contains("\"perimetre_cible\":[\"bat_a\"]"))
 
         // Les archives : en cours puis archivées ; le menu « … » range une affiche.
         attendreRepere(ReperesEspaceCS.annonce(2))

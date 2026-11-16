@@ -63,7 +63,7 @@ private const val PAS_MS = 250L
  * verticale restait hors de l'écran (Espace CS, #112). Sans ancêtre défilant : rien.
  */
 fun SemanticsNodeInteraction.amener(): SemanticsNodeInteraction {
-    val ancetres = fetchSemanticsNode("Le nœud à amener à l'écran est introuvable.").ancetresDefilants().map { it.id }
+    val ancetres = attendrePlace().ancetresDefilants().map { it.id }
     for (id in ancetres.asReversed()) {
         val noeud = fetchSemanticsNode()
         val ancetre = noeud.ancetresDefilants().firstOrNull { it.id == id } ?: continue
@@ -80,6 +80,27 @@ fun SemanticsNodeInteraction.amener(): SemanticsNodeInteraction {
     // exactement (et ne fait rien s'il est déjà visible).
     if (ancetres.isNotEmpty()) performScrollTo()
     return this
+}
+
+/**
+ * Le nœud, attendu composé ET placé jusqu'au délai commun : il paraît souvent un instant après
+ * le geste précédent (une feuille qui s'ouvre, une liste relue). Introuvable : échec qui dit
+ * ce que Compose en dit (le sélecteur), au lieu d'un toucher perdu.
+ */
+private fun SemanticsNodeInteraction.attendrePlace(): SemanticsNode {
+    val limite = System.nanoTime() + DELAI_GESTE_MS * 1_000_000
+    var raison: Throwable? = null
+    while (System.nanoTime() < limite) {
+        val noeud = try {
+            fetchSemanticsNode()
+        } catch (e: AssertionError) {
+            raison = e
+            null
+        }
+        if (noeud != null && noeud.layoutInfo.isPlaced) return noeud
+        Thread.sleep(PAS_MS)
+    }
+    throw AssertionError("Toucher : nœud introuvable ou non placé après $DELAI_GESTE_MS ms — ${raison?.message ?: "composé mais non placé"}", raison)
 }
 
 /** Les ancêtres qui défilent, du plus proche au plus lointain. */

@@ -65,6 +65,8 @@ object ReperesEspaceCS {
     const val ANNONCE_SUPPRIMER_CONFIRMER = "annonces-hall.supprimer.confirmer"
     const val NOUVELLE_TITRE = "nouvelle-annonce-hall.titre"
     const val NOUVELLE_MESSAGE = "nouvelle-annonce-hall.message"
+    const val NOUVELLE_PERIMETRE = "nouvelle-annonce-hall.perimetre"
+    const val NOUVELLE_FORMATS = "nouvelle-annonce-hall.formats"
     fun nouvelleFormat(code: String) = "nouvelle-annonce-hall.format.$code"
     const val NOUVELLE_ENVOYER_CS = "nouvelle-annonce-hall.envoyer-cs"
     const val NOUVELLE_CREER = "nouvelle-annonce-hall.creer"
