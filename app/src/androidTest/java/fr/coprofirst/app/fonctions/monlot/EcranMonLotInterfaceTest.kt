@@ -9,12 +9,11 @@ import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.ThemeCoproFirst
+import fr.coprofirst.app.commun.toucherTag
+import fr.coprofirst.app.commun.toucherTexte
 import fr.coprofirst.app.navigation.ActionsDeclarees
 import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.navigation.DroitsOnglet
@@ -82,72 +81,53 @@ class EcranMonLotInterfaceTest {
         ecran.onAllNodes(hasText(texte, substring = true)).fetchSemanticsNodes().isNotEmpty()
     }
 
-    private fun attendreRepere(repere: String) =
-        ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(repere)).fetchSemanticsNodes().isNotEmpty() }
-
-    /** Un élément hors de toute liste (la barre du haut, un menu, une confirmation). */
-    private fun toucher(repere: String) {
-        attendreRepere(repere)
-        ecran.onNodeWithTag(repere).performClick()
-    }
-
-    /**
-     * Un élément d'une liste défilante (un onglet au bout de la barre, une puce, une
-     * ligne) : hors de l'écran, le toucher ne s'injecte pas — il se fait défiler d'abord,
-     * comme l'iOS balaie la barre.
-     */
-    private fun atteindre(repere: String) {
-        attendreRepere(repere)
-        ecran.onNodeWithTag(repere).performScrollTo().performClick()
-    }
-
     @Test
     fun lesQuatreOngletsSOuvrent() {
         attendre("Caractéristiques")
-        atteindre(ReperesMonLot.lot(417))
+        ecran.toucherTag(ReperesMonLot.lot(417))
         attendre("Sous-sol A")
-        atteindre(ReperesMonLot.onglet("badges"))
+        ecran.toucherTag(ReperesMonLot.onglet("badges"))
         attendre("A4F21C07")
-        atteindre(ReperesMonLot.onglet("telecommandes"))
+        ecran.toucherTag(ReperesMonLot.onglet("telecommandes"))
         attendre("TC-2048")
         // Le compte simulé est au conseil syndical : la gestion locative lui est ouverte.
-        atteindre(ReperesMonLot.onglet("location"))
+        ecran.toucherTag(ReperesMonLot.onglet("location"))
         attendre("Locataire DU LOT 15")
-        ecran.onNodeWithText("📁 Archives", substring = true).performScrollTo().performClick()
+        ecran.toucherTexte("📁 Archives", substring = true)
         attendre("Ancien locataire DU LOT 15")
     }
 
     @Test
     fun signalerPerduPuisDeclarer() {
         attendre("Caractéristiques")
-        atteindre(ReperesMonLot.onglet("badges"))
-        atteindre(ReperesMonLot.perdu(12))
-        toucher(ReperesMonLot.PERDU_CONFIRMER)
+        ecran.toucherTag(ReperesMonLot.onglet("badges"))
+        ecran.toucherTag(ReperesMonLot.perdu(12))
+        ecran.toucherTag(ReperesMonLot.PERDU_CONFIRMER)
         attendre("Signalement enregistré")
         ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(ReperesMonLot.perdu(12))).fetchSemanticsNodes().isEmpty() }
 
-        toucher(ReperesMonLot.GESTES)
-        toucher(ReperesMonLot.DECLARER)
-        toucher(ReperesMonLot.DECLARER_CODE)
+        ecran.toucherTag(ReperesMonLot.GESTES)
+        ecran.toucherTag(ReperesMonLot.DECLARER)
+        ecran.toucherTag(ReperesMonLot.DECLARER_CODE)
         ecran.onNodeWithTag(ReperesMonLot.DECLARER_CODE).performTextInput("TC-7777")
-        ecran.onNodeWithTag(ReperesMonLot.ENREGISTRER).performScrollTo().performClick()
+        ecran.toucherTag(ReperesMonLot.ENREGISTRER)
         attendre("Accès enregistré")
-        atteindre(ReperesMonLot.onglet("telecommandes"))
+        ecran.toucherTag(ReperesMonLot.onglet("telecommandes"))
         attendre("TC-7777") // la liste est relue
     }
 
     @Test
     fun nouvelAccesNeProposeQueSesLots() {
         attendre("Caractéristiques")
-        atteindre(ReperesMonLot.onglet("badges"))
-        toucher(ReperesMonLot.GESTES)
-        toucher(ReperesMonLot.DEMANDER)
+        ecran.toucherTag(ReperesMonLot.onglet("badges"))
+        ecran.toucherTag(ReperesMonLot.GESTES)
+        ecran.toucherTag(ReperesMonLot.DEMANDER)
         attendre("Nouvelle demande d'accès")
-        ecran.onNodeWithTag(ReperesMonLot.ENREGISTRER).performScrollTo().performClick()
+        ecran.toucherTag(ReperesMonLot.ENREGISTRER)
         attendre("Sélectionnez un lot") // un lot est exigé
         attendre("Lot 450")
-        ecran.onNodeWithText("Lot 15").performScrollTo().performClick()
-        ecran.onNodeWithTag(ReperesMonLot.ENREGISTRER).performScrollTo().performClick()
+        ecran.toucherTexte("Lot 15")
+        ecran.toucherTag(ReperesMonLot.ENREGISTRER)
         attendre("Demande envoyée au conseil syndical")
     }
 

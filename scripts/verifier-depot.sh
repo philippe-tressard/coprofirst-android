@@ -19,6 +19,7 @@
 #   7 ter. aucun HTML rendu par une vue web ou le lecteur HTML d'Android : TexteDuSite ;
 #   7 quater. aucune version écrite à la main (elle se déduit de git) ;
 #   7 quinquies. aucun hôte fictif sur un vrai domaine (exemple.fr…), libellés compris ;
+#   7 sexies. aucun `performClick` dans les tests d'interface hors du geste commun ;
 #   8. un seul bouton plein, `BoutonPlein` (commun/Boutons.kt) ;
 #   9. les générateurs du build passent leurs tests (scripts/test_*.py) ;
 #  10. aucun chemin de .claude/worktrees/ suivi.
@@ -101,10 +102,11 @@ autotest_motif() {
   [ $ok -eq 0 ] || echec "verifier-depot.sh : autotest « $1 » en échec"
 }
 # $1 : motif ; $2 : message ; $3 (facultatif) : les fichiers DISPENSÉS, nommément (ERE
-# sur le chemin). Juge le code et les ressources de l'app. Une dispense qui ne couvre
-# plus aucun motif échoue : une exception sans objet se retire.
+# sur le chemin) ; $4 (facultatif) : les fichiers jugés (ERE), par défaut le code et les
+# ressources de l'app. Une dispense qui ne couvre plus aucun motif échoue : une
+# exception sans objet se retire.
 interdire() {
-  local f motif dispense=${3:-}
+  local f motif dispense=${3:-} perimetre=${4:-'^app/src/main/.*\.(kt|xml)$'}
   while IFS= read -r f; do
     [ -f "$f" ] || continue
     motif=$(premier_motif "$1" "$f")
@@ -113,7 +115,7 @@ interdire() {
       continue
     fi
     [ -z "$motif" ] || echec "$f : $2 ($motif)"
-  done < <(grep -E '^app/src/main/.*\.(kt|xml)$' <<< "$FICHIERS")
+  done < <(grep -E "$perimetre" <<< "$FICHIERS")
 }
 
 # Les couleurs se GÉNÈRENT depuis les sources de coprofirst : aucune écrite à la main.
@@ -159,6 +161,15 @@ HTML_MAIN='WebView|Html\.fromHtml|HtmlCompat|loadData\('
 autotest_motif "HTML hors de TexteDuSite" "$HTML_MAIN" '    Text(HtmlCompat.fromHtml(html, 0).toString())' '    TexteRiche(html = affaire.description)'
 autotest_motif "vue web" "$HTML_MAIN" '    AndroidView(factory = { WebView(it) })' '    Text(TexteDuSite.apercu(html))'
 interdire "$HTML_MAIN" "texte HTML rendu hors de commun/texte (vue web, lecteur HTML d'Android) — passer par TexteDuSite ou TexteRiche"
+
+# Les tests d'interface touchent par LE geste commun, `toucher` (androidTest, commun/Gestes.kt) :
+# il amène l'élément à l'écran (liste paresseuse, page ou barre qui défile), vérifie qu'il
+# est affiché, puis touche. Un `performClick` direct sur un élément hors de l'écran se
+# perd, et le test tombe plus loin sans dire pourquoi (trois chutes le même soir, #119).
+CLIC_DIRECT='\.performClick\('
+autotest_motif "toucher hors du geste commun" "$CLIC_DIRECT" '        ecran.onNodeWithTag(r).performClick()' '        ecran.toucherTag(r)'
+interdire "$CLIC_DIRECT" "toucher écrit à la main dans un test d'interface — passer par toucher (commun/Gestes.kt)" \
+  '^app/src/androidTest/java/fr/coprofirst/app/commun/Gestes\.kt$' '^app/src/androidTest/.*\.kt$'
 
 # La version se DÉDUIT de git (app/build.gradle.kts) : aucune PR ne l'écrit. Un
 # `versionCode`/`versionName` littéral reviendrait au conflit des PR parallèles.

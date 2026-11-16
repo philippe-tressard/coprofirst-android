@@ -9,14 +9,13 @@ import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.R
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.commun.GestesDeSortie
 import fr.coprofirst.app.commun.StockageApparence
+import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.navigation.ContexteDeMenu
 import fr.coprofirst.app.navigation.DroitsOnglet
@@ -73,7 +72,7 @@ class CadreAOngletsInterfaceTest {
         ecran.onNodeWithTag(ReperesOnglets.onglet("validations")).assertIsSelected()
         ecran.onNodeWithText("Écran des comptes", substring = true).assertIsDisplayed()
 
-        ecran.onNodeWithTag(ReperesOnglets.onglet("badges")).performClick()
+        ecran.toucherTag(ReperesOnglets.onglet("badges"))
         ecran.waitForIdle()
         ecran.onNodeWithTag(ReperesOnglets.onglet("badges")).assertIsSelected()
         ecran.onNodeWithText("Écran des badges").assertIsDisplayed()
@@ -81,7 +80,7 @@ class CadreAOngletsInterfaceTest {
 
         // Un onglet du site que l'app ne porte pas : « Bientôt ».
         val absent = onglets.first { it.id !in page.ecrans.keys }
-        ecran.onNodeWithTag(ReperesOnglets.onglet(absent.id)).performScrollTo().performClick()
+        ecran.toucherTag(ReperesOnglets.onglet(absent.id))
         ecran.waitForIdle()
         ecran.onNodeWithText("Bientôt").assertIsDisplayed()
         ecran.onNodeWithText("Écran des badges").assertDoesNotExist()

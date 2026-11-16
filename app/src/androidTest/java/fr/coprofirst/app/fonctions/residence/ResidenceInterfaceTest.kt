@@ -8,12 +8,12 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.ThemeCoproFirst
+import fr.coprofirst.app.commun.amenerTag
+import fr.coprofirst.app.commun.toucher
+import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.fonctions.annuaire.AnnuaireSimule
 import fr.coprofirst.app.fonctions.annuaire.EcranAnnuaire
 import fr.coprofirst.app.fonctions.annuaire.ReperesAnnuaire
@@ -46,51 +46,42 @@ class ResidenceInterfaceTest {
     private fun attendreRepere(repere: String) =
         ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(repere)).fetchSemanticsNodes().isNotEmpty() }
 
-    /**
-     * Amène un repère à l'écran, puis le rend. Les pages défilent par `verticalScroll`
-     * (pas une liste paresseuse) : `performScrollTo`, pas `performScrollToNode`.
-     */
-    private fun amener(repere: String) = run {
-        attendreRepere(repere)
-        ecran.onNodeWithTag(repere).performScrollTo()
-    }
-
     @Test
     fun lesTroisOngletsDeLaResidence() {
         ouvrir()
         attendre("AA0-000-000") // la Fiche s'ouvre d'abord
 
-        ecran.onNodeWithTag("onglet.carnet").performClick()
+        ecran.toucherTag("onglet.carnet")
         attendre("Révision annuelle de la chaudière")
         attendre("1 visite attendue")
 
-        ecran.onNodeWithTag("onglet.reglement").performClick()
+        ecran.toucherTag("onglet.reglement")
         attendre("Puis-je installer une climatisation sur mon balcon ?")
-        amener(ReperesResidence.POSER).assertIsNotEnabled() // question vide : rien à poser
+        ecran.amenerTag(ReperesResidence.POSER).assertIsNotEnabled() // question vide : rien à poser
     }
 
     @Test
     fun leSyndicDeLaFicheOuvreLAnnuaire() {
         ouvrir()
-        amener(ReperesResidence.SYNDIC).performClick()
+        ecran.toucherTag(ReperesResidence.SYNDIC)
         attendre("Gestionnaire de copropriété")
         assertTrue(
             "le numéro du gestionnaire s'appelle d'un toucher",
             ecran.onAllNodes(hasTestTag(ReperesAnnuaire.APPELER).and(hasText("01 00 00 00 01"))).fetchSemanticsNodes().isNotEmpty(),
         )
-        ecran.onNodeWithTag(ReperesResidence.FERMER).performClick()
+        ecran.toucherTag(ReperesResidence.FERMER)
         attendre("AA0-000-000")
     }
 
     @Test
     fun unFondementOuvreSaSectionEtMontreLExtrait() {
         ouvrir()
-        ecran.onNodeWithTag("onglet.reglement").performClick()
-        amener(ReperesResidence.question(1)).performClick()
+        ecran.toucherTag("onglet.reglement")
+        ecran.toucherTag(ReperesResidence.question(1))
         attendreRepere(ReperesResidence.FONDEMENTS)
         attendre("Renvoi sans extrait")
         assertTrue("sections pliées", ecran.onAllNodes(hasTestTag(ReperesResidence.extrait("AG1"))).fetchSemanticsNodes().isEmpty())
-        amener(ReperesResidence.fondement("AG1")).performClick()
+        ecran.toucherTag(ReperesResidence.fondement("AG1"))
         attendreRepere(ReperesResidence.extrait("AG1"))
         attendre("Résolution 12")
     }
@@ -98,9 +89,9 @@ class ResidenceInterfaceTest {
     @Test
     fun uneQuestionPoseePasseEnTete() {
         ouvrir()
-        ecran.onNodeWithTag("onglet.reglement").performClick()
-        amener(ReperesResidence.QUESTION).performTextInput("Puis-je fermer mon balcon ?")
-        amener(ReperesResidence.POSER).assertIsEnabled().performClick()
+        ecran.toucherTag("onglet.reglement")
+        ecran.amenerTag(ReperesResidence.QUESTION).performTextInput("Puis-je fermer mon balcon ?")
+        ecran.amenerTag(ReperesResidence.POSER).assertIsEnabled().toucher()
         attendreRepere(ReperesResidence.question(99))
         assertEquals(listOf("Puis-je fermer mon balcon ?"), residence.posees)
     }

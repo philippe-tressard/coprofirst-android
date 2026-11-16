@@ -8,14 +8,13 @@ import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.commun.GestesDeSortie
 import fr.coprofirst.app.commun.StockageApparence
+import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.navigation.ContexteDeMenu
 import fr.coprofirst.app.navigation.DroitsOnglet
@@ -96,26 +95,21 @@ class EcranPrestatairesInterfaceTest {
     private fun attendreRepere(repere: String) =
         ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(repere)).fetchSemanticsNodes().isNotEmpty() }
 
-    private fun atteindre(repere: String) {
-        attendreRepere(repere)
-        ecran.onNodeWithTag(repere).performScrollTo().performClick()
-    }
-
     private fun absent(repere: String) =
         ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(repere)).fetchSemanticsNodes().isEmpty() }
 
     @Test
     fun lesTroisOngletsSOuvrent() {
         attendreRepere(ReperesPrestataires.prestataire(1))
-        atteindre(ReperesPrestataires.prestataire(1))
+        ecran.toucherTag(ReperesPrestataires.prestataire(1))
         attendre("📮 12 rue de l'Exemple")
 
         ecran.onNodeWithTag(ReperesPrestataires.RECHERCHE).performTextInput("incendie controles")
         attendreRepere(ReperesPrestataires.prestataire(2))
         absent(ReperesPrestataires.prestataire(1))
 
-        atteindre("onglet.contrats")
-        atteindre(ReperesPrestataires.contrat(1))
+        ecran.toucherTag("onglet.contrats")
+        ecran.toucherTag(ReperesPrestataires.contrat(1))
         attendre("Le contrat".uppercase())
         attendre("↺ Mensuel")
         attendre("contrat-ascenseurs")
@@ -124,7 +118,7 @@ class EcranPrestatairesInterfaceTest {
         attendre("🔁 Remplacé par Protection Incendie Exemple")
         attendre("🔁 Remplace Contrôles Sécurité Exemple (résilié au 30/11/2026)")
 
-        atteindre("onglet.consommations")
+        ecran.toucherTag("onglet.consommations")
         // « 47 047 » : l'espace insécable de `FormatsDuSite.nombre`.
         attendre("Index 47")
         attendre("🔧 Eaux de la Ville")
@@ -133,23 +127,23 @@ class EcranPrestatairesInterfaceTest {
     /** Le récapitulatif servi : l'exercice le plus récent ouvert, un badge qui déplie l'avis. */
     @Test
     fun lesAvisDUnPrestataireSeDeplient() {
-        atteindre(ReperesPrestataires.prestataire(1))
+        ecran.toucherTag(ReperesPrestataires.prestataire(1))
         attendreRepere(ReperesAvis.exercice(2026))
         attendre("Avis du conseil syndical (3)".uppercase())
         attendre("non notée")
-        atteindre(ReperesAvis.avis(11))
+        ecran.toucherTag(ReperesAvis.avis(11))
         attendreRepere(ReperesAvis.detail(11))
         attendre("délai respecté")
         // L'exercice 2025 est replié : son avis ne se voit pas.
         absent(ReperesAvis.avis(9))
-        atteindre(ReperesAvis.exercice(2025))
+        ecran.toucherTag(ReperesAvis.exercice(2025))
         attendreRepere(ReperesAvis.avis(9))
     }
 
     @Test
     fun lesArchivesSeDeplient() {
         attendreRepere(ReperesPrestataires.ARCHIVES)
-        atteindre(ReperesPrestataires.ARCHIVES)
+        ecran.toucherTag(ReperesPrestataires.ARCHIVES)
         attendreRepere(ReperesPrestataires.prestataire(9))
     }
 

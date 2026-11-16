@@ -3,20 +3,17 @@
 
 package fr.coprofirst.app.fonctions.profil
 
-import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsNotEnabled
-import androidx.compose.ui.test.hasScrollToNodeAction
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import fr.coprofirst.app.commun.amenerTag
+import fr.coprofirst.app.commun.toucherTag
+import fr.coprofirst.app.commun.toucherTexte
 import fr.coprofirst.app.entree.NavigationEntree
 import fr.coprofirst.app.entree.Reperes
 import fr.coprofirst.app.entree.ServeurDeTest
@@ -86,17 +83,17 @@ class ProfilInterfaceTest {
         serveur.serveur.dispatcher = residence
         val parcours = serveur.parcours()
         ecran.setContent { NavigationEntree(serveur.apparence(), parcours) }
-        ecran.onNodeWithText("Entrer dans ma résidence").performClick()
+        ecran.toucherTexte("Entrer dans ma résidence")
         ecran.onNodeWithTag(Reperes.RESIDENCE).performTextInput("residence.exemple.test")
         attendre("Les Glycines")
         ecran.onNodeWithTag(Reperes.EMAIL).performTextInput("camille@exemple.test")
         ecran.onNodeWithTag(Reperes.MOT_DE_PASSE).performTextInput("secret")
-        ecran.onNodeWithTag(Reperes.VALIDER).performClick()
+        ecran.toucherTag(Reperes.VALIDER)
         attendre("Me connecter à cette adresse")
-        ecran.onNodeWithText("Me connecter à cette adresse").performClick()
+        ecran.toucherTexte("Me connecter à cette adresse")
         attendre("Plus")
-        ecran.onNodeWithText("Plus").performClick()
-        ecran.onNodeWithTag("plus.profil").performClick()
+        ecran.toucherTexte("Plus")
+        ecran.toucherTag("plus.profil")
         attendre("Camille EXEMPLE")
     }
 
@@ -105,17 +102,6 @@ class ProfilInterfaceTest {
 
     private fun attendre(texte: String) = ecran.waitUntil(DELAI_MS) {
         ecran.onAllNodes(hasText(texte, substring = true)).fetchSemanticsNodes().isNotEmpty()
-    }
-
-    private fun attendreRepere(repere: String) = ecran.waitUntil(DELAI_MS) {
-        ecran.onAllNodes(hasTestTag(repere)).fetchSemanticsNodes().isNotEmpty()
-    }
-
-    /** Amène un repère de la liste du Profil à l'écran (elle se compose à mesure). */
-    private fun amener(repere: String): SemanticsNodeInteraction {
-        ecran.onAllNodes(hasScrollToNodeAction()).onFirst().performScrollToNode(hasTestTag(repere))
-        attendreRepere(repere)
-        return ecran.onNodeWithTag(repere)
     }
 
     @Test
@@ -128,15 +114,15 @@ class ProfilInterfaceTest {
     /** Le thème de l'appareil se choisit au Profil ; la sortie y est, et se confirme. */
     @Test
     fun leThemeSeChoisitEtLaSortieSeConfirme() {
-        amener("profil.theme.sombre").performClick()
-        amener("profil.deconnecter").performClick()
-        ecran.onNodeWithTag("sortie.confirmer").performClick()
+        ecran.toucherTag("profil.theme.sombre")
+        ecran.toucherTag("profil.deconnecter")
+        ecran.toucherTag("sortie.confirmer")
         attendre("Connectez-vous à votre espace")
     }
 
     @Test
     fun laDemandeSeFaitAvecLeMotDePasseEtSeRetire() {
-        amener("profil.suppression.demander").performClick()
+        ecran.toucherTag("profil.suppression.demander")
 
         // La feuille dit ce qui sera effacé (phrases servies) avant de demander quoi que ce soit.
         attendre("Ancien résident")
@@ -145,22 +131,22 @@ class ProfilInterfaceTest {
         // Un mot de passe refusé par le serveur : sa phrase, la feuille reste.
         val motDePasse = ecran.onNodeWithTag("suppression.motDePasse")
         motDePasse.performTextInput("refuse")
-        ecran.onNodeWithTag("suppression.confirmer").performClick()
+        ecran.toucherTag("suppression.confirmer")
         attendre("Mot de passe incorrect.")
 
         // Le bon mot de passe : la demande part, la feuille se ferme, on peut la retirer.
         motDePasse.performTextClearance()
         motDePasse.performTextInput("secret")
-        ecran.onNodeWithTag("suppression.confirmer").performClick()
+        ecran.toucherTag("suppression.confirmer")
         attendre("Un accusé de réception vous est adressé.")
-        amener("profil.suppression.retirer")
+        ecran.amenerTag("profil.suppression.retirer")
         assertTrue(ecran.onAllNodes(hasTestTag("profil.suppression.demander")).fetchSemanticsNodes().isEmpty())
         assertTrue("le mot de passe est parti, au serveur local seul", motsDePasseRecus.size == 2)
 
         // Retirée : le compte est conservé, le geste revient.
-        ecran.onNodeWithTag("profil.suppression.retirer").performClick()
+        ecran.toucherTag("profil.suppression.retirer")
         attendre("votre compte est conservé")
-        amener("profil.suppression.demander")
+        ecran.amenerTag("profil.suppression.demander")
     }
 
     private companion object {

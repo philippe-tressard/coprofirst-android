@@ -7,8 +7,6 @@ import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.ThemeCoproFirst
@@ -16,6 +14,7 @@ import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.commun.GestesDeSortie
 import fr.coprofirst.app.commun.StockageApparence
 import fr.coprofirst.app.commun.onglets.ReperesOnglets
+import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.navigation.ContexteDeMenu
 import fr.coprofirst.app.navigation.DroitsOnglet
@@ -105,18 +104,6 @@ class EspaceCSInterfaceTest {
     private fun disparu(repere: String) =
         ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(repere)).fetchSemanticsNodes().isEmpty() }
 
-    /** Un élément hors de toute liste (une confirmation, une feuille). */
-    private fun toucher(repere: String) {
-        attendreRepere(repere)
-        ecran.onNodeWithTag(repere).performClick()
-    }
-
-    /** Un élément de la page qui défile : il s'amène à l'écran d'abord. */
-    private fun atteindre(repere: String) {
-        attendreRepere(repere)
-        ecran.onNodeWithTag(repere).performScrollTo().performClick()
-    }
-
     @Test
     fun lesSixOngletsDuSite() {
         listOf("validations", "badges", "reporting", "annonces-hall", "annuaire", "courriels").forEach {
@@ -128,18 +115,18 @@ class EspaceCSInterfaceTest {
     fun approuverUnNouvelArrivantPuisAccepterUneCommande() {
         attendreRepere(ReperesEspaceCS.compte(501))
         attendreRepere(ReperesEspaceCS.COMPTEUR_COMPTES)
-        atteindre("${ReperesEspaceCS.compte(501)}.approuver")
-        toucher(ReperesEspaceCS.NOUVEL_ARRIVANT)
+        ecran.toucherTag("${ReperesEspaceCS.compte(501)}.approuver")
+        ecran.toucherTag(ReperesEspaceCS.NOUVEL_ARRIVANT)
         attendre("Ancien résident")
-        ecran.onNodeWithTag(ReperesEspaceCS.VALIDATION_ENREGISTRER).performScrollTo().performClick()
+        ecran.toucherTag(ReperesEspaceCS.VALIDATION_ENREGISTRER)
         disparu(ReperesEspaceCS.compte(501))
         attendre("Compte activé — 1 lot rattaché.")
         assertTrue(residence.recues.any { it.startsWith("POST /api/admin/utilisateurs/501/accueil-arrivant") })
 
-        atteindre("${ReperesEspaceCS.commande(71)}.approuver")
-        toucher(ReperesEspaceCS.COMMANDE_CODES)
+        ecran.toucherTag("${ReperesEspaceCS.commande(71)}.approuver")
+        ecran.toucherTag(ReperesEspaceCS.COMMANDE_CODES)
         ecran.onNodeWithTag(ReperesEspaceCS.COMMANDE_CODES).performTextInput("4521")
-        toucher(ReperesEspaceCS.COMMANDE_ACCEPTER)
+        ecran.toucherTag(ReperesEspaceCS.COMMANDE_ACCEPTER)
         disparu(ReperesEspaceCS.commande(71))
         attendre("Commande approuvée")
         assertTrue(residence.recues.any { it.contains("/admin/commandes-acces/71/traiter") && it.contains("\"4521\"") })
@@ -147,19 +134,19 @@ class EspaceCSInterfaceTest {
 
     @Test
     fun rejeterUnCompte() {
-        atteindre("${ReperesEspaceCS.compte(503)}.rejeter")
+        ecran.toucherTag("${ReperesEspaceCS.compte(503)}.rejeter")
         attendre("Rejeter le compte de Alix MODÈLE ?")
-        toucher(ReperesEspaceCS.REJET_CONFIRMER)
+        ecran.toucherTag(ReperesEspaceCS.REJET_CONFIRMER)
         disparu(ReperesEspaceCS.compte(503))
         attendre("Compte rejeté")
     }
 
     @Test
     fun chercherUnBadge() {
-        atteindre(ReperesOnglets.onglet("badges"))
+        ecran.toucherTag(ReperesOnglets.onglet("badges"))
         attendreRepere(ReperesEspaceCS.badge("vigik-1"))
         attendre("5 badges")
-        toucher(ReperesEspaceCS.BADGES_RECHERCHE)
+        ecran.toucherTag(ReperesEspaceCS.BADGES_RECHERCHE)
         ecran.onNodeWithTag(ReperesEspaceCS.BADGES_RECHERCHE).performTextInput("celeste")
         attendreRepere(ReperesEspaceCS.badge("vigik-4"))
         disparu(ReperesEspaceCS.badge("vigik-1"))
@@ -168,46 +155,46 @@ class EspaceCSInterfaceTest {
 
     @Test
     fun unCourrielSeDeplie() {
-        atteindre(ReperesOnglets.onglet("courriels"))
+        ecran.toucherTag(ReperesOnglets.onglet("courriels"))
         attendre("Les 50 derniers messages")
-        atteindre(ReperesEspaceCS.courriel(40))
+        ecran.toucherTag(ReperesEspaceCS.courriel(40))
         attendre("Aucune affaire ne porte le numéro TK-E000066")
         attendre("Camille Essai · envoyé le")
-        atteindre(ReperesEspaceCS.courriel(41))
+        ecran.toucherTag(ReperesEspaceCS.courriel(41))
         attendreRepere(ReperesEspaceCS.courrielAffaire(41))
         attendre("Affaire #TK-A00012")
     }
 
     @Test
     fun creerPuisArchiverUneAnnonce() {
-        atteindre(ReperesOnglets.onglet("annonces-hall"))
-        toucher(ReperesEspaceCS.NOUVELLE_TITRE)
+        ecran.toucherTag(ReperesOnglets.onglet("annonces-hall"))
+        ecran.toucherTag(ReperesEspaceCS.NOUVELLE_TITRE)
         ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_TITRE).performTextInput("Ascenseur à l'arrêt")
         ecran.onNodeWithTag(ReperesEspaceCS.NOUVELLE_MESSAGE).performTextInput("Lundi matin.")
-        atteindre(ReperesEspaceCS.nouvelleFormat("a5"))
-        atteindre(ReperesEspaceCS.NOUVELLE_CREER)
+        ecran.toucherTag(ReperesEspaceCS.nouvelleFormat("a5"))
+        ecran.toucherTag(ReperesEspaceCS.NOUVELLE_CREER)
         attendre("Annonce A5 créée et envoyée à 1 membre du CS")
         assertTrue(residence.recues.any { it.startsWith("POST /api/annonces-hall ") && it.contains("\"a5\"") })
 
         // Les archives : en cours puis archivées ; le menu « … » range une affiche.
         attendreRepere(ReperesEspaceCS.annonce(2))
-        atteindre(ReperesEspaceCS.annonceGestes(5))
-        toucher(ReperesEspaceCS.ANNONCE_ARCHIVER)
+        ecran.toucherTag(ReperesEspaceCS.annonceGestes(5))
+        ecran.toucherTag(ReperesEspaceCS.ANNONCE_ARCHIVER)
         attendre("Annonce archivée")
         assertTrue(residence.recues.any { it.startsWith("PATCH /api/annonces-hall/5") })
     }
 
     @Test
     fun leReportingEtSesModes() {
-        atteindre(ReperesOnglets.onglet("reporting"))
+        ecran.toucherTag(ReperesOnglets.onglet("reporting"))
         attendreRepere(ReperesEspaceCS.REPORTING_TOTAL)
         attendre("affaires non fermées")
         attendreRepere(ReperesEspaceCS.reportingAffaire(12))
         attendre("Nouveau message depuis le dernier résumé")
-        atteindre(ReperesEspaceCS.reportingMode("entretien"))
+        ecran.toucherTag(ReperesEspaceCS.reportingMode("entretien"))
         attendre("À venir")
         assertTrue(residence.recues.any { it.startsWith("GET /api/suivi-affaires?mode=entretien") })
-        atteindre(ReperesEspaceCS.reportingMode("renouvellements"))
+        ecran.toucherTag(ReperesEspaceCS.reportingMode("renouvellements"))
         attendreRepere(ReperesEspaceCS.RENOUVELLEMENTS_PREAVIS)
         attendre("Préavis en cours")
         attendreRepere(ReperesEspaceCS.renouvellementDiagnostic(1))

@@ -10,14 +10,14 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.longClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.navigation.ActionsDeclarees
 import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.navigation.DroitsOnglet
@@ -144,6 +144,8 @@ class AffairesInterfaceTest {
 
     private fun el(tag: String): SemanticsNodeInteraction = ecran.onNodeWithTag(tag, useUnmergedTree = true)
 
+    private fun toucher(tag: String) = ecran.toucherTag(tag, useUnmergedTree = true)
+
     /** La liste montre les affaires actives ; le filtre « Suivi » retient un état, son compte sur la pastille. */
     @Test
     fun laListeSeFiltreParSuivi() {
@@ -151,10 +153,10 @@ class AffairesInterfaceTest {
         attendre(ReperesAffaires.carte("A-0001"))
         el(ReperesAffaires.carte("A-0002")).assertIsDisplayed()
         disparait(ReperesAffaires.carte("A-0004"))
-        el(ReperesAffaires.suivi("ouvert")).performClick()
+        toucher(ReperesAffaires.suivi("ouvert"))
         disparait(ReperesAffaires.carte("A-0002"))
         el(ReperesAffaires.carte("A-0001")).assertIsDisplayed()
-        el(ReperesAffaires.suivi(null)).performClick()
+        toucher(ReperesAffaires.suivi(null))
         attendre(ReperesAffaires.carte("A-0002"))
     }
 
@@ -185,18 +187,18 @@ class AffairesInterfaceTest {
     fun uneCarteSeDeplaceAuKanban() {
         val service = ouvrir()
         attendre("onglet.kanban")
-        el("onglet.kanban").performClick()
+        toucher("onglet.kanban")
         attendre(ReperesAffaires.carteKanban("A-0001"))
         attendreTexte("2 affaires suivies")
         el(ReperesAffaires.carteKanban("A-0001")).performTouchInput { longClick() }
         attendre(ReperesAffaires.deplacer("A-0001", "syndic"))
-        el(ReperesAffaires.deplacer("A-0001", "syndic")).performClick()
+        toucher(ReperesAffaires.deplacer("A-0001", "syndic"))
         ecran.waitUntil(DELAI_MS) { service.deplacements == listOf(1 to "en_cours") }
         el(ReperesAffaires.carteKanban("A-0002")).performTouchInput { longClick() }
         attendre(ReperesAffaires.deplacer("A-0002", "termine"))
-        el(ReperesAffaires.deplacer("A-0002", "termine")).performClick()
+        toucher(ReperesAffaires.deplacer("A-0002", "termine"))
         attendre(ReperesAffaires.CLORE_SANS_FUSION)
-        el(ReperesAffaires.CLORE_SANS_FUSION).performClick()
+        toucher(ReperesAffaires.CLORE_SANS_FUSION)
         ecran.waitUntil(DELAI_MS) { service.deplacements.lastOrNull() == (2 to "résolu") }
     }
 
@@ -213,12 +215,12 @@ class AffairesInterfaceTest {
     fun lesArchivesSeReplientParAnnee() {
         ouvrir()
         attendre("onglet.archives")
-        el("onglet.archives").performClick()
+        toucher("onglet.archives")
         attendre(ReperesAffaires.archive("A-0005"))
         disparait(ReperesAffaires.archive("A-0004"))
         // 400 jours plus tôt : toujours une autre année que 20 jours plus tôt.
         val annee = Instant.now().minus(400, ChronoUnit.DAYS).atZone(FormatsDuSite.PARIS).year
-        el(ReperesAffaires.annee(annee)).performClick()
+        toucher(ReperesAffaires.annee(annee))
         attendre(ReperesAffaires.archive("A-0004"))
     }
 
@@ -227,7 +229,7 @@ class AffairesInterfaceTest {
     fun uneCarteOuvreSaFicheParLaPorte() {
         ouvrir()
         attendre(ReperesAffaires.carte("A-0001"))
-        el(ReperesAffaires.carte("A-0001")).performClick()
+        toucher(ReperesAffaires.carte("A-0001"))
         ecran.waitUntil(DELAI_MS) { fiches == listOf(1) }
     }
 
@@ -238,7 +240,7 @@ class AffairesInterfaceTest {
         attendre(ReperesAffaires.etape(EtapeFil.Cle.Suite))
         attendreTexte("Ouvert → Chez le syndic")
         attendre(ReperesAffaires.message(41))
-        el(ReperesAffaires.element("suite.31")).performClick()
+        toucher(ReperesAffaires.element("suite.31"))
         attendreTexte("Le syndic est prévenu.")
     }
 
