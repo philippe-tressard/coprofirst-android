@@ -12,6 +12,7 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.longClick
@@ -190,6 +191,16 @@ class AffairesInterfaceTest {
 
     private fun el(tag: String): SemanticsNodeInteraction = ecran.onNodeWithTag(tag, useUnmergedTree = true)
 
+    /**
+     * Un bouton d'une feuille de saisie : amené à l'écran avant d'être touché. Après une
+     * frappe, le clavier couvre le pied de la feuille, et un toucher hors de la zone visible
+     * se perd (rouge en CI, run 43777305471).
+     */
+    private fun toucherDansLaFeuille(noeud: SemanticsNodeInteraction) {
+        noeud.performScrollTo()
+        noeud.performClick()
+    }
+
     /** La liste montre les affaires actives ; le filtre « Suivi » retient un état, son compte sur la pastille. */
     @Test
     fun laListeSeFiltreParSuivi() {
@@ -299,7 +310,7 @@ class AffairesInterfaceTest {
         el(ReperesChamps.NOUVELLE.categorie("panne")).performClick()
         el(ReperesChamps.NOUVELLE.titre).performTextInput("Interphone muet")
         el(ReperesChamps.NOUVELLE.description).performTextInput("Le bouton du 3e ne sonne plus.")
-        el(ReperesNouvelle.ENVOYER).performClick()
+        toucherDansLaFeuille(el(ReperesNouvelle.ENVOYER))
         attendre(ReperesAffaires.carte("A-0009"))
         assertEquals("copro", service.creees.single().perimetre)
         assertEquals("panne", service.creees.single().categorie)
@@ -313,7 +324,7 @@ class AffairesInterfaceTest {
         el(ReperesNouvelle.NOUVELLE).performClick()
         attendre(ReperesChamps.NOUVELLE.titre)
         el(ReperesChamps.NOUVELLE.titre).performTextInput("Brouillon")
-        ecran.onNode(hasText("Annuler"), useUnmergedTree = true).performClick()
+        toucherDansLaFeuille(ecran.onNode(hasText("Annuler")))
         attendre(ReperesNouvelle.ABANDONNER)
         el(ReperesNouvelle.ABANDONNER).performClick()
         disparait(ReperesChamps.NOUVELLE.titre)
@@ -327,13 +338,13 @@ class AffairesInterfaceTest {
         el(repereGeste(GesteAffaire.Suite)).performClick()
         attendre(ReperesFeuilles.suiteEtat("en_cours"))
         el(ReperesFeuilles.suiteEtat("en_cours")).performClick()
-        el(ReperesFeuilles.SUITE_ENREGISTRER).performClick()
+        toucherDansLaFeuille(el(ReperesFeuilles.SUITE_ENREGISTRER))
         attendreTexte("Statut mis à jour")
         assertEquals("en_cours", service.suites.single().second.statut)
         el(repereGeste(GesteAffaire.Repondre)).performClick()
         attendre(ReperesFeuilles.REPONDRE_TEXTE)
         el(ReperesFeuilles.REPONDRE_TEXTE).performTextInput("Merci !")
-        el(ReperesFeuilles.REPONDRE_ENVOYER).performClick()
+        toucherDansLaFeuille(el(ReperesFeuilles.REPONDRE_ENVOYER))
         attendreTexte("Réponse envoyée")
         assertEquals(listOf(1 to "Merci !"), service.reponses)
     }
@@ -348,7 +359,7 @@ class AffairesInterfaceTest {
         el(ReperesAffaires.gesteSuite(GesteSuite.Modifier)).performClick()
         attendre(ReperesFeuilles.SUITE_TEXTE)
         el(ReperesFeuilles.SUITE_TEXTE).performTextInput(" Relancé.")
-        el(ReperesFeuilles.SUITE_ENREGISTRER).performClick()
+        toucherDansLaFeuille(el(ReperesFeuilles.SUITE_ENREGISTRER))
         attendre(ReperesAffaires.APPLIQUER)
         attendreTexte("L'affaire a avancé depuis")
         el(ReperesAffaires.APPLIQUER).performClick()
@@ -370,7 +381,7 @@ class AffairesInterfaceTest {
         el(repereGeste(GesteAffaire.Modifier)).performClick()
         attendre(ReperesChamps.MODIFIER.titre)
         el(ReperesChamps.MODIFIER.titre).performTextInput(" (local vélos)")
-        el(ReperesNouvelle.MODIFIER_ENREGISTRER).performClick()
+        toucherDansLaFeuille(el(ReperesNouvelle.MODIFIER_ENREGISTRER))
         attendreTexte("Affaire modifiée")
         assertEquals(listOf(EditionAffaire(titre = "Fuite dans le local vélos (local vélos)")), service.editions)
     }
