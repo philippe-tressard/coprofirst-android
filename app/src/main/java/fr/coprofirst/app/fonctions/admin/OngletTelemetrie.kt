@@ -150,7 +150,9 @@ private fun Filtre(etat: EtatTelemetrie, filtre: TableauTelemetrie.FiltreGestion
         }
         if (!filtre.gestionnaireDesigne) Aide(stringResource(R.string.admin_telemetrie_aucun_gestionnaire))
         if (filtre.sansApplique) {
-            val base = stringResource(R.string.admin_telemetrie_filtre_applique)
+            // La répartition par accès, quand la résidence la sert, est écartée elle aussi.
+            val repartition = if (etat.tableau?.canaux.isNullOrEmpty()) "" else stringResource(R.string.admin_telemetrie_filtre_repartition)
+            val base = stringResource(R.string.admin_telemetrie_filtre_applique, repartition)
             val jusquAu = filtre.nonDistingueJusquAu?.let { stringResource(R.string.admin_telemetrie_filtre_jusqu_au, FormatsDuSite.date(it)) }
             Aide(listOfNotNull(base, jusquAu).joinToString(" "))
         }

@@ -32,9 +32,15 @@ GÉNÉRÉS (`TablesAdmin`).
     <string name="admin_telemetrie_vide_message">Les données apparaîtront après les premières visites.</string>
     <string name="admin_telemetrie_sans_gestionnaire">Sans le gestionnaire du site</string>
     <string name="admin_telemetrie_aucun_gestionnaire">Aucun gestionnaire du site n’est désigné (Copropriété › Fonctionnement) : le filtre « sans le gestionnaire du site » n’a donc rien à écarter.</string>
-    <string name="admin_telemetrie_filtre_applique">Les vues du gestionnaire du site sont écartées des indicateurs, du graphe, des pages, des utilisateurs, de « Qui vient » et des arrivées par notification. Les erreurs, les gestes et les durées d’affichage, sans compte, ne changent pas.</string>
+    <string name="admin_telemetrie_filtre_applique">Les vues du gestionnaire du site sont écartées des indicateurs, du graphe, %1$sdes pages, des utilisateurs, de « Qui vient » et des arrivées par notification. Les erreurs, les gestes et les durées d’affichage, sans compte, ne changent pas.</string>
     <string name="admin_telemetrie_filtre_jusqu_au">Jusqu’au %1$s, les agrégats ne distinguaient pas le gestionnaire : ses vues y restent comptées.</string>
     <string name="admin_telemetrie_pages_vues">Pages les plus vues</string>
+    <!-- « Accès : site ou application » (#127), les mots de l'iOS (`TextesTelemetrie`, `CanauxAcces.svelte`). -->
+    <string name="admin_telemetrie_filtre_repartition">de la répartition par accès,\u0020</string>
+    <string name="admin_telemetrie_acces">Accès : site ou application</string>
+    <string name="admin_telemetrie_vues_et_part">%1$s vues · %2$s %%</string>
+    <string name="admin_telemetrie_un_seul_acces">Toutes les vues de la période viennent de : %1$s. L’application ne compte ses pages vues que depuis la version qui les envoie.</string>
+    <string name="admin_telemetrie_utilisateurs_par_acces">Un utilisateur qui passe par le site et par l’application compte dans les deux lignes : les utilisateurs ne s’additionnent pas.</string>
     <string name="admin_telemetrie_utilisateurs_actifs">Utilisateurs actifs</string>
     <string name="admin_telemetrie_sur_le_site">Les erreurs vues par les résidents, « Qui vient », le retour des comptes, les gestes aboutis, les arrivées par notification et les durées d’affichage se consultent sur le site.</string>
     <string name="admin_telemetrie_vue_jour">Jour</string>
