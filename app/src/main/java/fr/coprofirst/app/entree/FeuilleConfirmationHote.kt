@@ -24,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,7 +48,10 @@ import fr.coprofirst.app.session.PreuveHote
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FeuilleConfirmationHote(confirmation: ConfirmationHote, parcours: ActionsEntree) {
-    ModalBottomSheet(onDismissRequest = parcours::renoncerHote) {
+    // Ouverte ENTIÈRE : à mi-hauteur, « Me connecter à cette adresse » restait sous le bord
+    // sur un petit écran (les tests d'interface l'ont vu, #119).
+    val etat = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ModalBottomSheet(onDismissRequest = parcours::renoncerHote, sheetState = etat) {
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
