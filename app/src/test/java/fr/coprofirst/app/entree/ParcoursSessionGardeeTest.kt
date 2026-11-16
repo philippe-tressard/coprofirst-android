@@ -64,12 +64,15 @@ class ParcoursSessionGardeeTest {
         Dispatchers.resetMain()
     }
 
+    /** Les résidences dont la session s'est close (#162). */
+    private val closes = mutableListOf<Installation>()
+
     private fun lancer(): ParcoursEntree {
         val base = { _: Any -> serveur.url("/api").toString() }
         val sessions = SessionsParHote(OkHttpClient(), gardees)
         return ParcoursEntree(
             Decouverte(OkHttpClient(), Dispatchers.Unconfined, base), sessions,
-            Connexion(sessions, Dispatchers.Unconfined, base), connues, baseApi = base,
+            Connexion(sessions, Dispatchers.Unconfined, base), connues, baseApi = base, apresSortie = { closes += it },
         ) { PreuveHote.Declaree }.also { it.deverrouillage = Deverrouillage { chiffre, _ -> chiffre } }
     }
 
@@ -113,6 +116,7 @@ class ParcoursSessionGardeeTest {
         assertEquals("a@exemple.test", etat.email)
         assertTrue(etat.parMotDePasse)
         assertFalse(gardees.contient(hote))
+        assertEquals("la mesure jette ce qui restait pour elle", listOf(residence), closes)
         // Plus rien de gardé : le retour mène à l'accueil.
         parcours.retour()
         assertEquals(EcranEntree.Accueil, parcours.etat.value.ecran)

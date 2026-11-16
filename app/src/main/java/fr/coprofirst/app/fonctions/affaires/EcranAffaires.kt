@@ -30,7 +30,9 @@ import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.commun.AvisEphemere
 import fr.coprofirst.app.commun.MessageErreur
+import fr.coprofirst.app.commun.PageHorsLigne
 import fr.coprofirst.app.commun.TonAvis
+import fr.coprofirst.app.commun.gesteEnLigne
 import fr.coprofirst.app.commun.onglets.BarreOnglets
 import fr.coprofirst.app.commun.onglets.OngletsSurLeSite
 import fr.coprofirst.app.commun.phrase
@@ -91,8 +93,10 @@ internal class ContexteAffaires(
 fun EcranAffaires(contexte: ContexteDeMenu) {
     val service = remember(contexte.session) { ServiceAffairesApi(contexte.session) }
     val adresse = contexte.session.installation.url
-    EcranAffaires(service, contexte.barre, contexte.droits, { id -> OngletsSurLeSite.lien("/tickets/$id", adresse) }) { id ->
-        contexte.ouvrir(Destination.Element(NATURE_AFFAIRE, id.toString()))
+    PageHorsLigne {
+        EcranAffaires(service, contexte.barre, contexte.droits, { id -> OngletsSurLeSite.lien("/tickets/$id", adresse) }) { id ->
+            contexte.ouvrir(Destination.Element(NATURE_AFFAIRE, id.toString()))
+        }
     }
 }
 
@@ -105,12 +109,14 @@ fun EcranFicheAffaire(contexte: ContexteDeMenu, id: String) {
     val service = remember(contexte.session) { ServiceAffairesApi(contexte.session) }
     val avis = remember { AvisDuGeste() }
     AvisEphemere(avis, Modifier.fillMaxSize().background(LocalCouleurs.current.bg)) {
-        val numero = id.toIntOrNull()
-        val adresse = contexte.session.installation.url
-        val fiche = remember(service, contexte.droits, contexte.barre, avis) {
-            ContexteFiche(service, contexte.session, contexte.droits.cs, avis, contexte.barre) { OngletsSurLeSite.lien("/tickets/$it", adresse) }
+        PageHorsLigne {
+            val numero = id.toIntOrNull()
+            val adresse = contexte.session.installation.url
+            val fiche = remember(service, contexte.droits, contexte.barre, avis) {
+                ContexteFiche(service, contexte.session, contexte.droits.cs, avis, contexte.barre) { OngletsSurLeSite.lien("/tickets/$it", adresse) }
+            }
+            if (numero == null) MessageErreur(ErreurService.Introuvable, Modifier.padding(Mise.marge)) else FicheAffaire(numero, fiche)
         }
-        if (numero == null) MessageErreur(ErreurService.Introuvable, Modifier.padding(Mise.marge)) else FicheAffaire(numero, fiche)
     }
 }
 
@@ -143,8 +149,10 @@ internal fun EcranAffaires(
     // La barre du haut : les filtres de la Liste, puis « Nouvelle affaire ».
     ActionsDeBarre(barre) {
         if (actif == ONGLET_LISTE) MenuFiltres(etat)
-        IconButton({ nouvelle = true }, Modifier.testTag(ReperesNouvelle.NOUVELLE)) {
-            Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.nouvelle_titre), tint = LocalCouleurs.current.primary)
+        val geste = gesteEnLigne()
+        IconButton({ nouvelle = true }, geste.modifier.testTag(ReperesNouvelle.NOUVELLE), enabled = geste.actif) {
+            val couleurs = LocalCouleurs.current
+            Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.nouvelle_titre), tint = if (geste.actif) couleurs.primary else couleurs.textMuted)
         }
     }
     if (nouvelle) {

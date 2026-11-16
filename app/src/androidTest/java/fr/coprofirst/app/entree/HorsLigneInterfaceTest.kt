@@ -3,11 +3,22 @@
 
 package fr.coprofirst.app.entree
 
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import fr.coprofirst.app.commun.REPERE_BANDEAU
+import fr.coprofirst.app.commun.amenerTag
 import fr.coprofirst.app.commun.attendreTexte
+import fr.coprofirst.app.commun.toucherTag
+import fr.coprofirst.app.commun.toucherTexte
+import fr.coprofirst.app.fonctions.profil.FixturesProfil
+import fr.coprofirst.app.fonctions.profil.ReperesSaisie
 import fr.coprofirst.app.session.ChiffrementAesGcm
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.LecturesGardees
@@ -53,5 +64,37 @@ class HorsLigneInterfaceTest {
         ecran.attendreTexte("Consultation seule : les gestes reviennent avec le réseau.")
         ecran.onNodeWithTag(REPERE_BANDEAU).assertExists()
         ecran.attendreTexte("Hors ligne — à jour au")
+    }
+
+    /**
+     * #158 : en consultation, chaque page dit le hors ligne sous sa barre, et un geste qui a
+     * besoin du serveur garde sa place, désactivé, en disant pourquoi — ici au Profil.
+     */
+    @Test
+    fun enConsultationLeProfilGriseSesGestesServeurEtDitPourquoi() {
+        val gardees = SessionsGardeesEnMemoire()
+        val lectures = LecturesGardees(dossier, ChiffrementAesGcm { SecretKeySpec(ByteArray(32), "AES") }, gardees::contient)
+        val connues = serveur.residencesEnMemoire().apply { retenir(residence) }
+        gardees.garder("residence.exemple.test", "r1")
+        lectures.garder(ServeurDeTest.FIL_VIDE.toByteArray(), "application/json", "/api/flux", "residence.exemple.test")
+        lectures.garder(FixturesProfil.MOI.toByteArray(), "application/json", "/api/auth/me", "residence.exemple.test")
+        serveur.close()
+        val parcours = serveur.parcours(gardees = gardees, connues = connues, lectures = lectures)
+        ecran.setContent { NavigationEntree(serveur.apparence(), parcours) }
+        ecran.attendreTexte("Rien de neuf")
+        ecran.toucherTexte("Plus")
+        ecran.toucherTag("plus.profil")
+        ecran.attendreTexte("Camille EXEMPLE")
+        ecran.onNodeWithTag(REPERE_BANDEAU).assertExists()
+        ecran.amenerTag("profil.modifierIdentite").assertIsNotEnabled()
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, RAISON))
+        ecran.amenerTag(ReperesSaisie.option("complete")).assertIsNotEnabled()
+        ecran.amenerTag("profil.droits.refus").assertIsNotEnabled()
+        // Ce qui ne demande rien au serveur reste offert.
+        ecran.amenerTag("profil.theme.sombre").assertIsEnabled()
+    }
+
+    private companion object {
+        const val RAISON = "Indisponible hors ligne : ce geste revient avec le réseau."
     }
 }

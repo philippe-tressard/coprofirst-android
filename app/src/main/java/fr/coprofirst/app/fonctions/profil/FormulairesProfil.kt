@@ -36,6 +36,7 @@ import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.BoutonPlein
 import fr.coprofirst.app.commun.ConstantesDuServeur
 import fr.coprofirst.app.commun.MessageErreur
+import fr.coprofirst.app.commun.apercu.NomDeLaSaisie
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.launch
 
@@ -106,6 +107,11 @@ fun FormulaireIdentite(compte: UserRead, service: ServiceProfil, fermer: () -> U
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             ChampProfil(saisie.prenom, stringResource(R.string.profil_prenom), "profil.identite.prenom") { saisie = saisie.copy(prenom = it) }
             ChampProfil(saisie.nom, stringResource(R.string.profil_nom), "profil.identite.nom") { saisie = saisie.copy(nom = it) }
+            // Le nom tel qu'il sera affiché, rendu par le serveur (`NomDeLaSaisie` de l'iOS) : celui du compte d'emblée.
+            NomDeLaSaisie(
+                saisie.prenom, saisie.nom, service, "profil.identite.nom-affiche",
+                Modifier.padding(horizontal = Mise.marge + 4.dp), connu = compte.nomAffiche,
+            )
         }
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             ChampProfil(saisie.email, stringResource(R.string.profil_email), "profil.identite.email", clavier = KeyboardType.Email) {

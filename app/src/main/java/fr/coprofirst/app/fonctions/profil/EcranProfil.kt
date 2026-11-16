@@ -39,9 +39,11 @@ import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.GestesDeSortie
+import fr.coprofirst.app.commun.PageHorsLigne
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.Roles
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.gesteEnLigne
 import fr.coprofirst.app.navigation.ContexteDeMenu
 import fr.coprofirst.app.session.Installation
 
@@ -49,7 +51,7 @@ import fr.coprofirst.app.session.Installation
 @Composable
 fun EcranProfil(contexte: ContexteDeMenu) {
     val service = remember(contexte.session) { ServiceProfilApi(contexte.session) }
-    EcranProfil(service, contexte.session.installation, contexte.sortie, contexte.apparence, contexte.relireDroits)
+    PageHorsLigne { EcranProfil(service, contexte.session.installation, contexte.sortie, contexte.apparence, contexte.relireDroits) }
 }
 
 /** Les formulaires du Profil, chacun dans sa feuille. */
@@ -182,7 +184,8 @@ private fun SectionIdentite(compte: UserRead, modifier: () -> Unit) {
         compte.telephone?.let { LigneValeur(stringResource(R.string.profil_telephone), it) }
         compte.societe?.let { LigneValeur(stringResource(R.string.profil_societe), it) }
         compte.fonction?.let { LigneValeur(stringResource(R.string.profil_fonction), it) }
-        LigneAction(stringResource(R.string.profil_modifier_informations), "profil.modifierIdentite", onClick = modifier)
+        val geste = gesteEnLigne()
+        LigneAction(stringResource(R.string.profil_modifier_informations), "profil.modifierIdentite", actif = geste.actif, modifier = geste.modifier, onClick = modifier)
     }
 }
 
