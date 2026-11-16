@@ -109,3 +109,55 @@ jobs:
         # Au résumé ET au journal : le résumé ne se lit que connecté à GitHub, le journal
         # se lit par `gh run view --log` (les sessions, la coordination).
         run: python3 -I scripts/bilan_tests_interface.py app/build/outputs/androidTest-results | tee -a "$GITHUB_STEP_SUMMARY"
+
+  interface-tablette:
+    # Un ÉCHANTILLON sur tablette (pixel_tablet), comme l'échantillon iPad de l'iOS
+    # (coprofirst-ios#220) : l'entrée, le fil, le profil. Job à part, pour que le check requis
+    # « Interface (émulateur) » garde son nom (#69).
+    name: Interface tablette (échantillon)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Tout l'historique et les étiquettes : la version se déduit de git (app/build.gradle.kts).
+          fetch-depth: 0
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+      - name: Plateforme Android de compileSdk
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "platforms;android-37.2" > /dev/null
+      - name: Accélération matérielle de l'émulateur (KVM)
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Tests d'interface (parcours réel contre un serveur local en HTTPS)
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_tablet
+          disable-animations: true
+          script: ./gradlew --no-daemon --max-workers=4 :app:connectedDebugAndroidTest "-Pandroid.testInstrumentationRunnerArguments.class=fr.coprofirst.app.entree.ParcoursEntreeInterfaceTest,fr.coprofirst.app.fonctions.fil.FilInterfaceTest,fr.coprofirst.app.fonctions.profil.ProfilInterfaceTest"
+      - name: Rapport des tests d'interface (sur échec)
+        # Le journal ne nomme pas le test en cause : le rapport le dit (#65).
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: rapport-tests-interface-tablette
+          path: |
+            app/build/reports/androidTests/
+            app/build/outputs/androidTest-results/
+          retention-days: 7
+          if-no-files-found: ignore
+      - name: Bilan des tests d'interface dans le résumé (échecs, les plus lents)
+        # Vert comme rouge : les tests les plus lents, en regard du délai commun d'attente
+        # (DELAI_GESTE_MS), mesurent si ce délai tient sur l'émulateur de la CI (#119).
+        if: success() || failure()
+        # Au résumé ET au journal : le résumé ne se lit que connecté à GitHub, le journal
+        # se lit par `gh run view --log` (les sessions, la coordination).
+        run: python3 -I scripts/bilan_tests_interface.py app/build/outputs/androidTest-results | tee -a "$GITHUB_STEP_SUMMARY"
