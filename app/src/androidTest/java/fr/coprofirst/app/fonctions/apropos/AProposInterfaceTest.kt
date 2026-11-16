@@ -71,7 +71,7 @@ class AProposInterfaceTest {
     @Test
     fun laMentionDitLAnneeLeTexteEtLaVersion() {
         val mention = ecran.onNodeWithTag(ReperesAPropos.MENTION)
-        listOf("Les Glycines", "© 2024–", " · Syndicat des Glycines · app ").forEach { mention.assert(hasText(it, substring = true)) }
+        listOf("Les Glycines", "© 2024–", " ·\u00A0Syndicat des Glycines ·\u00A0app ").forEach { mention.assert(hasText(it, substring = true)) }
     }
 
     @Test

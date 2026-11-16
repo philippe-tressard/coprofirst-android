@@ -91,7 +91,7 @@ class DelegationsInterfaceTest {
             ecran.onAllNodes(hasTestTag(ReperesDelegations.accepter(8))).fetchSemanticsNodes().size,
         )
         ecran.attendreTexte("Du 06/11/2026 au 04/02/2027")
-        ecran.attendreTexte("Du 11/07/2026 — illimité")
+        ecran.attendreTexte("Du 11/07/2026 —\u00A0illimité")
         ecran.toucherTag(ReperesDelegations.accepter(12))
         ecran.attendreDisparitionTag(ReperesDelegations.accepter(12))
         ecran.attendreTexte("Délégation acceptée")

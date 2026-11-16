@@ -31,6 +31,7 @@ import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.onglets.ContexteOnglet
+import fr.coprofirst.app.commun.texte.Separateur
 
 /**
  * « Maintenance » (onglet `maintenance`), comme le site la partage et l'iOS la reprend :
@@ -88,7 +89,7 @@ private fun LigneTache(tache: SanteTaches.Tache) {
             }
             Text(
                 listOfNotNull(stringResource(R.string.admin_maintenance_dernier_rapport, FormatsDuSite.dateHeure(tache.derniere)), tache.noeud)
-                    .joinToString(" · "),
+                    .joinToString(Separateur.point),
                 style = MaterialTheme.typography.bodySmall,
                 color = couleurs.textMuted,
             )

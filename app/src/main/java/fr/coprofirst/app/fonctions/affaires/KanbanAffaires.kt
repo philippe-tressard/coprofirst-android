@@ -64,6 +64,7 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.texte.Separateur
 import kotlinx.coroutines.launch
 
 /** Une clôture qui pourrait absorber des affaires liées : on demande d'abord. */
@@ -284,7 +285,7 @@ private fun CarteDeplacable(
 @Composable
 private fun CarteKanban(affaire: Affaire, emoji: String?, ouvrir: () -> Unit, modifier: Modifier = Modifier, gestes: (() -> Unit)? = null) {
     val c = LocalCouleurs.current
-    val pied = listOf(listOfNotNull(emoji, affaire.categorieLibelle).joinToString(" "), affaire.numero).joinToString(" · ")
+    val pied = listOf(listOfNotNull(emoji, affaire.categorieLibelle).joinToString(" "), affaire.numero).joinToString(Separateur.point)
     val prestataires = affaire.prestataires.firstOrNull()?.let { premier ->
         if (affaire.prestataires.size > 1) "$premier +${affaire.prestataires.size - 1}" else premier
     }

@@ -133,7 +133,7 @@ class ChoixDePerimetresTest {
         var choix = ChoixDePerimetres().basculer("bat_a/toit", arbre)
         assertEquals("Bâtiment A › Toit", choix.libelleDeTete(bat, arbre))
         choix = choix.basculer("bat_a/hall", arbre)
-        assertEquals("dans l'ordre de l'arbre", "Bâtiment A › Hall · Toit", choix.libelleDeTete(bat, arbre))
+        assertEquals("dans l'ordre de l'arbre", "Bâtiment A › Hall ·\u00A0Toit", choix.libelleDeTete(bat, arbre))
         assertTrue(choix.teteRetenue("bat_a", arbre))
         assertFalse(choix.teteRetenue("bat_b", arbre))
         assertEquals("Bâtiment B", choix.libelleDeTete(arbre.noeud("bat_b")!!, arbre))

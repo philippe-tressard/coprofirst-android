@@ -45,9 +45,9 @@ class AProposTest {
 
     @Test
     fun laMentionAssembleLAnneeLeTexteEtLaVersion() {
-        assertEquals("© 2026 · app 0.8.13", AProposResidence.mention(null, 2026, "0.8.13"))
+        assertEquals("© 2026 ·\u00A0app 0.8.13", AProposResidence.mention(null, 2026, "0.8.13"))
         val lu = AProposResidence(anneeDebut = 2025, texte = "Syndicat des Glycines")
-        assertEquals("© 2025–2026 · Syndicat des Glycines", AProposResidence.mention(lu, 2026, null))
+        assertEquals("© 2025–2026 ·\u00A0Syndicat des Glycines", AProposResidence.mention(lu, 2026, null))
     }
 
     @Test

@@ -97,9 +97,9 @@ Les textes de la Communauté, écrits une fois — ceux du site et de l'iOS
     <string name="avis_filtre_note">%1$d ★</string>
     <string name="avis_auteur_et_conseil">Auteur et conseil seulement</string>
     <string name="avis_retenu">Retenu pour coprofirst.fr</string>
-    <string name="avis_ce_qui_a_manque">Ce qui a manqué — </string>
+    <string name="avis_ce_qui_a_manque">Ce qui a manqué —\u00A0</string>
     <string name="avis_reponse_equipe">Réponse de l\'équipe</string>
-    <string name="avis_reponse_equipe_le">Réponse de l\'équipe · %1$s</string>
+    <string name="avis_reponse_equipe_le">Réponse de l\'équipe ·\u00A0%1$s</string>
     <plurals name="avis_etoiles">
         <item quantity="one">%1$d étoile sur 5</item>
         <item quantity="many">%1$d étoiles sur 5</item>

@@ -42,6 +42,7 @@ import fr.coprofirst.app.commun.Roles
 import fr.coprofirst.app.commun.acces.LibellesAcces
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.onglets.ContexteOnglet
+import fr.coprofirst.app.commun.texte.Separateur
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.launch
 
@@ -183,7 +184,7 @@ private fun CarteCompte(compte: CompteEnAttente, enCours: Boolean, approuver: ()
     CarteDeFile(ReperesValidations.compte(compte.id), enCours, approuver, rejeter) {
         Text(compte.nomAffiche, style = MaterialTheme.typography.titleMedium, color = c.text)
         Text(
-            listOfNotNull(Roles.statut(compte.statut).libelle, compte.batimentNom).joinToString(" — "),
+            listOfNotNull(Roles.statut(compte.statut).libelle, compte.batimentNom).joinToString(Separateur.tiret),
             style = MaterialTheme.typography.bodyMedium,
             color = c.textMuted,
         )
@@ -205,7 +206,7 @@ private fun CarteCommande(commande: CommandeEnAttente, enCours: Boolean, approuv
         Text(commande.demandeurNom, style = MaterialTheme.typography.titleMedium, color = c.text)
         Text(
             listOfNotNull(commande.batiment, commande.lot, LibellesAcces.typeAcces(commande.type), FormatsDuSite.nombre(commande.quantite))
-                .joinToString(" · "),
+                .joinToString(Separateur.point),
             style = MaterialTheme.typography.bodyMedium,
             color = c.textMuted,
         )

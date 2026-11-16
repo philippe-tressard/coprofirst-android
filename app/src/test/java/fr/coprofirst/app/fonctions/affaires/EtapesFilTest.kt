@@ -4,10 +4,11 @@
 package fr.coprofirst.app.fonctions.affaires
 
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.texte.Separateur
+import java.time.Instant
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
-import java.time.Instant
 
 /** Le fil d'une affaire, comme l'iOS (`FilAffaireTests`). */
 class EtapesFilTest {
@@ -49,7 +50,7 @@ class EtapesFilTest {
     fun uneAffaireOuverteAQuatreSectionsEtUneSyntheseAVenir() {
         val etapes = EtapeFil.du(affaire(), t)
         assertEquals(listOf(EtapeFil.Cle.Demande, EtapeFil.Cle.Suite, EtapeFil.Cle.ComptesRendus, EtapeFil.Cle.Synthese), etapes.map { it.cle })
-        assertEquals("${FormatsDuSite.date(creeLe)} · Le conseil syndical", etapes[0].meta)
+        assertEquals("${FormatsDuSite.date(creeLe)} ·\u00A0Le conseil syndical", etapes[0].meta)
         assertEquals(EtapeFil.Etat.AVenir, etapes[1].etat)
         assertEquals("Aucune suite pour l'instant.", etapes[1].meta)
         assertEquals("À venir", etapes[3].meta)
@@ -67,9 +68,9 @@ class EtapesFilTest {
         )
         assertEquals(EtapeFil.Etat.EnCours, etape.etat)
         assertEquals(1, etape.elements.size)
-        assertEquals("Ouvert → Chez le syndic", etape.elements.single().titre)
+        assertEquals("Ouvert →\u00A0Chez le syndic", etape.elements.single().titre)
         val le = FormatsDuSite.date(Instant.parse("2026-11-03T10:00:00Z"))
-        assertEquals("Chez le syndic le $le — Le syndic est prévenu.", etape.resumePlie)
+        assertEquals("Chez le syndic le $le${Separateur.tiret}Le syndic est prévenu.", etape.resumePlie)
         assertEquals(true, etape.ouverteALaSuite && etape.pliable)
     }
 
@@ -87,7 +88,7 @@ class EtapesFilTest {
         assertEquals(false, etape.pliable)
         val lus = EtapeFil.comptesRendus(listOf(CompteRenduAffaire(7, creeLe, "En salle", "<p>Vu</p>", true)), false, t)
         assertEquals("1 point(s)", lus.meta)
-        assertEquals("En salle · CS et présents", lus.elements.single().ligne)
+        assertEquals("En salle ·\u00A0CS et présents", lus.elements.single().ligne)
     }
 
     @Test
@@ -119,7 +120,7 @@ class EtapesFilTest {
 
     @Test
     fun lesIntervenantsPortentLeRythmeApresLeDernier() {
-        assertEquals(listOf("Ascenseurs du Parc · ↺ Mensuel"), affaire().copy(prestataires = listOf(PrestataireAffaire(3, "Ascenseurs du Parc")), rythme = "↺ Mensuel").intervenants)
+        assertEquals(listOf("Ascenseurs du Parc ·\u00A0↺ Mensuel"), affaire().copy(prestataires = listOf(PrestataireAffaire(3, "Ascenseurs du Parc")), rythme = "↺ Mensuel").intervenants)
         assertEquals(emptyList<String>(), affaire().copy(rythme = "↺ Mensuel").intervenants)
     }
 }

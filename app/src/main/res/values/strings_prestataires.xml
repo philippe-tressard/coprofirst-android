@@ -54,7 +54,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="prestataires_aucun_fournisseur">Aucun fournisseur</string>
 
     <!-- Résiliation et remplacement (CarteContrat.svelte, contrat 1.29.0) -->
-    <string name="prestataires_remplace_par_capsule">🔁 Remplacé par %1$s · dès le %2$s</string>
+    <string name="prestataires_remplace_par_capsule">🔁 Remplacé par %1$s ·\u00A0dès le %2$s</string>
     <string name="prestataires_resilie_le_capsule">Résilié le %1$s</string>
     <string name="prestataires_resilie_au_capsule">Résilié au %1$s</string>
     <string name="prestataires_remplace_capsule">🔁 Remplace %1$s</string>
@@ -62,7 +62,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="prestataires_resilie_le">Résilié le</string>
     <string name="prestataires_remplace_par">Remplacé par</string>
     <string name="prestataires_remplace">Remplace</string>
-    <string name="prestataires_lie">%1$s — %2$s</string>
+    <string name="prestataires_lie">%1$s —\u00A0%2$s</string>
 
     <!-- Avis du conseil syndical (NotationsPrestataire.svelte, #207 de l'iOS) -->
     <string name="prestataires_avis_du_conseil">Avis du conseil syndical (%1$s)</string>

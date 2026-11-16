@@ -29,6 +29,7 @@ import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.Roles
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.texte.Separateur
 
 /** La largeur minimale d'un nombre clé : deux par ligne sur un téléphone, un seul en très grand texte. */
 private val LARGEUR_INDICATEUR = 150.dp
@@ -145,7 +146,7 @@ private fun Utilisateurs(utilisateurs: List<TableauTelemetrie.UtilisateurActif>)
                         FormatsDuSite.nombre(utilisateur.pages),
                     )
                     Text(
-                        listOfNotNull(utilisateur.statut?.let { Roles.statut(it).libelle }, vues).joinToString(" · "),
+                        listOfNotNull(utilisateur.statut?.let { Roles.statut(it).libelle }, vues).joinToString(Separateur.point),
                         style = MaterialTheme.typography.bodySmall,
                         color = couleurs.textMuted,
                     )

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+-->
+<!-- La montre Wear OS (#207). Aucun droit pour l'instant : la liaison au téléphone est
+     éteinte (`LiaisonMontre.ACTIF`). Un droit neuf se déclare aussi dans la section
+     « Sécurité des données » de Google Play (standards/14 §3 bis). Rien ne se sauvegarde
+     ni ne se transfère (les règles du téléphone, ressources-communes/) : le jeton de la
+     montre lui est propre, et la montre se relie de nouveau par le téléphone. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-feature android:name="android.hardware.type.watch" />
+
+    <application
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/regles_extraction"
+        android:fullBackupContent="@xml/regles_sauvegarde"
+        android:label="@string/nom_app"
+        android:supportsRtl="true"
+        android:theme="@android:style/Theme.DeviceDefault">
+
+        <!-- NON autonome : la montre se relie par le téléphone, qui lui donne la résidence
+             et son jeton (#207, lot 2). -->
+        <meta-data
+            android:name="com.google.android.wearable.standalone"
+            android:value="false" />
+
+        <activity
+            android:name=".ActiviteMontre"
+            android:exported="true"
+            android:taskAffinity="">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

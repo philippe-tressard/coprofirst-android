@@ -45,6 +45,7 @@ import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.commun.onglets.ContexteOnglet
+import fr.coprofirst.app.commun.texte.Separateur
 import fr.coprofirst.app.commun.texte.TexteDuSite
 import fr.coprofirst.app.session.ErreurService
 
@@ -92,7 +93,7 @@ internal fun TitreSection(texte: Int) {
 /** Le rendu factice d'une section, le temps de la lire. */
 @Composable
 internal fun SqueletteSection() {
-    Carte { Text("AG 2026 · 12/06/2026 · Groupe WhatsApp", style = MaterialTheme.typography.bodyMedium) }
+    Carte { Text("AG 2026${Separateur.point}12/06/2026${Separateur.point}Groupe WhatsApp", style = MaterialTheme.typography.bodyMedium) }
 }
 
 /** L'en-tête d'une fiche (l'AG, le cabinet) et son crayon. */

@@ -10,12 +10,13 @@ import fr.coprofirst.app.commun.fil.Chronologie
 import fr.coprofirst.app.commun.fil.CibleDuFil
 import fr.coprofirst.app.commun.fil.EcheanceDuFil
 import fr.coprofirst.app.commun.fil.ElementDuFil
+import fr.coprofirst.app.commun.texte.Separateur
+import java.time.Instant
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.time.Instant
 
 /**
  * `ElementDuFil` lu depuis des réponses de GET /flux À LA FORME DU SCHÉMA (`FluxResponse`),
@@ -71,7 +72,7 @@ class ElementDuFilTest {
         val datee = un(item("ticket_mis_a_jour", meta = AFFAIRE_DATEE)).echeance
         assertEquals(EcheanceDuFil("J-8", passee = false, debut = "2026-11-23T08:00:00Z", fin = "2026-11-25T16:00:00Z"), datee)
         val maintenant = Instant.parse("2026-11-15T10:00:00Z")
-        assertEquals("lun. 23 nov.${EcheanceDuFil.FLECHE}25 nov.", datee?.dates(maintenant))
+        assertEquals("lun. 23 nov.${Separateur.fleche}25 nov.", datee?.dates(maintenant))
         // Le même jour : la fin se tait ; passée, le délai perd sa teinte ; close, pas de délai.
         val passee = un(item("ticket_mis_a_jour", meta = """{"affaire": {"debut": "2026-11-12T08:00:00Z", "fin": "2026-11-12T16:00:00Z",
             "echeance": {"etat": "passee", "libelle": "Passé", "plusieurs_jours": false}}}""")).echeance

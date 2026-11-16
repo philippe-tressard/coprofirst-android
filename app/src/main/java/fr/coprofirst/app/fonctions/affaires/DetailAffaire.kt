@@ -10,6 +10,7 @@ import fr.coprofirst.api.modeles.TicketEvolutionRead
 import fr.coprofirst.api.modeles.TicketRead
 import fr.coprofirst.app.commun.lecture.Lecture
 import fr.coprofirst.app.commun.lecture.LieuServi
+import fr.coprofirst.app.commun.texte.Separateur
 import java.time.Instant
 
 /**
@@ -70,7 +71,7 @@ data class DetailAffaire(
         get() {
             val noms = prestataires.map { it.nom }.filter { it.isNotBlank() }
             if (noms.isEmpty()) return emptyList()
-            val dernier = listOfNotNull(noms.last(), rythme?.takeIf { it.isNotBlank() }).joinToString(" · ")
+            val dernier = listOfNotNull(noms.last(), rythme?.takeIf { it.isNotBlank() }).joinToString(Separateur.point)
             return noms.dropLast(1) + dernier
         }
 
@@ -147,7 +148,7 @@ data class SuiteAffaire(
     /** « Ouvert → Chez le syndic » — le nouvel état servi avec elle, l'ancien par les référentiels. */
     fun changementDEtat(servis: ReferentielsAffaires): String? {
         val nouveau = nouveauStatut?.let { servis.libelle(it, nouveauStatutLibelle) } ?: return null
-        return ancienStatut?.let { "${servis.libelle(it)} → $nouveau" } ?: nouveau
+        return ancienStatut?.let { "${servis.libelle(it)}${Separateur.fleche}$nouveau" } ?: nouveau
     }
 
     companion object {

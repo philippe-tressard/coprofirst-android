@@ -22,6 +22,7 @@
 #   7 sexies. aucun `performClick` dans les tests d'interface hors du geste commun, ni
 #      d'attente recopiée hors des attentes communes (#139) ;
 #   7 septies. la règle des tests d'interface est la v2 (junit4.v2), jamais la v1 ;
+#   7 octies. aucun séparateur du site (· — →) suivi d'une espace sécable ni recopié (#117) ;
 #   7 nonies. aucune version de contrat écrite dans les tests ni l'API simulée (#203) ;
 #   7 decies. aucune dépendance Google Play services ni Firebase que la licence ne nomme ;
 #   8. un seul bouton plein, `BoutonPlein` (commun/Boutons.kt) ;
@@ -107,10 +108,10 @@ autotest_motif() {
 }
 # $1 : motif ; $2 : message ; $3 (facultatif) : les fichiers DISPENSÉS, nommément (ERE
 # sur le chemin) ; $4 (facultatif) : les fichiers jugés (ERE), par défaut le code et les
-# ressources de l'app. Une dispense qui ne couvre plus aucun motif échoue : une
+# ressources des deux apps (téléphone, montre #207, ressources-communes/). Une dispense qui ne couvre plus aucun motif échoue : une
 # exception sans objet se retire.
 interdire() {
-  local f motif dispense=${3:-} perimetre=${4:-'^app/src/main/.*\.(kt|xml)$'}
+  local f motif dispense=${3:-} perimetre=${4:-'^((app|montre)/src/main|ressources-communes)/.*\.(kt|xml)$'}
   while IFS= read -r f; do
     [ -f "$f" ] || continue
     motif=$(premier_motif "$1" "$f")
@@ -190,7 +191,7 @@ while IFS= read -r f; do
   [ -f "$f" ] || continue
   fautes=$(feuille_mi_hauteur "$f")
   [ -z "$fautes" ] || echec "$f : feuille ouverte à mi-hauteur — sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true) ($fautes)"
-done < <(grep -E '^app/src/main/.*\.kt$' <<< "$FICHIERS")
+done < <(grep -E '^(app|montre)/src/main/.*\.kt$' <<< "$FICHIERS")
 
 # Les dates et les nombres s'écrivent par `FormatsDuSite`, seul, à la règle du site
 # (fr-FR, Paris) : aucun écran ne compose son propre format.
@@ -231,14 +232,18 @@ interdire "$ATTENTE_PRIVEE" "attente écrite à la main dans un test d'interface
 # multithreaded access to SnapshotStateObserver », par intermittence (CI de #80, #119).
 REGLE_V1='androidx\.compose\.ui\.test\.junit4\.create[A-Za-z]*ComposeRule'
 autotest_motif "règle de test v1" "$REGLE_V1" 'import androidx.compose.ui.test.junit4.createComposeRule' 'import androidx.compose.ui.test.junit4.v2.createComposeRule'
-interdire "$REGLE_V1" "règle de test v1 (dépréciée, effets hors du fil principal) — junit4.v2" "" '^app/src/(androidTest|test)/.*\.kt$'
+interdire "$REGLE_V1" "règle de test v1 (dépréciée, effets hors du fil principal) — junit4.v2" "" '^(app|montre)/src/(androidTest|test)/.*\.kt$'
 
-# La version se DÉDUIT de git (app/build.gradle.kts) : aucune PR ne l'écrit. Un
-# `versionCode`/`versionName` littéral reviendrait au conflit des PR parallèles.
+# La version se DÉDUIT de git (build racine, commun au téléphone et à la montre) : aucune
+# PR ne l'écrit. Un `versionCode`/`versionName` littéral reviendrait au conflit des PR
+# parallèles.
 VERSION_ECRITE='^[[:space:]]*version(Code|Name)[[:space:]]*=[[:space:]]*("|[0-9])'
 autotest_motif "version écrite" "$VERSION_ECRITE" '        versionCode = 9' '        versionCode = versionDeGit.code'
-motif=$(premier_motif "$VERSION_ECRITE" app/build.gradle.kts)
-[ -z "$motif" ] || echec "app/build.gradle.kts : version écrite à la main ($motif) — elle se déduit de git"
+for f in build.gradle.kts app/build.gradle.kts montre/build.gradle.kts; do
+  [ -f "$f" ] || { echec "$f absent : la règle de version ne s'exerce plus"; continue; }
+  motif=$(premier_motif "$VERSION_ECRITE" "$f")
+  [ -z "$motif" ] || echec "$f : version écrite à la main ($motif) — elle se déduit de git"
+done
 
 # Une version de contrat ÉCRITE dans un test ou l'API simulée vieillit au premier plancher
 # qui monte : l'installation simulée ne s'ouvre plus (#203, Audience). Elle se lit dans
@@ -259,7 +264,7 @@ while IFS= read -r f; do
   [ -f "$f" ] || continue
   motif=$(premier_motif "$HOTE_REEL" "$f")
   [ -z "$motif" ] || echec "$f : hôte fictif sur un VRAI domaine ($motif) — un nom réservé (.test, .invalid)"
-done < <(grep -E '^(app/src/(main|debug|test|androidTest)|client-api/src/test)/.*\.(kt|xml)$' <<< "$FICHIERS")
+done < <(grep -E '^((app|montre)/src/(main|debug|test|androidTest)|client-api/src/test)/.*\.(kt|xml)$' <<< "$FICHIERS")
 
 # Les générateurs du build (palettes, logo) : leurs tests, dont la génération des
 # fichiers recopiés. Chaque `scripts/test_*.py` versionné est joué.
@@ -284,6 +289,13 @@ python3 -I scripts/verifier_dependances_google.py --autotest >/dev/null \
   || echec "verifier_dependances_google.py : autotest en échec"
 python3 -I scripts/verifier_dependances_google.py \
   || echec "une dépendance Google n'est pas permise par la licence (python3 -I scripts/verifier_dependances_google.py)"
+
+# Un séparateur du site (· — →) ne finit jamais une ligne (#117) : il se lit dans la table
+# générée `Separateur`, et une ressource l'écrit suivi de `\u00A0`, confronté à la table.
+python3 -I scripts/verifier_separateurs.py --autotest >/dev/null \
+  || echec "verifier_separateurs.py : autotest en échec"
+python3 -I scripts/verifier_separateurs.py \
+  || echec "un séparateur du site est suivi d'une espace sécable, ou recopié (python3 -I scripts/verifier_separateurs.py)"
 
 # Un écran s'inscrit dans SON paquet (#109) : ni le build ni la navigation ne nomment un
 # menu. Les tables d'un menu se découvrent (`scripts/generer_tables_<menu>.py`), ses

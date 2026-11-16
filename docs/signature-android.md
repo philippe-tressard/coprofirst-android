@@ -57,9 +57,11 @@ bash scripts/construire-release.sh
 
 Le script refuse une branche, un arbre modifié ou un `main` décalé d'`origin`. Il
 affiche la version (`versionCode` = nombre de commits de `main`, toujours croissant ;
-`versionName` = `<coprofirst.version.base>.<versionCode>`), le chemin de l'AAB
-(`app/build/outputs/bundle/release/app-release.aab`), l'empreinte SHA-256 du certificat
-de téléversement et celle du fichier.
+`versionName` = `<coprofirst.version.base>.<versionCode>`), le chemin de chaque AAB
+— le téléphone (`app/build/outputs/bundle/release/app-release.aab`) et la montre Wear OS
+(`montre/build/outputs/bundle/release/montre-release.aab`, #207 : même app, même clé, code
+de version décalé d'un milliard pour rester unique et au-dessus) —, l'empreinte SHA-256
+du certificat de téléversement et celle de chaque fichier.
 
 ## 3. Première fois dans la Play Console
 

@@ -8,6 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalResources
 import fr.coprofirst.app.R
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.texte.Separateur
 import fr.coprofirst.app.commun.texte.TexteDuSite
 
 /**
@@ -118,7 +119,7 @@ data class EtapeFil(
 
         fun demande(affaire: DetailAffaire, t: TextesFil) = EtapeFil(
             Cle.Demande, t.demande, Etat.Realise,
-            listOfNotNull(FormatsDuSite.date(affaire.creeLe), affaire.auteur).joinToString(" · "),
+            listOfNotNull(FormatsDuSite.date(affaire.creeLe), affaire.auteur).joinToString(Separateur.point),
         )
 
         fun suite(affaire: DetailAffaire, t: TextesFil): EtapeFil {
@@ -142,7 +143,7 @@ data class EtapeFil(
             val date = FormatsDuSite.date(suite.date)
             val tete = suite.nouveauStatut?.let { t.le(servis.libelle(it, suite.nouveauStatutLibelle), date) } ?: date
             val texte = suite.contenu?.let(TexteDuSite::apercu).orEmpty()
-            return if (texte.isEmpty()) tete else "$tete — $texte"
+            return if (texte.isEmpty()) tete else "$tete${Separateur.tiret}$texte"
         }
 
         fun element(suite: SuiteAffaire, servis: ReferentielsAffaires, t: TextesFil): ElementFil {
@@ -150,7 +151,7 @@ data class EtapeFil(
             val auteur = suite.auteur ?: t.laResidence
             val ligne = listOfNotNull(if (changement == null) null else auteur, FormatsDuSite.dateHeure(suite.date))
             return ElementFil(
-                id = "suite.${suite.id}", titre = changement ?: auteur, ligne = ligne.joinToString(" · "),
+                id = "suite.${suite.id}", titre = changement ?: auteur, ligne = ligne.joinToString(Separateur.point),
                 apercu = suite.contenu?.let(TexteDuSite::apercu)?.takeIf { it.isNotEmpty() }, html = suite.contenu,
                 precise = suite.perimetrePrecise, pieces = suite.pieces, suite = suite,
             )
@@ -166,7 +167,7 @@ data class EtapeFil(
                 elements = lus.sortedByDescending { it.debut }.map { cr ->
                     ElementFil(
                         id = "cr.${cr.id}", titre = t.point(FormatsDuSite.dateHeure(cr.debut)),
-                        ligne = listOfNotNull(cr.ou, if (cr.conseilSeul) t.csEtPresents else null).joinToString(" · "),
+                        ligne = listOfNotNull(cr.ou, if (cr.conseilSeul) t.csEtPresents else null).joinToString(Separateur.point),
                         apercu = TexteDuSite.apercu(cr.contenu).takeIf { it.isNotEmpty() }, html = cr.contenu,
                     )
                 },
