@@ -69,7 +69,6 @@ GÉNÉRÉS (`TablesAdmin`).
     <!-- Utilisateurs (`OngletUtilisateurs.svelte`, `FiltresUtilisateurs.svelte`, `#lib/comptes.ts`) -->
     <string name="admin_utilisateurs_recherche">Rechercher un nom, un e-mail…</string>
     <string name="admin_utilisateurs_aucun_resultat">Aucun résultat</string>
-    <string name="admin_utilisateurs_type">Type</string>
     <string name="admin_utilisateurs_tous_types">Tous types</string>
     <string name="admin_utilisateurs_tous_comptes">Tous comptes</string>
     <string name="admin_utilisateurs_actifs">Actifs</string>

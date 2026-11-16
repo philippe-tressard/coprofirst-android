@@ -4,6 +4,7 @@
 package fr.coprofirst.app.fonctions.admin
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.isSelected
@@ -11,6 +12,8 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.printToString
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
@@ -111,11 +114,12 @@ class AdminInterfaceTest {
         ecran.onNodeWithTag(ReperesAdmin.GRAPHE).performScrollTo().assertIsDisplayed()
         // Le graphe a fait défiler la page : la pastille revient à l'écran avant d'être touchée.
         ecran.onNodeWithTag(ReperesAdmin.vue(PorteeTelemetrie.Mois)).performScrollTo().performClick()
-        // D'abord l'écran (le toucher est-il arrivé ?), puis la relecture qu'il déclenche.
-        ecran.waitUntil(DELAI_MS) {
+        // D'abord l'écran (le toucher est-il arrivé ?), puis la relecture qu'il déclenche ;
+        // un échec dit les vues demandées et l'arbre affiché.
+        attendre("la pastille « Mois » retenue") {
             ecran.onAllNodes(hasTestTag(ReperesAdmin.vue(PorteeTelemetrie.Mois)) and isSelected()).fetchSemanticsNodes().isNotEmpty()
         }
-        ecran.waitUntil(DELAI_MS) { service.portees.lastOrNull() == PorteeTelemetrie.Mois }
+        attendre("la relecture « Mois »") { service.portees.lastOrNull() == PorteeTelemetrie.Mois }
         ecran.onNodeWithTag(ReperesAdmin.FILTRE).performScrollTo().performClick()
         ecran.waitUntil(DELAI_MS) { service.sans.lastOrNull() == true }
     }
@@ -162,6 +166,16 @@ class AdminInterfaceTest {
         ecran.onNodeWithTag(ReperesAdmin.DEMANDE_MOTIF).performTextInput("Bail non fourni")
         ecran.onNodeWithTag(ReperesAdmin.DEMANDE_REJETER).performClick()
         ecran.waitUntil(DELAI_MS) { service.lectures.contains("rejeter-42-Bail non fourni") }
+    }
+
+    /** Attendre, et sur un échec dire ce que l'écran montrait (le rapport de la CI le garde). */
+    private fun attendre(quoi: String, condition: () -> Boolean) {
+        try {
+            ecran.waitUntil(DELAI_MS, condition)
+        } catch (e: ComposeTimeoutException) {
+            val arbre = ecran.onRoot().printToString(maxDepth = Int.MAX_VALUE)
+            throw AssertionError("$quoi : non vu en $DELAI_MS ms ; vues demandées ${service.portees}\n$arbre", e)
+        }
     }
 
     private companion object {
