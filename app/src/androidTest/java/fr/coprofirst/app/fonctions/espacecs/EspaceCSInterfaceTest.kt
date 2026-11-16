@@ -16,6 +16,7 @@ import fr.coprofirst.app.commun.StockageApparence
 import fr.coprofirst.app.commun.onglets.ReperesOnglets
 import fr.coprofirst.app.commun.toucher
 import fr.coprofirst.app.commun.toucherTag
+import fr.coprofirst.app.commun.validations.ReperesValidations
 import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.navigation.ContexteDeMenu
 import fr.coprofirst.app.navigation.DroitsOnglet
@@ -107,31 +108,31 @@ class EspaceCSInterfaceTest {
 
     @Test
     fun approuverUnNouvelArrivantPuisAccepterUneCommande() {
-        attendreRepere(ReperesEspaceCS.compte(501))
-        attendreRepere(ReperesEspaceCS.COMPTEUR_COMPTES)
-        ecran.toucherTag("${ReperesEspaceCS.compte(501)}.approuver")
-        ecran.toucherTag(ReperesEspaceCS.NOUVEL_ARRIVANT)
+        attendreRepere(ReperesValidations.compte(501))
+        attendreRepere(ReperesValidations.COMPTEUR_COMPTES)
+        ecran.toucherTag("${ReperesValidations.compte(501)}.approuver")
+        ecran.toucherTag(ReperesValidations.NOUVEL_ARRIVANT)
         attendre("Ancien résident")
-        ecran.toucherTag(ReperesEspaceCS.VALIDATION_ENREGISTRER)
-        disparu(ReperesEspaceCS.compte(501))
+        ecran.toucherTag(ReperesValidations.VALIDATION_ENREGISTRER)
+        disparu(ReperesValidations.compte(501))
         attendre("Compte activé — 1 lot rattaché.")
         assertTrue(residence.recues.any { it.startsWith("POST /api/admin/utilisateurs/501/accueil-arrivant") })
 
-        ecran.toucherTag("${ReperesEspaceCS.commande(71)}.approuver")
-        ecran.toucherTag(ReperesEspaceCS.COMMANDE_CODES)
-        ecran.onNodeWithTag(ReperesEspaceCS.COMMANDE_CODES).performTextInput("4521")
-        ecran.toucherTag(ReperesEspaceCS.COMMANDE_ACCEPTER)
-        disparu(ReperesEspaceCS.commande(71))
+        ecran.toucherTag("${ReperesValidations.commande(71)}.approuver")
+        ecran.toucherTag(ReperesValidations.COMMANDE_CODES)
+        ecran.onNodeWithTag(ReperesValidations.COMMANDE_CODES).performTextInput("4521")
+        ecran.toucherTag(ReperesValidations.COMMANDE_ACCEPTER)
+        disparu(ReperesValidations.commande(71))
         attendre("Commande approuvée")
         assertTrue(residence.recues.any { it.contains("/admin/commandes-acces/71/traiter") && it.contains("\"4521\"") })
     }
 
     @Test
     fun rejeterUnCompte() {
-        ecran.toucherTag("${ReperesEspaceCS.compte(503)}.rejeter")
+        ecran.toucherTag("${ReperesValidations.compte(503)}.rejeter")
         attendre("Rejeter le compte de Alix MODÈLE ?")
-        ecran.toucherTag(ReperesEspaceCS.REJET_CONFIRMER)
-        disparu(ReperesEspaceCS.compte(503))
+        ecran.toucherTag(ReperesValidations.REJET_CONFIRMER)
+        disparu(ReperesValidations.compte(503))
         attendre("Compte rejeté")
     }
 

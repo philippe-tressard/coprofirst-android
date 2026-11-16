@@ -58,6 +58,7 @@ import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.BoutonPlein
 import fr.coprofirst.app.commun.MessageErreur
+import fr.coprofirst.app.commun.acces.TypeAcces
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.launch

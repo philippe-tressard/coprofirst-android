@@ -33,6 +33,8 @@ import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.PastilleTeinte
+import fr.coprofirst.app.commun.acces.LibellesAcces
+import fr.coprofirst.app.commun.acces.TypeAcces
 import fr.coprofirst.app.commun.annuaire.Coordonnees
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.launch
@@ -118,11 +120,11 @@ private fun CarteGroupe(groupe: GroupeAcces, recuperer: () -> Unit) {
                     Text(objet.code, style = MaterialTheme.typography.bodyMedium, fontFamily = FontFamily.Monospace)
                     // Le site abrège ici (« 📡 TC ») : l'app prend le libellé de la table générée, comme l'iOS.
                     PastilleTeinte(
-                        LibellesMonLot.typeAcces(objet.type),
+                        LibellesAcces.typeAcces(objet.type),
                         if (objet.type == TypeAcces.Vigik.code) "badge-blue" else "badge-purple",
                         compacte = true,
                     )
-                    PastilleTeinte(LibellesMonLot.statutAcces(objet.statut), compacte = true)
+                    PastilleTeinte(LibellesAcces.statutAcces(objet.statut), compacte = true)
                 }
             }
         }

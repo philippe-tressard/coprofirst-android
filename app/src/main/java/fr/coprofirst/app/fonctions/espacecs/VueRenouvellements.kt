@@ -24,9 +24,12 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Typo
+import fr.coprofirst.app.commun.AlerteChiffre
 import fr.coprofirst.app.commun.Carte
+import fr.coprofirst.app.commun.Chiffre
 import fr.coprofirst.app.commun.EtatVide
 import fr.coprofirst.app.commun.PastilleTeinte
+import fr.coprofirst.app.commun.RangeeDeChiffres
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 
 /**

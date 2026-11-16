@@ -148,6 +148,26 @@ BOUTON_PLEIN='(^|[^A-Za-z])Button\('
 autotest_motif "bouton plein" "$BOUTON_PLEIN" '    Button(onClick = f) { Text("x") }' '    TextButton(onClick = f) { Text("x") }'
 interdire "$BOUTON_PLEIN" "bouton plein écrit à la main — passer par BoutonPlein" '^app/src/main/java/fr/coprofirst/app/commun/Boutons\.kt$'
 
+# Une feuille s'ouvre ENTIÈRE (`rememberModalBottomSheetState(skipPartiallyExpanded = true)`,
+# passé en `sheetState`) : à mi-hauteur, son bouton de pied restait sous le bord sur un petit
+# écran (« Me connecter à cette adresse », #119). Le défaut de Material est la mi-hauteur.
+feuille_mi_hauteur() {  # $1 : un fichier ; écrit les lignes fautives
+  grep -nE 'ModalBottomSheet\(' "$1" | grep -v 'sheetState' || true
+  grep -nE 'rememberModalBottomSheetState\(\)' "$1" || true
+}
+d=$(mktemp -d)
+printf '    ModalBottomSheet(onDismissRequest = fermer) {\n' > "$d/sans.kt"
+printf '    val etat = rememberModalBottomSheetState()\n' > "$d/defaut.kt"
+printf '    val etat = rememberModalBottomSheetState(skipPartiallyExpanded = true)\n    ModalBottomSheet(onDismissRequest = fermer, sheetState = etat) {\n' > "$d/sain.kt"
+{ [ -n "$(feuille_mi_hauteur "$d/sans.kt")" ] && [ -n "$(feuille_mi_hauteur "$d/defaut.kt")" ] && [ -z "$(feuille_mi_hauteur "$d/sain.kt")" ]; } \
+  || echec "verifier-depot.sh : autotest « feuille à mi-hauteur » en échec"
+rm -rf "${d:?}"
+while IFS= read -r f; do
+  [ -f "$f" ] || continue
+  fautes=$(feuille_mi_hauteur "$f")
+  [ -z "$fautes" ] || echec "$f : feuille ouverte à mi-hauteur — sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true) ($fautes)"
+done < <(grep -E '^app/src/main/.*\.kt$' <<< "$FICHIERS")
+
 # Les dates et les nombres s'écrivent par `FormatsDuSite`, seul, à la règle du site
 # (fr-FR, Paris) : aucun écran ne compose son propre format.
 FORMAT_MAIN='DateTimeFormatter|SimpleDateFormat|NumberFormat|DecimalFormat|String\.format\(|"%[0-9.]*[df]"'
