@@ -22,12 +22,9 @@ enum class PorteeTelemetrie(val code: String, @StringRes val libelle: Int) {
 /**
  * Le tableau de bord, tel que le serveur le sert (`utils/telemetrie_tableau`) — ce que
  * l'app en montre, comme l'iOS : les nombres clés, le graphe, les pages et les
- * utilisateurs actifs. Le reste (erreurs, « Qui vient », retour des comptes, gestes,
+ * utilisateurs actifs, et la répartition par accès — site ou application (`canaux`,
+ * coprofirst#2726, #127). Le reste (erreurs, « Qui vient », retour des comptes, gestes,
  * arrivées, durées) se lit sur le site.
- *
- * ⚠️ Divergence déclarée : pas de bloc « Accès : site ou application » (l'iOS le montre
- * depuis le contrat 1.31.0, coprofirst#2726) — le plancher de l'app Android (contrat
- * 1.27.0) ne sert pas la répartition par canal ; il viendra avec la montée du plancher.
  */
 data class TableauTelemetrie(
     val kpi: IndicateursTelemetrie,
@@ -36,11 +33,25 @@ data class TableauTelemetrie(
     val pages: List<PageVue>,
     val utilisateurs: List<UtilisateurActif>,
     val filtre: FiltreGestionnaire,
+    /** Les vues de la période par canal d'accès, telles que servies ; vide : un serveur qui ne la sert pas. */
+    val canaux: List<PartCanal> = emptyList(),
 ) {
     /** Un bâton : une heure, un jour (« MM-JJ »), un mois (« AAAA-MM ») ou une année. */
     data class Baton(val label: String, val total: Int, val uniques: Int?)
 
-    data class PageVue(val page: String, val total: Int, val uniques: Int)
+    data class PageVue(val page: String, val total: Int, val uniques: Int, val canaux: List<VuesCanal> = emptyList())
+
+    /**
+     * Un canal d'accès (« Site web », « App iPhone », « App Android ») : ses vues, sa part en %
+     * et ses utilisateurs, calculés par le serveur ; `visiteurs` absent au-delà de 30 jours.
+     */
+    data class PartCanal(val canal: String, val libelle: String, val vues: Int, val part: Int, val visiteurs: Int?)
+
+    /** Les vues d'une page du palmarès par un canal. */
+    data class VuesCanal(val canal: String, val libelle: String, val vues: Int)
+
+    /** La colonne « Accès » du palmarès n'a de sens qu'avec PLUSIEURS canaux (`TopPages.svelte`). */
+    val plusieursCanauxParPage: Boolean get() = pages.flatMap { p -> p.canaux.map { it.canal } }.toSet().size > 1
 
     data class UtilisateurActif(val nom: String, val statut: String?, val total: Int, val pages: Int, val derniereConnexion: Instant?)
 
@@ -62,11 +73,14 @@ internal fun TableauLu.lu() = TableauTelemetrie(
     kpi = kpi,
     graphe = chart.map { TableauTelemetrie.Baton(it.label, it.total, it.uniques) },
     titreGraphe = chartLabel,
-    pages = topPages.map { TableauTelemetrie.PageVue(it.page, it.total, it.uniques) },
+    pages = topPages.map { p ->
+        TableauTelemetrie.PageVue(p.page, p.total, p.uniques, p.canaux.orEmpty().map { TableauTelemetrie.VuesCanal(it.canal, it.libelle, it.vues) })
+    },
     utilisateurs = topUsers.map {
         TableauTelemetrie.UtilisateurActif(it.nom, it.statut, it.total, it.pages, it.derniereConnexion?.toInstant())
     },
     filtre = filtreGestionnaire.lu(),
+    canaux = canaux.orEmpty().map { TableauTelemetrie.PartCanal(it.canal, it.libelle, it.vues, it.part, it.visiteurs) },
 )
 
 private fun FiltreLu.lu() = TableauTelemetrie.FiltreGestionnaire(propose, gestionnaireDesigne, applique == "sans", nonDistingueJusquAu)
@@ -136,6 +150,10 @@ object LecturesTelemetrie {
             else -> label
         }
     }
+
+    /** L'accès d'une page du palmarès : « Site web 12 · App iPhone 3 » (le nombre ne quitte pas son libellé). */
+    fun accesDe(page: TableauTelemetrie.PageVue): String =
+        page.canaux.joinToString(" · ") { "${it.libelle}\u00A0${FormatsDuSite.nombre(it.vues)}" }
 
     private fun morceaux(label: String): List<Int> = label.split("-").mapNotNull(String::toIntOrNull)
 

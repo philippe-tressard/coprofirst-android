@@ -3,10 +3,12 @@
 
 package fr.coprofirst.app.fonctions.admin
 
-import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.ComposeTimeoutException
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isOn
 import androidx.compose.ui.test.isSelected
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -14,9 +16,9 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.printToString
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.printToString
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.api.modeles.IndicateursTelemetrie
 import fr.coprofirst.app.ThemeCoproFirst
@@ -25,7 +27,9 @@ import fr.coprofirst.app.commun.GestesDeSortie
 import fr.coprofirst.app.commun.PhraseAvis
 import fr.coprofirst.app.commun.StockageApparence
 import fr.coprofirst.app.commun.TonAvis
+import fr.coprofirst.app.commun.amenerTag
 import fr.coprofirst.app.commun.attendreQue
+import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.onglets.CadreAOnglets
 import fr.coprofirst.app.commun.onglets.OngletsSurLeSite
 import fr.coprofirst.app.commun.onglets.ReperesOnglets
@@ -37,12 +41,12 @@ import fr.coprofirst.app.navigation.PagesParDefaut
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsParHote
+import java.time.Instant
+import java.util.concurrent.CopyOnWriteArrayList
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.time.Instant
-import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * Le Paramétrage à l'écran, comme l'iOS (`AdminUITests`) : chacun n'y ouvre que ce que son
@@ -124,6 +128,17 @@ class AdminInterfaceTest {
             ecran.onAllNodes(hasTestTag(ReperesAdmin.FILTRE) and isOn()).fetchSemanticsNodes().isNotEmpty()
         }
         ecran.attendreQue("la relecture sans le gestionnaire", contexte = vuesDemandees) { service.sans.lastOrNull() == true }
+    }
+
+    /** #127 : « Accès : site ou application » — une ligne par canal servi, et l'accès de chaque page. */
+    @Test
+    fun laTelemetrieDitLAccesSiteOuApplication() {
+        ouvrir(administrateur)
+        ecran.onNodeWithTag(ReperesOnglets.onglet("telemetry")).toucher()
+        ecran.attendreQue("le premier tableau", contexte = vuesDemandees) { existe(ReperesAdmin.GRAPHE) }
+        ecran.amenerTag(ReperesAdmin.acces("android")).assert(hasText("36 vues · 25 %", substring = true))
+        ecran.amenerTag(ReperesAdmin.acces("web")).assert(hasText("18 utilisateurs", substring = true))
+        ecran.attendreTexte("App Android\u00A018")
     }
 
     @Test
@@ -224,9 +239,18 @@ class AdminInterfaceTest {
                 IndicateursTelemetrie(vues = 146, pages = 11, utilisateurs = 24, heurePointe = "18h"),
                 listOf(TableauTelemetrie.Baton("8h", 6, 3), TableauTelemetrie.Baton("9h", 14, 5), TableauTelemetrie.Baton("10h", 9, 4)),
                 "Vues par heure",
-                listOf(TableauTelemetrie.PageVue("/tableau-de-bord", 58, 21)),
+                listOf(
+                    TableauTelemetrie.PageVue(
+                        "/tableau-de-bord", 58, 21,
+                        listOf(TableauTelemetrie.VuesCanal("web", "Site web", 40), TableauTelemetrie.VuesCanal("android", "App Android", 18)),
+                    ),
+                ),
                 listOf(TableauTelemetrie.UtilisateurActif("Camille EXEMPLE", "locataire", 34, 9, null)),
                 TableauTelemetrie.FiltreGestionnaire(true, true, sansGestionnaire, null),
+                listOf(
+                    TableauTelemetrie.PartCanal("web", "Site web", 110, 75, 18),
+                    TableauTelemetrie.PartCanal("android", "App Android", 36, 25, 6),
+                ),
             )
         }
 

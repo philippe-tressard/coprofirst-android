@@ -15,6 +15,7 @@ import mockwebserver3.MockWebServer
 import okhttp3.OkHttpClient
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
@@ -84,6 +85,33 @@ class ServiceAdminApiTest {
         assertEquals("avec", serveur.takeRequest().url.queryParameter("gestionnaire"))
     }
 
+    /** #127 : la répartition par accès (contrat ≥ 1.31.0), servie et lue telle quelle — rien ne se recalcule. */
+    @Test
+    fun laRepartitionParAccesSeLitTelleQuelle() = runTest {
+        repondre(200, FixturesAdmin.tableau(canaux = true))
+        val tableau = service.tableauTelemetrie(PorteeTelemetrie.Jour, sansGestionnaire = false)
+        assertEquals(
+            listOf(
+                TableauTelemetrie.PartCanal("web", "Site web", 110, 75, 18),
+                TableauTelemetrie.PartCanal("android", "App Android", 36, 25, null),
+            ),
+            tableau.canaux,
+        )
+        val page = tableau.pages.single()
+        assertEquals(listOf(TableauTelemetrie.VuesCanal("web", "Site web", 40), TableauTelemetrie.VuesCanal("android", "App Android", 18)), page.canaux)
+        assertTrue(tableau.plusieursCanauxParPage)
+        assertEquals("Site web\u00A040 · App Android\u00A018", LecturesTelemetrie.accesDe(page))
+    }
+
+    /** Un serveur sans la répartition (contrat < 1.31.0) : aucun bloc, aucune colonne. */
+    @Test
+    fun sansRepartitionRienNeSAjoute() = runTest {
+        repondre(200, FixturesAdmin.tableau())
+        val tableau = service.tableauTelemetrie(PorteeTelemetrie.Jour, sansGestionnaire = false)
+        assertEquals(emptyList<TableauTelemetrie.PartCanal>(), tableau.canaux)
+        assertFalse(tableau.plusieursCanauxParPage)
+    }
+
     @Test
     fun unRefusSortAvecSaPhrase() = runTest {
         repondre(403, """{"detail": "Réservé à l'opérateur de la plateforme."}""")
@@ -99,6 +127,12 @@ class ServiceAdminApiTest {
 
 /** Les réponses inventées du Paramétrage, à la forme des routes : aucun nom réel, aucune machine réelle. */
 object FixturesAdmin {
+    /** La répartition par accès servie (contrat ≥ 1.31.0) : `canaux` du tableau, puis d'une page. */
+    private const val CANAUX = """
+      "canaux": [{"canal": "web", "libelle": "Site web", "vues": 110, "part": 75, "visiteurs": 18},
+                 {"canal": "android", "libelle": "App Android", "vues": 36, "part": 25}],"""
+    private const val PAGE_CANAUX = """, "canaux": [{"canal": "web", "libelle": "Site web", "vues": 40}, {"canal": "android", "libelle": "App Android", "vues": 18}]"""
+
     const val SANTE = """{
       "taches": [
         {"tache": "maintenance", "noeud": "nœud-a", "noeuds": [], "noeud_enregistre": true, "statut": "vigilance",
@@ -116,11 +150,12 @@ object FixturesAdmin {
     fun tableau(
         kpi: String = """{"utilisateurs": 24, "vues": 146, "pages": 11, "heure_pointe": "18h", "moy_vues_utilisateur": 6.1}""",
         filtre: String = """{"propose": true, "gestionnaire_designe": true, "applique": "avec", "non_distingue_jusqu_au": null}""",
+        canaux: Boolean = false,
     ) = """{
       "scope": "jour", "kpi": $kpi,
       "chart": [{"label": "8h", "total": 6, "uniques": 3}, {"label": "9h", "total": 14}],
       "chart_label": "Vues par heure",
-      "top_pages": [{"page": "/tableau-de-bord", "total": 58, "uniques": 21}],
+      "top_pages": [{"page": "/tableau-de-bord", "total": 58, "uniques": 21${if (canaux) PAGE_CANAUX else ""}}],${if (canaux) CANAUX else ""}
       "top_users": [{"nom": "Camille EXEMPLE", "derniere_connexion": "2026-11-10T18:42:00Z", "statut": "copropriétaire_résident", "total": 34, "pages": 9}],
       "erreurs": [], "performance": {"indicateurs": [], "pages": []}, "gestes": [], "arrivees": [],
       "retour": {"comptes_mesures": 0, "refus": 0, "dormants": [], "liste_dormants": [],
