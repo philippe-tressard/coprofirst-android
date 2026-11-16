@@ -145,6 +145,7 @@ class ServiceProfilApi(private val session: SessionOuverte) : ServiceProfil {
 | `EtatVide(titre, icone?, explication?)` | `ContentUnavailableView` | Une liste vide, dite. |
 | `Carte(ouvrir?, action?) { … }` | `Carte` | La surface d'une carte : `surface`, filet `border`, sans ombre ; touchable si `ouvrir`. |
 | `PastilleTeinte(libelle, badge, compacte?)`, `LibelleTeinte` | `PastilleTeinte` | Une pastille d'état : la classe `badge-*` du site → couleurs de la charte ; `LibelleTeinte.brut(v)` pour une valeur inconnue (en gris). |
+| `PastilleStatut(statut, libelle, compacte?)` | `PastilleStatut` | Le statut d'une affaire : la teinte par son code (`StatutsAffaire.pastilles`, générée de `statutsTicket`), le libellé servi, dit « Statut : … » — Mes affaires, Reporting de l'Espace CS, fil (#92). |
 | `BoutonPlein(libelle, actif?, enCours?)` | `.plein` | Le bouton principal ; le seul `Button` de l'app. |
 | `BoutonContour(libelle)` | `.contour` | Le bouton secondaire. |
 | `Roles.statut(v)`, `Roles.role(v)`, `Roles.statutAbrege(v)` | `RolesUtilisateur.libelleStatut` | Le libellé et la pastille (`LibelleTeinte`) d'un statut ou d'un rôle servi, depuis les tables générées ; une clé inconnue s'affiche brute. |
