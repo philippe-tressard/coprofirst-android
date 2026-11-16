@@ -57,6 +57,7 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.BoutonPlein
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.acces.TypeAcces
 import fr.coprofirst.app.commun.formats.FormatsDuSite
@@ -80,7 +81,7 @@ fun FeuilleDemander(lots: List<LotDuCompte>, service: ServiceMonLot, fermer: () 
         fait()
     }) {
         ChoixType(type) { type = it }
-        Section(R.string.monlot_lot_concerne)
+        Libelle(stringResource(R.string.monlot_lot_concerne))
         // Seuls SES lots : `/lots/mes-lots` ne sert jamais celui d'un voisin.
         Column(Modifier.selectableGroup().testTag(ReperesMonLot.DEMANDE_LOT)) {
             lots.forEach { lot -> Choix(stringResource(R.string.monlot_lot_numero, lot.numero), lotId == lot.id) { lotId = lot.id } }
@@ -185,15 +186,10 @@ private fun Feuille(
 
 @Composable
 private fun ChoixType(type: TypeAcces, choisir: (TypeAcces) -> Unit) {
-    Section(R.string.monlot_type_d_acces)
+    Libelle(stringResource(R.string.monlot_type_d_acces))
     Column(Modifier.selectableGroup()) {
         TypeAcces.entries.forEach { t -> Choix(t.libelle, t == type) { choisir(t) } }
     }
-}
-
-@Composable
-private fun Section(libelle: Int) {
-    Text(stringResource(libelle).uppercase(), style = Typo.libelle(), color = LocalCouleurs.current.textMuted)
 }
 
 @Composable

@@ -157,6 +157,10 @@ class ServiceProfilApi(private val session: SessionOuverte) : ServiceProfil {
 | `FlowCapsules(espace?) { … }` | `FlowCapsules`, `FlowEtiquettes` | Des `PastilleTeinte(…, compacte = true)` côte à côte, qui passent à la ligne au bord (6 dp) ; `espace = 8.dp` pour des `Pastille` touchables. |
 | `Chiffre(valeur, libelle, modifier?, alerte?, style?, repere?)`, `AlerteChiffre` | `CompteurFile`, `Chiffre` | Un chiffre (`kpi-card` du site) : la valeur (`FormatsDuSite.nombre`) et ce qu'elle compte ; `alerte` le teinte — `Avertissement` (orange, une file à traiter), `Danger` (rouge, un retard). Les compteurs de la file de travail et du Reporting. |
 | `RangeeDeChiffres { m -> … }`, `GRANDE_ECHELLE` | `ViewThatFits` | Des chiffres côte à côte, de même largeur (`m` : leur `Modifier`) ; l'un sous l'autre dès l'échelle de texte `GRANDE_ECHELLE` (1,5 : les tailles d'accessibilité de l'iOS), que suit aussi tout ce qui va côte à côte. |
+| `Intertitre(titre)` | `Intertitre` | Le titre d'une section d'une fiche, en serif, son compte dans le texte (« 🏢 Lots possédés (3) ») ; annoncé comme titre. |
+| `LigneFiche(libelle, valeur)` | `LigneFiche` | Une ligne « libellé — valeur » (le `<dl>` du site), lue d'un bloc ; la valeur, sélectionnable, passe dessous quand la place manque. |
+| `NoteEnCarte(texte, titre?, icone?)` | `NoteAcces` | Une note ou un état vide en ligne, dans une `Carte` : icône, titre facultatif, texte sourd. |
+| `Libelle(texte, modifier?, couleur?, fort?)` | `.styleLibelle()` | Le libellé en petites capitales, sourd : titre d'une section (`Modifier.semantics { heading() }` en `modifier`) ou libellé d'un champ. Le seul emploi de `Typo.libelle()` (`verifier-depot.sh`). `couleur`, `fort` : l'étoile d'un champ requis. |
 
 ⚠️ Divergence déclarée : `BoutonsFeuille` est au pied de la feuille, sous le pouce — l'iOS
 les pose dans la barre de la feuille ; une feuille d'Android n'en a pas.
@@ -182,7 +186,7 @@ fun EcranProfil(service: ServiceProfil) {
 | `LocalCouleurs.current` | Les couleurs de la palette en cours (clair ou sombre) : `primary`, `text`, `textMuted`, `surface`, `border`, `danger`, `successFond`… — un jeton de la charte chacune, générées depuis coprofirst. |
 | `MaterialTheme.colorScheme` | Les rôles de Material, tirés des mêmes jetons (`ThemeCoproFirst`). |
 | `Mise.rayon`, `Mise.marge`, `Mise.cible`, `Mise.ecart`, `Mise.mosaique`, `Mise.mosaiqueCompacte`, `Mise.vignette` | Les mesures communes (`Mise`). Cible tactile : 48 dp (règle d'Android). |
-| `Typo.titre()`, `Typo.libelle()` | Titre en serif (`Font.titre`), libellé de section (`.styleLibelle()`). |
+| `Typo.titre()`, `Typo.libelle()` | Titre en serif (`Font.titre`), libellé de section (`.styleLibelle()`) — ce dernier par `Libelle` seul. |
 | `Pictogrammes.icone(lucide)`, `Pictogrammes.parNom` | Une icône du site (nom Lucide) en icône de Material ; un nom absent prend le repli. Les tests refusent qu'une page, une rubrique du fil ou une nature d'affaire générées en manquent. ⚠️ L'iOS dessine les tracés Lucide du fil ; leur catalogue n'est pas publié avec la release. |
 | `NaturesDuFil.parType`, `NatureDuFil.de(type)`, `NatureDuFil.inconnue` | **Générée** (`naturesDuFil`) : ce que le fil montre d'un type d'élément — `libelle`, `couleur` et `fond` (des JETONS de `Couleurs` : `nature.couleur(LocalCouleurs.current)`), `icone`. Un type inconnu : neutre. |
 | `NaturesAffaire.toutes`, `NatureAffaire` | **Générée** (`naturesAffaire`, `teinteNature`) : les natures d'une affaire dans l'ordre du site — `code`, `libelle`, `icone`, `badge` (pour `PastilleTeinte`). |

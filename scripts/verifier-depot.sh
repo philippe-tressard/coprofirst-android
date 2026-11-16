@@ -148,6 +148,13 @@ BOUTON_PLEIN='(^|[^A-Za-z])Button\('
 autotest_motif "bouton plein" "$BOUTON_PLEIN" '    Button(onClick = f) { Text("x") }' '    TextButton(onClick = f) { Text("x") }'
 interdire "$BOUTON_PLEIN" "bouton plein écrit à la main — passer par BoutonPlein" '^app/src/main/java/fr/coprofirst/app/commun/Boutons\.kt$'
 
+# Le libellé en capitales (`.styleLibelle()` de l'iOS) s'écrit une fois, `Libelle` de
+# commun/Fiche.kt : recopié à la main dans une vingtaine d'écrans, il divergeait déjà —
+# ici sans capitales, là marqué titre, ailleurs en `titleSmall` (#84).
+LIBELLE_MAIN='Typo\.libelle\('
+autotest_motif "libellé à la main" "$LIBELLE_MAIN" '    Text(t.uppercase(), style = Typo.libelle())' '    Libelle(t, Modifier.semantics { heading() })'
+interdire "$LIBELLE_MAIN" "libellé en capitales écrit à la main — passer par Libelle (commun/Fiche.kt)" '^app/src/main/java/fr/coprofirst/app/commun/Fiche\.kt$'
+
 # Une feuille s'ouvre ENTIÈRE (`rememberModalBottomSheetState(skipPartiallyExpanded = true)`,
 # passé en `sheetState`) : à mi-hauteur, son bouton de pied restait sous le bord sur un petit
 # écran (« Me connecter à cette adresse », #119). Le défaut de Material est la mi-hauteur.

@@ -39,6 +39,8 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.Carte
+import fr.coprofirst.app.commun.LigneFiche
+import fr.coprofirst.app.commun.NoteEnCarte
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.annuaire.Coordonnees
 import fr.coprofirst.app.commun.cliquable
@@ -67,7 +69,7 @@ fun OngletLocation(donnees: DonneesMonLot) {
         }
     }
     if (groupes.isEmpty()) {
-        NoteMonLot(stringResource(if (archives) R.string.monlot_aucun_bail_termine else R.string.monlot_aucun_bail_actif_point))
+        NoteEnCarte(stringResource(if (archives) R.string.monlot_aucun_bail_termine else R.string.monlot_aucun_bail_actif_point))
     } else {
         groupes.forEach { CarteBaux(it, donnees.lots) }
     }

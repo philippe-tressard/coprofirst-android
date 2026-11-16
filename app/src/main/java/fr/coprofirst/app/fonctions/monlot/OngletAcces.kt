@@ -38,7 +38,9 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.Chargement
+import fr.coprofirst.app.commun.Intertitre
 import fr.coprofirst.app.commun.MessageErreur
+import fr.coprofirst.app.commun.NoteEnCarte
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.acces.LibellesAcces
 import fr.coprofirst.app.commun.acces.TypeAcces
@@ -82,7 +84,7 @@ private fun ContenuAcces(
         if (detenus.isNotEmpty() || !droits.locataire) {
             Intertitre(stringResource(if (type == TypeAcces.Vigik) R.string.monlot_badges_vigik else R.string.monlot_telecommandes))
             if (detenus.isEmpty()) {
-                NoteMonLot(
+                NoteEnCarte(
                     stringResource(if (type == TypeAcces.Vigik) R.string.monlot_aucun_badge else R.string.monlot_aucune_telecommande),
                     icone = if (type == TypeAcces.Vigik) Icons.Outlined.Sell else Icons.Outlined.SettingsRemote,
                 )
@@ -154,7 +156,7 @@ private fun AccesConfies(recus: List<AccesDetenu>) {
     val couleurs = LocalCouleurs.current
     Intertitre(stringResource(R.string.monlot_acces_confies))
     if (recus.isEmpty()) {
-        NoteMonLot(stringResource(R.string.monlot_aucun_acces_confie))
+        NoteEnCarte(stringResource(R.string.monlot_aucun_acces_confie))
         return
     }
     Text(stringResource(R.string.monlot_acces_confies_intro), style = MaterialTheme.typography.bodyMedium, color = couleurs.textMuted)

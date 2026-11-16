@@ -47,10 +47,10 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
-import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.EtatVide
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.commun.onglets.OngletsSurLeSite
 import fr.coprofirst.app.commun.texte.TexteRiche
@@ -134,7 +134,7 @@ private fun ListeFaq(lue: FaqLue, liens: LiensFaq, ouvrirAffaires: () -> Boolean
         if (lue.categories.isEmpty()) EtatVide(stringResource(R.string.faq_vide), icone = Icons.AutoMirrored.Outlined.HelpOutline)
         lue.categories.forEach { categorie ->
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(categorie.nom.uppercase(), style = Typo.libelle(), color = LocalCouleurs.current.textMuted)
+                Libelle(categorie.nom)
                 categorie.questions.forEach { question ->
                     LigneQuestion(question, ouverte == question.id, liens.question(question.id)) {
                         ouverte = if (ouverte == question.id) null else question.id

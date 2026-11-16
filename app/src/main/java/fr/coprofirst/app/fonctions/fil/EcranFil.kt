@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,9 +34,9 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
-import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.EtatVide
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.pieces.AvisOuverture
 import fr.coprofirst.app.commun.pieces.rememberOuverture
@@ -130,14 +129,11 @@ private fun ListeFil(parcours: ParcoursFil, session: SessionOuverte, ouvrir: (De
 /** L'en-tête d'un jour, collé en haut tant que sa journée défile (déjà en capitales). */
 @Composable
 private fun EnTeteJour(texte: String) {
-    val couleurs = LocalCouleurs.current
-    Text(
+    Libelle(
         texte,
-        style = Typo.libelle(),
-        color = couleurs.textMuted,
-        modifier = Modifier
+        Modifier
             .fillMaxWidth()
-            .background(couleurs.bg)
+            .background(LocalCouleurs.current.bg)
             .padding(horizontal = Mise.marge, vertical = 8.dp)
             .semantics { heading() },
     )
@@ -152,7 +148,7 @@ private fun SqueletteFil() {
         cible = CibleDuFil.Resume(null),
     )
     Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        EnTeteJour(stringResource(R.string.fil_aujourdhui).uppercase())
+        EnTeteJour(stringResource(R.string.fil_aujourdhui))
         repeat(3) { CarteDuFil(squelette, session = null, Modifier.padding(horizontal = Mise.marge)) }
     }
 }

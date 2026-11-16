@@ -41,6 +41,7 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.FlowCapsules
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.commun.formats.FormatsDuSite
@@ -79,7 +80,7 @@ internal fun RecapitulatifAvis(prestataire: Prestataire, service: ServicePrestat
     }
     if (exercices.isEmpty()) return
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Libelle(stringResource(R.string.prestataires_avis_du_conseil, FormatsDuSite.nombre(prestataire.nbNotations)))
+        Libelle(stringResource(R.string.prestataires_avis_du_conseil, FormatsDuSite.nombre(prestataire.nbNotations)), Modifier.semantics { heading() })
         exercices.forEach { exercice ->
             val ouvert = exerciceOuvert == exercice.annee
             EnteteExercice(exercice, ouvert) { exerciceOuvert = if (ouvert) null else exercice.annee }

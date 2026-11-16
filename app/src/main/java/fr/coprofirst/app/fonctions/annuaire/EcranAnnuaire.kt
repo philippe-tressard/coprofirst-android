@@ -51,6 +51,7 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Chargement
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.annuaire.Annuaire
 import fr.coprofirst.app.commun.annuaire.CarteContact
 import fr.coprofirst.app.commun.annuaire.Coordonnees
@@ -135,10 +136,7 @@ private fun SectionConseil(annuaire: Annuaire, site: String, session: SessionOuv
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Outlined.Apartment, contentDescription = null, tint = couleurs.textMuted, modifier = Modifier.size(14.dp))
-                        Text(
-                            (batiment?.let { stringResource(R.string.annuaire_batiment, it) } ?: stringResource(R.string.annuaire_sans_batiment)).uppercase(),
-                            style = Typo.libelle(), color = couleurs.textMuted,
-                        )
+                        Libelle(batiment?.let { stringResource(R.string.annuaire_batiment, it) } ?: stringResource(R.string.annuaire_sans_batiment))
                     }
                     // Le bâtiment titre déjà le groupe : la carte ne le répète pas.
                     membres.forEach { CarteContact(it, medaillonsDuConseil(it, site), session) }

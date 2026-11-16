@@ -42,6 +42,7 @@ import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.ChampRecherche
 import fr.coprofirst.app.commun.EtatVide
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.texte.Recherche
 
 /**
@@ -65,7 +66,7 @@ internal fun ChoixResident(
     val couleurs = LocalCouleurs.current
     val nom = residents.firstOrNull { it.id == choisi }?.choix
     Carte(Modifier.testTag(repere), ouvrir = { ouvert = true }, action = stringResource(R.string.delegations_choisir)) {
-        Text(libelle.uppercase(), style = Typo.libelle(), color = couleurs.textMuted)
+        Libelle(libelle)
         Text(
             nom ?: stringResource(R.string.delegations_choisir),
             style = MaterialTheme.typography.bodyLarge,

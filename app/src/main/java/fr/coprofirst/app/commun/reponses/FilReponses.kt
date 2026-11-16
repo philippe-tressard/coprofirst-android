@@ -43,7 +43,7 @@ import fr.coprofirst.api.modeles.ReponseCommunauteRead
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
-import fr.coprofirst.app.charte.Typo
+import fr.coprofirst.app.commun.Libelle
 import kotlinx.coroutines.launch
 
 /** « 💬 Répondre », « 💬 1 réponse », « 💬 3 réponses » — le bouton du site, l'en-tête par défaut. */
@@ -80,12 +80,7 @@ fun FilReponses(
     val portee = rememberCoroutineScope()
     val titre = if (entete != null) entete(reponses.size) else enteteReponses(reponses.size)
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
-            titre,
-            style = Typo.libelle(),
-            color = couleurs.textMuted,
-            modifier = Modifier.padding(top = 8.dp).semantics { heading() }.testTag(ReperesReponses.ENTETE),
-        )
+        Libelle(titre, Modifier.padding(top = 8.dp).semantics { heading() }.testTag(ReperesReponses.ENTETE))
         reponses.forEach { reponse ->
             LigneReponse(
                 reponse,

@@ -50,6 +50,7 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.BoutonsFeuille
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.session.ErreurService
@@ -222,7 +223,7 @@ private fun Interrupteur(libelle: Int, coche: Boolean, changer: (Boolean) -> Uni
 @Composable
 private fun Choix(titre: Int, noms: List<String>, retenu: Int?, choisir: (Int?) -> Unit) {
     val c = LocalCouleurs.current
-    LibelleCS(stringResource(titre))
+    Libelle(stringResource(titre))
     Column(Modifier.selectableGroup()) {
         (listOf(null to stringResource(R.string.espacecs_annuaire_aucun)) + noms.mapIndexed { i, n -> i to n }).forEach { (rang, nom) ->
             Row(
@@ -234,13 +235,4 @@ private fun Choix(titre: Int, noms: List<String>, retenu: Int?, choisir: (Int?) 
             }
         }
     }
-}
-
-/**
- * Le libellé d'un champ ou d'un groupe (petites capitales), en un seul endroit du paquet :
- * la couche commune le remplacera par `Libelle` (#84) sans toucher aux appelants.
- */
-@Composable
-internal fun LibelleCS(texte: String) {
-    Text(texte.uppercase(), style = Typo.libelle(), color = LocalCouleurs.current.textMuted)
 }

@@ -21,6 +21,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
@@ -29,6 +31,10 @@ import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.EtatVide
 import fr.coprofirst.app.commun.FlowCapsules
+import fr.coprofirst.app.commun.Intertitre
+import fr.coprofirst.app.commun.Libelle
+import fr.coprofirst.app.commun.LigneFiche
+import fr.coprofirst.app.commun.NoteEnCarte
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.onglets.ContexteOnglet
@@ -37,9 +43,6 @@ import fr.coprofirst.app.commun.pieces.LigneDocument
 import fr.coprofirst.app.commun.pieces.Ouverture
 import fr.coprofirst.app.commun.pieces.rememberOuverture
 import fr.coprofirst.app.commun.texte.TexteRiche
-import fr.coprofirst.app.fonctions.monlot.Intertitre
-import fr.coprofirst.app.fonctions.monlot.LigneFiche
-import fr.coprofirst.app.fonctions.monlot.NoteMonLot
 import fr.coprofirst.app.session.ErreurService
 
 /**
@@ -77,7 +80,7 @@ internal fun OngletContrats(donnees: DonneesPrestataires, service: ServicePresta
             color = LocalCouleurs.current.text,
         )
         if (courants.isEmpty()) {
-            NoteMonLot(stringResource(R.string.prestataires_contrats_archives_ranges), stringResource(R.string.prestataires_aucun_contrat_actif))
+            NoteEnCarte(stringResource(R.string.prestataires_contrats_archives_ranges), stringResource(R.string.prestataires_aucun_contrat_actif))
         }
         ReglesPrestataires.groupes(donnees).forEach { (code, contrats) ->
             Intertitre(donnees.equipement(code))
@@ -175,7 +178,7 @@ private fun lie(contrat: ContratLie): String = stringResource(R.string.prestatai
 @Composable
 private fun DetailContrat(contrat: Contrat, frequence: String?, documents: List<DocumentContrat>, ouverture: Ouverture) {
     HorizontalDivider(color = LocalCouleurs.current.border)
-    Libelle(stringResource(R.string.prestataires_le_contrat))
+    Libelle(stringResource(R.string.prestataires_le_contrat), Modifier.semantics { heading() })
     LigneFiche(stringResource(R.string.prestataires_debut), "📅 ${FormatsDuSite.dateCourte(contrat.dateDebut)}")
     contrat.dureeValeur?.let {
         LigneFiche(stringResource(R.string.prestataires_duree_initiale), "${FormatsDuSite.nombre(it)} ${contrat.dureeUnite.orEmpty()}".trim())
@@ -188,10 +191,10 @@ private fun DetailContrat(contrat: Contrat, frequence: String?, documents: List<
     contrat.remplacement.remplacePar?.let { LigneFiche(stringResource(R.string.prestataires_remplace_par), lie(it)) }
     contrat.remplacement.remplace.forEach { LigneFiche(stringResource(R.string.prestataires_remplace), lie(it)) }
     contrat.notes?.takeIf { it.isNotBlank() }?.let {
-        Libelle(stringResource(R.string.prestataires_description), Modifier.padding(top = 4.dp))
+        Libelle(stringResource(R.string.prestataires_description), Modifier.padding(top = 4.dp).semantics { heading() })
         TexteRiche(it, style = MaterialTheme.typography.bodyMedium)
     }
-    Libelle(stringResource(R.string.prestataires_documents, FormatsDuSite.nombre(documents.size)), Modifier.padding(top = 4.dp))
+    Libelle(stringResource(R.string.prestataires_documents, FormatsDuSite.nombre(documents.size)), Modifier.padding(top = 4.dp).semantics { heading() })
     if (documents.isEmpty()) {
         Text(stringResource(R.string.prestataires_aucun_document), style = MaterialTheme.typography.bodyMedium, color = LocalCouleurs.current.textMuted)
     }

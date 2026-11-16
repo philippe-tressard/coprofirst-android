@@ -39,11 +39,11 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
-import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.commun.AvisEphemere
 import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.EtatVide
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.navigation.ContexteDeMenu
@@ -197,7 +197,7 @@ private fun ListeNotifications(parcours: ParcoursNotifications, barre: BarreDuHa
 private fun LazyListScope.section(titre: Int, liste: List<NotificationRecue>, ligne: @Composable (NotificationRecue) -> Unit) {
     if (liste.isEmpty()) return
     item(key = "section-$titre") {
-        Text(stringResource(titre).uppercase(), style = Typo.libelle(), color = LocalCouleurs.current.textMuted)
+        Libelle(stringResource(titre))
     }
     items(liste, key = { it.id }) { n -> Box(Modifier.animateItem()) { ligne(n) } }
 }

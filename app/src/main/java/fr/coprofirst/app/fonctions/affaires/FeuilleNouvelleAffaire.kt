@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.selection.selectable
@@ -48,12 +47,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.selected
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.session.ErreurService
 
@@ -122,7 +123,7 @@ internal fun FeuilleNouvelleAffaire(
 @Composable
 private fun DepuisLeSite(poseLesReservees: Boolean) {
     val c = LocalCouleurs.current
-    TitreSection(R.string.nouvelle_depuis_le_site)
+    Libelle(stringResource(R.string.nouvelle_depuis_le_site), Modifier.semantics { heading() })
     val texte = stringResource(R.string.nouvelle_pieces_au_site) + " " +
         stringResource(if (poseLesReservees) R.string.nouvelle_reserve_au_site else R.string.nouvelle_conseil_au_site)
     Row(

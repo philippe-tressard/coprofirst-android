@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.Pastille
 import fr.coprofirst.app.commun.apercu.NomDeLaSaisie
 import fr.coprofirst.app.commun.apercu.ServiceNomsApi
@@ -111,7 +112,7 @@ internal fun FeuilleMembreSyndic(
         RapprochementServi(fiche.userId != null, null)
         Champ(fiche.fonction.orEmpty(), { fiche = fiche.copy(fonction = it) }, R.string.espacecs_annuaire_fonction, R.string.espacecs_annuaire_fonction_indication)
         Champ(fiche.email.orEmpty(), { fiche = fiche.copy(email = it.trim()) }, R.string.espacecs_annuaire_email, R.string.espacecs_annuaire_email, KeyboardType.Email)
-        LibelleCS(stringResource(if (telephones.size > 1) R.string.espacecs_annuaire_telephones else R.string.espacecs_annuaire_telephone))
+        Libelle(stringResource(if (telephones.size > 1) R.string.espacecs_annuaire_telephones else R.string.espacecs_annuaire_telephone))
         telephones.forEachIndexed { rang, numero ->
             Row(verticalAlignment = Alignment.CenterVertically) {
                 OutlinedTextField(
@@ -160,7 +161,7 @@ private fun ChampsIdentite(
     val noms = remember(session) { ServiceNomsApi(session) }
     val retenue = genre ?: AnnuaireCS.civiliteParDefaut
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        LibelleCS(stringResource(R.string.espacecs_annuaire_civilite))
+        Libelle(stringResource(R.string.espacecs_annuaire_civilite))
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             TablesEspaceCS.civilites.forEach { c -> Pastille(c, retenue == c) { changerGenre(c) } }
         }
