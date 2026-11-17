@@ -48,6 +48,7 @@ import fr.coprofirst.app.commun.lecture.EtiquetteLieu
 import fr.coprofirst.app.commun.lecture.Lecture
 import fr.coprofirst.app.commun.lecture.PastilleLecture
 import fr.coprofirst.app.commun.lecture.enClair
+import fr.coprofirst.app.commun.miseenpage.rangeeChoisie
 import fr.coprofirst.app.commun.texte.TexteDuSite
 import fr.coprofirst.app.session.ErreurService
 
@@ -115,7 +116,8 @@ internal fun CarteAffaire(affaire: Affaire, archive: Boolean, ouvrir: () -> Unit
         date, affaire.lieu?.let { enClair(it) }, Lecture.aMontrer(affaire.lecture)?.let { enClair(it) },
         TexteDuSite.apercu(affaire.apercu),
     ).joinToString(", ")
-    CarteTouchable(affaire.urgente, archive, vocal, ouvrir, modifier, gestes = gestes) {
+    // En fenêtre large, la carte dont la fiche est ouverte à côté se souligne (#69).
+    CarteTouchable(affaire.urgente, archive, vocal, ouvrir, modifier.rangeeChoisie(NATURE_AFFAIRE, affaire.id.toString()), gestes = gestes) {
         Carte {
             Column(Modifier.padding(start = if (affaire.urgente && !archive) 4.dp else 0.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {

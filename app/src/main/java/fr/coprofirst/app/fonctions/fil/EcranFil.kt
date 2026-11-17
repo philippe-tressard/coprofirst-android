@@ -43,6 +43,8 @@ import fr.coprofirst.app.commun.fil.CarteDuFil
 import fr.coprofirst.app.commun.fil.CibleDuFil
 import fr.coprofirst.app.commun.fil.ElementDuFil
 import fr.coprofirst.app.commun.fil.TextesFil
+import fr.coprofirst.app.commun.miseenpage.OccuperLaColonneDeFiche
+import fr.coprofirst.app.commun.miseenpage.rangeeChoisie
 import fr.coprofirst.app.commun.pieces.AvisOuverture
 import fr.coprofirst.app.commun.pieces.rememberOuverture
 import fr.coprofirst.app.navigation.ContexteDeMenu
@@ -91,6 +93,8 @@ private fun ListeFil(parcours: ParcoursFil, session: SessionOuverte, ouvrir: (De
     val maintenant = remember(etat.elements) { Instant.now() }
     var resume by rememberSaveable { mutableStateOf<String?>(null) }
     val ouverture = rememberOuverture(session)
+    // En fenêtre large, la fiche d'un élément du fil s'ouvre à côté de lui (#69).
+    OccuperLaColonneDeFiche()
     PullToRefreshBox(isRefreshing = etat.rafraichissement, onRefresh = parcours::rafraichir, modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -117,7 +121,9 @@ private fun ListeFil(parcours: ParcoursFil, session: SessionOuverte, ouvrir: (De
                     CarteDuFil(
                         element,
                         session,
-                        Modifier.padding(horizontal = Mise.marge).animateItem(),
+                        Modifier.padding(horizontal = Mise.marge).animateItem().let { m ->
+                            if (destination is DestinationDuFil.Element) m.rangeeChoisie(destination.nature, destination.id.toString()) else m
+                        },
                         maintenant = maintenant,
                         action = destination?.let { actionDuFil(it) },
                         ouvrir = when (destination) {

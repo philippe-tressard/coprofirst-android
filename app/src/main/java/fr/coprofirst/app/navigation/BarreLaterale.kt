@@ -3,7 +3,12 @@
 
 package fr.coprofirst.app.navigation
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -14,13 +19,17 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.PermanentDrawerSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.Orientation
+import fr.coprofirst.app.charte.Mise
 
 /**
  * Comment la résidence se navigue (#69), comme l'iOS (`PresentationNavigation`, #221) : choisi
@@ -70,3 +79,23 @@ internal fun BarreLaterale(pages: List<PageDeNavigation>, ouverte: String?, choi
 
 /** La largeur de la barre latérale : les libellés du site y tiennent, la page garde le reste. */
 private val LARGEUR = 260.dp
+
+/**
+ * Une fiche dans la colonne d'une fenêtre large (#69) : la page garde la barre du haut (son
+ * titre, ses boutons, la cloche) ; la fiche pose dans SA colonne son titre et ce qu'elle
+ * mettrait en barre (`barre`), comme `dansLaColonneDeFiche` de l'iOS.
+ */
+@Composable
+internal fun FicheEnColonne(titre: String, barre: BarreDuHaut, contenu: @Composable () -> Unit) {
+    Column(Modifier.fillMaxSize()) {
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = Mise.cible).padding(start = Mise.marge, end = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            EnTeteDeBarre(barre.titre ?: titre, barre.sousTitre, Modifier.weight(1f).semantics { heading() })
+            ActionsDeclarees(barre)
+        }
+        HorizontalDivider(color = LocalCouleurs.current.border)
+        Box(Modifier.weight(1f)) { contenu() }
+    }
+}

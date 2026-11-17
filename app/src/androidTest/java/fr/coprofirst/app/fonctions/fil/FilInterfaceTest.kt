@@ -22,6 +22,7 @@ import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.entree.NavigationEntree
 import fr.coprofirst.app.entree.entrerDansLaResidence
 import fr.coprofirst.app.entree.ServeurDeTest
+import fr.coprofirst.app.navigation.fermerLaFiche
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -76,7 +77,10 @@ class FilInterfaceTest {
         ecran.attendreTexte("Voir sur le site")
     }
 
-    /** Une carte sondage pousse la fiche du sondage, comme l'iOS (`SondageView`) ; le retour la ferme. */
+    /**
+     * Une carte sondage ouvre la fiche du sondage, comme l'iOS (`SondageView`) — poussée au téléphone,
+     * dans sa colonne sur la tablette (#69) ; le retour la ferme.
+     */
     @Test
     fun leSondageSOuvreSurSaFiche() {
         ecran.attendreTag("fil.sondage_ouvert:3")
@@ -86,7 +90,7 @@ class FilInterfaceTest {
         ecran.attendreTag(ReperesSondage.QUESTION)
         ecran.attendreTexte("Samedi 6 juin")
         ecran.attendreTexte("Sondage") // le titre de la barre du haut
-        ecran.toucherDescription("Retour")
+        ecran.fermerLaFiche()
         ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(ReperesSondage.QUESTION)).fetchSemanticsNodes().isEmpty() }
     }
 

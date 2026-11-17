@@ -53,6 +53,7 @@ import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.EtatVide
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.miseenpage.OccuperLaColonneDeFiche
 import kotlinx.coroutines.launch
 
 /**
@@ -64,6 +65,8 @@ import kotlinx.coroutines.launch
 @Composable
 internal fun ArchivesAffaires(ctx: ContexteAffaires) {
     val etat = ctx.etat
+    // En fenêtre large, la fiche d'une affaire s'ouvre à côté de la liste (#69) ; le Kanban la pousse.
+    OccuperLaColonneDeFiche()
     val portee = rememberCoroutineScope()
     var rafraichit by remember { mutableStateOf(false) }
     // Les années qu'on a dépliées ou repliées à la main ; les autres suivent la règle : la plus récente ouverte.
