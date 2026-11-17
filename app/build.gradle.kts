@@ -107,6 +107,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.core.ktx)
+    // La posture d'un pliable (#242) : le pli, sa position, à plat ou entrouvert (Jetpack WindowManager).
+    implementation(libs.androidx.window)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)

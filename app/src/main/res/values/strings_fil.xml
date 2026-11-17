@@ -11,6 +11,8 @@ Les textes du fil d'activité, écrits une fois — ceux de l'iOS (`FilView`, `C
     <string name="fil_vide_detail">Le fil se remplira des affaires, actualités et documents de la résidence.</string>
     <string name="fil_aujourdhui">Aujourd\'hui</string>
     <string name="fil_hier">Hier</string>
+    <string name="fil_veille">Veille</string>
+    <string name="fil_lendemain">Lendemain</string>
     <string name="fil_entete">%1$s ·\u00A0%2$s</string>
     <string name="fil_urgent">Urgent</string>
     <string name="fil_voir_resume">Voir le résumé</string>

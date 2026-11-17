@@ -43,6 +43,7 @@ import fr.coprofirst.app.commun.fil.CarteDuFil
 import fr.coprofirst.app.commun.fil.CibleDuFil
 import fr.coprofirst.app.commun.fil.ElementDuFil
 import fr.coprofirst.app.commun.fil.TextesFil
+import fr.coprofirst.app.commun.miseenpage.LocalJourDuCarnet
 import fr.coprofirst.app.commun.miseenpage.OccuperLaColonneDeFiche
 import fr.coprofirst.app.commun.miseenpage.rangeeChoisie
 import fr.coprofirst.app.commun.pieces.AvisOuverture
@@ -61,6 +62,8 @@ import java.time.Instant
  * la fiche d'un sondage ou d'une affaire, poussée par la porte (`DestinationDuFil`).
  *
  * En tête, le logement de l'utilisateur, qui ouvre « Mes lots & accès » (`LogementDuFil`).
+ *
+ * Dans le carnet d'un pliable déplié (#242), une journée par double page (`FilEnCarnet.kt`).
  *
  * ⚠️ Divergence déclarée : une notification touchée n'ouvre pas encore son élément (#23).
  */
@@ -95,47 +98,61 @@ private fun ListeFil(parcours: ParcoursFil, session: SessionOuverte, ouvrir: (De
     val ouverture = rememberOuverture(session)
     // En fenêtre large, la fiche d'un élément du fil s'ouvre à côté de lui (#69).
     OccuperLaColonneDeFiche()
-    PullToRefreshBox(isRefreshing = etat.rafraichissement, onRefresh = parcours::rafraichir, modifier = Modifier.fillMaxSize()) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            etat.echec?.let { echec ->
-                item(key = "echec") { MessageErreur(echec, Modifier.padding(horizontal = Mise.marge)) { parcours.rafraichir() } }
-            }
-            if (ouverture.echec != null) item(key = "ouverture") { AvisOuverture(ouverture, Modifier.padding(horizontal = Mise.marge)) }
-            if (etat.elements.isEmpty() && etat.echec == null) {
-                item(key = "vide") {
-                    EtatVide(
-                        titre = stringResource(R.string.fil_vide),
-                        icone = Icons.Outlined.AutoAwesome,
-                        explication = stringResource(R.string.fil_vide_detail),
-                    )
+    // Dans le carnet d'un pliable (#242), une journée par double page.
+    val carnet = LocalJourDuCarnet.current
+    val feuillet = carnet?.let { FeuilletsDuFil.jour(jours, it.value) }
+    val veille = feuillet?.let { f -> FeuilletsDuFil.veille(jours, f.jour)?.let { j -> { carnet.value = j } } }
+    val lendemain = feuillet?.let { f -> FeuilletsDuFil.lendemain(jours, f.jour)?.let { j -> { carnet.value = j } } }
+    val affiches = if (carnet == null) jours else listOfNotNull(feuillet)
+    // Dans le carnet, le pied de page (« Veille », « Lendemain ») tient sous la page qui défile.
+    Column(Modifier.fillMaxSize()) {
+        PullToRefreshBox(isRefreshing = etat.rafraichissement, onRefresh = parcours::rafraichir, modifier = Modifier.fillMaxWidth().weight(1f)) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize().let { m -> feuillet?.let { m.tournerLaPage(it.jour, veille, lendemain) } ?: m },
+                contentPadding = PaddingValues(bottom = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                etat.echec?.let { echec ->
+                    item(key = "echec") { MessageErreur(echec, Modifier.padding(horizontal = Mise.marge)) { parcours.rafraichir() } }
                 }
-            }
-            jours.forEach { jour ->
-                stickyHeader(key = "jour-${jour.jour}") { EnTeteJour(TextesFil.entete(jour, maintenant)) }
-                items(jour.elements, key = { it.id }) { element ->
-                    val destination = DestinationDuFil.pour(element.cible, RegistreDesMenus.fiches.keys)
-                    CarteDuFil(
-                        element,
-                        session,
-                        Modifier.padding(horizontal = Mise.marge).animateItem().let { m ->
-                            if (destination is DestinationDuFil.Element) m.rangeeChoisie(destination.nature, destination.id.toString()) else m
-                        },
-                        maintenant = maintenant,
-                        action = destination?.let { actionDuFil(it) },
-                        ouvrir = when (destination) {
-                            null -> null
-                            DestinationDuFil.Resume -> ({ resume = element.id })
-                            is DestinationDuFil.Document -> ({ ouverture.document(destination.id, destination.nom) })
-                            is DestinationDuFil.Element -> ({ ouvrir(Destination.Element(destination.nature, destination.id.toString())) })
-                        },
-                    )
+                if (ouverture.echec != null) item(key = "ouverture") { AvisOuverture(ouverture, Modifier.padding(horizontal = Mise.marge)) }
+                if (etat.elements.isEmpty() && etat.echec == null) {
+                    item(key = "vide") {
+                        EtatVide(
+                            titre = stringResource(R.string.fil_vide),
+                            icone = Icons.Outlined.AutoAwesome,
+                            explication = stringResource(R.string.fil_vide_detail),
+                        )
+                    }
+                }
+                affiches.forEach { jour ->
+                    if (carnet != null) {
+                        item(key = "ephemeride") { Ephemeride(jour, maintenant) }
+                    } else {
+                        stickyHeader(key = "jour-${jour.jour}") { EnTeteJour(TextesFil.entete(jour, maintenant)) }
+                    }
+                    items(jour.elements, key = { it.id }) { element ->
+                        val destination = DestinationDuFil.pour(element.cible, RegistreDesMenus.fiches.keys)
+                        CarteDuFil(
+                            element,
+                            session,
+                            Modifier.padding(horizontal = Mise.marge).animateItem().let { m ->
+                                if (destination is DestinationDuFil.Element) m.rangeeChoisie(destination.nature, destination.id.toString()) else m
+                            },
+                            maintenant = maintenant,
+                            action = destination?.let { actionDuFil(it) },
+                            ouvrir = when (destination) {
+                                null -> null
+                                DestinationDuFil.Resume -> ({ resume = element.id })
+                                is DestinationDuFil.Document -> ({ ouverture.document(destination.id, destination.nom) })
+                                is DestinationDuFil.Element -> ({ ouvrir(Destination.Element(destination.nature, destination.id.toString())) })
+                            },
+                        )
+                    }
                 }
             }
         }
+        if (feuillet != null) PiedDuJour(veille, lendemain)
     }
     etat.elements.firstOrNull { it.id == resume }?.let { element -> FeuilleResume(element, session) { resume = null } }
 }

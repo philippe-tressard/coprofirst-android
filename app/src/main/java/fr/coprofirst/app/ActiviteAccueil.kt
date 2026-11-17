@@ -9,7 +9,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.window.layout.WindowInfoTracker
 import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.commun.StockageApparencePreferences
 import fr.coprofirst.app.commun.pieces.PiecesLocales
@@ -18,6 +22,12 @@ import fr.coprofirst.app.entree.NavigationEntree
 import fr.coprofirst.app.entree.ParcoursEntree
 import fr.coprofirst.app.entree.vitrine.LocalVitrine
 import fr.coprofirst.app.entree.vitrine.VitrineDuSite
+import fr.coprofirst.app.navigation.LocalMarquesPages
+import fr.coprofirst.app.navigation.LocalPosture
+import fr.coprofirst.app.navigation.MarquesPages
+import fr.coprofirst.app.navigation.Posture
+import fr.coprofirst.app.navigation.posture
+import kotlinx.coroutines.flow.map
 
 /**
  * Point d'entrée de l'app : le parcours d'entrée (qui pose le thème de sa résidence), et
@@ -39,7 +49,16 @@ class ActiviteAccueil : ComponentActivity() {
         val apparence = Apparence(StockageApparencePreferences(applicationContext))
         // La vitrine relue sur coprofirst.fr (#153) : posée ici, absente des tests d'interface.
         val vitrine = VitrineDuSite.deLApp(this)
-        setContent { CompositionLocalProvider(LocalVitrine provides vitrine) { NavigationEntree(apparence, parcours) } }
+        // Le pli d'un pliable (#242) : sa posture suit la fenêtre ; le marque-page, l'appareil.
+        val pliable = MarquesPages.appareilPliable(this)
+        val postures = WindowInfoTracker.getOrCreate(this).windowLayoutInfo(this).map { it.posture(pliable) }
+        val marques = MarquesPages.de(applicationContext)
+        setContent {
+            val posture by remember { postures }.collectAsStateWithLifecycle(Posture(pliable))
+            CompositionLocalProvider(LocalVitrine provides vitrine, LocalPosture provides posture, LocalMarquesPages provides marques) {
+                NavigationEntree(apparence, parcours)
+            }
+        }
         // Un lien suivi une fois : pas de nouveau après une rotation.
         if (savedInstanceState == null) suivre(intent)
     }

@@ -199,6 +199,11 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   page ouverte. Le fil et « Mes affaires » (Liste, Archives) y tiennent la liste et la fiche
   côte à côte : la carte ouverte se souligne, « Aucune sélection » tant que rien n'est
   choisi ; la fiche ouverte reste ouverte à la rotation, au pli, au multi-fenêtre (#69).
+  Un pliable déplié en livre devient un **carnet** (#242, comme l'iOS) : les intercalaires
+  sur la tranche droite remplacent les barres, la liste se tient à gauche du pli et la
+  fiche à droite ; le Fil s'y lit une journée par double page (l'éphéméride en tête, « Veille »
+  et « Lendemain » au pied de la page, ou balayer la page loin des bords) ; il rouvre la résidence où on l'avait refermée (marque-page gardé sur
+  l'appareil seul, effacé à la déconnexion ; un téléphone ordinaire n'en garde aucun).
 - **Montre Wear OS** (`montre/`, en construction, #207) : la même app Google Play, pour
   la cloche de la dernière résidence ouverte, en lecture seule — pendant de l'Apple Watch.
   Tant que la liaison au téléphone est éteinte, elle dit « Ouvrez CoproFirst sur le

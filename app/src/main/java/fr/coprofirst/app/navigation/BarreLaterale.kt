@@ -34,19 +34,26 @@ import fr.coprofirst.app.charte.Mise
 /**
  * Comment la résidence se navigue (#69), comme l'iOS (`PresentationNavigation`, #221) : choisi
  * sur la LARGEUR disponible, jamais sur l'appareil — une tablette en multi-fenêtre étroite a la
- * barre du bas, un pliable déplié la barre latérale. Le seuil est celui du « grand écran » de
- * l'orientation libre (`Orientation.GRAND_ECRAN_DP`, lot 1).
+ * barre du bas. Le seuil est celui du « grand écran » de l'orientation libre
+ * (`Orientation.GRAND_ECRAN_DP`, lot 1). Un pli vertical qui traverse la fenêtre (un pliable
+ * déplié en livre, `Posture.enLivre`) fait le carnet (#242), quelle que soit la largeur.
  */
 enum class PresentationNavigation {
     /** La barre du bas et « Plus » : le téléphone, une fenêtre étroite. */
     Barre,
 
     /** La barre latérale, toutes les pages : une fenêtre large. */
-    Laterale;
+    Laterale,
+
+    /** Le carnet : un pliable déplié en livre, les intercalaires sur la tranche droite (#242). */
+    Carnet;
 
     companion object {
-        fun pour(largeur: Dp): PresentationNavigation =
-            if (largeur >= Orientation.GRAND_ECRAN_DP.dp) Laterale else Barre
+        fun pour(largeur: Dp, posture: Posture = Posture()): PresentationNavigation = when {
+            posture.enLivre -> Carnet
+            largeur >= Orientation.GRAND_ECRAN_DP.dp -> Laterale
+            else -> Barre
+        }
     }
 }
 
