@@ -12,6 +12,12 @@ import java.util.Locale
  * ni casse, sur ce que la ligne affiche.
  */
 object Recherche {
+    /**
+     * Le temps de finir un mot avant d'interroger le serveur, pour toute recherche SERVIE (les
+     * affaires, le choix de l'affaire d'un avis, #223) ; une frappe neuve annule la précédente.
+     */
+    const val DELAI_DE_FRAPPE_MS = 250L
+
     private val DIACRITIQUES = Regex("\\p{Mn}+")
     private val BLANCS = Regex("[\\s\\p{Z}]+")
 

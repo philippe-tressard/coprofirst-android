@@ -124,6 +124,7 @@ ou le lecteur HTML d'Android sont refusés par `verifier-depot.sh`.
 | `BalisesDuSite` | `BalisesDuSite` | La liste blanche, **générée** (`scripts/generer_tables.py`) : `balises`, `attributs` (`balisesAdmises`, `attributsAdmis` de `tables-clients.json`). |
 | `ConstantesDuServeur` | `ConstantesDuServeur` | Ce que l'API applique sans le dire dans le contrat, **généré** (`scripts/generer_constantes.py`) depuis `constantes-clients.json` : `schemasDeLien`, `LONGUEUR_MIN_MOT_DE_PASSE`, `NOTE_MIN`, `NOTE_MAX`, `NOTE_REMARQUE`, `NOTE_PUBLIABLE`, `defautsPreferences`. |
 | `Recherche.contientTousLesMots(champs, recherche)` | `Recherche` | Le filtre d'une liste : tous les mots, dans n'importe quel ordre, sans accents ni casse, sur ce que la ligne affiche. |
+| `Recherche.DELAI_DE_FRAPPE_MS`, `RECHERCHE_AFFAIRES_MINIMALE` (`fr.coprofirst.api`, généré) | — | Une recherche SERVIE : le temps de finir un mot (250 ms) avant d'interroger le serveur, une frappe neuve annulant la précédente ; et le seuil d'une recherche d'affaires, lu dans le contrat (`minLength` de `q`, #223). Affaires et choix de l'affaire d'un avis. |
 
 Exemple :
 

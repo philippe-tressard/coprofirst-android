@@ -27,6 +27,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import fr.coprofirst.api.RECHERCHE_AFFAIRES_MINIMALE
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
@@ -34,8 +35,8 @@ import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.ChampRecherche
 import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.cliquable
+import fr.coprofirst.app.commun.texte.Recherche
 import fr.coprofirst.app.commun.texte.Separateur
-import fr.coprofirst.app.fonctions.affaires.ReglesAffaires
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -65,10 +66,8 @@ object ReperesSaisieAvis {
  * « Affaire concernée » (`ChoixAffaireAvis.svelte`), comme l'iOS : l'affaire retenue et
  * « Changer », ou la recherche et les deux groupes (`ChoixAffaire`). Une frappe filtre
  * aussitôt sur le numéro et le titre, puis, la frappe finie, demande la recherche détaillée
- * de la page Affaires ; une frappe neuve annule la précédente.
- *
- * ⚠️ Divergence déclarée : le seuil et le délai de frappe sont ceux du menu Affaires
- * (`ReglesAffaires`), importés de son paquet en attendant leur montée dans `commun/`.
+ * de la page Affaires ; une frappe neuve annule la précédente — le seuil du contrat
+ * (`RECHERCHE_AFFAIRES_MINIMALE`) et le délai commun (`Recherche.DELAI_DE_FRAPPE_MS`, #223).
  */
 @Composable
 internal fun ChoixAffaireAvis(
@@ -84,16 +83,16 @@ internal fun ChoixAffaireAvis(
     var trouvees by remember { mutableStateOf<List<Int>>(emptyList()) }
     var enCours by remember { mutableStateOf(false) }
     val terme = ChoixAffaire.terme(recherche)
-    val active = terme.length >= ReglesAffaires.RECHERCHE_MINIMALE
+    val active = terme.length >= RECHERCHE_AFFAIRES_MINIMALE
     LaunchedEffect(terme) {
         trouvees = emptyList()
-        if (terme.length < ReglesAffaires.RECHERCHE_MINIMALE) {
+        if (terme.length < RECHERCHE_AFFAIRES_MINIMALE) {
             enCours = false
             return@LaunchedEffect
         }
         enCours = true
         try {
-            delay(ReglesAffaires.DELAI_DE_FRAPPE_MS)
+            delay(Recherche.DELAI_DE_FRAPPE_MS)
             trouvees = service.rechercherAffaires(terme)
         } catch (e: CancellationException) {
             throw e
@@ -123,7 +122,7 @@ internal fun ChoixAffaireAvis(
             return@Column
         }
         ChampRecherche(recherche, { recherche = it }, stringResource(R.string.notation_recherche_affaire), ReperesSaisieAvis.RECHERCHE)
-        val (siennes, autres) = ChoixAffaire.groupes(affaires, recherche, trouvees, ReglesAffaires.RECHERCHE_MINIMALE)
+        val (siennes, autres) = ChoixAffaire.groupes(affaires, recherche, trouvees, RECHERCHE_AFFAIRES_MINIMALE)
         val aide = when {
             enCours -> R.string.notation_recherche_en_cours
             active && siennes.isEmpty() && autres.isEmpty() -> R.string.notation_aucune_affaire

@@ -59,6 +59,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import fr.coprofirst.api.RECHERCHE_AFFAIRES_MINIMALE
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
@@ -109,7 +110,7 @@ internal fun ListeAffaires(ctx: ContexteAffaires) {
                 )
             }
             item(key = "suivi") { PastillesDeSuivi(etat) }
-            if (etat.recherche.trim().length >= ReglesAffaires.RECHERCHE_MINIMALE && etat.archiveesTrouvees > 0) {
+            if (etat.recherche.trim().length >= RECHERCHE_AFFAIRES_MINIMALE && etat.archiveesTrouvees > 0) {
                 item(key = "archives") { InclureArchives(etat) }
             }
             when (val phase = etat.phase) {

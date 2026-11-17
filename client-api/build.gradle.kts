@@ -68,6 +68,11 @@ val genererVersionContrat by tasks.registering {
         // `LimitesNotifications`) : au-delà, le serveur répond 422.
         val selection = lire("components", "schemas", "SuppressionNotifications", "properties", "ids", "maxItems")
         require(selection is Int && selection > 0) { "SuppressionNotifications.ids.maxItems illisible : $selection" }
+        // La recherche des affaires (#223) : en dessous de `minLength` de `q`, le serveur répond 422.
+        val parametres = lire("paths", "/tickets/recherche", "get", "parameters") as? List<*>
+        val recherche = parametres?.filterIsInstance<Map<*, *>>()?.firstOrNull { it["name"] == "q" }
+            ?.let { (it["schema"] as? Map<*, *>)?.get("minLength") }
+        require(recherche is Int && recherche > 0) { "GET /tickets/recherche, q.minLength illisible : $recherche" }
         val fichier = sortie.get().file("fr/coprofirst/api/Contrat.kt").asFile
         fichier.parentFile.mkdirs()
         fichier.writeText(
@@ -76,7 +81,9 @@ val genererVersionContrat by tasks.registering {
                 "/** La version du contrat d'API sur laquelle ce client est généré : le plancher. */\n" +
                 "const val VERSION_CONTRAT_PLANCHER = \"$version\"\n\n" +
                 "/** Les identifiants qu'accepte UNE requête POST /notifications/supprimer-selection (`maxItems`). */\n" +
-                "const val NOTIFICATIONS_SELECTION_PAR_REQUETE = $selection\n",
+                "const val NOTIFICATIONS_SELECTION_PAR_REQUETE = $selection\n\n" +
+                "/** En dessous, une frappe n'est pas une recherche d'affaires (`minLength` de `q`, `RECHERCHE_MIN` du site). */\n" +
+                "const val RECHERCHE_AFFAIRES_MINIMALE = $recherche\n",
         )
     }
 }

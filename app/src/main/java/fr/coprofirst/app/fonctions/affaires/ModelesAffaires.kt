@@ -171,12 +171,6 @@ data class AnneeDArchives(val annee: Int, val affaires: List<Affaire>)
 
 /** Les règles des trois onglets, comme celles du site (`filtrerAffaires`, `historyTickets`). */
 object ReglesAffaires {
-    /** En dessous, une frappe n'est pas encore une recherche (`RECHERCHE_MIN` du site). */
-    const val RECHERCHE_MINIMALE = 2
-
-    /** Le temps de finir un mot avant d'interroger le serveur. */
-    const val DELAI_DE_FRAPPE_MS = 250L
-
     /** Les Archives couvrent trois ans. */
     private const val ANNEES_D_ARCHIVES = 3L
 
