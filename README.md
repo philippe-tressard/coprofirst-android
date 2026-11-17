@@ -196,7 +196,9 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   toutes les orientations et le multi-fenêtre (comme l'iPad). Dès que la fenêtre est large
   (600 dp, quel que soit l'appareil), une barre latérale liste toutes les pages, puis
   Profil et À propos, à la place de la barre du bas ; passer de l'une à l'autre garde la
-  page ouverte. Le fil et « Mes affaires » (Liste, Archives) y tiennent la liste et la fiche
+  page ouverte. Le fil, « Mes affaires » (Liste, Archives), « Ma résidence » (l'avis d'une
+  question du règlement, l'annuaire du syndic, l'affaire d'une entrée du carnet), les petites
+  annonces, les Courriels et le Reporting de l'Espace CS y tiennent la liste et la fiche
   côte à côte : la carte ouverte se souligne, « Aucune sélection » tant que rien n'est
   choisi ; la fiche ouverte reste ouverte à la rotation, au pli, au multi-fenêtre (#69).
   Un pliable déplié en livre devient un **carnet** (#242, comme l'iOS) : les intercalaires

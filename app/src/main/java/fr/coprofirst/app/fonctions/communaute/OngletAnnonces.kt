@@ -3,6 +3,9 @@
 
 package fr.coprofirst.app.fonctions.communaute
 
+import fr.coprofirst.app.commun.miseenpage.FicheOuFeuille
+import fr.coprofirst.app.commun.miseenpage.OccuperLaColonneDeFiche
+import fr.coprofirst.app.commun.miseenpage.rangeeChoisie
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -71,6 +74,8 @@ private fun Annonces(annonces: List<AnnonceRead>, contexte: ContexteOnglet, serv
     var categorie by rememberSaveable { mutableStateOf<String?>(null) }
     var tri by rememberSaveable { mutableStateOf(ReglesCommunaute.triParDefaut) }
     var ouverte by rememberSaveable { mutableStateOf<Int?>(null) }
+    // En fenêtre large, l'annonce s'ouvre à côté de la liste (#69, coprofirst-ios#279).
+    OccuperLaColonneDeFiche()
     val retenues = ReglesCommunaute.annonces(annonces, type, categorie, tri)
     val textes = TextesListe(
         R.string.annonces_vide, R.string.annonces_vide_detail,
@@ -104,7 +109,9 @@ private fun Annonces(annonces: List<AnnonceRead>, contexte: ContexteOnglet, serv
         }
     }
     ouverte?.let { id ->
-        DetailAnnonce(annonces.firstOrNull { it.id == id }, contexte, service, moi, recharger) { ouverte = null }
+        FicheOuFeuille(NATURE_ANNONCE, id.toString(), fermer = { ouverte = null }) {
+            DetailAnnonce(annonces.firstOrNull { it.id == id }, contexte, service, moi, recharger) { ouverte = null }
+        }
     }
 }
 
@@ -112,7 +119,11 @@ private fun Annonces(annonces: List<AnnonceRead>, contexte: ContexteOnglet, serv
 @Composable
 private fun LigneAnnonce(annonce: AnnonceRead, ouvrir: () -> Unit) {
     val couleurs = LocalCouleurs.current
-    Carte(Modifier.testTag(ReperesCommunaute.annonce(annonce.id)), ouvrir = ouvrir, action = annonce.titre) {
+    Carte(
+        Modifier.testTag(ReperesCommunaute.annonce(annonce.id)).rangeeChoisie(NATURE_ANNONCE, annonce.id.toString()),
+        ouvrir = ouvrir,
+        action = annonce.titre,
+    ) {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             TypeAnnonce(annonce)
             Text(annonce.titre, style = MaterialTheme.typography.titleMedium, color = couleurs.text)
@@ -174,3 +185,6 @@ private val SQUELETTE = AnnonceRead(
     creeLe = java.time.OffsetDateTime.parse("2026-01-01T00:00:00Z"),
     perimetreLibelle = "",
 )
+
+/** La nature d'une annonce dans la colonne de fiche (`FicheOuFeuille`, `rangeeChoisie`). */
+private const val NATURE_ANNONCE = "annonce"

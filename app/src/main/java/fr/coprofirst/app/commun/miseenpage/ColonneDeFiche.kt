@@ -49,8 +49,12 @@ class ColonneDeFiche(retenueInitiale: Boolean = false) {
     /** La fiche ouverte dans la colonne (sa nature, son identifiant) ; `null` : aucune. */
     var ouverte by mutableStateOf<Pair<String, String>?>(null)
 
+    /** La fiche qu'une liste tient elle-même (`FicheOuFeuille`) ; `null` : aucune. */
+    var locale by mutableStateOf<FicheLocale?>(null)
+
     /** Cette fiche est-elle celle de la colonne ? (la rangée qui l'ouvre se souligne). */
-    fun estOuverte(nature: String, id: String): Boolean = ouverte == (nature to id)
+    fun estOuverte(nature: String, id: String): Boolean =
+        ouverte == (nature to id) || locale?.let { it.nature == nature && it.id == id } == true
 
     /**
      * Le marque-page rouvre une fiche qu'une liste tenait (#242) : comme après une reconstruction,

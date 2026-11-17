@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.fonctions.espacecs
 
+import fr.coprofirst.app.commun.miseenpage.OccuperLaColonneDeFiche
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -70,6 +71,8 @@ fun OngletCourriels(service: ServiceCourriels, actualisation: Int, ouvrir: (Dest
 @Composable
 private fun Journal(journal: JournalDeReleve, ouvrir: (Destination) -> Boolean, recharger: () -> Unit) {
     val c = LocalCouleurs.current
+    // En fenêtre large, l'affaire rejointe s'ouvre à côté du journal (#69, coprofirst-ios#279).
+    OccuperLaColonneDeFiche()
     Column(verticalArrangement = Arrangement.spacedBy(Mise.ecart)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -139,6 +142,7 @@ private fun LigneCourriel(message: CourrielReleve, ouvrir: (Destination) -> Bool
                     Row(
                         Modifier
                             .heightIn(min = Mise.cible)
+                            .affaireChoisie(ticket)
                             .then(if (lien != null) Modifier.cliquable(action, lien) else Modifier)
                             .testTag(ReperesEspaceCS.courrielAffaire(message.id)),
                         verticalAlignment = Alignment.CenterVertically,

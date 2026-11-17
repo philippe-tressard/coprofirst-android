@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.fonctions.residence
 
+import fr.coprofirst.app.commun.miseenpage.rangeeChoisie
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -185,7 +186,7 @@ private fun CarteQuestion(question: QuestionReglement, ouvrir: () -> Unit) {
     val couleurs = LocalCouleurs.current
     CarteAGouttiere(
         Nature.Reglement,
-        Modifier.testTag(ReperesResidence.question(question.id)),
+        Modifier.testTag(ReperesResidence.question(question.id)).rangeeChoisie(NATURE_AVIS, question.id.toString()),
         date = question.poseeLe,
         ouvrir = ouvrir, action = stringResource(R.string.reglement_ouvrir_avis),
     ) {

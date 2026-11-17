@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.fonctions.residence
 
+import fr.coprofirst.app.commun.miseenpage.rangeeChoisie
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -165,7 +166,8 @@ private fun EncartAlerte(entrees: List<EntreeCarnet>) {
 private fun CarteEntree(entree: EntreeCarnet, adresse: String, porte: (Destination) -> Boolean) {
     val couleurs = LocalCouleurs.current
     // « À venir » sous « Contrat » dans la gouttière, comme le site (coprofirst#2811) : servi, jamais recalculé.
-    CarteAGouttiere(Nature.duCarnet(entree.origine), date = entree.jour, mention = if (entree.aVenir) stringResource(R.string.carnet_a_venir) else null) {
+    val choisie = entree.affaire?.let { Modifier.rangeeChoisie(NATURE_AFFAIRE, it) } ?: Modifier
+    CarteAGouttiere(Nature.duCarnet(entree.origine), choisie, date = entree.jour, mention = if (entree.aVenir) stringResource(R.string.carnet_a_venir) else null) {
         Text(entree.libelle, style = MaterialTheme.typography.titleMedium, color = couleurs.text)
         entree.extrait?.let {
             Text(TexteDuSite.apercu(it), style = MaterialTheme.typography.bodyMedium, maxLines = 3, overflow = TextOverflow.Ellipsis, color = couleurs.textMuted)

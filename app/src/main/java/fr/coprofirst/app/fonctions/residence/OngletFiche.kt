@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.fonctions.residence
 
+import fr.coprofirst.app.commun.miseenpage.rangeeChoisie
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -168,7 +169,8 @@ private fun Contrats(fiche: FicheResidence, ouvrirSyndic: () -> Unit) {
         }
         Champ(
             stringResource(R.string.residence_syndic),
-            Modifier.heightIn(min = Mise.cible).cliquable(stringResource(R.string.residence_syndic_aide), ouvrirSyndic)
+            Modifier.heightIn(min = Mise.cible).rangeeChoisie(NATURE_SYNDIC, NATURE_SYNDIC)
+                .cliquable(stringResource(R.string.residence_syndic_aide), ouvrirSyndic)
                 .testTag(ReperesResidence.SYNDIC),
         ) {
             Text(texte, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)

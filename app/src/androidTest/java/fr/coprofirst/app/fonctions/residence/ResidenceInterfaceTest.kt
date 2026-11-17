@@ -5,10 +5,12 @@ package fr.coprofirst.app.fonctions.residence
 
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.ThemeCoproFirst
@@ -17,11 +19,14 @@ import fr.coprofirst.app.commun.annuaire.ReperesContact
 import fr.coprofirst.app.commun.attendre
 import fr.coprofirst.app.commun.attendreTag
 import fr.coprofirst.app.commun.attendreTexte
+import fr.coprofirst.app.commun.attendreDisparition
+import fr.coprofirst.app.commun.miseenpage.EnFenetreLarge
 import fr.coprofirst.app.commun.toucher
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.fonctions.annuaire.AnnuaireSimule
 import fr.coprofirst.app.fonctions.annuaire.EcranAnnuaire
 import fr.coprofirst.app.navigation.DroitsOnglet
+import fr.coprofirst.app.navigation.fermerLaFiche
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -57,6 +62,31 @@ class ResidenceInterfaceTest {
         ecran.toucherTag("onglet.reglement")
         ecran.attendreTexte("Puis-je installer une climatisation sur mon balcon ?")
         ecran.amenerTag(ReperesResidence.POSER).assertIsNotEnabled() // question vide : rien à poser
+    }
+
+    /**
+     * #69, comme `ListeEtFicheUITests` de l'iOS (coprofirst-ios#279) : en fenêtre large, le syndic
+     * et l'avis d'une question s'ouvrent À CÔTÉ de la page, à plat (sans « OK »), et la rangée qui
+     * les ouvre se souligne ; l'un remplace l'autre ; le geste « retour » referme la fiche.
+     */
+    @Test
+    fun enFenetreLargeLeSyndicEtLAvisSOuvrentACoteDeLaPage() {
+        ecran.setContent { ThemeCoproFirst { EnFenetreLarge { EcranMaResidence(residence, AnnuaireSimule(), DroitsOnglet(proprioOuCS = true, cs = true), null) } } }
+        ecran.attendreTexte("Aucune sélection")
+        ecran.toucherTag(ReperesResidence.SYNDIC)
+        ecran.attendreTexte("Gestionnaire de copropriété")
+        ecran.onNodeWithTag(ReperesResidence.SYNDIC).assertIsSelected()
+        ecran.attendreTexte("AA0-000-000") // la page reste, à gauche
+        ecran.onAllNodes(hasTestTag(ReperesResidence.FERMER)).fetchSemanticsNodes().let { assertEquals("ni « OK » ni voile", 0, it.size) }
+
+        ecran.toucherTag("onglet.reglement")
+        ecran.attendreTag(ReperesResidence.question(ResidenceSimulee.QUESTION.id))
+        ecran.toucherTag(ReperesResidence.question(ResidenceSimulee.QUESTION.id))
+        ecran.attendreDisparition(hasText("Gestionnaire de copropriété"))
+        ecran.onNodeWithTag(ReperesResidence.question(ResidenceSimulee.QUESTION.id)).assertIsSelected()
+
+        ecran.fermerLaFiche()
+        ecran.attendreTexte("Aucune sélection")
     }
 
     @Test

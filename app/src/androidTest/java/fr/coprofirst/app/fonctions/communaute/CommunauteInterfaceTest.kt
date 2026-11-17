@@ -9,8 +9,10 @@ import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.isSelected
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -32,6 +34,7 @@ import fr.coprofirst.app.commun.GestesDeSortie
 import fr.coprofirst.app.commun.StockageApparence
 import fr.coprofirst.app.commun.attendreTag
 import fr.coprofirst.app.commun.attendreTexte
+import fr.coprofirst.app.commun.miseenpage.EnFenetreLarge
 import fr.coprofirst.app.commun.onglets.ReperesOnglets
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.navigation.ActionsDeclarees
@@ -39,15 +42,16 @@ import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.navigation.ContexteDeMenu
 import fr.coprofirst.app.navigation.DroitsOnglet
 import fr.coprofirst.app.navigation.PagesParDefaut
+import fr.coprofirst.app.navigation.fermerLaFiche
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsParHote
+import java.time.OffsetDateTime
 import kotlinx.coroutines.delay
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.time.OffsetDateTime
 
 /**
  * Une Communauté simulée, comme l'API simulée de l'iOS : des contenus inventés (aucune
@@ -123,7 +127,7 @@ class CommunauteInterfaceTest {
     @get:Rule
     val ecran = createComposeRule()
 
-    private fun ouvrir(service: CommunauteSimulee = CommunauteSimulee()): CommunauteSimulee {
+    private fun ouvrir(service: CommunauteSimulee = CommunauteSimulee(), large: Boolean = false): CommunauteSimulee {
         val barre = BarreDuHaut()
         val contexte = ContexteDeMenu(
             page = PagesParDefaut.toutes.first { it.id == "communaute" },
@@ -143,7 +147,7 @@ class CommunauteInterfaceTest {
             ThemeCoproFirst {
                 Column {
                     Row { ActionsDeclarees(barre) }
-                    EcranCommunaute(contexte, service)
+                    if (large) EnFenetreLarge { EcranCommunaute(contexte, service) } else EcranCommunaute(contexte, service)
                 }
             }
         }
@@ -188,6 +192,26 @@ class CommunauteInterfaceTest {
         ecran.toucherTag(ReperesCommunaute.CREER)
         ecran.attendreTag(ReperesCommunaute.ENREGISTRER)
         el(ReperesCommunaute.ENREGISTRER).assertIsNotEnabled()
+    }
+
+    /**
+     * #69, comme `ListeEtFicheUITests` de l'iOS (coprofirst-ios#279) : en fenêtre large, l'annonce
+     * s'ouvre À CÔTÉ de la liste, à plat (sans « OK »), sa carte soulignée ; la liste reste ; le
+     * geste « retour » referme la fiche.
+     */
+    @Test
+    fun enFenetreLargeLAnnonceSOuvreACoteDeLaListe() {
+        ouvrir(large = true)
+        rubrique("annonces")
+        ecran.attendreTexte("Aucune sélection")
+        ecran.toucherTag(ReperesCommunaute.annonce(21))
+        ecran.attendreTag(ReperesCommunaute.ANNONCE_CONTACT)
+        el(ReperesCommunaute.annonce(21)).assertIsSelected()
+        ecran.onAllNodes(hasTestTag(ReperesCommunaute.FERMER)).fetchSemanticsNodes().let { assertEquals("ni « OK » ni voile", 0, it.size) }
+        ecran.fermerLaFiche()
+        ecran.attendreTexte("Aucune sélection")
+        // Plus soulignée : la carte n'est plus dite « sélectionnée » (la propriété n'est posée que choisie).
+        assertEquals(0, ecran.onAllNodes(hasTestTag(ReperesCommunaute.annonce(21)) and isSelected()).fetchSemanticsNodes().size)
     }
 
     /** Sans `peut_creer` servi, l'écran ne dit pas que la création se fait sur le site (#37). */

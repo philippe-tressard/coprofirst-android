@@ -27,6 +27,8 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.commun.miseenpage.LocalDansLaColonne
+import fr.coprofirst.app.commun.miseenpage.PanneauDeColonne
 import fr.coprofirst.app.navigation.EnTeteDeBarre
 import kotlinx.coroutines.launch
 
@@ -35,7 +37,8 @@ import kotlinx.coroutines.launch
  * fiche d'un sondage ouverte depuis le fil —, comme une feuille `.large` de l'iOS : son titre et
  * son `sousTitre` (`EnTeteDeBarre`), les `actions` de l'écran (sa propre barre), « OK » qui la
  * ferme (repère `repereOk`), puis le `contenu`, qui défile seul. Un balayage vers le bas la
- * ferme aussi.
+ * ferme aussi. Dans la colonne d'une fenêtre large (`FicheOuFeuille`, #69), elle se pose à plat
+ * à côté de sa liste (`PanneauDeColonne`).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,6 +50,11 @@ fun FeuillePleine(
     sousTitre: String? = null,
     contenu: @Composable BoxScope.() -> Unit,
 ) {
+    // Dans la colonne d'une fenêtre large (#69), la feuille se pose à plat à côté de sa liste.
+    if (LocalDansLaColonne.current) {
+        PanneauDeColonne(titre, sousTitre, fermer, actions, contenu)
+        return
+    }
     val etat = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val portee = rememberCoroutineScope()
     val couleurs = LocalCouleurs.current
