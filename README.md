@@ -69,8 +69,8 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
 - **La résidence ouverte** : la barre du bas, dans l'ordre et avec les libellés réglés
   par l'administration de la résidence, filtrée selon le compte (Espace CS, Prestataires,
   Délégations, Paramétrage ne paraissent qu'à ceux qui y ont droit) ; « Plus » pour les
-  autres pages, Profil et À propos. Les écrans des pages arrivent
-  menu par menu : en attendant, chaque page dit « Bientôt ».
+  autres pages, Profil et À propos. Chaque page du site a son écran dans l'app ; les
+  onglets du Paramétrage qu'elle ne porte pas renvoient au site.
   En haut à droite, le nom de la résidence (« où suis-je ») ouvre « Résidences » : celle où
   l'on est, ses rôles et « Se déconnecter » ; les autres résidences de l'appareil, chacune
   avec ses rôles, qu'un toucher ouvre sans se déconnecter d'ici ; « Une autre résidence ».
@@ -80,13 +80,13 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   dit sa rubrique dans sa teinte, l'heure, la nature d'une affaire, le délai et les dates
   d'une affaire datée, le titre et le début du texte, qui la lit et son lieu, ses pièces
   jointes ; une urgence porte un liseré rouge. Un toucher ouvre le résumé (avec « Voir
-  sur le site » quand le site a une page), le document, ou la fiche d'un sondage : voter
+  sur le site » quand le site a une page), le document (dans l'app, comme ceux de Ma
+  résidence), la fiche d'une affaire (celle de Mes affaires), ou la fiche d'un sondage : voter
   (une réponse, sa précision si elle en demande une, un commentaire, sous la charte de
   respect), les résultats quand le serveur les montre (avant le vote, au-dessus des choix,
   « provisoires » tant que le sondage est ouvert), puis les commentaires — en publier,
   supprimer les siens (confirmé), signaler ceux des autres au conseil syndical (motif
-  obligatoire). L'affaire ne s'ouvre pas encore dans l'app. Tirer la liste la relit ; un
-  fil vide le dit.
+  obligatoire). Tirer la liste la relit ; un fil vide le dit.
 - **Profil** (Plus › Profil) : la résidence, le statut et les rôles du compte ; les
   informations personnelles (le nom tel qu'il sera affiché se lit sous la saisie ; une
   nouvelle adresse demande le mot de passe et ne vaut qu'une fois confirmée) ; le mot de passe ; une demande de changement de profil ou de
@@ -119,7 +119,8 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   Le tableau des charges, créer ou terminer un bail et tenir l'inventaire restent sur le
   site, et l'écran le dit.
 - **Prestataires** (conseil syndical) : fiches, contrats et consommations ; la moyenne des
-  avis sur chaque carte (« Excellent · 4,33/5 ») ; les avis du conseil, par exercice et par
+  avis sur chaque carte (« Excellent · 4,33/5 ») ; les documents d'un contrat s'ouvrent dans
+  l'app, comme ceux de Ma résidence ; les avis du conseil, par exercice et par
   intervention, chacun dans la teinte de son état. « ⭐ Noter » un prestataire, depuis sa fiche
   ou la carte d'un contrat, en choisissant l'affaire jugée (la recherche de la page Affaires ;
   l'ajouter comme intervenant se confirme), en cochant ses points forts et faibles — ils
@@ -171,6 +172,19 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   l'archiver ou le restaurer. Une idée ou une annonce ouverte porte le fil des réponses
   (répondre, supprimer la sienne, signaler celles des autres) et « Signaler » au conseil
   syndical ; chaque contenu dit qui le lit et où.
+- **Espace CS** (conseil syndical) : six onglets, ceux que le serveur ouvre au compte.
+  **Comptes & accès** — la file de travail du conseil : les comptes à valider, puis les
+  demandes de badges et de télécommandes, chacune approuvée (un nouvel arrivant, les codes
+  remis) ou rejetée. **Badges & télécommandes** — qui détient quoi, en consultation (la
+  recherche par code, porteur ou lot, puis le type) ; enregistrer ou retirer un accès reste
+  au site. **Reporting** — le suivi des affaires en lecture (chiffres, répartitions
+  croisées, la plus ancienne en tête), celui des entretiens périodiques, puis les
+  renouvellements ; toucher une affaire l'ouvre. **Annonces Hall** — créer une affiche, puis
+  celles en cours et archivées avec leurs gestes ; les photos, l'assistant, l'aperçu,
+  WhatsApp et le PDF restent au site. **Annuaire CS & Syndic** — les fiches du conseil puis
+  du syndic, à corriger, ajouter, retirer (et, pour le syndic, ordonner). **Courriels
+  affaires** — ce que la relève a fait de chaque message reçu à l'adresse des affaires, et
+  pourquoi ; « Affaire #… » ouvre l'affaire rejointe.
 - **Paramétrage** (administration et opérateur de la plateforme), en partie :
   **À traiter** (la file des comptes et des commandes d'accès, celle de l'Espace CS, puis
   les demandes de changement de profil : approuver, ou rejeter avec un motif facultatif),
@@ -200,8 +214,8 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   Profil et À propos, à la place de la barre du bas ; passer de l'une à l'autre garde la
   page ouverte. Le fil, « Mes affaires » (Liste, Archives), « Ma résidence » (l'avis d'une
   question du règlement, l'annuaire du syndic, l'affaire d'une entrée du carnet), les petites
-  annonces, les Courriels et le Reporting de l'Espace CS y tiennent la liste et la fiche
-  côte à côte : la carte ouverte se souligne, « Aucune sélection » tant que rien n'est
+  annonces, les Courriels et le Reporting de l'Espace CS, et les documents (Ma résidence,
+  le fil, les contrats des prestataires) y tiennent la liste et la fiche côte à côte : la carte ouverte se souligne, « Aucune sélection » tant que rien n'est
   choisi ; la fiche ouverte reste ouverte à la rotation, au pli, au multi-fenêtre (#69).
   Un pliable déplié en livre devient un **carnet** (#242, comme l'iOS) : les intercalaires
   sur la tranche droite remplacent les barres, la liste se tient à gauche du pli et la
@@ -210,13 +224,16 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   l'appareil seul, effacé à la déconnexion ; un téléphone ordinaire n'en garde aucun).
 - **Montre Wear OS** (`montre/`, en construction, #207) : la même app Google Play, pour
   la cloche de la dernière résidence ouverte, en lecture seule — pendant de l'Apple Watch.
-  Tant que la liaison au téléphone est éteinte, elle dit « Ouvrez CoproFirst sur le
-  téléphone pour relier la montre ». Écrans prêts derrière la liaison : la cloche (le nom
+  Elle se construit et se teste, mais **la liaison au téléphone est éteinte**
+  (`LiaisonMontre.ACTIF`, un seul drapeau pour les deux côtés) : le téléphone ne demande ni
+  ne transmet rien, et la montre dit seulement « Ouvrez CoproFirst sur le téléphone pour
+  relier la montre ». Ce qui suit est prêt derrière la liaison, qui s'allumera quand le
+  serveur, le canal et la section « Sécurité des données » seront réunis. Les écrans : la cloche (le nom
   de la résidence ; les non lues, urgentes devant ; « Déjà lues », repliée ; chaque ligne
   avec l'icône de son type, son titre sur deux lignes et son âge relatif ; « Aucune alerte ») et le détail
   (titre, date, le corps en entier rendu comme sur le téléphone, et « Continuer sur le
   téléphone » quand l'alerte vise une page : la page s'ouvre sur le téléphone).
-  Relié par le téléphone (la dernière résidence ouverte), la montre lit la cloche avec un
+  Reliée par le téléphone (la dernière résidence ouverte), la montre lira la cloche avec un
   jeton de montre qui ne lit qu'elle, gardé chiffré ; il se retire à la déconnexion. La tuile dit
   « 2 nouvelles alertes · dont 1 urgente », sans titre ni résidence, et ouvre la cloche ;
   la complication du cadran montre le logo, avec un point s'il y a du non lu, sans nombre.
@@ -226,8 +243,7 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   `partage/` (#206) : le client HTTP, les formats du site, l'alerte reçue, le découpage du
   texte riche — écrits une fois.
 
-Pas encore : les personnages de la démo, le QR code, les liens d'application (tickets
-ouverts).
+Ce qui reste à faire se lit dans les issues ouvertes du dépôt.
 
 ## Construire
 
