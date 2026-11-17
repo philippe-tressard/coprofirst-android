@@ -115,6 +115,9 @@ class ListeEtFicheInterfaceTest {
         ecran.attendreTexte(PagesParDefaut.TITRE_DU_FIL)
         ecran.attendreTag(REPERE_COLONNE)
         ecran.attendreDisparition(hasContentDescription("Retour"))
+        // Sans flèche dans la colonne, le geste « retour » du système referme la fiche.
+        ecran.fermerLaFiche()
+        ecran.attendreTexte("Aucune sélection")
     }
 
     /**

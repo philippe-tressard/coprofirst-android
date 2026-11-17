@@ -3,10 +3,13 @@
 
 package fr.coprofirst.app.navigation
 
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import fr.coprofirst.app.commun.DELAI_GESTE_MS
+import androidx.test.espresso.Espresso
+import fr.coprofirst.app.commun.toucherDescription
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.commun.toucherTexte
 
@@ -26,5 +29,18 @@ fun ComposeTestRule.ouvrirLaPageDePlus(id: String) {
     } else {
         toucherTexte("Plus")
         toucherTag("plus.$id")
+    }
+}
+
+/**
+ * Refermer la fiche ouverte, quelle que soit la présentation (#69) : la flèche « Retour » d'une
+ * fiche poussée (le téléphone, une page sans liste) ; dans la colonne d'une fenêtre large, qui n'a
+ * pas de flèche, le geste « retour » du système, que la résidence traduit en fermeture.
+ */
+fun ComposeTestRule.fermerLaFiche() {
+    if (onAllNodes(hasContentDescription("Retour")).fetchSemanticsNodes().isNotEmpty()) {
+        toucherDescription("Retour")
+    } else {
+        Espresso.pressBack()
     }
 }
