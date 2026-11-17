@@ -48,12 +48,11 @@ import fr.coprofirst.app.commun.animationsCoupees
  * La phrase discrète en tête du formulaire (`FormeDeSaisie.phrase` de l'iOS) : la saisie en
  * cours, où sont les autres sections, et où la changer.
  *
- * ⚠️ Divergence déclarée : « Saisie essentielle », « Saisie complète » (`LIBELLE_MODE` du site)
- * ne sont pas publiés avec la release — écrits dans les ressources (coprofirst#2793).
+ * Le nom du mode se lit dans la table du site (`libellesModeSaisie`, `LIBELLE_MODE`, #229).
  */
 @Composable
 internal fun PhraseDeLaSaisie(forme: FormeDeSaisie, rangees: Int, repere: String) {
-    val mode = stringResource(if (forme.mode == ModeSaisie.Essentielle) R.string.affaires_mode_essentielle else R.string.affaires_mode_complete)
+    val mode = TablesAffaires.libellesModeSaisie[forme.mode.code] ?: forme.mode.code
     Text(
         stringResource(if (rangees > 0) R.string.affaires_mode_phrase_rangees else R.string.affaires_mode_phrase, mode),
         Modifier.testTag(repere),

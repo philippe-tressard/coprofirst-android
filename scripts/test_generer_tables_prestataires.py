@@ -19,10 +19,22 @@ def t(v):
     return {"source": "test", "valeur": v}
 
 
+def notations(**remplace):
+    base = {"etats": ["mauvais", "neutre", "excellent"],
+            "parEtat": {"mauvais": {"libelle": "Mauvais", "badge": "badge-red"},
+                        "neutre": {"libelle": "Neutre", "badge": "badge-gray"},
+                        "excellent": {"libelle": "Excellent", "badge": "badge-green"}},
+            "seuilsDeMoyenne": [{"borne": 2.5, "etat": "mauvais"}, {"borne": 4, "etat": "neutre"}],
+            "etatAuDela": "excellent"}
+    base.update(remplace)
+    return base
+
+
 def tables(**remplace):
     base = {
         "typesPrestataire": t([{"val": "travaux", "label": "🏗️ Travaux", "desc": "Interventions \"importantes\""}]),
         "filtresContrat": t([{"val": "sous_contrat", "label": "📄 Sous contrat"}]),
+        "notations": t(notations()),
     }
     base.update(remplace)
     return base
@@ -39,6 +51,22 @@ class TablesPrestataires(unittest.TestCase):
                       {"filtresContrat": t(None)}, {"filtresContrat": t([{"label": "X"}])}):
             with self.assertRaises(g.TableInattendue, msg=str(casse)):
                 g.kotlin(tables(**casse), "t")
+
+    def test_les_notations(self):
+        """#229 : libellé et teinte de chaque état, seuils de la moyenne, état au-delà."""
+        texte = g.kotlin(tables(), "t")
+        self.assertIn('"mauvais" to LibelleTeinte("Mauvais", "badge-red"),', texte)
+        self.assertIn("4.0 to \"neutre\",", texte)
+        self.assertIn('const val ETAT_AU_DELA = "excellent"', texte)
+
+    def test_des_notations_mal_formees_arretent(self):
+        for casse in ({"etats": []}, {"etats": ["mauvais", "mauvais"]},
+                      {"parEtat": {"mauvais": {"libelle": "Mauvais", "badge": "badge-red"}}},
+                      {"parEtat": {e: {"libelle": "X", "badge": "rouge"} for e in ("mauvais", "neutre", "excellent")}},
+                      {"seuilsDeMoyenne": [{"borne": 4, "etat": "neutre"}, {"borne": 2.5, "etat": "mauvais"}]},
+                      {"seuilsDeMoyenne": [{"borne": 2.5, "etat": "inconnu"}]}, {"etatAuDela": "parfait"}):
+            with self.assertRaises(g.TableInattendue, msg=str(casse)):
+                g.kotlin(tables(notations=t(notations(**casse))), "t")
 
     def test_le_plancher_se_genere(self):
         publiees = json.loads((RACINE / "contrat" / "tables-clients.json").read_text(encoding="utf-8"))["tables"]

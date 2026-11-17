@@ -178,8 +178,6 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="modifier_affaire_modifiee">Affaire modifiée</string>
     <string name="modifier_actualite_modifiee">Actualité modifiée</string>
     <!-- La saisie Essentielle ou Complète (#178), les mots de l'iOS (`FormeDeSaisie`, `LIBELLE_MODE` du site, coprofirst#2793). -->
-    <string name="affaires_mode_essentielle">Saisie essentielle</string>
-    <string name="affaires_mode_complete">Saisie complète</string>
     <string name="affaires_mode_phrase">%1$s. À changer dans votre profil.</string>
     <string name="affaires_mode_phrase_rangees">%1$s —\u00A0les autres sections sont dans « Plus de détails ». À changer dans votre profil.</string>
     <plurals name="affaires_plus_de_details">

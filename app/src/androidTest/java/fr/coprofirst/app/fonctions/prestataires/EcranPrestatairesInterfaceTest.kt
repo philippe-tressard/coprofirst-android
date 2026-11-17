@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.fonctions.prestataires
 
+import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.hasContentDescription
 import fr.coprofirst.app.commun.attendreTexte
 import org.junit.Assert.assertTrue
@@ -137,6 +138,14 @@ class EcranPrestatairesInterfaceTest {
     }
 
     /** Le récapitulatif servi : l'exercice le plus récent ouvert, un badge qui déplie l'avis. */
+    /** #229 : la moyenne SERVIE, dite par l'état du site — « Excellent · 4,33/5 », lue en clair. */
+    @Test
+    fun laMoyenneDesAvisSeDitParLEtatDuSite() {
+        afficher()
+        ecran.attendreTag(ReperesPrestataires.moyenne(1))
+        ecran.onNodeWithTag(ReperesPrestataires.moyenne(1)).assertContentDescriptionEquals("Excellent, 4,33 sur 5, 3 avis")
+    }
+
     @Test
     fun lesAvisDUnPrestataireSeDeplient() {
         afficher()

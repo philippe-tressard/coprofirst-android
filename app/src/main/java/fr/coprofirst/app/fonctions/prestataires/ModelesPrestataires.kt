@@ -42,6 +42,8 @@ data class Prestataire(
     val telephones: List<String> = emptyList(),
     /** Le nombre d'avis du conseil, SERVI (`nb_notations`). */
     val nbNotations: Int = 0,
+    /** La moyenne des avis, SERVIE (`note_moyenne`) ; `null` sans avis. */
+    val noteMoyenne: Double? = null,
 )
 
 /** Un contrat d'entretien (`ContratRead`) ; dates en ISO (`AAAA-MM-JJ`). */
@@ -110,6 +112,7 @@ internal fun PrestataireRead.lu() = Prestataire(
     contacts = contacts.orEmpty().map { it.lu() },
     telephones = telephones,
     nbNotations = nbNotations ?: 0,
+    noteMoyenne = noteMoyenne?.toDouble(),
 )
 
 private fun PrestataireContactLu.lu() =

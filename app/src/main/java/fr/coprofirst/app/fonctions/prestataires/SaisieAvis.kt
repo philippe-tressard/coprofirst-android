@@ -66,8 +66,8 @@ data class SaisieAvis(
         fun corrigeant(avis: AvisPrestataire) =
             SaisieAvis(etat = avis.etat.ifEmpty { null }, commentaire = avis.commentaire.orEmpty(), affaire = avis.ticketId)
 
-        /** Les états d'un avis, dans l'ordre du contrat (`NotationCreate.etat`). */
-        val etats: List<String> = NotationCreate.Etat.entries.map { it.value }
+        /** Les états d'un avis, dans l'ordre du site (`TablesNotations.etats`, #229). */
+        val etats: List<String> = TablesNotations.etats
 
         /** Le seul état qui exige un commentaire, côté site et serveur. */
         const val ETAT_MAUVAIS = "mauvais"
