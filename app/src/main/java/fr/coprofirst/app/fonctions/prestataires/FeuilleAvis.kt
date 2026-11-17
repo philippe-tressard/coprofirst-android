@@ -6,19 +6,13 @@ package fr.coprofirst.app.fonctions.prestataires
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -29,11 +23,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -43,10 +34,7 @@ import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.commun.BoutonsFeuille
-import fr.coprofirst.app.commun.FlowCapsules
-import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.MessageErreur
-import fr.coprofirst.app.commun.Pastille
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.launch
 
@@ -66,13 +54,12 @@ sealed interface ModeAvis {
 
 /**
  * La saisie d'un avis en feuille (`GesteNoter.svelte`), comme la `FeuilleAvis` de l'iOS :
- * l'affaire jugée, la confirmation de l'ajout s'il le faut, l'état, le commentaire.
- * « Enregistrer » attend ce que le site exige, et la phrase du site dit ce qui manque.
+ * l'affaire jugée, la confirmation de l'ajout s'il le faut, l'état, les motifs à cocher et
+ * la phrase qu'ils composent, le texte libre (`ChampsAvis`). « Enregistrer » attend ce que le
+ * site exige, et la phrase du site dit ce qui manque, sous le dernier champ.
  *
- * ⚠️ Manques déclarés, en attente de coprofirst#2775 : pas de points forts ni faibles à
- * cocher (le commentaire est libre en entier, `SaisieAvis`), et les états s'affichent avec
- * leur valeur servie, sur la teinte de la charte plutôt que celle de l'état (l'iOS les teinte
- * depuis `notations.ts`).
+ * ⚠️ Divergence déclarée : l'état choisi prend la teinte de la charte (`Pastille`, commun),
+ * pas la teinte pleine de son état comme l'iOS — #259.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -130,9 +117,11 @@ internal fun FeuilleAvis(
                 saisie = saisie.copy(affaire = id, confirmeAjout = false)
             }
             if (choisie != null && ajoutRequis) {
-                CaseAjout(stringResource(R.string.notation_ajouter, prestataire.nom, choisie.titre), saisie.confirmeAjout) {
-                    saisie = saisie.copy(confirmeAjout = it)
-                }
+                CaseACocher(
+                    stringResource(R.string.notation_ajouter, prestataire.nom, choisie.titre),
+                    saisie.confirmeAjout,
+                    ReperesSaisieAvis.CONFIRMER_AJOUT,
+                ) { saisie = saisie.copy(confirmeAjout = it) }
             }
             ChampsAvis(saisie, refus, prestataire.nom) { saisie = it }
             BoutonsFeuille(
@@ -161,51 +150,5 @@ internal fun FeuilleAvis(
                 }
             }
         }
-    }
-}
-
-/** L'état, le commentaire libre, et la phrase du site qui dit ce qui retient l'avis. */
-@Composable
-private fun ChampsAvis(saisie: SaisieAvis, refus: RefusAvis?, prestataire: String, changer: (SaisieAvis) -> Unit) {
-    val couleurs = LocalCouleurs.current
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Libelle(stringResource(R.string.notation_etat_groupe), Modifier.semantics { heading() })
-        FlowCapsules(espace = 8.dp) {
-            SaisieAvis.etats.forEach { e ->
-                val libelle = EtatAvis.teinte(e).libelle
-                Pastille(libelle, retenue = saisie.etat == e, modifier = Modifier.testTag(ReperesSaisieAvis.etat(e))) {
-                    changer(saisie.copy(etat = e))
-                }
-            }
-        }
-    }
-    OutlinedTextField(
-        value = saisie.commentaire,
-        onValueChange = { changer(saisie.copy(commentaire = it)) },
-        label = { Text("${stringResource(R.string.notation_commentaire_libre)} ${stringResource(R.string.notation_aide_libre)}") },
-        minLines = 3,
-        modifier = Modifier.fillMaxWidth().testTag(ReperesSaisieAvis.LIBRE),
-    )
-    refus?.let {
-        val phrase = when (it) {
-            RefusAvis.EtatManquant -> stringResource(R.string.notation_choisir_etat)
-            RefusAvis.MauvaisSansCommentaire -> stringResource(R.string.notation_mauvais_sans_commentaire)
-            RefusAvis.AjoutNonConfirme -> stringResource(R.string.notation_confirmer_ajout_refus, prestataire)
-        }
-        Text(phrase, style = MaterialTheme.typography.bodySmall, color = couleurs.textMuted, modifier = Modifier.testTag(ReperesSaisieAvis.REFUS))
-    }
-}
-
-/** La case du site (`<input type="checkbox">`) : toute la rangée la bascule, à hauteur de pouce. */
-@Composable
-private fun CaseAjout(libelle: String, coche: Boolean, basculer: (Boolean) -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().heightIn(min = Mise.cible).testTag(ReperesSaisieAvis.CONFIRMER_AJOUT)
-            .toggleable(value = coche, role = Role.Checkbox, onValueChange = basculer),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Checkbox(checked = coche, onCheckedChange = null)
-        Text(libelle, style = MaterialTheme.typography.bodyMedium, color = LocalCouleurs.current.text)
     }
 }

@@ -13,7 +13,9 @@ le front du site, qui les publie dans `tables-clients.json` :
 - `TablesNotations` : les états d'un avis, le libellé et la teinte de chacun, et l'état
   d'une moyenne par ses seuils (`notations`, `notations.ts` : `ETATS`, `PAR_ETAT`,
   `SEUILS_DE_MOYENNE`, `ETAT_AU_DELA`, coprofirst#2775), comme l'iOS
-  (`Genere/TablesNotations.swift`, #229).
+  (`Genere/TablesNotations.swift`, #229) ; et les motifs d'un avis à cocher, avec la forme
+  de la phrase qu'ils composent (`commentaireAvis` : `POINTS_FORTS`, `POINTS_FAIBLES`,
+  `FORME_COMMENTAIRE`, tables 1.5.0, coprofirst#2816).
 
 Les onglets de la page et leurs descriptifs sont dans `OngletsDuSite`
 (scripts/generer_tables.py). Une table qui change de forme : la génération s'arrête.
@@ -102,8 +104,48 @@ def kotlin_notations(tables: dict) -> list[str]:
           "    val seuilsDeMoyenne: List<Pair<Double, String>> = listOf("]
     l += [f"        {float(s['borne'])} to {chaine(s['etat'])}," for s in seuils]
     l += ["    )", "", "    /** Au-delà du dernier seuil (`ETAT_AU_DELA`). */",
-          f"    const val ETAT_AU_DELA = {chaine(au_dela)}", "}", ""]
+          f"    const val ETAT_AU_DELA = {chaine(au_dela)}"]
+    l += kotlin_commentaire(tables)
+    l += ["}", ""]
     return l
+
+
+FORME = ("prefixeForts", "prefixeFaibles", "entreMotifs", "finDeGroupe", "entreGroupes", "avantLibre")
+
+
+def kotlin_commentaire(tables: dict) -> list[str]:
+    """Les motifs à cocher et la forme de la phrase qu'ils composent (`commentaireAvis`)."""
+    c = valeur(tables, "commentaireAvis")
+    forme = c.get("forme")
+    if not isinstance(forme, dict) or set(forme) != set(FORME) or not all(
+            isinstance(forme[k], str) and forme[k] for k in FORME if k != "entreGroupes"):
+        raise TableInattendue(f"commentaireAvis.forme : forme inattendue ({forme})")
+    if not isinstance(forme["entreGroupes"], str):
+        raise TableInattendue("commentaireAvis.forme.entreGroupes n'est pas un texte")
+    listes = {}
+    for nom in ("pointsForts", "pointsFaibles"):
+        motifs = c.get(nom)
+        if (not isinstance(motifs, list) or not motifs or len(set(motifs)) != len(motifs)
+                or not all(isinstance(m, str) and m.strip() for m in motifs)):
+            raise TableInattendue(f"commentaireAvis.{nom} : forme inattendue ({motifs})")
+        # Un motif qui contient un séparateur rendrait la phrase indécomposable : la correction
+        # d'un avis ne recocherait plus ses cases.
+        for m in motifs:
+            if any(forme[k] in m for k in ("entreMotifs", "finDeGroupe", "avantLibre")):
+                raise TableInattendue(f"commentaireAvis.{nom} : « {m} » contient un séparateur de la phrase")
+        listes[nom] = motifs
+    l = ["", "    /** Les points forts à cocher, dans l'ordre du site, qui est celui de la phrase (`POINTS_FORTS`). */",
+         "    val pointsForts: List<String> = listOf(" + ", ".join(chaine(m) for m in listes["pointsForts"]) + ")",
+         "", "    /** Les points faibles à cocher (`POINTS_FAIBLES`). */",
+         "    val pointsFaibles: List<String> = listOf(" + ", ".join(chaine(m) for m in listes["pointsFaibles"]) + ")",
+         "", "    /** La forme de la phrase composée par les cases (`FORME_COMMENTAIRE`, `phraseGeneree`). */"]
+    l += [f"    const val {constante(nom)} = {chaine(forme[nom])}" for nom in FORME]
+    return l
+
+
+def constante(nom: str) -> str:
+    """`prefixeForts` → `PREFIXE_FORTS`."""
+    return re.sub(r"([A-Z])", r"_\1", nom).upper()
 
 
 def main(argv: list[str]) -> int:

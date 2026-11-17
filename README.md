@@ -115,10 +115,12 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   « Tout récupérer » ; la gestion locative en lecture (baux actifs, archives, inventaire).
   Le tableau des charges, créer ou terminer un bail et tenir l'inventaire restent sur le
   site, et l'écran le dit.
-- **Prestataires** (conseil syndical) : fiches, contrats et consommations ; les avis du
-  conseil, par exercice et par intervention. « ⭐ Noter » un prestataire, depuis sa fiche ou
-  la carte d'un contrat, en choisissant l'affaire jugée (la recherche de la page Affaires ;
-  l'ajouter comme intervenant se confirme) ; « Modifier cet avis » pour son auteur, « Retirer
+- **Prestataires** (conseil syndical) : fiches, contrats et consommations ; la moyenne des
+  avis sur chaque carte (« Excellent · 4,33/5 ») ; les avis du conseil, par exercice et par
+  intervention, chacun dans la teinte de son état. « ⭐ Noter » un prestataire, depuis sa fiche
+  ou la carte d'un contrat, en choisissant l'affaire jugée (la recherche de la page Affaires ;
+  l'ajouter comme intervenant se confirme), en cochant ses points forts et faibles — ils
+  composent la phrase du commentaire, montrée avant l'envoi, que suit le texte libre ; « Modifier cet avis » pour son auteur, « Retirer
   cet avis » pour le conseil, chacun selon le droit servi. Créer, corriger ou archiver une
   fiche, un contrat ou un relevé restent sur le site.
 - **Délégations aidant** (Plus › Délégations) : les délégations que le compte voit, leur

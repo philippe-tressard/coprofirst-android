@@ -200,6 +200,27 @@ class EcranPrestatairesInterfaceTest {
         ecran.attendreDisparitionTag(ReperesSaisieAvis.modifier(11))
     }
 
+    /**
+     * #229 : les motifs cochés composent la phrase du site, montrée avant l'envoi — et une case
+     * suffit à justifier « Mauvais ». Ce qui part est la phrase, telle que le site l'écrit.
+     */
+    @Test
+    fun lesMotifsCochesComposentLeCommentaire() {
+        afficher()
+        ecran.toucherTag(ReperesPrestataires.prestataire(1))
+        ecran.toucherTag(ReperesSaisieAvis.noter(1))
+        ecran.attendreTexte("Rien de coché pour l’instant.")
+        ecran.toucherTag(ReperesSaisieAvis.etat("mauvais"))
+        ecran.attendreTexte("Un avis « Mauvais » doit être justifié par un commentaire")
+        ecran.toucherTag(ReperesSaisieAvis.faible(0))
+        ecran.attendreTexte("Points faibles : retard.")
+        ecran.attendreDisparitionTag(ReperesSaisieAvis.REFUS)
+        ecran.toucherTag(ReperesSaisieAvis.ENREGISTRER)
+        ecran.attendreTexte("Notation enregistrée")
+        val envoye = simules.corps.getValue("POST /prestataires/notations")
+        assertTrue(envoye, envoye.contains("\"commentaire\":\"Points faibles : retard.\""))
+    }
+
     /** Corriger puis retirer son avis, en très grand texte : seul ce qui change part. */
     @Test
     fun corrigerPuisRetirerSonAvis() {

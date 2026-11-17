@@ -30,11 +30,20 @@ def notations(**remplace):
     return base
 
 
+def commentaire(**remplace):
+    base = {"pointsForts": ["délai respecté", "travail soigné"], "pointsFaibles": ["retard"],
+            "forme": {"prefixeForts": "Points forts : ", "prefixeFaibles": "Points faibles : ", "entreMotifs": ", ",
+                      "finDeGroupe": ".", "entreGroupes": " ", "avantLibre": "\n"}}
+    base.update(remplace)
+    return base
+
+
 def tables(**remplace):
     base = {
         "typesPrestataire": t([{"val": "travaux", "label": "🏗️ Travaux", "desc": "Interventions \"importantes\""}]),
         "filtresContrat": t([{"val": "sous_contrat", "label": "📄 Sous contrat"}]),
         "notations": t(notations()),
+        "commentaireAvis": t(commentaire()),
     }
     base.update(remplace)
     return base
@@ -67,6 +76,22 @@ class TablesPrestataires(unittest.TestCase):
                       {"seuilsDeMoyenne": [{"borne": 2.5, "etat": "inconnu"}]}, {"etatAuDela": "parfait"}):
             with self.assertRaises(g.TableInattendue, msg=str(casse)):
                 g.kotlin(tables(notations=t(notations(**casse))), "t")
+
+    def test_les_motifs_et_la_forme_de_la_phrase(self):
+        """#229 : les motifs à cocher et la forme de la phrase qu'ils composent (commentaireAvis)."""
+        texte = g.kotlin(tables(), "t")
+        self.assertIn('val pointsForts: List<String> = listOf("délai respecté", "travail soigné")', texte)
+        self.assertIn('const val PREFIXE_FAIBLES = "Points faibles : "', texte)
+        self.assertIn('const val AVANT_LIBRE = "\\n"', texte)
+
+    def test_un_commentaire_mal_forme_arrete(self):
+        forme = commentaire()["forme"]
+        for casse in ({"pointsForts": []}, {"pointsFaibles": ["retard", "retard"]},
+                      {"pointsForts": ["délai, respecté"]}, {"pointsFaibles": ["fini."]},
+                      {"forme": {k: v for k, v in forme.items() if k != "avantLibre"}},
+                      {"forme": dict(forme, prefixeForts="")}):
+            with self.assertRaises(g.TableInattendue, msg=str(casse)):
+                g.kotlin(tables(commentaireAvis=t(commentaire(**casse))), "t")
 
     def test_le_plancher_se_genere(self):
         publiees = json.loads((RACINE / "contrat" / "tables-clients.json").read_text(encoding="utf-8"))["tables"]
