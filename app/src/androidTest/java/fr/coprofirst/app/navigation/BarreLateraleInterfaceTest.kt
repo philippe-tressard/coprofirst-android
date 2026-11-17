@@ -5,9 +5,11 @@ package fr.coprofirst.app.navigation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasContentDescription
@@ -43,7 +45,7 @@ class BarreLateraleInterfaceTest {
     @get:Rule
     val ecran = createComposeRule()
     private val serveur = ServeurDeTest()
-    private var largeur by mutableStateOf(900.dp)
+    private var largeur by mutableStateOf(LARGE)
 
     private val sortie = object : GestesDeSortie {
         override fun deconnecter() = Unit
@@ -55,7 +57,11 @@ class BarreLateraleInterfaceTest {
         val session = serveur.session(Installation("https://residence.exemple.test", "Les Glycines"))
         ecran.setContent {
             ThemeCoproFirst(Palettes.pour(null), sombre = false) {
-                Box(Modifier.requiredSize(largeur, 640.dp)) { EcranResidence(session, sortie, serveur.apparence()) }
+                // Calé en haut à gauche : plus large que l'écran du téléphone, le cadre en déborde à droite,
+                // jamais à gauche — la barre latérale reste à l'écran.
+                Box(Modifier.wrapContentSize(Alignment.TopStart, unbounded = true).requiredSize(largeur, 640.dp)) {
+                    EcranResidence(session, sortie, serveur.apparence())
+                }
             }
         }
         ecran.attendreTexte(PagesParDefaut.TITRE_DU_FIL)
@@ -66,7 +72,7 @@ class BarreLateraleInterfaceTest {
 
     @Test
     fun uneFenetreLargePorteToutesLesPagesEtProfilSansRetour() {
-        ouvrir(900.dp)
+        ouvrir(LARGE)
         ecran.attendreTag("barre.profil")
         ecran.attendreTag("barre.a-propos")
         ecran.attendreDisparition(hasText("Plus"))
@@ -78,7 +84,7 @@ class BarreLateraleInterfaceTest {
 
     @Test
     fun repasserEnFenetreEtroiteGardeLaPageOuverte() {
-        ouvrir(900.dp)
+        ouvrir(LARGE)
         ecran.toucherTag("barre.a-propos")
         ecran.runOnUiThread { largeur = 400.dp }
         ecran.attendreDisparition(hasTestTag("barre.a-propos"))
@@ -86,5 +92,10 @@ class BarreLateraleInterfaceTest {
         ecran.attendreTexte("Plus")
         ecran.attendre(hasContentDescription("Retour"))
         ecran.attendreTexte("À propos")
+    }
+
+    private companion object {
+        /** Juste au-dessus du seuil (600 dp) : la barre latérale et la page tiennent sur l'émulateur du téléphone. */
+        val LARGE = 640.dp
     }
 }
