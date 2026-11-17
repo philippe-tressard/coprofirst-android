@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.SemanticsNodeInteraction
+import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextEquals
@@ -120,6 +121,15 @@ class NotificationsInterfaceTest {
     private fun el(tag: String): SemanticsNodeInteraction = ecran.onNodeWithTag(tag, useUnmergedTree = true)
 
     private fun toucher(tag: String) = ecran.toucherTag(tag, useUnmergedTree = true)
+
+    /** #250 : l'icône du type, et son libellé lu ; un type absent de la table prend le défaut. */
+    @Test
+    fun chaqueLignePorteLIconeDeSonType() {
+        ouvrir()
+        ecran.attendreTag("notification.3.type", useUnmergedTree = true)
+        el("notification.3.type").assertContentDescriptionEquals(TypesNotification.de("sondage").libelle)
+        el("notification.5.type").assertContentDescriptionEquals(TypesNotification.parDefaut.libelle)
+    }
 
     /**
      * « Tout marquer lu » et « Modifier » se voient dans la barre du haut, « 12 non lues » sous

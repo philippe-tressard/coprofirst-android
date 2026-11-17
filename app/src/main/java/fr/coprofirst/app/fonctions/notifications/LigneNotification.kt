@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.charte.TracesDuSite
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.formats.FormatsDuSite
@@ -119,7 +120,12 @@ private fun FondDuBalayage(sens: SwipeToDismissBoxValue) {
 
 private class FondGeste(val couleur: Color, val icone: ImageVector, @param:StringRes val libelle: Int, val alignement: Alignment)
 
-/** La carte d'une alerte : le point des non lues, le titre, « Urgent », l'heure et le texte. */
+/**
+ * La carte d'une alerte : le point des non lues, l'icône de son type, le titre, « Urgent »,
+ * l'heure et le texte. L'icône est celle que coprofirst publie pour le type
+ * (`TypesNotification`, #250) — un type inconnu prend le défaut — et son libellé se lit au
+ * lecteur d'écran, avec la carte.
+ */
 @Composable
 fun CarteNotification(notification: NotificationRecue, choisie: Boolean?, toucher: () -> Unit) {
     val couleurs = LocalCouleurs.current
@@ -147,6 +153,13 @@ fun CarteNotification(notification: NotificationRecue, choisie: Boolean?, touche
             }
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    val type = TypesNotification.de(notification.type)
+                    TracesDuSite.icone(type.pictogramme)?.let { icone ->
+                        Icon(
+                            icone, contentDescription = type.libelle, tint = couleurs.textMuted,
+                            modifier = Modifier.size(18.dp).testTag("notification.${notification.id}.type"),
+                        )
+                    }
                     Text(
                         notification.titre,
                         style = MaterialTheme.typography.bodyLarge,

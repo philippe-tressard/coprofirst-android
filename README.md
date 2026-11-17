@@ -97,7 +97,8 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   mes bâtiments, et les notifications par e-mail et dans l'application, de mon ou mes
   bâtiments et des autres — une case jamais réglée prend le défaut du serveur et le dit.
 - **Notifications** : les alertes du compte, « Aujourd'hui » (les 24 dernières heures)
-  puis « Plus anciennes ». Un toucher marque lu ; « Tout marquer lu » en haut, le
+  puis « Plus anciennes », chacune avec l'icône de son type (affaire, document, sondage…),
+  dont le nom se lit au lecteur d'écran. Un toucher marque lu ; « Tout marquer lu » en haut, le
   nombre de non lues sous le titre ; « Supprimer les lues » en tête de la liste ;
   « Modifier » pour en choisir plusieurs et les supprimer — toute suppression se confirme,
   elle est définitive ; les lues supprimées, un avis le dit. Balayer vers la droite marque
