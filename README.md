@@ -258,8 +258,9 @@ plancher — pièces identiques, contrat servi par chaque installation connue
 ## Licence
 
 AGPL-3.0-or-later, avec des permissions additionnelles (article 7) : la distribution par
-les magasins d'applications Android, et la liaison avec deux bibliothèques de Google Play
-services, nommées, et elles seules — Firebase Cloud Messaging (notifications) et Wearable
-(lien avec la montre), décision du 16/11/2026. Voir `LICENSE` et `LICENSES/` ;
+les magasins d'applications Android, et la liaison avec une bibliothèque de Google Play
+services, nommée, et elle seule — Wearable (lien avec la montre), décision du 16/11/2026,
+restreinte le 17/11/2026 avec l'abandon du push (Firebase Cloud Messaging n'y est plus).
+Voir `LICENSE` et `LICENSES/` ;
 `scripts/verifier_dependances_google.py` refuse toute autre bibliothèque de ces familles.
 Conformité [REUSE](https://reuse.software) : `reuse lint`.
