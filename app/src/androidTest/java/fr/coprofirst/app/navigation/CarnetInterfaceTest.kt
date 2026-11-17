@@ -59,11 +59,18 @@ class CarnetInterfaceTest {
         override fun deconnecter() = Unit
         override fun oublierTout() = Unit
     }
-    private val densite = InstrumentationRegistry.getInstrumentation().targetContext.resources.displayMetrics.density
+    private val ecranDuTest = InstrumentationRegistry.getInstrumentation().targetContext.resources.displayMetrics
+    private val densite = ecranDuTest.density
 
-    /** Le pli, en pixels de la fenêtre : 196 dp depuis le bord gauche, 16 dp de large. */
-    private val gauche = (196 * densite).toInt()
-    private val droite = (212 * densite).toInt()
+    /**
+     * Le livre ouvert tient dans l'écran de l'émulateur — 320 dp en CI, plus au poste — pour que les
+     * intercalaires y restent : le carnet ne dépend pas de la largeur, seulement du pli.
+     */
+    private val largeur = minOf(400f, ecranDuTest.widthPixels / densite)
+
+    /** Le pli, en pixels de la fenêtre : aux 45 % du livre, 16 dp de large. */
+    private val gauche = (largeur * 0.45f * densite).toInt()
+    private val droite = gauche + (16 * densite).toInt()
     private val posture = Posture.depuis(true, listOf(Pli(vertical = true, gauche = gauche, droite = droite, aPlat = false)))
 
     private val disque = mutableMapOf<String, String>()
@@ -87,7 +94,7 @@ class CarnetInterfaceTest {
         ecran.setContent {
             CompositionLocalProvider(LocalPosture provides posture, LocalMarquesPages provides marques) {
                 ThemeCoproFirst(Palettes.pour(null), sombre = false) {
-                    Box(Modifier.wrapContentSize(Alignment.TopStart, unbounded = true).requiredSize(LARGEUR, 700.dp)) {
+                    Box(Modifier.wrapContentSize(Alignment.TopStart, unbounded = true).requiredSize(largeur.dp, 700.dp)) {
                         if (affiche) EcranResidence(session, sortie, serveur.apparence())
                     }
                 }
@@ -182,11 +189,5 @@ class CarnetInterfaceTest {
 
         /** La première carte du fil (l'affaire 41). */
         const val CARTE = "fil.ticket_ouvert:41"
-
-        /**
-         * Un livre ouvert à la largeur de l'émulateur : les intercalaires restent à l'écran. Le carnet
-         * ne dépend pas de la largeur, seulement du pli (`PresentationNavigation.pour`).
-         */
-        val LARGEUR = 400.dp
     }
 }
