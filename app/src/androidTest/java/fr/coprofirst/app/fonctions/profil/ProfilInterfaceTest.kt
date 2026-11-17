@@ -22,6 +22,7 @@ import fr.coprofirst.app.entree.NavigationEntree
 import fr.coprofirst.app.entree.REPERE_AVIS_SORTIE
 import fr.coprofirst.app.entree.entrerDansLaResidence
 import fr.coprofirst.app.entree.ServeurDeTest
+import fr.coprofirst.app.navigation.ouvrirLaPageDePlus
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -112,9 +113,7 @@ class ProfilInterfaceTest {
         val parcours = serveur.parcours()
         ecran.setContent { NavigationEntree(serveur.apparence(), parcours) }
         ecran.entrerDansLaResidence("residence.exemple.test", "Les Glycines")
-        ecran.attendreTexte("Plus")
-        ecran.toucherTexte("Plus")
-        ecran.toucherTag("plus.profil")
+        ecran.ouvrirLaPageDePlus("profil")
         ecran.attendreTexte("Camille EXEMPLE")
     }
 

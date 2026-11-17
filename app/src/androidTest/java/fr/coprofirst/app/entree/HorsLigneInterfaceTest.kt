@@ -19,6 +19,7 @@ import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.commun.toucherTexte
 import fr.coprofirst.app.fonctions.profil.FixturesProfil
 import fr.coprofirst.app.fonctions.profil.ReperesSaisie
+import fr.coprofirst.app.navigation.ouvrirLaPageDePlus
 import fr.coprofirst.app.session.ChiffrementAesGcm
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.LecturesGardees
@@ -82,8 +83,7 @@ class HorsLigneInterfaceTest {
         val parcours = serveur.parcours(gardees = gardees, connues = connues, lectures = lectures)
         ecran.setContent { NavigationEntree(serveur.apparence(), parcours) }
         ecran.attendreTexte("Rien de neuf")
-        ecran.toucherTexte("Plus")
-        ecran.toucherTag("plus.profil")
+        ecran.ouvrirLaPageDePlus("profil")
         ecran.attendreTexte("Camille EXEMPLE")
         ecran.onNodeWithTag(REPERE_BANDEAU).assertExists()
         ecran.amenerTag("profil.modifierIdentite").assertIsNotEnabled()

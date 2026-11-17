@@ -5,10 +5,14 @@ package fr.coprofirst.app.navigation
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -28,6 +32,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -132,12 +137,6 @@ fun EcranResidence(
         }
         aiguillage != Aiguillage.Aucun
     }
-    val retour: (() -> Unit)? = when {
-        fiche != null -> ::fermerFiche
-        enPlus != null -> ({ pageDePlus = null })
-        else -> null
-    }
-    BackHandler(enabled = retour != null) { retour?.invoke() }
     // Un lien d'application : l'écran visé ; une page que le compte ne voit pas, le fil (l'iOS).
     LaunchedEffect(lien) {
         val vise = lien ?: return@LaunchedEffect
@@ -151,56 +150,78 @@ fun EcranResidence(
             else -> ouverte?.let { CheminDuSite.page(it.id) }
         },
     )
-    // Le mode de saisie d'une affaire du compte, pour « Nouvelle affaire » et « Modifier » (#178).
-    CompositionLocalProvider(LocalSaisieAffaire provides etat.saisieAffaire) {
-        CadreResidence(
-            titre = barreDuHaut.titre ?: titreFiche ?: ouverte?.titre ?: stringResource(R.string.plus),
-            sousTitre = barreDuHaut.sousTitre,
-            retour = retour,
-            barreDuHaut = barreDuHaut,
-            cloche = {
-                PastilleResidence(session.installation) { residencesOuvertes = true }
-                if (notifications != null) BoutonCloche(notifications, CompteurNonLues.partage.nombre(residence)) { clocheOuverte = true }
-            },
-            barre = {
-                NavigationBar {
-                    barre.forEach { page ->
+    // La barre latérale ouvre toute page comme « Plus » l'ouvre : le même état (onglet, page de
+    // « Plus », fiche) sert les deux présentations, et passer de l'une à l'autre garde la page.
+    val choisirDansLaLaterale: (String) -> Unit = { id ->
+        if (barre.any { it.id == id }) {
+            aller(id)
+        } else {
+            aller(EtatResidence.PLUS)
+            pageDePlus = id
+        }
+    }
+    // La présentation suit la LARGEUR disponible, jamais l'appareil (#69, comme l'iOS).
+    BoxWithConstraints {
+        val laterale = PresentationNavigation.pour(maxWidth) == PresentationNavigation.Laterale
+        val retour: (() -> Unit)? = when {
+            fiche != null -> ::fermerFiche
+            // Dans la barre latérale, une page de « Plus » est une page comme une autre : pas de retour.
+            enPlus != null && !laterale -> ({ pageDePlus = null })
+            else -> null
+        }
+        BackHandler(enabled = retour != null) { retour?.invoke() }
+        // Le mode de saisie d'une affaire du compte, pour « Nouvelle affaire » et « Modifier » (#178).
+        CompositionLocalProvider(LocalSaisieAffaire provides etat.saisieAffaire) {
+            CadreResidence(
+                titre = barreDuHaut.titre ?: titreFiche ?: ouverte?.titre ?: stringResource(R.string.plus),
+                sousTitre = barreDuHaut.sousTitre,
+                retour = retour,
+                barreDuHaut = barreDuHaut,
+                cloche = {
+                    PastilleResidence(session.installation) { residencesOuvertes = true }
+                    if (notifications != null) BoutonCloche(notifications, CompteurNonLues.partage.nombre(residence)) { clocheOuverte = true }
+                },
+                laterale = if (laterale) ({ BarreLaterale(pages, ouverte?.id, choisirDansLaLaterale) }) else null,
+                barre = {
+                    if (!laterale) NavigationBar {
+                        barre.forEach { page ->
+                            NavigationBarItem(
+                                selected = onglet == page.id,
+                                onClick = { aller(page.id) },
+                                icon = { Icon(Pictogrammes.icone(page.icone), contentDescription = null) },
+                                label = { Text(page.libelle, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                            )
+                        }
                         NavigationBarItem(
-                            selected = onglet == page.id,
-                            onClick = { aller(page.id) },
-                            icon = { Icon(Pictogrammes.icone(page.icone), contentDescription = null) },
-                            label = { Text(page.libelle, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                            selected = onglet == EtatResidence.PLUS,
+                            onClick = { aller(EtatResidence.PLUS) },
+                            icon = { Icon(Icons.Filled.MoreHoriz, contentDescription = null) },
+                            label = { Text(stringResource(R.string.plus)) },
                         )
                     }
-                    NavigationBarItem(
-                        selected = onglet == EtatResidence.PLUS,
-                        onClick = { aller(EtatResidence.PLUS) },
-                        icon = { Icon(Icons.Filled.MoreHoriz, contentDescription = null) },
-                        label = { Text(stringResource(R.string.plus)) },
-                    )
+                },
+            ) {
+                val id = ficheId
+                when {
+                    fiche != null && titreFiche != null && id != null -> {
+                        // La fiche reçoit une page à son titre : elle n'est pas une page de la barre.
+                        val page = PageDeNavigation(ficheNature.orEmpty(), "", titreFiche, titreFiche, "")
+                        fiche.ecran(ContexteDeMenu(page, session, etat.droits, sortie, apparence, barreDuHaut, ouvrir, parcours::relireDroits, etat.logement), id)
+                    }
+                    ouverte != null -> RegistreDesMenus.Ecran(ContexteDeMenu(ouverte, session, etat.droits, sortie, apparence, barreDuHaut, ouvrir, parcours::relireDroits, etat.logement))
+                    else -> ListeDePlus(plus, ouvrir = { pageDePlus = it })
                 }
-            },
-        ) {
-            val id = ficheId
-            when {
-                fiche != null && titreFiche != null && id != null -> {
-                    // La fiche reçoit une page à son titre : elle n'est pas une page de la barre.
-                    val page = PageDeNavigation(ficheNature.orEmpty(), "", titreFiche, titreFiche, "")
-                    fiche.ecran(ContexteDeMenu(page, session, etat.droits, sortie, apparence, barreDuHaut, ouvrir, parcours::relireDroits, etat.logement), id)
-                }
-                ouverte != null -> RegistreDesMenus.Ecran(ContexteDeMenu(ouverte, session, etat.droits, sortie, apparence, barreDuHaut, ouvrir, parcours::relireDroits, etat.logement))
-                else -> ListeDePlus(plus, ouvrir = { pageDePlus = it })
             }
-        }
-        if (residencesOuvertes) {
-            FeuilleResidences(session.installation, etat.roles, sortie, parcours::relireDroits) { residencesOuvertes = false }
-        }
-        if (clocheOuverte && notifications != null) {
-            FeuilleNotifications(
-                notifications,
-                contexte = { barre -> ContexteDeMenu(notifications, session, etat.droits, sortie, apparence, barre, ouvrir, parcours::relireDroits, etat.logement) },
-                fermer = { clocheOuverte = false },
-            )
+            if (residencesOuvertes) {
+                FeuilleResidences(session.installation, etat.roles, sortie, parcours::relireDroits) { residencesOuvertes = false }
+            }
+            if (clocheOuverte && notifications != null) {
+                FeuilleNotifications(
+                    notifications,
+                    contexte = { barre -> ContexteDeMenu(notifications, session, etat.droits, sortie, apparence, barre, ouvrir, parcours::relireDroits, etat.logement) },
+                    fermer = { clocheOuverte = false },
+                )
+            }
         }
     }
 }
@@ -209,8 +230,19 @@ fun EcranResidence(
 object PagesDePlus {
     val profil = PageDeNavigation("profil", "/profil", "Profil", "Profil", "user")
     val aPropos = PageDeNavigation("a-propos", "/a-propos", "À propos", "À propos", "info")
+    private val fixes = listOf(profil, aPropos)
 
-    fun fixe(id: String): PageDeNavigation? = listOf(profil, aPropos).firstOrNull { it.id == id }
+    fun fixe(id: String): PageDeNavigation? = fixes.firstOrNull { it.id == id }
+
+    /** Des pages, puis Profil et À propos : « Plus », et la barre latérale (toutes les pages, #69). */
+    fun suivies(pages: List<PageDeNavigation>): List<PageDeNavigation> = pages + fixes
+
+    /** L'icône d'une entrée : celle de la page, ou celle de Profil et d'À propos. */
+    fun icone(page: PageDeNavigation): ImageVector = when (page.id) {
+        profil.id -> Icons.Filled.AccountCircle
+        aPropos.id -> Icons.Filled.Info
+        else -> Pictogrammes.icone(page.icone)
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -221,26 +253,32 @@ private fun CadreResidence(
     retour: (() -> Unit)?,
     barreDuHaut: BarreDuHaut,
     cloche: @Composable () -> Unit,
+    /** La barre latérale d'une fenêtre large, à gauche de la page (#69) ; `null` : la barre du bas. */
+    laterale: (@Composable () -> Unit)?,
     barre: @Composable () -> Unit,
     contenu: @Composable () -> Unit,
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { EnTeteDeBarre(titre, sousTitre) },
-                navigationIcon = {
-                    if (retour != null) {
-                        IconButton(onClick = retour) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.retour))
+    Row {
+        laterale?.invoke()
+        Scaffold(
+            modifier = Modifier.weight(1f),
+            topBar = {
+                TopAppBar(
+                    title = { EnTeteDeBarre(titre, sousTitre) },
+                    navigationIcon = {
+                        if (retour != null) {
+                            IconButton(onClick = retour) {
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.retour))
+                            }
                         }
-                    }
-                },
-                actions = {
-                    ActionsDeclarees(barreDuHaut)
-                    cloche()
-                },
-            )
-        },
-        bottomBar = barre,
-    ) { marges -> Box(Modifier.fillMaxSize().padding(marges)) { contenu() } }
+                    },
+                    actions = {
+                        ActionsDeclarees(barreDuHaut)
+                        cloche()
+                    },
+                )
+            },
+            bottomBar = barre,
+        ) { marges -> Box(Modifier.fillMaxSize().padding(marges)) { contenu() } }
+    }
 }

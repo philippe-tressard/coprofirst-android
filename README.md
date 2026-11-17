@@ -190,8 +190,10 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   et celui de l'app (AGPL §13) ; chaque composant tiers embarqué et sa licence entière —
   la liste est confrontée au build à ce que l'app embarque vraiment.
 - **Écran** : portrait au téléphone ; sur tablette, pliable déplié ou fenêtre de bureau,
-  toutes les orientations et le multi-fenêtre (comme l'iPad). La mise en page grand écran
-  (barre latérale, liste et fiche côte à côte) suit les lots de l'iOS (#69).
+  toutes les orientations et le multi-fenêtre (comme l'iPad). Dès que la fenêtre est large
+  (600 dp, quel que soit l'appareil), une barre latérale liste toutes les pages, puis
+  Profil et À propos, à la place de la barre du bas ; passer de l'une à l'autre garde la
+  page ouverte. La liste et la fiche côte à côte suivent (#69).
 - **Montre Wear OS** (`montre/`, en construction, #207) : la même app Google Play, pour
   la cloche de la dernière résidence ouverte, en lecture seule — pendant de l'Apple Watch.
   Tant que la liaison au téléphone est éteinte, elle dit « Ouvrez CoproFirst sur le

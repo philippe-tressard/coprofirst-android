@@ -19,6 +19,7 @@ import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.toucher
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.commun.toucherTexte
+import fr.coprofirst.app.navigation.ouvrirLaPageDePlus
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -87,12 +88,11 @@ class ParcoursEntreeInterfaceTest {
         ecran.toucherTexte("Me connecter à cette adresse")
         // La résidence ouverte : la barre, la première page — le fil, vide (`ServeurDeTest.flux`).
         ecran.attendreTexte("Rien de neuf")
-        ecran.toucherTexte("Plus")
         // « Se déconnecter » est au bas du Profil, comme sur l'iOS (#21) — là quel que soit
         // l'état du compte (chargé, en erreur, en chargement) — et se confirme.
         serveur.repondre(404) // GET /auth/me du Profil
         serveur.repondre(200) // POST /auth/logout
-        ecran.toucherTag("plus.profil")
+        ecran.ouvrirLaPageDePlus("profil")
         ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag("profil.deconnecter")).fetchSemanticsNodes().isNotEmpty() }
         ecran.toucherTag("profil.deconnecter")
         ecran.toucherTag("sortie.confirmer")
