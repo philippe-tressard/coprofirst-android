@@ -35,8 +35,8 @@ class ClocheInterfaceTest {
 
     private val maintenant = Instant.now()
 
-    private fun alerte(id: Int, titre: String, lue: Boolean = false, urgente: Boolean = false, lien: String? = null) =
-        NotificationRecue(id, "system", titre, "", lue, urgente, maintenant.minusSeconds(id * 600L), lien)
+    private fun alerte(id: Int, titre: String, lue: Boolean = false, urgente: Boolean = false, lien: String? = null, corps: String = "") =
+        NotificationRecue(id, "system", titre, corps, lue, urgente, maintenant.minusSeconds(id * 600L), lien)
 
     private fun montrer(etat: EtatMontre, alertes: List<NotificationRecue> = emptyList()) = ecran.setContent {
         MaterialTheme { AppScaffold { EcranMontre(etat, LectureCloche.Lue(Cloche.de(alertes))) } }
@@ -101,5 +101,13 @@ class ClocheInterfaceTest {
         ecran.toucherTag("montre.alerte.8")
         ecran.attendreTag("montre.detail.8")
         ecran.onNodeWithTag("montre.continuer").assertDoesNotExist()
+    }
+
+    @Test
+    fun leDetailMontreLeCorpsEnEntier() {
+        montrer(reliee, listOf(alerte(9, "Coupure d'eau", corps = "<p>L'eau sera coupée <strong>jeudi</strong> de 8 h à 12 h.</p>")))
+        ecran.toucherTag("montre.alerte.9")
+        ecran.amenerTag("montre.corps")
+        ecran.onNodeWithText("L'eau sera coupée jeudi de 8 h à 12 h.").assertIsDisplayed()
     }
 }
