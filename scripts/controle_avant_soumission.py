@@ -16,8 +16,9 @@ rouge. Un point qu'elle ne peut pas établir rend INCONNU, jamais OK.
 4. Les mentions du magasin sont à jour :
    - la fiche tient dans les limites (`test_fiche_play.py`) ;
    - « Sécurité des données » dit ce que le code envoie (`verifier_securite_donnees.py`) ;
-   - les notes de cette version sont écrites (`docs/play-store/notes/<version>.txt`, 500
-     caractères au plus).
+   - les notes de cette version sont écrites (`docs/play-store/notes/<base>.txt` : `0.8.txt`
+     pour la version 0.8.512 ; 500 caractères au plus). La base, et non la version
+     complète, dont le dernier nombre ne se connaît qu'après le commit (#272).
 5. Aucun ticket ouvert ne porte le label `bloque-soumission`.
 6. `--taguer`, seulement si tout est vert : le tag annoté `v<version>` est posé sur ce
    commit et poussé. C'est lui qui dit au serveur quel contrat chaque version en
@@ -87,8 +88,20 @@ def verdict_ci(executions: list[dict], requis: list[str]) -> tuple[int, list[str
     return code, lignes or [f"{len(requis)} jobs verts"]
 
 
+def cle_des_notes(version: str) -> str | None:
+    """La clé des notes d'une version : sa BASE (`0.8` pour `0.8.512`), seule partie connue
+    avant le commit soumis (#272). Le dernier nombre est le nombre de commits de `main`
+    (`app/build.gradle.kts`) : le commit qui écrit les notes le change lui-même. La base ne
+    bouge que sur une décision de sortie (`coprofirst.version.base`) : une sortie, des notes."""
+    m = re.fullmatch(r"(\d+\.\d+)\.\d+", version)
+    return m.group(1) if m else None
+
+
 def verdict_notes(version: str, dossier: pathlib.Path = NOTES) -> tuple[int, list[str]]:
-    fichier = dossier / f"{version}.txt"
+    cle = cle_des_notes(version)
+    if cle is None:
+        return INCONNU, [f"version {version!r} illisible : notes introuvables"]
+    fichier = dossier / f"{cle}.txt"
     if not fichier.is_file():
         return ROUGE, [f"notes de version absentes : {fichier.relative_to(RACINE) if fichier.is_relative_to(RACINE) else fichier}"]
     texte = fichier.read_text(encoding="utf-8").strip()
@@ -194,11 +207,19 @@ def autotest() -> bool:
     ok &= verdict_ci([], [])[0] == INCONNU
     with tempfile.TemporaryDirectory() as d:
         dossier = pathlib.Path(d)
-        ok &= verdict_notes("1.0.1", dossier)[0] == ROUGE
-        (dossier / "1.0.1.txt").write_text("Première version de CoproFirst sur Android.\n", encoding="utf-8")
-        ok &= verdict_notes("1.0.1", dossier)[0] == OK
-        (dossier / "1.0.2.txt").write_text("x" * (NOTES_MAX + 1), encoding="utf-8")
-        ok &= verdict_notes("1.0.2", dossier)[0] == ROUGE
+        # #272 : les notes s'écrivent AVANT le commit soumis, dont le versionName (base +
+        # nombre de commits) ne se connaît qu'après. Elles se rangent sous la BASE : les
+        # versions 0.8.512 et 0.8.513 lisent les mêmes notes.
+        ok &= verdict_notes("0.8.512", dossier)[0] == ROUGE  # un AAB sans notes : rouge
+        (dossier / "0.8.512.txt").write_text("Au nom complet, écrit après coup.\n", encoding="utf-8")
+        ok &= verdict_notes("0.8.512", dossier)[0] == ROUGE  # le nom complet ne compte pas
+        (dossier / "0.8.txt").write_text("Première version de CoproFirst sur Android.\n", encoding="utf-8")
+        ok &= verdict_notes("0.8.512", dossier)[0] == OK
+        ok &= verdict_notes("0.8.513", dossier)[0] == OK
+        ok &= verdict_notes("0.9.514", dossier)[0] == ROUGE  # une base neuve, ses notes à écrire
+        ok &= verdict_notes("v0.8", dossier)[0] == INCONNU
+        (dossier / "0.9.txt").write_text("x" * (NOTES_MAX + 1), encoding="utf-8")
+        ok &= verdict_notes("0.9.514", dossier)[0] == ROUGE
     # Les jobs d'interface sont requis à la soumission, où qu'ils soient dans ci.yml : le
     # téléphone, la tablette et la montre Wear OS (#207).
     ok &= {"Interface (émulateur)", "Interface tablette (échantillon)", "Interface montre (Wear OS)"} \

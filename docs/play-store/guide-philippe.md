@@ -67,7 +67,7 @@ python3 -I scripts/controle_avant_soumission.py --taguer --rapport build/control
 
 Il refuse au moindre rouge : CI complète verte sur ce commit (tests d'interface et
 parcours sombre au plus grand texte compris), contrat servi en production, fiche,
-« Sécurité des données », notes de version (`docs/play-store/notes/<version>.txt`),
+« Sécurité des données », notes de version (`docs/play-store/notes/<base>.txt`, `0.8.txt`),
 aucun ticket `bloque-soumission` ouvert. Tout vert, il pose et pousse le tag
 `v<version>`. Seulement alors : `bash scripts/construire-release.sh` sur ce même commit,
 et l'envoi. Le rapport se colle dans la note de publication.
