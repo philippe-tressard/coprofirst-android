@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2026 Philippe TRESSARD
 # SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 """Le LOGO de CoproFirst au format d'Android (VectorDrawable), généré au build depuis
-`app/src/main/logo/logo.svg` — le dessin du site recopié À L'IDENTIQUE.
+`partage-android/src/main/logo/logo.svg` — le dessin du site recopié À L'IDENTIQUE.
 
 Une conversion de format, pas une modification : ni le dessin ni les couleurs ne
 changent (LicenseRef-CoproFirst-Logo, usage 5 ; « redimensionner ou poser sur le fond

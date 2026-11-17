@@ -38,6 +38,7 @@ import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.BoutonContour
 import fr.coprofirst.app.commun.BoutonPlein
 import fr.coprofirst.app.ThemeCoproFirst
+import fr.coprofirst.app.partage.R as RCommun
 
 /**
  * L'accueil, comme celui de l'iOS (`AccueilView`) : le logo, le nom, la devise, trois portes —
@@ -56,7 +57,7 @@ fun EcranAccueil(parcours: ActionsEntree) {
     ) {
         Spacer(Modifier.weight(1f))
         // Le médaillon de l'iOS : le logo de CoproFirst, décoratif (le nom suit).
-        Image(painterResource(R.drawable.logo), contentDescription = null, modifier = Modifier.size(112.dp))
+        Image(painterResource(RCommun.drawable.logo), contentDescription = null, modifier = Modifier.size(112.dp))
         Spacer(Modifier.height(20.dp))
         Text(
             stringResource(R.string.nom_app),

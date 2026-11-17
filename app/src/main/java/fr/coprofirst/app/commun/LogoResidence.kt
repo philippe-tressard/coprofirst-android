@@ -33,6 +33,7 @@ import fr.coprofirst.app.LocalSombre
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mouvement
 import fr.coprofirst.app.commun.pieces.FichierProtege
+import fr.coprofirst.app.partage.R as RCommun
 import fr.coprofirst.app.session.ClientHttp
 import fr.coprofirst.app.session.Installation
 import kotlinx.coroutines.Dispatchers
@@ -135,7 +136,7 @@ fun LogoResidence(installation: Installation?, modifier: Modifier = Modifier) {
     }
     Crossfade(etat, modifier.clip(RoundedCornerShape(5.dp)).testTag(repere), animationSpec = fondu, label = "logo") { quoi ->
         when (quoi) {
-            MARQUE -> Image(painterResource(R.drawable.logo), contentDescription = null, modifier = Modifier.fillMaxSize())
+            MARQUE -> Image(painterResource(RCommun.drawable.logo), contentDescription = null, modifier = Modifier.fillMaxSize())
             TUILE -> Box(Modifier.fillMaxSize().background(LocalCouleurs.current.primaryLight))
             else -> logos.garde(quoi)?.let {
                 Image(it, contentDescription = null, contentScale = ContentScale.Fit, modifier = Modifier.fillMaxSize())

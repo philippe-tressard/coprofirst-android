@@ -22,6 +22,7 @@ import fr.coprofirst.app.commun.toucherTexte
 import fr.coprofirst.app.entree.NavigationEntree
 import fr.coprofirst.app.entree.ServeurDeTest
 import fr.coprofirst.app.entree.entrerDansLaResidence
+import fr.coprofirst.app.partage.R as RCommun
 import java.io.File
 import org.junit.After
 import org.junit.Assume.assumeTrue
@@ -78,7 +79,7 @@ class CapturesPlay {
         val image = Bitmap.createBitmap(1024, 500, Bitmap.Config.ARGB_8888)
         val toile = Canvas(image)
         toile.drawColor(charte.bg.toArgb())
-        requireNotNull(ContextCompat.getDrawable(contexte, R.drawable.logo)).apply {
+        requireNotNull(ContextCompat.getDrawable(contexte, RCommun.drawable.logo)).apply {
             setBounds(96, 130, 336, 370)
             draw(toile)
         }

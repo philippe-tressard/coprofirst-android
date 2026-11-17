@@ -5,9 +5,10 @@
  * Ce que le téléphone (`:app`) et la montre (`:montre`, #207) partagent et qui demande
  * Android (#206, lot 2) : le chiffrement au Keystore ; le rendu du texte riche du site
  * (`TexteDuSite`, `RenduHTML` : une `AnnotatedString`, que chaque app compose dans son
- * propre `Text`), avec sa liste blanche et les constantes du serveur, générées ici. Les
- * palettes, le logo et les libellés du hors ligne au lot suivant. Le Kotlin pur (client
- * HTTP, formats, alerte reçue, découpage du HTML) reste dans `:partage`.
+ * propre `Text`), avec sa liste blanche et les constantes du serveur ; les palettes de la
+ * charte et le logo, générés ici ; les libellés du hors ligne (« à jour au … »). Ses
+ * ressources sont dans SON `R` (`fr.coprofirst.app.partage.R`, nonTransitiveRClass). Le
+ * Kotlin pur (client HTTP, formats, alerte reçue, découpage du HTML) reste dans `:partage`.
  *
  * Une bibliothèque, pas une application : SDK, Java et lint lui viennent du build racine
  * (`reglagesCommuns`), comme aux deux apps. Les pièces gardent leur paquet d'origine
@@ -28,6 +29,12 @@ val genererConstantes = generation(
     "genererConstantes", "contrat/constantes-clients.json", "scripts/generer_constantes.py",
     lus = listOf("contrat/constantes-clients.json", "contrat/tables-clients.json"),
 )
+// Les palettes de la charte (`Couleurs`, `Palettes`), clair et sombre : la marque de danger et
+// la couleur du point de la montre sont celles du téléphone.
+val genererCharte = generation("genererCharte", "contrat/tables-clients.json", "scripts/generer_charte.py")
+// Le logo au format d'Android (icône adaptative, médaillon de l'accueil) depuis le dessin du
+// site recopié à l'identique (scripts/importer-logo.sh), sous sa licence propre.
+val genererLogo = generation("genererLogo", "partage-android/src/main/logo/logo.svg", "scripts/generer_logo.py")
 // La liste blanche du texte riche ; sa forme s'écrit dans generer_tables.py, qu'il charge.
 val genererBalises = generation(
     "genererBalises", "contrat/tables-clients.json", "scripts/generer_balises.py",
@@ -38,6 +45,8 @@ androidComponents {
     onVariants { variante ->
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererConstantes, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererBalises, GenererDepuisPython::sortie)
+        variante.sources.kotlin?.addGeneratedSourceDirectory(genererCharte, GenererDepuisPython::sortie)
+        variante.sources.res?.addGeneratedSourceDirectory(genererLogo, GenererDepuisPython::sortie)
     }
 }
 

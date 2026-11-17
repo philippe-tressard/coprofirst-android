@@ -51,7 +51,7 @@ class Convertisseur(unittest.TestCase):
                 generer(corps)
 
     def test_le_logo_recopie_se_convertit(self):
-        sortie = generer_fichier(RACINE / "app" / "src" / "main" / "logo" / "logo.svg")
+        sortie = generer_fichier(RACINE / "partage-android" / "src" / "main" / "logo" / "logo.svg")
         self.assertIn("#FF1E3A5F", sortie["logo.xml"])
         self.assertIn("#FFC9983A", sortie["logo.xml"])
 
