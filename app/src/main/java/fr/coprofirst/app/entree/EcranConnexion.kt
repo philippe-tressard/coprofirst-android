@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.commun.BandeauInstallationSuspendue
 import fr.coprofirst.app.commun.LogoResidence
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.ThemeCoproFirst
@@ -147,7 +148,11 @@ private fun ChampResidence(etat: EtatEntree, saisir: (String) -> Unit, scanner: 
             enter = fadeIn(tween(200)) + expandVertically(tween(200)),
             exit = fadeOut(tween(120)) + shrinkVertically(tween(120)),
         ) {
-            NomReconnu(etat.reconnue)
+            Column {
+                NomReconnu(etat.reconnue)
+                // L'installation reconnue est suspendue : le site le dit dès la connexion (#233).
+                BandeauInstallationSuspendue(etat.reconnue, Modifier.padding(top = 8.dp))
+            }
         }
     }
 }

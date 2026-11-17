@@ -4,6 +4,7 @@
 package fr.coprofirst.app.session
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
@@ -69,5 +70,18 @@ class InstallationTest {
     fun contratAbsentOuPlusRecentAccepte() {
         Installation.depuisConfig(adresse, mapOf("site_nom" to "Sans version"))
         Installation.depuisConfig(adresse, mapOf("site_nom" to "Récente", "version_contrat" to "99.0.0"))
+    }
+
+    /** #233 : `installation_suspendue` est une CHAÎNE ; « 1 » seul suspend ; absente (sous v3.111.0), rien. */
+    @Test
+    fun laSuspensionSeLitDansLaChaineServie() {
+        fun suspendue(valeur: String?) =
+            Installation.depuisConfig(adresse, mapOf("site_nom" to "Les Glycines", "installation_suspendue" to valeur)).suspendue
+        assertTrue(suspendue("1"))
+        assertTrue(suspendue(" 1 "))
+        assertFalse(suspendue("0"))
+        assertFalse(suspendue(null))
+        assertFalse("un booléen JSON n'est pas la forme servie", suspendue("true"))
+        assertFalse(Installation.depuisConfig(adresse, mapOf("site_nom" to "Les Glycines")).suspendue)
     }
 }

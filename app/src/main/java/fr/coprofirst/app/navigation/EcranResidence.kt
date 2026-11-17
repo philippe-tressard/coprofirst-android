@@ -6,8 +6,10 @@ package fr.coprofirst.app.navigation
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -43,6 +45,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Pictogrammes
 import fr.coprofirst.app.commun.Apparence
+import fr.coprofirst.app.commun.BandeauInstallationSuspendue
 import fr.coprofirst.app.commun.GestesDeSortie
 import fr.coprofirst.app.commun.LocalSaisieAffaire
 import fr.coprofirst.app.commun.audience.CheminsDeLApp
@@ -194,6 +197,7 @@ fun EcranResidence(
                     PastilleResidence(session.installation) { residencesOuvertes = true }
                     if (notifications != null) BoutonCloche(notifications, CompteurNonLues.partage.nombre(residence)) { clocheOuverte = true }
                 },
+                bandeau = { BandeauInstallationSuspendue(session.installation) },
                 laterale = if (laterale) ({ BarreLaterale(pages, ouverte?.id, choisirDansLaLaterale) }) else null,
                 barre = {
                     if (!laterale) NavigationBar {
@@ -283,6 +287,8 @@ private fun CadreResidence(
     retour: (() -> Unit)?,
     barreDuHaut: BarreDuHaut,
     cloche: @Composable () -> Unit,
+    /** Un bandeau sous la barre, sur chaque page : l'installation suspendue (#233). */
+    bandeau: @Composable () -> Unit,
     /** La barre latérale d'une fenêtre large, à gauche de la page (#69) ; `null` : la barre du bas. */
     laterale: (@Composable () -> Unit)?,
     barre: @Composable () -> Unit,
@@ -309,6 +315,11 @@ private fun CadreResidence(
                 )
             },
             bottomBar = barre,
-        ) { marges -> Box(Modifier.fillMaxSize().padding(marges)) { contenu() } }
+        ) { marges ->
+            Column(Modifier.fillMaxSize().padding(marges)) {
+                bandeau()
+                Box(Modifier.weight(1f).fillMaxWidth()) { contenu() }
+            }
+        }
     }
 }

@@ -31,6 +31,11 @@ data class Installation(
     val aUnLogo: Boolean = false,
     /** Et sa variante pour le fond sombre (`site_logo_sombre`). */
     val aUnLogoSombre: Boolean = false,
+    /**
+     * Suspendue (`installation_suspendue`, Registre R6, contrat 2.5.0) : consultation seule. Servie
+     * en CHAÎNE, « 1 » ou « 0 » ; absente sous v3.111.0 — non suspendue, sans monter le plancher.
+     */
+    val suspendue: Boolean = false,
 ) {
     val adresse: AdresseInstallation? get() = AdresseInstallation.relire(url)
     val contrat: VersionContrat? get() = VersionContrat.lire(versionContrat)
@@ -65,6 +70,7 @@ data class Installation(
                 surchargesPages = surcharges,
                 aUnLogo = !cles["site_logo"].isNullOrBlank(),
                 aUnLogoSombre = !cles["site_logo_sombre"].isNullOrBlank(),
+                suspendue = cles["installation_suspendue"]?.trim() == "1",
             )
             val contrat = installation.contrat
             if (contrat != null && contrat < VersionContrat.PLANCHER) throw ErreurService.ResidenceAMettreAJour

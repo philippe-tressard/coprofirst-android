@@ -63,6 +63,9 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   d'autre ne part (« Vous êtes hors ligne… »). Le réseau revenu, la session se rouvre seule
   et tout se relit. L'appareil qui perd le réseau, l'app ouverte : « ce qui est affiché
   peut dater ».
+- **Installation suspendue** : quand la résidence est suspendue (consultation seule), un
+  bandeau le dit dès la connexion et sous la barre de chaque page ; un geste refusé dit
+  pourquoi avec la phrase du serveur, comme un sixième compte refusé en mode limité.
 - **La résidence ouverte** : la barre du bas, dans l'ordre et avec les libellés réglés
   par l'administration de la résidence, filtrée selon le compte (Espace CS, Prestataires,
   Délégations, Paramétrage ne paraissent qu'à ceux qui y ont droit) ; « Plus » pour les
