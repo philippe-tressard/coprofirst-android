@@ -52,6 +52,14 @@ class ColonneDeFiche(retenueInitiale: Boolean = false) {
     /** Cette fiche est-elle celle de la colonne ? (la rangée qui l'ouvre se souligne). */
     fun estOuverte(nature: String, id: String): Boolean = ouverte == (nature to id)
 
+    /**
+     * Le marque-page rouvre une fiche qu'une liste tenait (#242) : comme après une reconstruction,
+     * la page se recompose à côté d'elle, et sa liste se redéclare.
+     */
+    internal fun retenir() {
+        retenue = true
+    }
+
     internal fun entrer() {
         occupants++
         retenue = true

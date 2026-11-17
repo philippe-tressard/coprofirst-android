@@ -11,6 +11,7 @@ import fr.coprofirst.app.commun.audience.AudienceDeLApp
 import fr.coprofirst.app.commun.pieces.PiecesLocales
 import fr.coprofirst.app.fonctions.notifications.montre.LiaisonsMontre
 import fr.coprofirst.app.fonctions.notifications.push.NotificationsPush
+import fr.coprofirst.app.navigation.MarquesPages
 import fr.coprofirst.app.session.AbonnesSession
 import fr.coprofirst.app.session.ChiffrementKeystore
 import fr.coprofirst.app.session.CoffreKeystore
@@ -58,7 +59,7 @@ val FabriqueParcoursEntree = viewModelFactory {
             avantSortie = { AudienceDeLApp.mesure.vider() },
             apresSortie = { AudienceDeLApp.mesure.oublier(it.url) },
             // Les abonnés au cycle des résidences (#150) : la seule liste.
-            abonnes = AbonnesSession(listOf(NotificationsPush.de(application), LiaisonsMontre.de(application))),
+            abonnes = AbonnesSession(listOf(NotificationsPush.de(application), LiaisonsMontre.de(application), MarquesPages.de(application))),
         )
     }
 }

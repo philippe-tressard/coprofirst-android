@@ -53,6 +53,7 @@ import fr.coprofirst.app.commun.audience.LocalMesureAudience
 import fr.coprofirst.app.commun.audience.PageVue
 import fr.coprofirst.app.commun.miseenpage.ColonneDeFiche
 import fr.coprofirst.app.commun.miseenpage.LocalColonneDeFiche
+import fr.coprofirst.app.commun.miseenpage.LocalJourDuCarnet
 import fr.coprofirst.app.commun.miseenpage.PageEtColonneDeFiche
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.audience.CheminDuSite
@@ -92,6 +93,8 @@ fun EcranResidence(
     // La fiche ouverte par la porte : sa nature et son identifiant (`Destination.Element`).
     var ficheNature by rememberSaveable { mutableStateOf<String?>(null) }
     var ficheId by rememberSaveable { mutableStateOf<String?>(null) }
+    // Le jour du Fil ouvert dans le carnet (#242) : gardé avec la page et dans le marque-page.
+    val jourDuCarnet = rememberSaveable { mutableStateOf<String?>(null) }
     val barreDuHaut = remember { BarreDuHaut() }
     // La fiche ouverte dans la colonne d'une fenêtre large pose SA barre dans sa colonne (#69).
     val barreDeFiche = remember { BarreDuHaut() }
@@ -148,6 +151,16 @@ fun EcranResidence(
         }
         aiguillage != Aiguillage.Aucun
     }
+    // Le marque-page d'un pliable (#242) : rouvrir où l'on avait refermé ; un lien, posé après, l'emporte.
+    val ici = MarquePage(onglet ?: EtatResidence.PLUS, pageDePlus, ficheNature, ficheId, jourDuCarnet.value, colonne.occupee && ficheId != null)
+    MarquePageDeLaResidence(residence, ici) { marque ->
+        if (marque.onglet == EtatResidence.PLUS || barre.any { it.id == marque.onglet }) parcours.choisir(marque.onglet)
+        pageDePlus = marque.pageDePlus
+        ficheNature = marque.ficheNature
+        ficheId = marque.ficheId
+        jourDuCarnet.value = marque.jour
+        if (marque.enColonne) colonne.retenir()
+    }
     // Un lien d'application : l'écran visé ; une page que le compte ne voit pas, le fil (l'iOS).
     LaunchedEffect(lien) {
         val vise = lien ?: return@LaunchedEffect
@@ -171,18 +184,23 @@ fun EcranResidence(
             pageDePlus = id
         }
     }
-    // La présentation suit la LARGEUR disponible, jamais l'appareil (#69, comme l'iOS).
+    // La présentation suit la LARGEUR disponible et le PLI, jamais l'appareil (#69, #242, comme l'iOS).
+    val posture = LocalPosture.current
     BoxWithConstraints {
-        val laterale = PresentationNavigation.pour(maxWidth) == PresentationNavigation.Laterale
-        // Une liste occupe la colonne de fiche : sa page et la fiche qu'elle ouvre côte à côte (#69).
-        val enColonne = laterale && colonne.occupee && ouverte != null
+        val presentation = PresentationNavigation.pour(maxWidth, posture)
+        val laterale = presentation == PresentationNavigation.Laterale
+        val carnet = presentation == PresentationNavigation.Carnet
+        val large = laterale || carnet
+        // Une liste occupe la colonne de fiche : sa page et la fiche qu'elle ouvre côte à côte (#69) ;
+        // dans le carnet, la page de gauche et celle de droite, de part et d'autre du pli (#242).
+        val enColonne = large && colonne.occupee && ouverte != null
         SideEffect { colonne.ouverte = if (enColonne && fiche != null) ficheNature.orEmpty() to ficheId.orEmpty() else null }
         val retour: (() -> Unit)? = when {
             // Dans la colonne, la fiche se remplace par une autre ; le geste « retour » du système la referme.
             fiche != null && enColonne -> null
             fiche != null -> ::fermerFiche
             // Dans la barre latérale, une page de « Plus » est une page comme une autre : pas de retour.
-            enPlus != null && !laterale -> ({ pageDePlus = null })
+            enPlus != null && presentation == PresentationNavigation.Barre -> ({ pageDePlus = null })
             else -> null
         }
         BackHandler(enabled = retour != null || (enColonne && fiche != null)) { retour?.invoke() ?: fermerFiche() }
@@ -199,8 +217,9 @@ fun EcranResidence(
                 },
                 bandeau = { BandeauInstallationSuspendue(session.installation) },
                 laterale = if (laterale) ({ BarreLaterale(pages, ouverte?.id, choisirDansLaLaterale) }) else null,
+                tranche = if (carnet) ({ Intercalaires(pages, ouverte?.id, choisirDansLaLaterale) }) else null,
                 barre = {
-                    if (!laterale) NavigationBar {
+                    if (presentation == PresentationNavigation.Barre) NavigationBar {
                         barre.forEach { page ->
                             NavigationBarItem(
                                 selected = onglet == page.id,
@@ -230,15 +249,16 @@ fun EcranResidence(
                 }
                 // Une fiche hors colonne (téléphone, ou page sans liste) : la barre de la page est la sienne.
                 val ficheSeule = contexteDeFiche(barreDuHaut)
-                CompositionLocalProvider(LocalColonneDeFiche provides colonne.takeIf { laterale }) {
+                CompositionLocalProvider(LocalColonneDeFiche provides colonne.takeIf { large }, LocalJourDuCarnet provides jourDuCarnet.takeIf { carnet }) {
                     when {
                         // Fenêtre large : la page garde sa place ; une liste qui l'occupe ouvre la colonne de fiche.
-                        laterale && ouverte != null && (fiche == null || enColonne || colonne.retenueALaReconstruction) -> PageEtColonneDeFiche(
+                        large && ouverte != null && (fiche == null || enColonne || colonne.retenueALaReconstruction) -> PageEtColonneDeFiche(
                             enColonne,
                             page = { RegistreDesMenus.Ecran(contexteDePage(ouverte)) },
                             fiche = if (fiche != null && id != null) ({
                                 contexteDeFiche(barreDeFiche)?.let { FicheEnColonne(titreFiche.orEmpty(), barreDeFiche) { fiche.ecran(it, id) } }
                             }) else null,
+                            coupe = if (carnet) posture.coupe() else null,
                         )
                         fiche != null && id != null && ficheSeule != null -> fiche.ecran(ficheSeule, id)
                         ouverte != null -> RegistreDesMenus.Ecran(contexteDePage(ouverte))
@@ -291,6 +311,8 @@ private fun CadreResidence(
     bandeau: @Composable () -> Unit,
     /** La barre latérale d'une fenêtre large, à gauche de la page (#69) ; `null` : la barre du bas. */
     laterale: (@Composable () -> Unit)?,
+    /** Les intercalaires du carnet, sur la tranche droite d'un pliable déplié (#242). */
+    tranche: (@Composable () -> Unit)?,
     barre: @Composable () -> Unit,
     contenu: @Composable () -> Unit,
 ) {
@@ -321,5 +343,6 @@ private fun CadreResidence(
                 Box(Modifier.weight(1f).fillMaxWidth()) { contenu() }
             }
         }
+        tranche?.invoke()
     }
 }
