@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.fonctions.espacecs
 
+import fr.coprofirst.app.commun.miseenpage.OccuperLaColonneDeFiche
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -97,6 +98,8 @@ fun OngletReporting(service: ServiceReporting, actualisation: Int, ouvrir: (Dest
 /** Un relevé : les chiffres, les répartitions, puis les affaires. */
 @Composable
 private fun VueSuivi(suivi: SuiviAffaires, entretien: Boolean, ouvrir: (Destination) -> Boolean) {
+    // En fenêtre large, l'affaire suivie s'ouvre à côté du relevé (#69, coprofirst-ios#279).
+    OccuperLaColonneDeFiche()
     Column(verticalArrangement = Arrangement.spacedBy(Mise.ecart)) {
         RangeeDeChiffres { m ->
             val nonFermees = if (entretien) R.plurals.espacecs_reporting_entretiens_non_clos else R.plurals.espacecs_reporting_affaires_non_fermees
@@ -131,7 +134,7 @@ private fun VueSuivi(suivi: SuiviAffaires, entretien: Boolean, ouvrir: (Destinat
 private fun LigneAffaireSuivie(affaire: AffaireSuivie, entretien: Boolean, ouvrir: (() -> Unit)?) {
     val c = LocalCouleurs.current
     val ageLu = pluralStringResource(R.plurals.espacecs_reporting_age_lu, affaire.ageJours, FormatsDuSite.nombre(affaire.ageJours))
-    Carte(Modifier.testTag(ReperesEspaceCS.reportingAffaire(affaire.id)), ouvrir = ouvrir, action = stringResource(R.string.espacecs_ouvrir_affaire)) {
+    Carte(Modifier.testTag(ReperesEspaceCS.reportingAffaire(affaire.id)).affaireChoisie(affaire.id), ouvrir = ouvrir, action = stringResource(R.string.espacecs_ouvrir_affaire)) {
         Column(Modifier.semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(8.dp)) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp), itemVerticalAlignment = Alignment.CenterVertically) {
                 PastilleTeinte(

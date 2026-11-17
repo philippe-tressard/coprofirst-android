@@ -31,16 +31,24 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
+import fr.coprofirst.app.commun.miseenpage.LocalDansLaColonne
+import fr.coprofirst.app.commun.miseenpage.PanneauDeColonne
 import kotlinx.coroutines.launch
 
 /**
  * Une page ouverte par-dessus « Ma résidence » (l'avis d'une question, l'annuaire du
  * syndic) : son titre, « OK » qui la ferme, puis son contenu. `defile` : le contenu défile
- * dans la feuille (un écran qui défile lui-même passe `false`).
+ * dans la feuille (un écran qui défile lui-même passe `false`). Dans la colonne d'une fenêtre
+ * large (`FicheOuFeuille`, #69), elle se pose à plat à côté de la page.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FeuilleResidence(titre: String, fermer: () -> Unit, defile: Boolean = true, contenu: @Composable () -> Unit) {
+    // Dans la colonne d'une fenêtre large (#69), à plat à côté de « Ma résidence ».
+    if (LocalDansLaColonne.current) {
+        PanneauDeColonne(titre, fermer = fermer) { Corps(defile, contenu) }
+        return
+    }
     val etat = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val portee = rememberCoroutineScope()
     val couleurs = LocalCouleurs.current
@@ -58,15 +66,19 @@ fun FeuilleResidence(titre: String, fermer: () -> Unit, defile: Boolean = true, 
                     Text(stringResource(R.string.avis_fermer), fontWeight = FontWeight.SemiBold)
                 }
             }
-            Box(Modifier.weight(1f)) {
-                if (defile) {
-                    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Mise.marge, vertical = 16.dp)) {
-                        contenu()
-                    }
-                } else {
-                    contenu()
-                }
-            }
+            Box(Modifier.weight(1f)) { Corps(defile, contenu) }
         }
+    }
+}
+
+/** Le contenu d'une page de la résidence : défilant et marginé, ou tel quel s'il défile lui-même. */
+@Composable
+private fun Corps(defile: Boolean, contenu: @Composable () -> Unit) {
+    if (defile) {
+        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Mise.marge, vertical = 16.dp)) {
+            contenu()
+        }
+    } else {
+        contenu()
     }
 }

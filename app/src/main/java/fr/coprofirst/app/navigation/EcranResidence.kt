@@ -55,6 +55,7 @@ import fr.coprofirst.app.commun.miseenpage.ColonneDeFiche
 import fr.coprofirst.app.commun.miseenpage.LocalColonneDeFiche
 import fr.coprofirst.app.commun.miseenpage.LocalJourDuCarnet
 import fr.coprofirst.app.commun.miseenpage.PageEtColonneDeFiche
+import fr.coprofirst.app.commun.miseenpage.ficheLocale
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.audience.CheminDuSite
 import fr.coprofirst.app.session.audience.ResidenceMesuree
@@ -195,6 +196,9 @@ fun EcranResidence(
         // dans le carnet, la page de gauche et celle de droite, de part et d'autre du pli (#242).
         val enColonne = large && colonne.occupee && ouverte != null
         SideEffect { colonne.ouverte = if (enColonne && fiche != null) ficheNature.orEmpty() to ficheId.orEmpty() else null }
+        // Une seule fiche dans la colonne : celle du registre (la porte) ou celle qu'une liste tient (#69).
+        LaunchedEffect(ficheNature, ficheId) { if (ficheNature != null) colonne.locale?.fermer?.invoke() }
+        LaunchedEffect(colonne.locale) { if (colonne.locale != null && ficheNature != null) fermerFiche() }
         val retour: (() -> Unit)? = when {
             // Dans la colonne, la fiche se remplace par une autre ; le geste « retour » du système la referme.
             fiche != null && enColonne -> null
@@ -256,8 +260,9 @@ fun EcranResidence(
                             enColonne,
                             page = { RegistreDesMenus.Ecran(contexteDePage(ouverte)) },
                             fiche = if (fiche != null && id != null) ({
-                                contexteDeFiche(barreDeFiche)?.let { FicheEnColonne(titreFiche.orEmpty(), barreDeFiche) { fiche.ecran(it, id) } }
-                            }) else null,
+                                val contexte = contexteDeFiche(barreDeFiche)
+                                if (contexte != null) FicheEnColonne(titreFiche.orEmpty(), barreDeFiche) { fiche.ecran(contexte, id) }
+                            }) else colonne.ficheLocale(),
                             coupe = if (carnet) posture.coupe() else null,
                         )
                         fiche != null && id != null && ficheSeule != null -> fiche.ecran(ficheSeule, id)

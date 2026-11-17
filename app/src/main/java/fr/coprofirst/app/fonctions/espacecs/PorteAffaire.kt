@@ -3,6 +3,9 @@
 
 package fr.coprofirst.app.fonctions.espacecs
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import fr.coprofirst.app.commun.miseenpage.rangeeChoisie
 import fr.coprofirst.app.navigation.Destination
 import fr.coprofirst.app.navigation.RegistreDesMenus
 
@@ -17,3 +20,7 @@ private const val AFFAIRE = "affaire"
  */
 internal fun lienAffaire(ouvrir: (Destination) -> Boolean, id: Int): (() -> Unit)? =
     if (AFFAIRE in RegistreDesMenus.fiches) ({ ouvrir(Destination.Element(AFFAIRE, id.toString())) }) else null
+
+/** La rangée de l'affaire `id`, soulignée quand sa fiche est ouverte à côté de la liste (#69). */
+@Composable
+internal fun Modifier.affaireChoisie(id: Int): Modifier = rangeeChoisie(AFFAIRE, id.toString())

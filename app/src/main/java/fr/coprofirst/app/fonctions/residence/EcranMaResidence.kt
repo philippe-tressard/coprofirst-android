@@ -3,6 +3,8 @@
 
 package fr.coprofirst.app.fonctions.residence
 
+import fr.coprofirst.app.commun.miseenpage.FicheOuFeuille
+import fr.coprofirst.app.commun.miseenpage.OccuperLaColonneDeFiche
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -83,6 +85,10 @@ object OngletsResidence {
 /** Où se rangent les copies des rapports ouverts (`Ouverture.fichier`). */
 private const val RAPPORTS = "rapports"
 
+/** Les natures de ce que l'écran ouvre à côté de lui (`FicheOuFeuille`, `rangeeChoisie`). */
+internal const val NATURE_AVIS = "avis-reglement"
+internal const val NATURE_SYNDIC = "syndic"
+
 /** Ce que l'écran ouvre par-dessus lui : un avis, ou l'annuaire placé sur le syndic. */
 sealed interface PageOuverte {
     data class Avis(val question: QuestionReglement) : PageOuverte
@@ -101,9 +107,10 @@ fun EcranMaResidence(contexte: ContexteDeMenu) {
  * « Ma résidence », comme l'iOS (`ResidenceView`) : la Fiche, le Carnet d'entretien et le
  * Règlement — ces deux derniers réservés aux propriétaires et au conseil syndical.
  *
- * ⚠️ Divergence déclarée : l'iOS POUSSE l'avis d'une question et l'annuaire du syndic dans
- * la pile de l'onglet ; ici ils s'ouvrent dans une feuille pleine hauteur (« OK », geste
- * de retour), la barre du haut n'offrant pas de retour à une sous-page d'un écran.
+ * ⚠️ Divergence déclarée : en fenêtre étroite, l'iOS POUSSE l'avis d'une question et l'annuaire
+ * du syndic dans la pile de l'onglet ; ici ils s'ouvrent dans une feuille pleine hauteur (« OK »,
+ * geste de retour), la barre du haut n'offrant pas de retour à une sous-page d'un écran. En
+ * fenêtre large, comme l'iOS, ils s'ouvrent à côté de la page (`FicheOuFeuille`, #69).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -118,6 +125,8 @@ internal fun EcranMaResidence(
     var accesReglement by remember { mutableStateOf<Boolean?>(null) }
     var relecture by rememberSaveable { mutableIntStateOf(0) }
     var destination by remember { mutableStateOf<PageOuverte?>(null) }
+    // La page tient la colonne de fiche en fenêtre large : l'avis, le syndic, l'affaire du carnet.
+    OccuperLaColonneDeFiche()
     LaunchedEffect(droits.proprioOuCS) {
         if (!droits.proprioOuCS) return@LaunchedEffect
         // Une réponse en échec ne masque rien : l'onglet ouvert dira l'erreur.
@@ -166,12 +175,17 @@ internal fun EcranMaResidence(
             }
         }
     }
+    // En fenêtre large, l'avis et l'annuaire du syndic s'ouvrent À CÔTÉ de la page (#69,
+    // coprofirst-ios#279) ; en fenêtre étroite, dans leur feuille.
+    val fermer = { destination = null }
     when (val ouverte = destination) {
-        is PageOuverte.Avis -> FeuilleResidence(stringResource(R.string.avis_titre), { destination = null }) {
-            AvisReglement(ouverte.question)
+        is PageOuverte.Avis -> FicheOuFeuille(NATURE_AVIS, ouverte.question.id.toString(), fermer) {
+            FeuilleResidence(stringResource(R.string.avis_titre), fermer) { AvisReglement(ouverte.question) }
         }
-        PageOuverte.Syndic -> FeuilleResidence(stringResource(R.string.annuaire_titre), { destination = null }, defile = false) {
-            EcranAnnuaire(annuaire, session, AncreAnnuaire.Syndic)
+        PageOuverte.Syndic -> FicheOuFeuille(NATURE_SYNDIC, NATURE_SYNDIC, fermer) {
+            FeuilleResidence(stringResource(R.string.annuaire_titre), fermer, defile = false) {
+                EcranAnnuaire(annuaire, session, AncreAnnuaire.Syndic)
+            }
         }
         null -> Unit
     }

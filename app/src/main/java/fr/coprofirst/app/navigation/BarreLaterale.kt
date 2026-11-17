@@ -3,12 +3,7 @@
 
 package fr.coprofirst.app.navigation
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -19,17 +14,14 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.PermanentDrawerSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.Orientation
-import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.commun.miseenpage.PanneauDeColonne
 
 /**
  * Comment la résidence se navigue (#69), comme l'iOS (`PresentationNavigation`, #221) : choisi
@@ -94,15 +86,5 @@ private val LARGEUR = 260.dp
  */
 @Composable
 internal fun FicheEnColonne(titre: String, barre: BarreDuHaut, contenu: @Composable () -> Unit) {
-    Column(Modifier.fillMaxSize()) {
-        Row(
-            Modifier.fillMaxWidth().heightIn(min = Mise.cible).padding(start = Mise.marge, end = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            EnTeteDeBarre(barre.titre ?: titre, barre.sousTitre, Modifier.weight(1f).semantics { heading() })
-            ActionsDeclarees(barre)
-        }
-        HorizontalDivider(color = LocalCouleurs.current.border)
-        Box(Modifier.weight(1f)) { contenu() }
-    }
+    PanneauDeColonne(barre.titre ?: titre, barre.sousTitre, actions = { ActionsDeclarees(barre) }) { contenu() }
 }
