@@ -55,6 +55,10 @@ for AAB in app/build/outputs/bundle/release/app-release.aab montre/build/outputs
   jarsigner -verify "$AAB" >/dev/null 2>&1 || echec "$AAB n'est pas signé"
   echo "✅ $AAB"
   echo "   empreinte SHA-256 du certificat de téléversement (à comparer à la Play Console) :"
-  keytool -printcert -jarfile "$AAB" 2>/dev/null | grep -E 'SHA256:' | head -1 | sed 's/^[[:space:]]*/   /'
+  # La sortie de keytool suit la langue du poste (« SHA 256: » en français) : forcée en
+  # anglais pour être lue ; une empreinte introuvable rend INCONNU, jamais une ligne vide.
+  EMPREINTE=$(keytool -J-Duser.language=en -printcert -jarfile "$AAB" 2>/dev/null | grep -E 'SHA256:' | head -1)
+  [ -n "$EMPREINTE" ] || inconnu "empreinte du certificat de $AAB illisible (keytool)"
+  echo "$EMPREINTE" | sed 's/^[[:space:]]*/   /'
   shasum -a 256 "$AAB" | sed 's/^/   fichier : /'
 done
