@@ -6,7 +6,8 @@
  * Android (#206, lot 2) : le chiffrement au Keystore ; le rendu du texte riche du site
  * (`TexteDuSite`, `RenduHTML` : une `AnnotatedString`, que chaque app compose dans son
  * propre `Text`), avec sa liste blanche et les constantes du serveur ; les palettes de la
- * charte et le logo, générés ici ; les libellés du hors ligne (« à jour au … »). Ses
+ * charte, le logo et les tracés des icônes du site (`TracesDuSite`), générés ici ; les types
+ * d'alerte (`TypesNotification`) ; les libellés du hors ligne (« à jour au … »). Ses
  * ressources sont dans SON `R` (`fr.coprofirst.app.partage.R`, nonTransitiveRClass). Le
  * Kotlin pur (client HTTP, formats, alerte reçue, découpage du HTML) reste dans `:partage`.
  *
@@ -35,6 +36,12 @@ val genererCharte = generation("genererCharte", "contrat/tables-clients.json", "
 // Le logo au format d'Android (icône adaptative, médaillon de l'accueil) depuis le dessin du
 // site recopié à l'identique (scripts/importer-logo.sh), sous sa licence propre.
 val genererLogo = generation("genererLogo", "partage-android/src/main/logo/logo.svg", "scripts/generer_logo.py")
+// Les tracés des icônes du site (#183), et leur trait (`attributsTrace`) lu dans
+// tables-clients.json : la gouttière du fil du téléphone, l'icône du type d'une alerte.
+val genererTraces = generation(
+    "genererTraces", "contrat/icones-svg.json", "scripts/generer_traces.py",
+    lus = listOf("contrat/icones-svg.json", "contrat/tables-clients.json"),
+)
 // La liste blanche du texte riche ; sa forme s'écrit dans generer_tables.py, qu'il charge.
 val genererBalises = generation(
     "genererBalises", "contrat/tables-clients.json", "scripts/generer_balises.py",
@@ -46,6 +53,7 @@ androidComponents {
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererConstantes, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererBalises, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererCharte, GenererDepuisPython::sortie)
+        variante.sources.kotlin?.addGeneratedSourceDirectory(genererTraces, GenererDepuisPython::sortie)
         variante.sources.res?.addGeneratedSourceDirectory(genererLogo, GenererDepuisPython::sortie)
     }
 }
@@ -56,6 +64,8 @@ dependencies {
     // `AnnotatedString` : le texte riche rendu, que le téléphone et la montre composent.
     api(platform(libs.compose.bom))
     api(libs.compose.ui.text)
+    // `ImageVector` : les tracés des icônes du site (`TracesDuSite`).
+    api(libs.compose.ui)
     constraints {
         // Le cycle de vie que tire ui-text, au niveau de celui des deux apps : seul, il resterait
         // en retard (2.10), et ses contrôles de lint obsolètes font échouer le lint strict.
