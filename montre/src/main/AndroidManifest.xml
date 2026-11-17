@@ -16,6 +16,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 
     <application
         android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
         android:dataExtractionRules="@xml/regles_extraction"
         android:fullBackupContent="@xml/regles_sauvegarde"
         android:label="@string/nom_app"

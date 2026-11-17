@@ -77,8 +77,7 @@ private fun LigneAlerte(alerte: NotificationRecue, ouvrir: (Int) -> Unit) {
         title = { Text(alerte.titre, maxLines = 2, overflow = TextOverflow.Ellipsis) },
         time = { Text(FormatsDuSite.relatif(alerte.creeLe)) },
         subtitle = if (alerte.urgente) {
-            // DIVERGENCE déclarée (#207) : la teinte de danger vient du thème de Wear OS tant
-            // que les palettes de la charte ne sont pas partagées (#206, lot 2).
+            // La marque de danger de la charte (ThemeMontre : `error` = `danger`).
             { Text(urgent, color = MaterialTheme.colorScheme.error) }
         } else {
             null

@@ -6,7 +6,6 @@ package fr.coprofirst.montre
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.wear.compose.material3.AppScaffold
-import androidx.wear.compose.material3.MaterialTheme
 import fr.coprofirst.app.commun.attendreQue
 import fr.coprofirst.app.commun.attendreTag
 import fr.coprofirst.app.commun.attendreTexte
@@ -36,7 +35,7 @@ class PorteMontreInterfaceTest {
     private val alerte = NotificationRecue(3, "ticket_update", "Votre affaire avance", "", false, false, Instant.now())
 
     private fun ouvrir(coffre: Coffre, actif: Boolean = true, lire: suspend (LiaisonGardee) -> List<NotificationRecue>) =
-        ecran.setContent { MaterialTheme { AppScaffold { PorteMontre(coffre, lire, actif) } } }
+        ecran.setContent { ThemeMontre { AppScaffold { PorteMontre(coffre, lire, actif) } } }
 
     @Test
     fun relieeLaClocheSeLit() {
