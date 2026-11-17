@@ -14,6 +14,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="montre_deja_lues_ouvertes">Dépliées</string>
     <string name="montre_urgent">Urgent</string>
     <string name="montre_chargement">Chargement des alertes</string>
+    <string name="montre_injoignable">La résidence ne répond pas</string>
     <string name="montre_continuer_sur_le_telephone">Continuer sur le téléphone</string>
     <string name="montre_ouvert_sur_le_telephone">Ouvert sur le téléphone</string>
     <string name="tuile_nom">Alertes</string>

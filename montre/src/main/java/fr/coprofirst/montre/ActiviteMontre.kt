@@ -8,18 +8,18 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.wear.compose.material3.AppScaffold
 import androidx.wear.compose.material3.MaterialTheme
-import fr.coprofirst.montre.cloche.LectureCloche
+import fr.coprofirst.app.session.ChiffrementKeystore
+import fr.coprofirst.montre.liaison.CoffrePreferences
 
 /** L'unique activité de la montre. */
 class ActiviteMontre : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // La liaison est éteinte (`LiaisonMontre`) : aucune résidence gardée à relire encore.
-        val etat = EtatMontre.auLancement(liaison = null)
+        // La liaison que le téléphone a transmise, jeton chiffré au Keystore (#207, lot 2b).
+        val coffre = CoffrePreferences(this, ChiffrementKeystore(CoffrePreferences.ALIAS))
         setContent {
             MaterialTheme {
-                // La cloche se lit par le jeton de montre (lot 2) : tant qu'il n'y en a pas, rien.
-                AppScaffold { EcranMontre(etat, LectureCloche.EnCours) }
+                AppScaffold { PorteMontre(coffre) }
             }
         }
     }

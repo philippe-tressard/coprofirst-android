@@ -52,11 +52,15 @@ dependencies {
     // « Continuer sur le téléphone » (#207, lot 2) : RemoteActivityHelper (AndroidX), qui tire
     // play-services-wearable — permis par la licence (point 4, #213).
     implementation(libs.wear.remote.interactions)
+    // La réception de la liaison (Data Layer), permise par la licence (point 4, #213).
+    implementation(libs.play.services.wearable)
     // Le client HTTP, les formats du site, l'alerte reçue : ceux du téléphone (#206).
     implementation(project(":partage"))
     // Le chiffrement au Keystore, celui des sessions du téléphone : la montre y garde son jeton (#206).
     implementation(project(":partage-android"))
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.okhttp.mockwebserver)
     // Le geste commun des tests d'interface (tests-interface-communs, #216) se compile ici aussi.
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.compose.ui.test.junit4)

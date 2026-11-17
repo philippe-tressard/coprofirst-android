@@ -53,6 +53,9 @@ jeton ne lit que la cloche, et il expire au bout de 30 jours (coprofirst#2771). 
 le transmet à la montre avec l'adresse et le nom de la résidence, par le Data Layer de Google
 Play services, que seule une app de même identifiant et de même signature lit. La montre
 efface l'élément de données dès qu'elle l'a gardé.
+La montre garde le jeton chiffré par une clé du Keystore et ne s'en sert que pour **lire**
+la cloche de la résidence (`GET /notifications`, seule route que ce jeton ouvre) : elle
+n'envoie rien d'autre.
 **Lecture prudente** : Google Play services peut acheminer par ses serveurs, et pas
 seulement de proche en proche. Ce dépôt déclare donc ce jeton comme un `ID appareil`
 **partagé avec Google**, pour l'acheminement seulement, comme le jeton FCM. Lecture retenue le 17/11/2026

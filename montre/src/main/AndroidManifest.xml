@@ -3,13 +3,15 @@
 SPDX-FileCopyrightText: 2026 Philippe TRESSARD
 SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 -->
-<!-- La montre Wear OS (#207). Aucun droit pour l'instant : la liaison au téléphone est
-     éteinte (`LiaisonMontre.ACTIF`). Un droit neuf se déclare aussi dans la section
+<!-- La montre Wear OS (#207). INTERNET : lire la cloche de la résidence avec le jeton de
+     montre (GET /notifications seul) ; rien d'autre ne part. La liaison au téléphone est
+     éteinte tant que `LiaisonMontre.ACTIF` l'est. Un droit neuf se déclare aussi dans la section
      « Sécurité des données » de Google Play (standards/14 §3 bis). Rien ne se sauvegarde
      ni ne se transfère (les règles du téléphone, ressources-communes/) : le jeton de la
      montre lui est propre, et la montre se relie de nouveau par le téléphone. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-feature android:name="android.hardware.type.watch" />
 
     <application
@@ -18,6 +20,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
         android:fullBackupContent="@xml/regles_sauvegarde"
         android:label="@string/nom_app"
         android:supportsRtl="true"
+        android:usesCleartextTraffic="false"
         android:theme="@android:style/Theme.DeviceDefault">
 
         <!-- NON autonome : la montre se relie par le téléphone, qui lui donne la résidence
@@ -35,6 +38,19 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- La liaison que le téléphone transmet (#207, lot 2b) : Data Layer de Wear OS. -->
+        <service
+            android:name=".liaison.ReceptionLiaison"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
+                <data
+                    android:host="*"
+                    android:pathPrefix="/coprofirst/liaison"
+                    android:scheme="wear" />
+            </intent-filter>
+        </service>
 
         <!-- La tuile (#207, lot 4) : le nombre de nouvelles alertes, sans leur contenu. -->
         <service

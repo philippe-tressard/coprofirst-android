@@ -49,6 +49,7 @@ fun EcranCloche(residence: String, lecture: LectureCloche, ouvrir: (Int) -> Unit
             item { ListHeader(modifier = Modifier.testTag("montre.residence")) { Text(residence, textAlign = TextAlign.Center) } }
             when (lecture) {
                 LectureCloche.EnCours -> item { Chargement() }
+                LectureCloche.Injoignable -> item { Message(stringResource(R.string.montre_injoignable), "montre.injoignable") }
                 is LectureCloche.Lue -> cloche(lecture.cloche, luesOuvertes, { luesOuvertes = !luesOuvertes }, ouvrir)
             }
         }
@@ -98,12 +99,11 @@ private fun BoutonDejaLues(nombre: Int, ouvertes: Boolean, basculer: () -> Unit)
 }
 
 @Composable
-private fun Vide() {
-    Text(
-        stringResource(R.string.montre_aucune_alerte),
-        textAlign = TextAlign.Center,
-        modifier = Modifier.fillMaxWidth().testTag("montre.aucuneAlerte"),
-    )
+private fun Vide() = Message(stringResource(R.string.montre_aucune_alerte), "montre.aucuneAlerte")
+
+@Composable
+private fun Message(texte: String, repere: String) {
+    Text(texte, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().testTag(repere))
 }
 
 @Composable

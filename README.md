@@ -196,7 +196,9 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   de la résidence ; les non lues, urgentes devant ; « Déjà lues », repliée ; chaque ligne
   avec son titre sur deux lignes et son âge relatif ; « Aucune alerte ») et le détail
   (titre, date, « Continuer sur le téléphone » quand l'alerte vise une page : la page
-  s'ouvre sur le téléphone ; le corps vient avec le rendu partagé du texte du site, #206). La tuile dit
+  s'ouvre sur le téléphone ; le corps vient avec le rendu partagé du texte du site, #206).
+  Relié par le téléphone (la dernière résidence ouverte), la montre lit la cloche avec un
+  jeton de montre qui ne lit qu'elle, gardé chiffré ; il se retire à la déconnexion. La tuile dit
   « 2 nouvelles alertes · dont 1 urgente », sans titre ni résidence, et ouvre la cloche.
   Ce que la montre partage avec le téléphone vit dans
   `partage/` (#206) : le client HTTP, les formats du site, l'alerte reçue, le découpage du
