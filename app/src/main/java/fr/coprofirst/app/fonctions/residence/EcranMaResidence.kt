@@ -90,6 +90,10 @@ internal const val RAPPORTS = "rapports"
 internal const val NATURE_AVIS = "avis-reglement"
 internal const val NATURE_SYNDIC = "syndic"
 
+/** Les natures de ce que l'écran ouvre à côté de lui (`FicheOuFeuille`, `rangeeChoisie`). */
+internal const val NATURE_AVIS = "avis-reglement"
+internal const val NATURE_SYNDIC = "syndic"
+
 /** Ce que l'écran ouvre par-dessus lui : un avis, ou l'annuaire placé sur le syndic. */
 sealed interface PageOuverte {
     data class Avis(val question: QuestionReglement) : PageOuverte
