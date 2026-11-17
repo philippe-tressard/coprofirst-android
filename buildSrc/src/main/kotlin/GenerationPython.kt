@@ -26,7 +26,7 @@ import javax.inject.Inject
  * tables des menus — navigation, texte riche, pièces jointes, natures du fil, et celles
  * de chaque menu (→ scripts/generer_tables*.py, découverts par convention), le registre
  * des menus (fonctions/<menu>/Inscription.kt → scripts/generer_registre.py) et le logo au format d'Android
- * (app/src/main/logo/logo.svg → scripts/generer_logo.py).
+ * (partage-android/src/main/logo/logo.svg → scripts/generer_logo.py).
  * Rien de généré n'est versionné ; aucune couleur ne s'écrit à la main.
  */
 abstract class GenererDepuisPython : DefaultTask() {

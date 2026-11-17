@@ -39,6 +39,7 @@ import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.BoutonPlein
 import fr.coprofirst.app.commun.LogoResidence
 import fr.coprofirst.app.commun.MessageErreur
+import fr.coprofirst.app.partage.R as RCommun
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.LecturesGardees
 
@@ -86,7 +87,7 @@ fun EcranRetour(etat: EtatEntree, parcours: ActionsEntree) {
         ) {
             if (etat.lecturePerimee) {
                 MessageErreur(
-                    LecturesGardees.JOURS_MAX.toInt().let { pluralStringResource(R.plurals.hors_ligne_perimee, it, it) },
+                    LecturesGardees.JOURS_MAX.toInt().let { pluralStringResource(RCommun.plurals.hors_ligne_perimee, it, it) },
                     modifier = Modifier.testTag(ReperesRetour.LECTURE_PERIMEE),
                 )
             } else {

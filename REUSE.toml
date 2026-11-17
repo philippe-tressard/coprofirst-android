@@ -12,7 +12,7 @@ version = 1
 # Android publiée par son auteur (usage 5, coprofirst#2743, MARQUE.md). Son format
 # d'Android est généré au build, sans en changer le dessin ni les couleurs.
 [[annotations]]
-path = "app/src/main/logo/logo.svg"
+path = "partage-android/src/main/logo/logo.svg"
 precedence = "override"
 SPDX-FileCopyrightText = "2026 Philippe TRESSARD"
 SPDX-License-Identifier = "LicenseRef-CoproFirst-Logo"

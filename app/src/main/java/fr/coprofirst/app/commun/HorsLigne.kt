@@ -41,6 +41,7 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Mouvement
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.partage.R as RCommun
 import java.time.Instant
 
 /**
@@ -70,7 +71,7 @@ data class GesteEnLigne(val actif: Boolean, val modifier: Modifier)
 @Composable
 fun gesteEnLigne(actif: Boolean = true): GesteEnLigne {
     if (LocalHorsLigne.current.consultation == null) return GesteEnLigne(actif, Modifier)
-    val raison = stringResource(R.string.hors_ligne_raison)
+    val raison = stringResource(RCommun.string.hors_ligne_raison)
     return GesteEnLigne(false, Modifier.semantics { stateDescription = raison })
 }
 
@@ -126,9 +127,9 @@ private fun Bandeau(consultation: Instant?) {
             Icon(Icons.Filled.CloudOff, contentDescription = null, tint = couleurs.text, modifier = Modifier.size(16.dp))
             Text(
                 if (consultation != null) {
-                    stringResource(R.string.hors_ligne_a_jour, FormatsDuSite.dateCourte(consultation), FormatsDuSite.heure(consultation))
+                    stringResource(RCommun.string.hors_ligne_a_jour, FormatsDuSite.dateCourte(consultation), FormatsDuSite.heure(consultation))
                 } else {
-                    stringResource(R.string.hors_ligne_peut_dater)
+                    stringResource(RCommun.string.hors_ligne_peut_dater)
                 },
                 style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
                 color = couleurs.text,
@@ -137,7 +138,7 @@ private fun Bandeau(consultation: Instant?) {
         }
         if (consultation != null) {
             Text(
-                stringResource(R.string.hors_ligne_consultation),
+                stringResource(RCommun.string.hors_ligne_consultation),
                 style = MaterialTheme.typography.labelSmall,
                 color = couleurs.textMuted,
                 textAlign = TextAlign.Center,

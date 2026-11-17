@@ -15,7 +15,7 @@ DEPOT=philippe-tressard/coprofirst
 source contrat/plancher.env 2>/dev/null
 [[ "${LOGO:-}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "❓ INCONNU : LOGO illisible (contrat/plancher.env)" >&2; exit 2; }
 # chemin local → chemin dans coprofirst : la seule liste.
-COPIES=("app/src/main/logo/logo.svg:front/static/favicon.svg" "LICENSES/LicenseRef-CoproFirst-Logo.txt:LICENSES/LicenseRef-CoproFirst-Logo.txt")
+COPIES=("partage-android/src/main/logo/logo.svg:front/static/favicon.svg" "LICENSES/LicenseRef-CoproFirst-Logo.txt:LICENSES/LicenseRef-CoproFirst-Logo.txt")
 TMP=$(mktemp -d) || exit 2
 trap 'rm -rf "${TMP:?}"' EXIT
 ECHECS=0

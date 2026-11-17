@@ -43,8 +43,6 @@ abstract class ListerModulesEmbarques : DefaultTask() {
 }
 
 
-val genererCharte = generation("genererCharte", "contrat/tables-clients.json", "scripts/generer_charte.py")
-val genererLogo = generation("genererLogo", "app/src/main/logo/logo.svg", "scripts/generer_logo.py")
 val genererTables = generation("genererTables", "contrat/tables-clients.json", "scripts/generer_tables.py")
 // Les mesures du site (#2) : les jetons de longueur, que `MesuresTest` confronte à `Mise`.
 val genererMesures = generation("genererMesures", "contrat/tables-clients.json", "scripts/generer_mesures.py")
@@ -96,13 +94,11 @@ val genererRegistre = generation(
 
 androidComponents {
     onVariants { variante ->
-        variante.sources.kotlin?.addGeneratedSourceDirectory(genererCharte, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererTables, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererMesures, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererTraces, GenererDepuisPython::sortie)
         variante.sources.kotlin?.addGeneratedSourceDirectory(genererRegistre, GenererDepuisPython::sortie)
         genererTablesDesMenus.forEach { variante.sources.kotlin?.addGeneratedSourceDirectory(it, GenererDepuisPython::sortie) }
-        variante.sources.res?.addGeneratedSourceDirectory(genererLogo, GenererDepuisPython::sortie)
         variante.sources.assets?.addGeneratedSourceDirectory(genererComposantsTiers, GenererDepuisPython::sortie)
     }
 }
