@@ -62,6 +62,36 @@ class Constantes(unittest.TestCase):
                 self.assertNotIn(copie, source, script.name)
 
 
+class Types(unittest.TestCase):
+    """`TypesNotification` (coprofirst#2802, #206) : le pictogramme et le libellé de chaque type d'alerte."""
+
+    def types(self, **remplace):
+        base = {"typesNotification": c({"sondage": {"pictogramme": "bar-chart-3", "libelle": "Sondage"}}),
+                "typeNotificationParDefaut": c({"pictogramme": "bell", "libelle": "Notification"})}
+        base.update(remplace)
+        return base
+
+    def test_chaque_type_et_le_defaut(self):
+        texte = g.kotlin_types(self.types(), "t")
+        self.assertIn('"sondage" to TypeNotification("bar-chart-3", "Sondage"),', texte)
+        self.assertIn('val parDefaut = TypeNotification("bell", "Notification")', texte)
+
+    def test_le_plancher_se_genere(self):
+        publiees = json.loads((RACINE / "contrat" / "constantes-clients.json").read_text(encoding="utf-8"))["constantes"]
+        texte = g.kotlin_types(publiees, "constantes-clients.json")
+        for attendu in ('"ticket_update" to TypeNotification(', '"vigik" to TypeNotification(', 'TypeNotification("bell", '):
+            self.assertIn(attendu, texte)
+
+    def test_une_forme_inattendue_arrete(self):
+        for casse in ({"typesNotification": c({})}, {"typesNotification": c({"Sondage": {"pictogramme": "x", "libelle": "S"}})},
+                      {"typesNotification": c({"sondage": {"pictogramme": "Bar Chart", "libelle": "S"}})},
+                      {"typesNotification": c({"sondage": {"pictogramme": "x", "libelle": " "}})},
+                      {"typesNotification": c({"sondage": {"pictogramme": "x"}})},
+                      {"typeNotificationParDefaut": None}):
+            with self.assertRaises(TableInattendue, msg=str(casse)):
+                g.kotlin_types({k: v for k, v in self.types(**casse).items() if v is not None}, "t")
+
+
 class Fichiers(unittest.TestCase):
     """`FichiersDuSite` (#169) : les motifs publiés depuis v3.105.0, les familles d'affichage depuis v3.106.0."""
 
