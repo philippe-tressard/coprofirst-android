@@ -151,7 +151,7 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   ouvre l'annuaire du syndic —, composition par bâtiment ; règles, plans, règlement,
   comptes-rendus d'AG et diagnostics, chacun s'ouvrant dans l'app de l'appareil) ; aux
   propriétaires et au conseil, le Carnet d'entretien (par équipement, visites en retard
-  en tête, filtre par périmètre) et le Règlement (poser une question à l'assistant, lire
+  en tête, « À venir » sur un contrat qui n'a pas commencé, filtre par périmètre) et le Règlement (poser une question à l'assistant, lire
   son avis, ses fondements et les extraits qu'il cite). Le bilan de l'exercice se lit
   encore sur le site.
 - **Annuaire** : le conseil syndical (par bâtiment, président et gestionnaire mis en

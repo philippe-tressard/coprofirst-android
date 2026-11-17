@@ -5,6 +5,7 @@ package fr.coprofirst.app.fonctions.residence
 
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -13,6 +14,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.commun.amenerTag
 import fr.coprofirst.app.commun.annuaire.ReperesContact
+import fr.coprofirst.app.commun.attendre
 import fr.coprofirst.app.commun.attendreTag
 import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.toucher
@@ -49,6 +51,8 @@ class ResidenceInterfaceTest {
         ecran.toucherTag("onglet.carnet")
         ecran.attendreTexte("Révision annuelle de la chaudière")
         ecran.attendreTexte("1 visite attendue")
+        // Un contrat qui n'a pas commencé : « À venir » sous « Contrat », lu avec sa date (#220).
+        ecran.attendre(hasContentDescription("À venir", substring = true))
 
         ecran.toucherTag("onglet.reglement")
         ecran.attendreTexte("Puis-je installer une climatisation sur mon balcon ?")

@@ -128,6 +128,8 @@ data class EntreeCarnet(
     val alerte: String? = null,
     /** Un extrait du texte de l'affaire, en HTML. */
     val extrait: String? = null,
+    /** Un contrat qui n'a pas commencé (`a_venir`, SERVI selon le jour de Paris, #220) — jamais recalculé. */
+    val aVenir: Boolean = false,
 ) {
     val cle: String get() = "$origine-${lien ?: libelle}-$date"
 
@@ -188,4 +190,5 @@ internal fun DiagnosticTypeRead.lu() = TypeDiagnostic(
 internal fun EntreeCarnetLue.lue() = EntreeCarnet(
     date = date, libelle = libelle, origine = origine.value, detail = detail.nonVide(), numero = numero.nonVide(),
     equipement = equipement.nonVide(), lien = lien.nonVide(), alerte = alerte.nonVide(), extrait = extrait.nonVide(),
+    aVenir = aVenir == true,
 )
