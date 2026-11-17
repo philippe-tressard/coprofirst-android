@@ -106,7 +106,8 @@ private fun IconeDuType(type: String) {
     Icon(
         trace,
         contentDescription = decrit.libelle,
-        tint = MaterialTheme.colorScheme.primary,
+        // La teinte du téléphone (#252) : textMuted de la charte (ThemeMontre : onSurfaceVariant).
+        tint = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(end = 6.dp).size(18.dp).testTag("montre.type.$type"),
     )
 }
