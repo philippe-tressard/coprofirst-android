@@ -28,13 +28,10 @@ import fr.coprofirst.montre.R
 import fr.coprofirst.montre.telephone.OuvrirSurLeTelephone
 
 /**
- * Le détail d'une alerte : son titre, sa date, et « Continuer sur le téléphone » quand elle
+ * Le détail d'une alerte : son titre, sa date, son corps en entier (`CorpsDeLAlerte`, le
+ * lecteur du site partagé avec le téléphone), et « Continuer sur le téléphone » quand elle
  * vise une page du site (`url`, déjà vérifiée par `LienSurLeTelephone`). Le toucher l'ouvre
  * sur le téléphone, puis la montre le confirme.
- *
- * À VENIR, déclaré (#207) : le `corps` en entier. C'est le HTML de l'éditeur du site, et
- * il se rend par le lecteur du téléphone (`LectureHTML`, `RenduHTML`), que la couche
- * commune partage (#206).
  */
 @Composable
 fun EcranAlerte(alerte: NotificationRecue, url: String?) {
@@ -46,6 +43,9 @@ fun EcranAlerte(alerte: NotificationRecue, url: String?) {
         TransformingLazyColumn(state = etat, contentPadding = marges, modifier = Modifier.testTag("montre.detail.${alerte.id}")) {
             item { ListHeader { Text(alerte.titre, style = MaterialTheme.typography.titleMedium) } }
             item { Text(FormatsDuSite.dateHeure(alerte.creeLe), style = MaterialTheme.typography.bodySmall) }
+            if (alerte.corps.isNotBlank()) {
+                item { Text(CorpsDeLAlerte.de(alerte.corps), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.testTag("montre.corps")) }
+            }
             if (url != null) {
                 item {
                     FilledTonalButton(
