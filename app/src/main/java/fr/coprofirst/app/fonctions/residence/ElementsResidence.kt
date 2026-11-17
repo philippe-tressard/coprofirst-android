@@ -3,6 +3,8 @@
 
 package fr.coprofirst.app.fonctions.residence
 
+import fr.coprofirst.app.commun.pieces.Ouverture
+import fr.coprofirst.app.commun.pieces.documentChoisi
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -145,7 +147,7 @@ fun PastilleNeutre(libelle: String) = PastilleTeinte(libelle, BADGE_NEUTRE, comp
 /** La classe neutre du site. */
 const val BADGE_NEUTRE = "badge-gray"
 
-/** Les annexes d'une fiche : chacune s'ouvre dans l'app de l'appareil. */
+/** Les annexes d'une fiche : chacune s'ouvre dans la visionneuse de l'écran (#274). */
 @Composable
 fun ListeAnnexes(annexes: List<DocumentResidence>, ouvrir: (DocumentResidence) -> Unit) {
     if (annexes.isEmpty()) return
@@ -154,7 +156,8 @@ fun ListeAnnexes(annexes: List<DocumentResidence>, ouvrir: (DocumentResidence) -
         Libelle(stringResource(R.string.residence_annexes))
         annexes.forEach { annexe ->
             Row(
-                Modifier.fillMaxWidth().heightIn(min = Mise.cible).cliquable(stringResource(R.string.residence_ouvrir_document)) { ouvrir(annexe) },
+                Modifier.fillMaxWidth().heightIn(min = Mise.cible).documentChoisi(Ouverture.cleDocument(annexe.id))
+                    .cliquable(stringResource(R.string.residence_ouvrir_document)) { ouvrir(annexe) },
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {

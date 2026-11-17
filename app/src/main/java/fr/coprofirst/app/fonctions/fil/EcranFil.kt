@@ -3,6 +3,9 @@
 
 package fr.coprofirst.app.fonctions.fil
 
+import fr.coprofirst.app.commun.pieces.Ouverture
+import fr.coprofirst.app.commun.pieces.Visionneuse
+import fr.coprofirst.app.commun.pieces.documentChoisi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -96,6 +99,8 @@ private fun ListeFil(parcours: ParcoursFil, session: SessionOuverte, ouvrir: (De
     val maintenant = remember(etat.elements) { Instant.now() }
     var resume by rememberSaveable { mutableStateOf<String?>(null) }
     val ouverture = rememberOuverture(session)
+    // Un document du fil s'ouvre dans l'app (#274), à côté du fil en fenêtre large.
+    Visionneuse(ouverture)
     // En fenêtre large, la fiche d'un élément du fil s'ouvre à côté de lui (#69).
     OccuperLaColonneDeFiche()
     // Dans le carnet d'un pliable (#242), une journée par double page.
@@ -137,14 +142,18 @@ private fun ListeFil(parcours: ParcoursFil, session: SessionOuverte, ouvrir: (De
                             element,
                             session,
                             Modifier.padding(horizontal = Mise.marge).animateItem().let { m ->
-                                if (destination is DestinationDuFil.Element) m.rangeeChoisie(destination.nature, destination.id.toString()) else m
+                                when (destination) {
+                                is DestinationDuFil.Element -> m.rangeeChoisie(destination.nature, destination.id.toString())
+                                is DestinationDuFil.Document -> m.documentChoisi(Ouverture.cleDocument(destination.id))
+                                else -> m
+                            }
                             },
                             maintenant = maintenant,
                             action = destination?.let { actionDuFil(it) },
                             ouvrir = when (destination) {
                                 null -> null
                                 DestinationDuFil.Resume -> ({ resume = element.id })
-                                is DestinationDuFil.Document -> ({ ouverture.document(destination.id, destination.nom) })
+                                is DestinationDuFil.Document -> ({ ouverture.document(destination.id, destination.nom, element.titre) })
                                 is DestinationDuFil.Element -> ({ ouvrir(Destination.Element(destination.nature, destination.id.toString())) })
                             },
                         )

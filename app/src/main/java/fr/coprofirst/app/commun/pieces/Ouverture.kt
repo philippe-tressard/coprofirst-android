@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -63,10 +64,14 @@ sealed interface EchecOuverture {
  * qui sait la montrer (`Intent.ACTION_VIEW`), avec le droit de LIRE ce fichier-là seulement.
  * Une seule ouverture à la fois ; `enCours` dit laquelle, `echec` pourquoi elle a échoué.
  *
- * ⚠️ Divergences déclarées : (1) l'iOS montre la pièce dans l'app (Coup d'œil) ; Android
- * n'a pas d'aperçu universel intégré, la pièce s'ouvre dans l'app de l'appareil — zoom,
- * partage et impression y sont ceux de cette app. (2) L'iOS feuillette toutes les photos
- * de l'élément ; ici, la photo touchée s'ouvre seule (un `ACTION_VIEW` montre un fichier).
+ * Un écran qui pose une `Visionneuse` montre DANS L'APP ce qu'elle sait montrer (PDF, image),
+ * comme `DocumentView` de l'iOS (#274) : le document s'y ouvre dès le toucher (« Le document se
+ * télécharge. »), à côté de la liste en fenêtre large. Le reste part dans l'app de l'appareil.
+ *
+ * ⚠️ Divergences déclarées : (1) un écran sans `Visionneuse` (les photos d'une affaire, d'un
+ * relevé) confie la pièce à l'app de l'appareil — zoom, partage et impression y sont ceux de
+ * cette app ; un type que la visionneuse ne sait pas montrer aussi. (2) L'iOS feuillette toutes
+ * les photos de l'élément ; ici, la photo touchée s'ouvre seule.
  */
 @Stable
 class Ouverture internal constructor(
@@ -81,13 +86,25 @@ class Ouverture internal constructor(
     var echec by mutableStateOf<EchecOuverture?>(null)
         private set
 
+    /** Le document montré DANS l'app (`Visionneuse`) ; `null` : aucun. */
+    var montre by mutableStateOf<DocumentMontre?>(null)
+        internal set
+
+    /** Les visionneuses posées par l'écran : sans elle, tout part dans l'app de l'appareil. */
+    internal var visionneuses by mutableIntStateOf(0)
+
+    /** Ferme le document montré. */
+    fun fermer() {
+        montre = null
+    }
+
     private val locales = PiecesLocales.de(contexte)
 
     /** Une pièce jointe servie (« /uploads/… »), photo ou document. */
-    fun piece(chemin: String) = lancer(chemin) { locales.piece(chemin, session) }
+    fun piece(chemin: String) = lancer(chemin, chemin.substringAfterLast('/')) { locales.piece(chemin, session) }
 
-    /** Un document du fil, par son identifiant (`DocumentView` de l'iOS). */
-    fun document(id: Int, nom: String?) = lancer("document-$id") { locales.document(id, nom, session) }
+    /** Un document, par son identifiant (`DocumentView` de l'iOS) ; `titre` : celui montré, son nom sinon. */
+    fun document(id: Int, nom: String?, titre: String? = null) = lancer(cleDocument(id), nom, titre) { locales.document(id, nom, session) }
 
     /**
      * Un fichier servi par une ROUTE de l'API (un rapport, un export…), que le client généré
@@ -104,21 +121,37 @@ class Ouverture internal constructor(
         cle: String,
         nom: String?,
         defaut: String,
+        titre: String? = null,
         appel: (base: String, client: Call.Factory) -> File,
-    ) = lancer("$sous-$cle") { locales.fichierServi(session, sous, cle, nom, defaut, appel) }
+    ) = lancer(cleFichier(sous, cle), nom ?: defaut, titre) { locales.fichierServi(session, sous, cle, nom, defaut, appel) }
 
-    private fun lancer(cle: String, lire: suspend () -> File) {
+    /**
+     * `nom` : celui montré, et ce qui dit d'avance si la visionneuse sait montrer le fichier ;
+     * inconnu, on le sait au fichier lu.
+     */
+    private fun lancer(cle: String, nom: String?, titre: String? = null, lire: suspend () -> File) {
         if (enCours != null) return
+        val avant = nom?.takeIf { visionneuses > 0 && Visionnable.de(it) != null }?.let { titre ?: it }
+        if (avant != null) montre = DocumentMontre(cle, avant, null)
         enCours = cle
         echec = null
         portee.launch {
             val resultat = try {
-                if (ouvrirDansUneApp(contexte, lire())) null else EchecOuverture.AucuneApp
+                val fichier = lire()
+                when {
+                    avant != null -> null.also { if (montre?.cle == cle) montre = DocumentMontre(cle, avant, fichier) }
+                    visionneuses > 0 && Visionnable.de(fichier.name) != null ->
+                        null.also { montre = DocumentMontre(cle, titre ?: nom ?: fichier.name, fichier) }
+                    ouvrirDansUneApp(contexte, fichier) -> null
+                    else -> EchecOuverture.AucuneApp
+                }
             } catch (erreur: ErreurService) {
                 EchecOuverture.Service(erreur)
             } catch (_: IOException) {
                 EchecOuverture.Illisible
             }
+            // Un document qui n'a pas pu se lire ne reste pas ouvert sur « se télécharge ».
+            if (resultat != null && montre?.cle == cle) montre = null
             if (resultat == null) confirmer()
             echec = resultat
             enCours = null
@@ -126,6 +159,12 @@ class Ouverture internal constructor(
     }
 
     companion object {
+        /** La clé d'un document par son identifiant : celle de `enCours`, de `montre` et de la rangée choisie. */
+        fun cleDocument(id: Int) = "document-$id"
+
+        /** La clé d'un fichier servi par une route (`fichier`). */
+        fun cleFichier(sous: String, cle: String) = "$sous-$cle"
+
         /** Le suffixe de l'autorité du `FileProvider` des pièces (`<applicationId>.pieces`, manifeste). */
         const val SUFFIXE_AUTORITE = ".pieces"
 

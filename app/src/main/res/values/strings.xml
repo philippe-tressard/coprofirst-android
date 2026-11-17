@@ -85,6 +85,10 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="pieces_photo_indisponible">Photo indisponible</string>
     <string name="pieces_echec">La pièce jointe n\'a pas pu s\'ouvrir.</string>
     <string name="pieces_aucune_app">Aucune app de cet appareil ne sait ouvrir ce fichier.</string>
+    <string name="visionneuse_telechargement">Le document se télécharge.</string>
+    <string name="visionneuse_partager">Partager</string>
+    <string name="visionneuse_autre_app">Ouvrir dans une autre app</string>
+    <string name="visionneuse_page">Page %1$d sur %2$d</string>
 
     <string name="erreur_hote_inconnu">Cette adresse répond, mais aucune résidence n\'y est installée. Vérifiez-la sur votre fiche d\'arrivée.</string>
     <string name="erreur_hors_ligne">Vous êtes hors ligne. Vérifiez votre connexion, puis réessayez.</string>

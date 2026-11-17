@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.fonctions.residence
 
+import fr.coprofirst.app.commun.pieces.Visionneuse
 import fr.coprofirst.app.commun.miseenpage.FicheOuFeuille
 import fr.coprofirst.app.commun.miseenpage.OccuperLaColonneDeFiche
 import androidx.compose.foundation.layout.Arrangement
@@ -83,7 +84,7 @@ object OngletsResidence {
 }
 
 /** Où se rangent les copies des rapports ouverts (`Ouverture.fichier`). */
-private const val RAPPORTS = "rapports"
+internal const val RAPPORTS = "rapports"
 
 /** Les natures de ce que l'écran ouvre à côté de lui (`FicheOuFeuille`, `rangeeChoisie`). */
 internal const val NATURE_AVIS = "avis-reglement"
@@ -141,8 +142,8 @@ internal fun EcranMaResidence(
     val actif = onglet.takeIf { id -> ouverts.any { it.id == id } } ?: OngletsResidence.FICHE
     val ouverture = session?.let { rememberOuverture(it) }
     val ouvrir = OuvrirFiche(
-        document = { ouverture?.document(it.id, it.fichier) },
-        rapport = { ouverture?.fichier(RAPPORTS, it.id.toString(), it.fichier, "rapport-${it.id}", ServiceResidenceApi.rapport(it.id)) },
+        document = { ouverture?.document(it.id, it.fichier, it.titre) },
+        rapport = { ouverture?.fichier(RAPPORTS, it.id.toString(), it.fichier, "rapport-${it.id}", it.titre, ServiceResidenceApi.rapport(it.id)) },
         rapportEnCours = ouverture?.enCours?.removePrefix("$RAPPORTS-")?.toIntOrNull(),
         syndic = { destination = PageOuverte.Syndic },
     )
@@ -175,6 +176,8 @@ internal fun EcranMaResidence(
             }
         }
     }
+    // Les documents s'ouvrent dans l'app (#274) : à côté de la page en fenêtre large.
+    ouverture?.let { Visionneuse(it) }
     // En fenêtre large, l'avis et l'annuaire du syndic s'ouvrent À CÔTÉ de la page (#69,
     // coprofirst-ios#279) ; en fenêtre étroite, dans leur feuille.
     val fermer = { destination = null }

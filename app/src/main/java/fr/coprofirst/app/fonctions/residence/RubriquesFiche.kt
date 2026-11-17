@@ -3,6 +3,8 @@
 
 package fr.coprofirst.app.fonctions.residence
 
+import fr.coprofirst.app.commun.pieces.Ouverture
+import fr.coprofirst.app.commun.pieces.documentChoisi
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -109,7 +111,7 @@ fun RubriqueDocuments(
         if (documents.isEmpty()) RubriqueVide(stringResource(vide))
         documents.forEach { document ->
             // La date montrée est celle de l'acte, jamais celle du dépôt ; un plan n'en a pas.
-            CarteAGouttiere(nature, date = if (nature == Nature.Plan) null else document.date) {
+            CarteAGouttiere(nature, Modifier.documentChoisi(Ouverture.cleDocument(document.id)), date = if (nature == Nature.Plan) null else document.date) {
                 Column(
                     Modifier.fillMaxWidth().cliquable(stringResource(R.string.residence_ouvrir_document)) { ouvrir(document) },
                     verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -175,6 +177,7 @@ private fun LigneRapport(rapport: RapportDiagnostic, ouvrir: OuvrirFiche, ouvert
         HorizontalDivider(color = couleurs.border)
         Row(
             Modifier.fillMaxWidth().heightIn(min = Mise.cible)
+                .documentChoisi(Ouverture.cleFichier(RAPPORTS, rapport.id.toString()))
                 .cliquable(stringResource(R.string.residence_ouvrir_rapport)) { ouvrir.rapport(rapport) },
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
