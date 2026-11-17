@@ -27,7 +27,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
-import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.fil.JourDuFil
@@ -62,25 +61,42 @@ object FeuilletsDuFil {
         jours.indexOfFirst { it.jour == jour }.takeIf { it >= 0 }?.let { jours.getOrNull(it + pas)?.jour }
 }
 
-/** L'éphéméride du jour ouvert : le quantième en grand, le mois, et de quoi tourner la page. */
+/**
+ * L'éphéméride du jour ouvert : en tête la journée (« AUJOURD'HUI · MAR. 17 NOV. »), puis le
+ * quantième en grand entre « Veille » et « Lendemain », puis le mois. Les flèches ont leur rangée :
+ * sur une page étroite (ou en grand texte), la date ne s'écrase pas entre elles, et la hauteur de
+ * l'éphéméride reste celle de trois lignes.
+ */
 @Composable
 internal fun Ephemeride(jour: JourDuFil, maintenant: Instant, veille: (() -> Unit)?, lendemain: (() -> Unit)?) {
     val date = LocalDate.parse(jour.jour)
-    Row(
-        Modifier.fillMaxWidth().padding(horizontal = Mise.marge, vertical = 8.dp).testTag(REPERE_EPHEMERIDE),
-        verticalAlignment = Alignment.CenterVertically,
+    Column(
+        Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp).testTag(REPERE_EPHEMERIDE),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        IconButton(onClick = { veille?.invoke() }, enabled = veille != null, modifier = Modifier.testTag("fil.veille")) {
-            Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = stringResource(R.string.fil_veille))
+        Libelle(TextesFil.entete(jour, maintenant), Modifier.padding(horizontal = 12.dp).semantics { heading() })
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = { veille?.invoke() }, enabled = veille != null, modifier = Modifier.testTag("fil.veille")) {
+                Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = stringResource(R.string.fil_veille))
+            }
+            Text(
+                date.dayOfMonth.toString(),
+                style = Typo.titre(MaterialTheme.typography.displayMedium),
+                color = LocalCouleurs.current.text,
+                maxLines = 1,
+                softWrap = false,
+                modifier = Modifier.weight(1f, fill = false),
+            )
+            IconButton(onClick = { lendemain?.invoke() }, enabled = lendemain != null, modifier = Modifier.testTag("fil.lendemain")) {
+                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = stringResource(R.string.fil_lendemain))
+            }
         }
-        Column(Modifier.weight(1f).semantics(mergeDescendants = true) { heading() }, horizontalAlignment = Alignment.CenterHorizontally) {
-            Libelle(TextesFil.entete(jour, maintenant))
-            Text(date.dayOfMonth.toString(), style = Typo.titre(MaterialTheme.typography.displayMedium), color = LocalCouleurs.current.text)
-            Text(FormatsDuSite.moisAnnee(jour.elements.first().date), style = MaterialTheme.typography.bodyMedium, color = LocalCouleurs.current.textMuted)
-        }
-        IconButton(onClick = { lendemain?.invoke() }, enabled = lendemain != null, modifier = Modifier.testTag("fil.lendemain")) {
-            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = stringResource(R.string.fil_lendemain))
-        }
+        Text(
+            FormatsDuSite.moisAnnee(jour.elements.first().date),
+            style = MaterialTheme.typography.bodyMedium,
+            color = LocalCouleurs.current.textMuted,
+            maxLines = 1,
+        )
     }
 }
 
