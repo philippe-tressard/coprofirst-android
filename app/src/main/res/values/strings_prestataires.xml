@@ -24,6 +24,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="prestataires_aucun_actif_criteres">Aucun prestataire actif pour ces critères</string>
     <string name="prestataires_archives_rangees">Les fiches archivées sont rangées dans les Archives, ci-dessous.</string>
     <string name="prestataires_sous_contrat">📄 Sous contrat (%1$s)</string>
+    <!-- La moyenne des avis (#229), comme l'iOS : « Excellent · 4,33/5 », et ce qu'en lit le lecteur d'écran. -->
+    <string name="prestataires_moyenne">%1$s ·\u00A0%2$s/5</string>
+    <string name="prestataires_moyenne_en_clair">%1$s, %2$s sur 5, %3$s avis</string>
     <string name="prestataires_adresse">Adresse</string>
     <string name="prestataires_contrats">Contrats</string>
 

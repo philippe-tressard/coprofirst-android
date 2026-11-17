@@ -15,7 +15,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
@@ -58,6 +61,22 @@ internal fun CartePrestataire(
                         stringResource(R.string.prestataires_sous_contrat, FormatsDuSite.nombre(contrats.size)),
                         "badge-green",
                         compacte = true,
+                    )
+                }
+                // La moyenne SERVIE, dite par l'état du site (`etatDeMoyenne`, généré) : « Excellent · 4,33/5 ».
+                prestataire.noteMoyenne?.let { moyenne ->
+                    val etat = EtatAvis.teinte(EtatAvis.deMoyenne(moyenne))
+                    val note = FormatsDuSite.nombre(moyenne)
+                    val enClair = stringResource(
+                        R.string.prestataires_moyenne_en_clair, etat.libelle, note, FormatsDuSite.nombre(prestataire.nbNotations),
+                    )
+                    PastilleTeinte(
+                        stringResource(R.string.prestataires_moyenne, etat.libelle, note),
+                        etat.badge,
+                        compacte = true,
+                        modifier = Modifier
+                            .testTag(ReperesPrestataires.moyenne(prestataire.id))
+                            .clearAndSetSemantics { contentDescription = enClair },
                     )
                 }
             }

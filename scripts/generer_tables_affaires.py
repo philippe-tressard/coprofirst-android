@@ -71,6 +71,15 @@ def options(tables: dict) -> list[tuple[str, str, str, str]]:
              texte(mots[c], "aide", "optionsPublication")) for c in cles]
 
 
+def modes(tables: dict) -> list[tuple[str, str]]:
+    """`libellesModeSaisie` : {code: libellé} des modes de saisie d'une affaire."""
+    v = valeur(tables, "libellesModeSaisie")
+    if (not isinstance(v, dict) or not v
+            or not all(isinstance(c, str) and isinstance(lib, str) and lib.strip() for c, lib in v.items())):
+        raise TableInattendue(f"libellesModeSaisie : forme inattendue ({v!r})")
+    return list(v.items())
+
+
 def kotlin(tables: dict, source: str) -> str:
     groupes = []
     for g in valeur(tables, "groupesSuivi"):
@@ -86,7 +95,7 @@ def kotlin(tables: dict, source: str) -> str:
     l = [
         "// GÉNÉRÉ par scripts/generer_tables_affaires.py — NE PAS MODIFIER À LA MAIN.",
         f"// Source : {source} (groupesSuivi, colonnesKanban, motColonneVide, categorieActualite,",
-        "// optionsTicket, optionsPublication).",
+        "// optionsTicket, optionsPublication, libellesModeSaisie).",
         f"package {PAQUET}",
         "",
         "import androidx.compose.ui.graphics.Color",
@@ -112,7 +121,11 @@ def kotlin(tables: dict, source: str) -> str:
           "",
           "    /** La catégorie d'une actualité (`CATEGORIE_ACTUALITE`). */",
           f"    const val CATEGORIE_ACTUALITE = {chaine(actualite)}",
-          "}", ""]
+          "",
+          "    /** Le nom de chaque mode de saisie d'une affaire, par son code (`LIBELLE_MODE`, #229). */",
+          "    val libellesModeSaisie: Map<String, String> = mapOf("]
+    l += [f"        {chaine(c)} to {chaine(lib)}," for c, lib in modes(tables)]
+    l += ["    )", "}", ""]
     return "\n".join(l)
 
 

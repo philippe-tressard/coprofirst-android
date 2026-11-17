@@ -28,6 +28,7 @@ def tables(**remplace):
         "optionsTicket": t(["epingle"]),
         "optionsPublication": t([{"cle": "epingle", "action": "Épingler", "etat": "Épinglée", "aide": "En tête."},
                                  {"cle": "brouillon", "action": "Réserver", "etat": "CS", "aide": "Au conseil."}]),
+        "libellesModeSaisie": t({"essentielle": "Saisie essentielle", "complete": "Saisie complète"}),
     }
     base.update(remplace)
     return base
@@ -46,6 +47,13 @@ class TablesAffaires(unittest.TestCase):
         # Les options du site pour une affaire, et elles seules.
         self.assertIn('OptionAffaire("epingle", "Épingler", "Épinglée", "En tête."),', texte)
         self.assertNotIn('"brouillon"', texte)
+
+    def test_les_libelles_du_mode_de_saisie(self):
+        """#229 : « Saisie essentielle », « Saisie complète » se lisent dans la table publiée."""
+        self.assertIn('"essentielle" to "Saisie essentielle",', g.kotlin(tables(), "t"))
+        for mauvais in (None, {}, {"essentielle": ""}, ["Saisie essentielle"]):
+            with self.assertRaises(g.TableInattendue, msg=repr(mauvais)):
+                g.kotlin(tables(libellesModeSaisie=t(mauvais)), "t")
 
     def test_ce_qui_change_de_forme_arrete(self):
         for casse in ({"groupesSuivi": t([{"value": "x", "label": "X"}])},

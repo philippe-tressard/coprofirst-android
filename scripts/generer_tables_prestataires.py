@@ -9,7 +9,11 @@ le front du site, qui les publie dans `tables-clients.json` :
 
 - les catégories de prestataires, leur libellé et ce qu'elles couvrent
   (`typesPrestataire`, `TYPES_PRESTATAIRE` de `prestataires.ts`) ;
-- le filtre « Contrat » (`filtresContrat`, `FILTRES_CONTRAT`).
+- le filtre « Contrat » (`filtresContrat`, `FILTRES_CONTRAT`) ;
+- `TablesNotations` : les états d'un avis, le libellé et la teinte de chacun, et l'état
+  d'une moyenne par ses seuils (`notations`, `notations.ts` : `ETATS`, `PAR_ETAT`,
+  `SEUILS_DE_MOYENNE`, `ETAT_AU_DELA`, coprofirst#2775), comme l'iOS
+  (`Genere/TablesNotations.swift`, #229).
 
 Les onglets de la page et leurs descriptifs sont dans `OngletsDuSite`
 (scripts/generer_tables.py). Une table qui change de forme : la génération s'arrête.
@@ -21,6 +25,7 @@ from __future__ import annotations
 
 import json
 import pathlib
+import re
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
@@ -38,8 +43,10 @@ def kotlin(tables: dict, source: str) -> str:
         raise TableInattendue("typesPrestataire ou filtresContrat vide")
     l = [
         "// GÉNÉRÉ par scripts/generer_tables_prestataires.py — NE PAS MODIFIER À LA MAIN.",
-        f"// Source : {source} (typesPrestataire, filtresContrat).",
+        f"// Source : {source} (typesPrestataire, filtresContrat, notations).",
         f"package {PAQUET}",
+        "",
+        "import fr.coprofirst.app.commun.LibelleTeinte",
         "",
         "/** Une catégorie de prestataire : son code, son libellé, ce qu'elle couvre. */",
         "data class TypePrestataire(val code: String, val libelle: String, val description: String)",
@@ -54,8 +61,49 @@ def kotlin(tables: dict, source: str) -> str:
           "    /** Le filtre « Contrat » (`FILTRES_CONTRAT`) : code → libellé. */",
           "    val filtresContrat: List<Pair<String, String>> = listOf("]
     l += [f"        {chaine(c)} to {chaine(lib)}," for c, lib in filtres]
-    l += ["    )", "}", ""]
+    l += ["    )", "}"]
+    l += kotlin_notations(tables)
     return "\n".join(l)
+
+
+BADGE = re.compile(r"^badge-[a-z]+$")
+
+
+def kotlin_notations(tables: dict) -> list[str]:
+    """`TablesNotations` : les états d'un avis, leur libellé et teinte, l'état d'une moyenne."""
+    n = valeur(tables, "notations")
+    etats, par_etat = n.get("etats"), n.get("parEtat")
+    seuils, au_dela = n.get("seuilsDeMoyenne"), n.get("etatAuDela")
+    if (not isinstance(etats, list) or not etats or len(set(etats)) != len(etats)
+            or not all(isinstance(e, str) and re.match(r"^[a-z_]+$", e) for e in etats)):
+        raise TableInattendue(f"notations.etats : forme inattendue ({etats})")
+    if not isinstance(par_etat, dict) or set(par_etat) != set(etats):
+        raise TableInattendue("notations.parEtat ne couvre pas exactement les états")
+    for e, v in par_etat.items():
+        if (not isinstance(v, dict) or not isinstance(v.get("libelle"), str) or not v["libelle"].strip()
+                or not isinstance(v.get("badge"), str) or not BADGE.match(v["badge"])):
+            raise TableInattendue(f"notations.parEtat.{e} : forme inattendue ({v})")
+    bornes = [s.get("borne") if isinstance(s, dict) else None for s in seuils or []]
+    if (not isinstance(seuils, list) or not seuils
+            or not all(isinstance(b, (int, float)) and not isinstance(b, bool) for b in bornes)
+            or bornes != sorted(set(bornes)) or not all(s.get("etat") in etats for s in seuils)):
+        raise TableInattendue(f"notations.seuilsDeMoyenne : forme inattendue ({seuils})")
+    if au_dela not in etats:
+        raise TableInattendue(f"notations.etatAuDela inconnu ({au_dela})")
+    l = ["", "/** Les états d'un avis du conseil et ce qu'en dit le site (`notations.ts`). */",
+         "object TablesNotations {",
+         "    /** Les états, dans l'ordre du site (`ETATS`). */",
+         "    val etats: List<String> = listOf(" + ", ".join(chaine(e) for e in etats) + ")",
+         "", "    /** Le libellé et la teinte de chaque état (`PAR_ETAT`). */",
+         "    val parEtat: Map<String, LibelleTeinte> = mapOf("]
+    l += [f"        {chaine(e)} to LibelleTeinte({chaine(par_etat[e]['libelle'])}, {chaine(par_etat[e]['badge'])})," for e in etats]
+    l += ["    )", "",
+          "    /** L'état d'une moyenne : sous la borne, cet état — dans l'ordre (`SEUILS_DE_MOYENNE`). */",
+          "    val seuilsDeMoyenne: List<Pair<Double, String>> = listOf("]
+    l += [f"        {float(s['borne'])} to {chaine(s['etat'])}," for s in seuils]
+    l += ["    )", "", "    /** Au-delà du dernier seuil (`ETAT_AU_DELA`). */",
+          f"    const val ETAT_AU_DELA = {chaine(au_dela)}", "}", ""]
+    return l
 
 
 def main(argv: list[str]) -> int:

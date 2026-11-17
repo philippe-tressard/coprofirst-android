@@ -26,6 +26,7 @@ object ReperesPrestataires {
     const val RECHERCHE = "prestataires.recherche"
     const val ARCHIVES = "prestataires.archives"
     fun prestataire(id: Int) = "prestataire.$id"
+    fun moyenne(id: Int) = "prestataire.$id.moyenne"
     fun contrat(id: Int) = "contrat.$id"
     fun remplacement(contrat: Int, rang: Int) = "contrat.$contrat.remplacement.$rang"
     fun compteur(type: String) = "compteur.$type"

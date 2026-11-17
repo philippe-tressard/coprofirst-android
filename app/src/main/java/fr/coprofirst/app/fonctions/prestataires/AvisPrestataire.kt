@@ -59,16 +59,16 @@ data class LigneIntervention(
 }
 
 /**
- * L'état d'un avis, en clair.
- *
- * ⚠️ Manque déclaré : les libellés et les teintes des états (`LIBELLE_ETAT`, `TEINTE_ETAT`
- * de `notations.ts`) ne sont pas encore publiés dans `tables-clients.json`
- * (coprofirst#2775) ; l'app ne les recopie pas — l'état servi s'affiche brut, en gris
- * (`LibelleTeinte.brut`), jusqu'à leur publication. Pour la même raison, le badge de
- * moyenne de la carte (« Excellent · 4,33/5 », `etatDeMoyenne`) attend lui aussi.
+ * L'état d'un avis ou d'une moyenne, en clair — la table GÉNÉRÉE du site (`TablesNotations`,
+ * `notations.ts`, coprofirst#2775), comme l'iOS : l'app ne recopie ni libellé, ni teinte, ni
+ * seuil. Un état inconnu se montre brut, en gris (`LibelleTeinte.brut`).
  */
 object EtatAvis {
-    fun teinte(etat: String): LibelleTeinte = LibelleTeinte.brut(etat)
+    fun teinte(etat: String): LibelleTeinte = TablesNotations.parEtat[etat] ?: LibelleTeinte.brut(etat)
+
+    /** `etatDeMoyenne` du site : sous la première borne franchie, son état ; au-delà, le dernier. */
+    fun deMoyenne(moyenne: Double): String =
+        TablesNotations.seuilsDeMoyenne.firstOrNull { moyenne < it.first }?.second ?: TablesNotations.ETAT_AU_DELA
 }
 
 internal fun NotationRead.lu() = AvisPrestataire(
