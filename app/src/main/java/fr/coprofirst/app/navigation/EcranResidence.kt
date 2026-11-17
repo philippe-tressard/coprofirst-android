@@ -26,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +48,9 @@ import fr.coprofirst.app.commun.LocalSaisieAffaire
 import fr.coprofirst.app.commun.audience.CheminsDeLApp
 import fr.coprofirst.app.commun.audience.LocalMesureAudience
 import fr.coprofirst.app.commun.audience.PageVue
+import fr.coprofirst.app.commun.miseenpage.ColonneDeFiche
+import fr.coprofirst.app.commun.miseenpage.LocalColonneDeFiche
+import fr.coprofirst.app.commun.miseenpage.PageEtColonneDeFiche
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.audience.CheminDuSite
 import fr.coprofirst.app.session.audience.ResidenceMesuree
@@ -86,6 +90,10 @@ fun EcranResidence(
     var ficheNature by rememberSaveable { mutableStateOf<String?>(null) }
     var ficheId by rememberSaveable { mutableStateOf<String?>(null) }
     val barreDuHaut = remember { BarreDuHaut() }
+    // La fiche ouverte dans la colonne d'une fenêtre large pose SA barre dans sa colonne (#69).
+    val barreDeFiche = remember { BarreDuHaut() }
+    // La colonne se sauve avec l'écran : rotation, pli, multi-fenêtre (#69, la mémoire des sélections).
+    val colonne = rememberSaveable(session.installation.url, saver = ColonneDeFiche.Sauvegarde) { ColonneDeFiche() }
     var clocheOuverte by rememberSaveable { mutableStateOf(false) }
     var residencesOuvertes by rememberSaveable { mutableStateOf(false) }
     // Ce que le compte est ici, relu : retenu pour la feuille « Résidences » de l'appareil (#180).
@@ -163,17 +171,22 @@ fun EcranResidence(
     // La présentation suit la LARGEUR disponible, jamais l'appareil (#69, comme l'iOS).
     BoxWithConstraints {
         val laterale = PresentationNavigation.pour(maxWidth) == PresentationNavigation.Laterale
+        // Une liste occupe la colonne de fiche : sa page et la fiche qu'elle ouvre côte à côte (#69).
+        val enColonne = laterale && colonne.occupee && ouverte != null
+        SideEffect { colonne.ouverte = if (enColonne && fiche != null) ficheNature.orEmpty() to ficheId.orEmpty() else null }
         val retour: (() -> Unit)? = when {
+            // Dans la colonne, la fiche se remplace par une autre ; le geste « retour » du système la referme.
+            fiche != null && enColonne -> null
             fiche != null -> ::fermerFiche
             // Dans la barre latérale, une page de « Plus » est une page comme une autre : pas de retour.
             enPlus != null && !laterale -> ({ pageDePlus = null })
             else -> null
         }
-        BackHandler(enabled = retour != null) { retour?.invoke() }
+        BackHandler(enabled = retour != null || (enColonne && fiche != null)) { retour?.invoke() ?: fermerFiche() }
         // Le mode de saisie d'une affaire du compte, pour « Nouvelle affaire » et « Modifier » (#178).
         CompositionLocalProvider(LocalSaisieAffaire provides etat.saisieAffaire) {
             CadreResidence(
-                titre = barreDuHaut.titre ?: titreFiche ?: ouverte?.titre ?: stringResource(R.string.plus),
+                titre = barreDuHaut.titre ?: titreFiche?.takeUnless { enColonne } ?: ouverte?.titre ?: stringResource(R.string.plus),
                 sousTitre = barreDuHaut.sousTitre,
                 retour = retour,
                 barreDuHaut = barreDuHaut,
@@ -202,14 +215,31 @@ fun EcranResidence(
                 },
             ) {
                 val id = ficheId
-                when {
-                    fiche != null && titreFiche != null && id != null -> {
-                        // La fiche reçoit une page à son titre : elle n'est pas une page de la barre.
-                        val page = PageDeNavigation(ficheNature.orEmpty(), "", titreFiche, titreFiche, "")
-                        fiche.ecran(ContexteDeMenu(page, session, etat.droits, sortie, apparence, barreDuHaut, ouvrir, parcours::relireDroits, etat.logement), id)
+                fun contexteDePage(page: PageDeNavigation) =
+                    ContexteDeMenu(page, session, etat.droits, sortie, apparence, barreDuHaut, ouvrir, parcours::relireDroits, etat.logement)
+                val contexteDeFiche: (BarreDuHaut) -> ContexteDeMenu? = { barreFiche ->
+                    // La fiche reçoit une page à son titre : elle n'est pas une page de la barre.
+                    titreFiche?.let {
+                        val page = PageDeNavigation(ficheNature.orEmpty(), "", it, it, "")
+                        ContexteDeMenu(page, session, etat.droits, sortie, apparence, barreFiche, ouvrir, parcours::relireDroits, etat.logement)
                     }
-                    ouverte != null -> RegistreDesMenus.Ecran(ContexteDeMenu(ouverte, session, etat.droits, sortie, apparence, barreDuHaut, ouvrir, parcours::relireDroits, etat.logement))
-                    else -> ListeDePlus(plus, ouvrir = { pageDePlus = it })
+                }
+                // Une fiche hors colonne (téléphone, ou page sans liste) : la barre de la page est la sienne.
+                val ficheSeule = contexteDeFiche(barreDuHaut)
+                CompositionLocalProvider(LocalColonneDeFiche provides colonne.takeIf { laterale }) {
+                    when {
+                        // Fenêtre large : la page garde sa place ; une liste qui l'occupe ouvre la colonne de fiche.
+                        laterale && ouverte != null && (fiche == null || enColonne || colonne.retenueALaReconstruction) -> PageEtColonneDeFiche(
+                            enColonne,
+                            page = { RegistreDesMenus.Ecran(contexteDePage(ouverte)) },
+                            fiche = if (fiche != null && id != null) ({
+                                contexteDeFiche(barreDeFiche)?.let { FicheEnColonne(titreFiche.orEmpty(), barreDeFiche) { fiche.ecran(it, id) } }
+                            }) else null,
+                        )
+                        fiche != null && id != null && ficheSeule != null -> fiche.ecran(ficheSeule, id)
+                        ouverte != null -> RegistreDesMenus.Ecran(contexteDePage(ouverte))
+                        else -> ListeDePlus(plus, ouvrir = { pageDePlus = it })
+                    }
                 }
             }
             if (residencesOuvertes) {

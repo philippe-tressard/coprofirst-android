@@ -70,6 +70,7 @@ import fr.coprofirst.app.commun.EtatVide
 import fr.coprofirst.app.commun.Pastille
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.gesteEnLigne
+import fr.coprofirst.app.commun.miseenpage.OccuperLaColonneDeFiche
 import kotlinx.coroutines.launch
 import java.time.Instant
 
@@ -85,6 +86,8 @@ import java.time.Instant
 @Composable
 internal fun ListeAffaires(ctx: ContexteAffaires) {
     val etat = ctx.etat
+    // En fenêtre large, la fiche d'une affaire s'ouvre à côté de la liste (#69) ; le Kanban la pousse.
+    OccuperLaColonneDeFiche()
     val portee = rememberCoroutineScope()
     var rafraichit by remember { mutableStateOf(false) }
     LaunchedEffect(etat.recherche) { etat.chercher() }
