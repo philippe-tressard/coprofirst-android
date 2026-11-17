@@ -4,8 +4,6 @@
 package fr.coprofirst.app.fonctions.notifications.montre
 
 import android.content.Context
-import fr.coprofirst.app.fonctions.notifications.push.ReglagesPreferences
-import fr.coprofirst.app.fonctions.notifications.push.ReglagesPush
 import fr.coprofirst.app.session.AbonneSession
 import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.SessionOuverte
@@ -78,7 +76,7 @@ class LiaisonsMontre(
 }
 
 /** L'identifiant de la montre reliée, par résidence (son adresse) — jamais le jeton. */
-class MontresGardees(private val reglages: ReglagesPush) {
+class MontresGardees(private val reglages: ReglagesMontre) {
     fun id(adresse: String): Int? = reglages.lire(PREFIXE + adresse)?.toIntOrNull()
 
     fun garder(adresse: String, id: Int) = reglages.ecrire(PREFIXE + adresse, id.toString())

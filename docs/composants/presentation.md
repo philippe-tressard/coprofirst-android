@@ -93,8 +93,8 @@ fun OngletBadges(contexte: ContexteOnglet) {
 | `FeuilleNotifications(page, contexte, fermer)` | `.feuilleNotifications` | La page `notifications` DU REGISTRE (`RegistreDesMenus`), en feuille : son titre et le sous-titre que son écran déclare (`SousTitreDeBarre`), ses actions (`ActionsDeBarre` : la barre de la feuille), « OK » (repère `notifications.ok`). |
 | `Cloche.page` | — | La page des notifications (`PagesParDefaut.horsMenu`, générée) ; absente : pas de cloche. |
 
-⚠️ Pas encore de relecture à l'arrivée d'une notification push (l'iOS relit alors le
-nombre) : elle vient avec les push, #23.
+Aucune notification push (abandonnées le 17/11/2026, #269) : le nombre se relit à
+l'ouverture de la résidence et sur la page des notifications.
 
 ## Formats — `fr.coprofirst.app.commun.formats.FormatsDuSite`
 

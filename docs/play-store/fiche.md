@@ -45,7 +45,7 @@ CoproFirst est l'application de votre résidence. Elle se connecte au site de vo
 
 Pour entrer : saisissez l'adresse de votre résidence, scannez le QR code de votre fiche d'arrivée, ou essayez la démonstration. Votre empreinte ou votre visage peut protéger votre session.
 
-Confidentialité. Ce que vous lisez et écrivez est gardé par votre résidence, pas par l'éditeur de l'application. Aucune publicité, aucun traceur. Comme sur son site, votre résidence compte les pages consultées pour ses statistiques de fréquentation ; vous pouvez le refuser dans votre profil. Les notifications ne contiennent aucune information personnelle : le détail se lit dans l'application.
+Confidentialité. Ce que vous lisez et écrivez est gardé par votre résidence, pas par l'éditeur de l'application. Aucune publicité, aucun traceur. Comme sur son site, votre résidence compte les pages consultées pour ses statistiques de fréquentation ; vous pouvez le refuser dans votre profil.
 
 CoproFirst est un logiciel libre (AGPL-3.0) : son code est public, celui de cette application aussi.
 ```

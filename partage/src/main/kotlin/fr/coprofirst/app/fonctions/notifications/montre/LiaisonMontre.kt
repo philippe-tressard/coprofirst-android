@@ -17,7 +17,7 @@ package fr.coprofirst.app.fonctions.notifications.montre
  *    disent ce que la montre reçoit et lit.
  *
  * UN drapeau pour les deux côtés : le téléphone ne demande ni ne transmet rien, la montre
- * n'ouvre rien (`:partage`). Comme `RelaisPush` pour le push.
+ * n'ouvre rien (`:partage`).
  */
 object LiaisonMontre {
     const val ACTIF: Boolean = false

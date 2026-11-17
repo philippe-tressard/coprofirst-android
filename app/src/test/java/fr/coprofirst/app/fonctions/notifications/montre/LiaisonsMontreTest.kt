@@ -3,7 +3,6 @@
 
 package fr.coprofirst.app.fonctions.notifications.montre
 
-import fr.coprofirst.app.fonctions.notifications.push.ReglagesPush
 import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.SessionOuverte
@@ -20,11 +19,10 @@ class LiaisonsMontreTest {
     private val session = SessionOuverte(Installation(adresse, "Les Tilleuls"), SessionsParHote(ClientHttp.partage))
     private val expire = Instant.parse("2026-12-17T10:00:00Z")
 
-    private class Reglages : ReglagesPush {
+    private class Reglages : ReglagesMontre {
         val valeurs = mutableMapOf<String, String>()
         override fun lire(cle: String) = valeurs[cle]
         override fun ecrire(cle: String, valeur: String?) { if (valeur == null) valeurs.remove(cle) else valeurs[cle] = valeur }
-        override fun toutes(): Map<String, String> = valeurs
     }
 
     private class Canal(var jointe: Boolean = true) : CanalMontre {
