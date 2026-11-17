@@ -193,7 +193,9 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   toutes les orientations et le multi-fenêtre (comme l'iPad). Dès que la fenêtre est large
   (600 dp, quel que soit l'appareil), une barre latérale liste toutes les pages, puis
   Profil et À propos, à la place de la barre du bas ; passer de l'une à l'autre garde la
-  page ouverte. La liste et la fiche côte à côte suivent (#69).
+  page ouverte. Le fil et « Mes affaires » (Liste, Archives) y tiennent la liste et la fiche
+  côte à côte : la carte ouverte se souligne, « Aucune sélection » tant que rien n'est
+  choisi ; la fiche ouverte reste ouverte à la rotation, au pli, au multi-fenêtre (#69).
 - **Montre Wear OS** (`montre/`, en construction, #207) : la même app Google Play, pour
   la cloche de la dernière résidence ouverte, en lecture seule — pendant de l'Apple Watch.
   Tant que la liaison au téléphone est éteinte, elle dit « Ouvrez CoproFirst sur le
