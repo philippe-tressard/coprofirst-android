@@ -18,6 +18,7 @@ import fr.coprofirst.app.entree.NavigationEntree
 import fr.coprofirst.app.entree.ServeurDeTest
 import fr.coprofirst.app.entree.entrerDansLaResidence
 import fr.coprofirst.app.fonctions.profil.FixturesProfil
+import fr.coprofirst.app.navigation.ouvrirLaPageDePlus
 import fr.coprofirst.app.session.audience.MesureAudience
 import fr.coprofirst.app.session.audience.ServiceAudienceApi
 import java.util.concurrent.CopyOnWriteArrayList
@@ -82,9 +83,7 @@ class AudienceInterfaceTest {
             }
         }
         ecran.entrerDansLaResidence("residence.exemple.test", "Les Glycines")
-        ecran.attendreTexte("Plus")
-        ecran.toucherTexte("Plus")
-        ecran.toucherTag("plus.profil")
+        ecran.ouvrirLaPageDePlus("profil")
         ecran.attendreTexte("Camille EXEMPLE")
         ecran.runOnUiThread { appli.registre.currentState = Lifecycle.State.CREATED }
     }

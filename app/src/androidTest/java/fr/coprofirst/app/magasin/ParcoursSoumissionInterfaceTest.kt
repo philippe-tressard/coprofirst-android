@@ -16,6 +16,7 @@ import fr.coprofirst.app.commun.toucherTexte
 import fr.coprofirst.app.entree.NavigationEntree
 import fr.coprofirst.app.entree.ServeurDeTest
 import fr.coprofirst.app.entree.entrerDansLaResidence
+import fr.coprofirst.app.navigation.ouvrirLaPageDePlus
 import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -58,8 +59,7 @@ class ParcoursSoumissionInterfaceTest {
         }
         ecran.toucherTexte("Accès")
         ecran.attendreTexte("T3")
-        ecran.toucherTexte("Plus")
-        ecran.toucherTag("plus.profil")
+        ecran.ouvrirLaPageDePlus("profil")
         ecran.attendreTexte("Camille EXEMPLE")
         assertTrue("« Sombre » choisi : sombre même sur un appareil réglé en clair", apparence.sombre(apparence.choix.value, systemeSombre = false))
     }

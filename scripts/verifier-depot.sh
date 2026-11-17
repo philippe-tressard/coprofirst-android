@@ -226,6 +226,13 @@ autotest_motif "toucher hors du geste commun" "$CLIC_DIRECT" '        ecran.onNo
 interdire "$CLIC_DIRECT" "toucher écrit à la main dans un test d'interface — passer par toucher (commun/Gestes.kt)" \
   '^tests-interface-communs/fr/coprofirst/app/commun/Gestes\.kt$' '^((app|montre)/src/androidTest|tests-interface-communs)/.*\.kt$'
 
+# Une page de « Plus » s'ouvre par LE geste des tests (#69) : la barre latérale d'une fenêtre large
+# (la tablette de la CI), sinon « Plus » puis l'entrée. Recopier « Plus » fait tomber la tablette.
+PLUS_MAIN='toucherTexte\("Plus"\)'
+autotest_motif "« Plus » hors du geste commun" "$PLUS_MAIN" '        ecran.toucherTexte("Plus")' '        ecran.ouvrirLaPageDePlus("profil")'
+interdire "$PLUS_MAIN" "« Plus » touché à la main dans un test d'interface — passer par ouvrirLaPageDePlus (navigation/NavigationDeTest.kt)" \
+  '^app/src/androidTest/java/fr/coprofirst/app/navigation/NavigationDeTest\.kt$' '^app/src/androidTest/.*\.kt$'
+
 # Les tests d'interface ATTENDENT par les attentes communes (commun/Gestes.kt : attendre,
 # attendreTag, attendreTexte, attendreDisparition…, attendreQue) : 24 aides privées les
 # recopiaient — chacune son délai, son arbre fusionné ou non, son message (#139).
