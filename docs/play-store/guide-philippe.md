@@ -23,13 +23,32 @@ développeur personnels ») au moment de chaque étape.
    et adresse identiques à ceux de la pièce, adresse e-mail et téléphone de contact
    vérifiés, et un **appareil Android** : l'app Play Console installée, avec le même
    compte, pour vérifier l'accès à un vrai téléphone.
-4. Nom du développeur affiché sur la fiche : à choisir (la fiche de l'App Store dit
-   « Philippe TRESSARD »).
+4. Nom du développeur affiché sur la fiche : **« Philippe TRESSARD »**, comme la fiche
+   de l'App Store — un seul vendeur sur les deux magasins.
+5. **Statut de professionnel** (règlement européen sur les services numériques) :
+   **non professionnel** tant que CoproFirst ne rapporte rien (ni vente, ni abonnement,
+   ni publicité). Se déclarer professionnel rend l'adresse et le téléphone **publics**
+   sur la fiche.
+6. Le téléphone de contact ne se valide (SMS ou appel) qu'**après** l'approbation de
+   l'identité : le bouton reste grisé jusque-là.
+
+Compte validé le 17/11/2026.
 
 ## 2. L'app dans la console
 
-1. Créer l'app : nom **CoproFirst**, langue par défaut **français**, app, gratuite.
-2. À la première version : accepter **Play App Signing**, puis la clé de téléversement
+1. Créer l'app :
+   - nom **CoproFirst**, langue par défaut **Français (France) – fr-FR**, appli,
+     **sans frais** ;
+   - **nom du package `fr.coprofirst.app`**, demandé dès la création et **définitif** :
+     c'est l'`applicationId` du build (`build.gradle.kts`, téléphone et montre) ;
+   - **protection automatique : Désactiver**. Elle ajoute au binaire du code fermé de
+     Google, hors des deux bibliothèques que permet `LicenseRef-CoproFirst-Magasins`
+     (point 4), et une restriction de redistribution que nous choisirions — le point 3c
+     l'interdit. Elle ajouterait aussi des échanges avec Google à déclarer dans
+     « Sécurité des données » ;
+   - déclarations : règlement du programme, **Signature d'application Play** (Google
+     garde la clé de l'app) et lois américaines sur l'exportation.
+2. À la première version : la clé de téléversement
    (`docs/signature-android.md` : la créer au poste, puis
    `bash scripts/construire-release.sh`).
 3. Remplir « Contenu de l'app » : `docs/play-store/securite-des-donnees.md` (§5) et
@@ -48,7 +67,7 @@ python3 -I scripts/controle_avant_soumission.py --taguer --rapport build/control
 
 Il refuse au moindre rouge : CI complète verte sur ce commit (tests d'interface et
 parcours sombre au plus grand texte compris), contrat servi en production, fiche,
-« Sécurité des données », notes de version (`docs/play-store/notes/<version>.txt`),
+« Sécurité des données », notes de version (`docs/play-store/notes/<base>.txt`, `0.8.txt`),
 aucun ticket `bloque-soumission` ouvert. Tout vert, il pose et pousse le tag
 `v<version>`. Seulement alors : `bash scripts/construire-release.sh` sur ce même commit,
 et l'envoi. Le rapport se colle dans la note de publication.

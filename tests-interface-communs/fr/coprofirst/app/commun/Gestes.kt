@@ -5,16 +5,15 @@ package fr.coprofirst.app.commun
 
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.os.Build
+import android.view.WindowInsets
 import android.view.accessibility.AccessibilityWindowInfo
 import android.view.inputmethod.InputMethodManager
 import android.view.inspector.WindowInspector
+import androidx.annotation.RequiresApi
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.semantics.SemanticsActions
-import androidx.compose.ui.test.ComposeTimeoutException
-import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.printToString
-import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.semantics.SemanticsNode
+import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsDisplayed
@@ -23,9 +22,12 @@ import androidx.compose.ui.test.hasScrollToNodeAction
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.ComposeTestRule
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.printToString
+import androidx.compose.ui.unit.toSize
 import androidx.test.platform.app.InstrumentationRegistry
 
 /*
@@ -143,9 +145,14 @@ private fun SemanticsNodeInteraction.afficheOuDitOu(): SemanticsNodeInteraction 
         // Le premier ancêtre qui coupe le nœud (sa partie visible ne le contient pas) : le coupable.
         val coupe = generateSequence(noeud.parent) { it.parent }.firstOrNull { !it.boundsInRoot.contains(place.center) }
         val visible = noeud.boundsInWindow
+        val clavier = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            etatDuClavier(InstrumentationRegistry.getInstrumentation().uiAutomation) ?: "fermé"
+        } else {
+            "inconnu"
+        }
         throw AssertionError(
             "${e.message} — nœud $place (non rogné), visible $visible, placé ${noeud.layoutInfo.isPlaced}, " +
-                "ancêtres défilants visibles [$ancetres], coupé par ${coupe?.let { "${it.config} ${it.boundsInRoot}" } ?: "aucun"}",
+                "clavier $clavier, ancêtres défilants visibles [$ancetres], coupé par ${coupe?.let { "${it.config} ${it.boundsInRoot}" } ?: "aucun"}",
             e,
         )
     }
@@ -174,28 +181,69 @@ private fun SemanticsNodeInteraction.attendreImmobile(): SemanticsNodeInteractio
 }
 
 /**
- * Ferme le clavier s'il est ouvert, et attend qu'il le soit — SANS « Retour ». Le clavier se
- * voit par sa fenêtre (UiAutomation), sans attendre qu'une fenêtre de l'app ait le focus
- * (`Espresso.closeSoftKeyboard` attendait 10 s une feuille qui ne le prend jamais). Il se
- * cache par `InputMethodManager` sur la fenêtre qui a le focus (`WindowInspector`) : un
- * « Retour » envoyé pendant que le clavier se refermait atteignait l'app, refermait la
- * feuille ou quittait l'écran (rouges intermittents, #119).
+ * Ferme le clavier s'il est ouvert, et attend qu'il le soit — SANS « Retour » : un « Retour »
+ * envoyé pendant que le clavier se refermait atteignait l'app, refermait la feuille ou quittait
+ * l'écran (rouges intermittents, #119).
+ *
+ * Le clavier se juge par CE QUE VOIT L'APP : l'encart `ime` de ses fenêtres, celui qui rétrécit
+ * la page (`imePadding`). La liste des fenêtres de l'accessibilité (UiAutomation) le dit aussi,
+ * mais en retard sur un émulateur chargé : le clavier était ouvert pour l'app, absent de cette
+ * liste, le geste ne le fermait pas, et le bouton restait sous lui (#255 — journal de la CI :
+ * clavier montré, aucune demande de fermeture avant l'échec). Les deux se lisent ; l'un suffit.
+ *
+ * Il se cache par l'API des encarts sur CHAQUE fenêtre de l'app (celle qui l'a montré n'a pas
+ * forcément le focus), et par `InputMethodManager` sur celle qui a le focus. Puis on attend
+ * qu'il soit fermé trois lectures de suite : un clavier qui se rouvre (le focus rendu au champ)
+ * se referme. Toujours ouvert au bout de [CLAVIER_MS] : échec qui le dit, plutôt qu'un bouton
+ * « non affiché » sans cause.
  */
 private fun fermerLeClavier() {
     val instrumentation = InstrumentationRegistry.getInstrumentation()
     val automate = instrumentation.uiAutomation
     automate.serviceInfo = automate.serviceInfo.apply { flags = flags or AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS }
-    fun ouvert() = automate.windows.any { it.type == AccessibilityWindowInfo.TYPE_INPUT_METHOD }
-    // WindowInspector date de l'API 29 ; les tests tournent sur l'API 35 (CI et poste).
-    if (!ouvert() || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return
-    instrumentation.runOnMainSync {
-        val saisie = instrumentation.targetContext.getSystemService(InputMethodManager::class.java)
-        WindowInspector.getGlobalWindowViews().filter { it.hasWindowFocus() }.forEach { vue ->
-            saisie.hideSoftInputFromWindow(vue.windowToken, 0)
+    // L'API des encarts date de l'API 30 ; les tests tournent sur l'API 35 (CI et poste).
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R || etatDuClavier(automate) == null) return
+    val limite = System.nanoTime() + CLAVIER_MS * 1_000_000
+    var fermeDepuis = 0
+    while (fermeDepuis < 3) {
+        val ouvert = etatDuClavier(automate)
+        if (ouvert == null) {
+            fermeDepuis++
+        } else {
+            fermeDepuis = 0
+            check(System.nanoTime() < limite) { "Toucher : le clavier est encore ouvert après $CLAVIER_MS ms ($ouvert)." }
+            instrumentation.runOnMainSync {
+                val saisie = instrumentation.targetContext.getSystemService(InputMethodManager::class.java)
+                WindowInspector.getGlobalWindowViews().forEach { vue ->
+                    vue.windowInsetsController?.hide(WindowInsets.Type.ime())
+                    if (vue.hasWindowFocus()) saisie.hideSoftInputFromWindow(vue.windowToken, 0)
+                }
+            }
+        }
+        Thread.sleep(PAS_CLAVIER_MS)
+    }
+}
+
+/** Le temps qu'a le clavier pour se fermer, et le pas entre deux lectures. */
+private const val CLAVIER_MS = 3_000L
+private const val PAS_CLAVIER_MS = 50L
+
+/**
+ * Le clavier est-il ouvert ? `null` : fermé ; sinon, qui le voit (l'encart d'une fenêtre de
+ * l'app, sa hauteur ; la fenêtre du clavier) — pour le dire en cas d'échec.
+ */
+@RequiresApi(Build.VERSION_CODES.R)
+private fun etatDuClavier(automate: android.app.UiAutomation): String? {
+    var encart: String? = null
+    InstrumentationRegistry.getInstrumentation().runOnMainSync {
+        encart = WindowInspector.getGlobalWindowViews().firstNotNullOfOrNull { vue ->
+            val encarts = vue.rootWindowInsets ?: return@firstNotNullOfOrNull null
+            val bas = encarts.getInsets(WindowInsets.Type.ime()).bottom
+            if (encarts.isVisible(WindowInsets.Type.ime()) || bas > 0) "encart ime de l'app : $bas px" else null
         }
     }
-    val limite = System.nanoTime() + 2_000_000_000L
-    while (ouvert() && System.nanoTime() < limite) Thread.sleep(50)
+    val fenetre = automate.windows.any { it.type == AccessibilityWindowInfo.TYPE_INPUT_METHOD }
+    return encart ?: if (fenetre) "fenêtre du clavier" else null
 }
 
 /**

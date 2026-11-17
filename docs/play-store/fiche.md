@@ -89,7 +89,10 @@ thème clair, résidence fictive (`CapturesPlay`, comme `LancementCaptures` de l
 
 ## Notes de version
 
-Le texte de chaque version (500 caractères au plus) s'écrit dans
-`docs/play-store/notes/<version>.txt` au moment de la soumettre. Le contrôle avant
-soumission (`scripts/controle_avant_soumission.py`, #4) refuse une version sans notes.
-La première : « Première version de CoproFirst sur Android. »
+Le texte de chaque sortie (500 caractères au plus) s'écrit dans
+`docs/play-store/notes/<base>.txt`, où `<base>` est `coprofirst.version.base`
+(`gradle.properties`) : `0.8.txt` vaut pour les versions 0.8.512, 0.8.513… Le dernier
+nombre de la version, celui des commits, ne se connaît qu'après le commit qui écrirait
+les notes (#272). Le contrôle avant soumission (`scripts/controle_avant_soumission.py`,
+#4) refuse une version sans notes. Une nouvelle base (décision de sortie) appelle de
+nouvelles notes. La première : `notes/0.8.txt`.

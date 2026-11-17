@@ -72,3 +72,11 @@ path = "montre/src/main/res/drawable-nodpi/apercu_tuile.png"
 precedence = "override"
 SPDX-FileCopyrightText = "2026 Philippe TRESSARD"
 SPDX-License-Identifier = "AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins"
+
+# Les notes de version, collées telles quelles dans la Play Console (500 caractères au
+# plus, comptés par le contrôle avant soumission) : un en-tête y serait compté et publié.
+[[annotations]]
+path = "docs/play-store/notes/*.txt"
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Philippe TRESSARD"
+SPDX-License-Identifier = "AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins"
