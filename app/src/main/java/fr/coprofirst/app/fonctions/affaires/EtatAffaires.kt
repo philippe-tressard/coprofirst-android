@@ -6,6 +6,8 @@ package fr.coprofirst.app.fonctions.affaires
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import fr.coprofirst.api.RECHERCHE_AFFAIRES_MINIMALE
+import fr.coprofirst.app.commun.texte.Recherche
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
@@ -97,14 +99,14 @@ class EtatAffaires(private val service: ServiceAffaires) {
      */
     suspend fun chercher() {
         val terme = recherche.trim()
-        if (terme.length < ReglesAffaires.RECHERCHE_MINIMALE) {
+        if (terme.length < RECHERCHE_AFFAIRES_MINIMALE) {
             trouvees = null
             rechercheEnCours = false
             return
         }
         rechercheEnCours = true
         try {
-            delay(ReglesAffaires.DELAI_DE_FRAPPE_MS)
+            delay(Recherche.DELAI_DE_FRAPPE_MS)
             trouvees = service.rechercher(terme)
             rechercheEnCours = false
         } catch (e: CancellationException) {
