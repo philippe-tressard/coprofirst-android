@@ -23,6 +23,8 @@ import mockwebserver3.RecordedRequest
 import okhttp3.tls.HandshakeCertificates
 import okhttp3.tls.HeldCertificate
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Un serveur local EN HTTPS (le clair est refusé par le manifeste, comme en vrai) et le
@@ -50,19 +52,32 @@ class ServeurDeTest : AutoCloseable {
 
     /** Les routes servies hors de la file, par chemin (`/api/sondages/3`). */
     val fixes = ConcurrentHashMap<String, String>()
+
+    /** Les requêtes qui attendent une réponse de la file (aucune n'y est encore posée). */
+    private val enAttente = AtomicInteger()
+
+    @Volatile
+    private var fermant = false
     val serveur = MockWebServer().apply {
         dispatcher = object : QueueDispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 val chemin = request.url.encodedPath
                 if (chemin == "/api/flux") return json(200, flux)
                 if (chemin == "/api/notifications" && request.method == "GET") return json(200, notifications)
-                return fixes[chemin]?.let { json(200, it) } ?: super.dispatch(request)
+                fixes[chemin]?.let { return json(200, it) }
+                if (fermant) return json(503, "{}")
+                enAttente.incrementAndGet()
+                try {
+                    return super.dispatch(request)
+                } finally {
+                    enAttente.decrementAndGet()
+                }
             }
         }
         useHttps(serveurTls.sslSocketFactory())
         start()
     }
-    private val client = ClientHttp.partage.newBuilder()
+    internal val client = ClientHttp.partage.newBuilder()
         .sslSocketFactory(clientTls.sslSocketFactory(), clientTls.trustManager)
         .build()
 
@@ -113,7 +128,28 @@ class ServeurDeTest : AutoCloseable {
     private fun json(code: Int, corps: String) =
         MockResponse.Builder().code(code).addHeader("Content-Type", "application/json").body(corps).build()
 
-    override fun close() = serveur.close()
+    /**
+     * Ferme le serveur SANS fil qui écrive encore (#251). Une requête sans réponse posée dans la
+     * file (la fiche qu'un test n'a pas préparée, GET /auth/me) attend : `MockWebServer.close`
+     * fermerait ses sockets, PUIS réveillerait ce fil, qui écrirait sur un socket TLS libéré —
+     * `NullPointerException: ssl == null` de Conscrypt, sur un fil du serveur, et tout le
+     * processus de test tombe. Chaque requête en attente reçoit donc sa réponse (503), les
+     * suivantes aussi, et le client a fini de les lire avant que le serveur ne ferme.
+     */
+    override fun close() {
+        fermant = true
+        repeat(enAttente.get()) { repondre(503) }
+        val limite = System.nanoTime() + TimeUnit.SECONDS.toNanos(5)
+        while ((enAttente.get() > 0 || lectureEnCours()) && System.nanoTime() < limite) Thread.sleep(20)
+        client.connectionPool.evictAll()
+        serveur.close()
+    }
+
+    /** Une connexion du client porte encore un échange : le serveur peut y écrire. */
+    private fun lectureEnCours() = client.connectionPool.let { it.connectionCount() > it.idleConnectionCount() }
+
+    /** Les requêtes qui attendent encore leur réponse dans la file — 0 après `close`. */
+    internal fun requetesEnAttente() = enAttente.get()
 
     companion object {
         const val FIL_VIDE = """{"delai_recent_jours": 7, "items": []}"""
