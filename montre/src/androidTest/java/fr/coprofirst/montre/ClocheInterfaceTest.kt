@@ -109,4 +109,11 @@ class ClocheInterfaceTest {
         ecran.amenerTag("montre.corps")
         ecran.onNodeWithText("L'eau sera coupée jeudi de 8 h à 12 h.").assertIsDisplayed()
     }
+
+    @Test
+    fun chaqueLignePorteLIconeDeSonType() {
+        montrer(reliee, listOf(alerte(4, "Nouveau sondage").copy(type = "sondage")))
+        ecran.attendreTag("montre.alerte.4")
+        ecran.amenerTag("montre.type.sondage", useUnmergedTree = true)
+    }
 }

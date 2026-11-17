@@ -6,6 +6,8 @@ package fr.coprofirst.montre.cloche
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -20,18 +22,22 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumnScope
 import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
 import androidx.wear.compose.material3.CircularProgressIndicator
 import androidx.wear.compose.material3.FilledTonalButton
+import androidx.wear.compose.material3.Icon
 import androidx.wear.compose.material3.ListHeader
 import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
 import androidx.wear.compose.material3.TitleCard
+import fr.coprofirst.app.charte.TracesDuSite
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.fonctions.notifications.NotificationRecue
+import fr.coprofirst.app.fonctions.notifications.TypesNotification
 import fr.coprofirst.montre.R
 
 /**
@@ -74,7 +80,10 @@ private fun LigneAlerte(alerte: NotificationRecue, ouvrir: (Int) -> Unit) {
     val urgent = stringResource(R.string.montre_urgent)
     TitleCard(
         onClick = { ouvrir(alerte.id) },
-        title = { Text(alerte.titre, maxLines = 2, overflow = TextOverflow.Ellipsis) },
+        title = {
+            IconeDuType(alerte.type)
+            Text(alerte.titre, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        },
         time = { Text(FormatsDuSite.relatif(alerte.creeLe)) },
         subtitle = if (alerte.urgente) {
             // La marque de danger de la charte (ThemeMontre : `error` = `danger`).
@@ -83,6 +92,22 @@ private fun LigneAlerte(alerte: NotificationRecue, ouvrir: (Int) -> Unit) {
             null
         },
         modifier = Modifier.fillMaxWidth().testTag("montre.alerte.${alerte.id}"),
+    )
+}
+
+/**
+ * L'icône du type d'alerte : la table publiée par coprofirst (`TypesNotification`, #2802) et les
+ * tracés du site (`TracesDuSite`), ceux du téléphone. Son libellé sert au lecteur d'écran.
+ */
+@Composable
+private fun IconeDuType(type: String) {
+    val decrit = TypesNotification.de(type)
+    val trace = TracesDuSite.icone(decrit.pictogramme) ?: return
+    Icon(
+        trace,
+        contentDescription = decrit.libelle,
+        tint = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(end = 6.dp).size(18.dp).testTag("montre.type.$type"),
     )
 }
 
