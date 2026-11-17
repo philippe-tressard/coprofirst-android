@@ -3,13 +3,6 @@
 
 package fr.coprofirst.app.session
 
-import fr.coprofirst.api.modeles.LoginRequest
-import fr.coprofirst.api.routes.AdminApi
-import fr.coprofirst.api.routes.AuthApi
-import fr.coprofirst.api.routes.DocumentsApi
-import fr.coprofirst.api.routes.FluxApi
-import fr.coprofirst.api.routes.LotsApi
-import fr.coprofirst.api.routes.TicketsApi
 import okhttp3.Call
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -23,61 +16,54 @@ import java.io.IOException
 class HorsLigneException : IOException("hors ligne")
 
 /**
- * CE QUI EST GARDÉ, et rien d'autre : la liste blanche des lectures de l'iOS
- * (`LectureGardee.operations`, #101), par leur chemin sous `/api` — le fil, les affaires
- * (liste, ce qu'il faut pour la lire, détail, évolutions, messages), le profil, l'annuaire
- * que tout résident lit, un document déjà ouvert —, et les fichiers protégés (`/uploads/`)
- * déjà ouverts. Aucune route de l'administration ni de l'Espace CS ; une route absente
- * d'ici n'est jamais écrite sur l'appareil.
+ * CE QU'UNE APP GARDE pour la consultation hors ligne, et rien d'autre (#28) : la liste
+ * blanche de SES lectures, par le chemin des routes du client GÉNÉRÉ (une route renommée ne
+ * compile plus) — un identifiant s'y écrit [ID] —, les fichiers protégés (`/uploads/`) si
+ * elle les garde, et les routes de la session, qui partent encore pendant la consultation.
+ * Le téléphone a la sienne (`LectureGardee`), la montre la sienne (#206) : une route absente
+ * d'une liste n'est jamais écrite sur l'appareil.
  */
-object LectureGardee {
-    /** Un client qui n'envoie rien : seuls les chemins des routes générées sont lus. */
-    private val muet = Call.Factory { throw UnsupportedOperationException() }
-    private const val ID = Int.MIN_VALUE
-
-    /** Les chemins des routes, tirés du client GÉNÉRÉ : une route renommée ne compile plus. */
-    private val routes: List<Regex> = listOf(
-        FluxApi("", muet).getFluxRequestConfig(null).path,
-        TicketsApi("", muet).getTicketsRequestConfig(null).path,
-        TicketsApi("", muet).getTicketsReferentielsRequestConfig(null).path,
-        LotsApi("", muet).getLotsMesPerimetresRequestConfig(null).path,
-        TicketsApi("", muet).getTicketsTicketIdRequestConfig(ID, null).path,
-        TicketsApi("", muet).getTicketsTicketIdEvolutionsRequestConfig(ID, null).path,
-        TicketsApi("", muet).getTicketsTicketIdMessagesRequestConfig(ID, null).path,
-        AuthApi("", muet).getAuthMeRequestConfig(null).path,
-        // La seule sous l'administration : l'annuaire que TOUT résident lit (aucun rôle demandé).
-        AdminApi("", muet).getAdminAnnuaireRequestConfig(null).path,
-        DocumentsApi("", muet).getDocumentsDocIdTlchargerRequestConfig(ID, null).path,
-    ).map { chemin -> Regex("^.*" + Regex.escape(chemin).replace(ID.toString(), "\\E[^/]+\\Q") + "$") }
-    private val fichier = Regex("""^/uploads/.+""")
-    private val sessionGeneree = listOf(
-        AuthApi("", muet).postAuthRefreshRequestConfig(null).path,
-        AuthApi("", muet).postAuthLoginRequestConfig(LoginRequest("", "")).path,
-        AuthApi("", muet).postAuthLogoutRequestConfig(null).path,
-    )
-    private val deconnexion = AuthApi("", muet).postAuthLogoutRequestConfig(null).path
+class ListeDesLectures(
+    routes: List<String>,
+    private val fichiers: Boolean = false,
+    private val session: List<String> = emptyList(),
+    private val deconnexion: String? = null,
+) {
+    private val motifs = routes.map { chemin ->
+        Regex("^.*" + Regex.escape(chemin).replace(ID.toString(), "\\E[^/]+\\Q") + "$")
+    }
 
     /** La clé d'une lecture gardée — son chemin servi, requête comprise — ou `null` : jamais gardée. */
     fun cle(requete: Request): String? {
         if (requete.method != "GET") return null
         val chemin = chemin(requete)
-        if (routes.none { it.matches(chemin) } && !fichier.matches(chemin)) return null
+        if (motifs.none { it.matches(chemin) } && !(fichiers && FICHIER.matches(chemin))) return null
         return requete.url.encodedPath + (requete.url.encodedQuery?.let { "?$it" } ?: "")
     }
 
     /** Ce qui part encore pendant la consultation : la session elle-même (la rouvrir, la fermer). */
-    fun estLaSession(requete: Request): Boolean = sessionGeneree.any { chemin(requete).endsWith(it) }
+    fun estLaSession(requete: Request): Boolean = session.any { chemin(requete).endsWith(it) }
 
-    fun estLaDeconnexion(requete: Request): Boolean = chemin(requete).endsWith(deconnexion)
+    fun estLaDeconnexion(requete: Request): Boolean = deconnexion != null && chemin(requete).endsWith(deconnexion)
 
     /** Le chemin lisible (non encodé) : celui que le client généré écrit. */
     private fun chemin(requete: Request) = requete.url.pathSegments.joinToString("/", prefix = "/")
+
+    companion object {
+        /** L'identifiant à donner au client généré pour une route qui en prend un. */
+        const val ID = Int.MIN_VALUE
+
+        /** Un client qui n'envoie rien : seuls les chemins des routes générées en sont lus. */
+        val muet = Call.Factory { throw UnsupportedOperationException() }
+
+        private val FICHIER = Regex("""^/uploads/.+""")
+    }
 }
 
 /**
  * LA porte des lectures gardées, comme l'iOS (`GarderLesLectures`) : glissée dans le client
- * HTTP de chaque hôte (`SessionsParHote`), toute requête y passe — client généré et fichiers
- * protégés —, sans qu'aucun service de menu n'ait à le savoir.
+ * HTTP de chaque hôte, toute requête y passe — client généré et fichiers protégés —, sans
+ * qu'aucun service de menu n'ait à le savoir. Ce qui se garde : la [liste] de l'app.
  *
  * - **En ligne** : une lecture de la liste blanche qui réussit est gardée (si la session de
  *   l'hôte l'est) ; un 403 ou un 404 retire la lecture que ce compte ne peut plus ouvrir.
@@ -88,11 +74,15 @@ object LectureGardee {
  *   clé d'idempotence côté serveur, un geste pourrait partir deux fois.
  * - Une connexion ou un renouvellement accepté referme la consultation.
  */
-class GarderLesLectures(private val hote: String, private val lectures: LecturesGardees) : Interceptor {
+class GarderLesLectures(
+    private val hote: String,
+    private val lectures: LecturesGardees,
+    private val liste: ListeDesLectures,
+) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val requete = chain.request()
-        val cle = LectureGardee.cle(requete)
-        val session = LectureGardee.estLaSession(requete)
+        val cle = liste.cle(requete)
+        val session = liste.estLaSession(requete)
         if (lectures.enConsultation(hote) && !session) {
             val lue = cle?.let { lectures.lire(it, hote) } ?: throw HorsLigneException()
             return Response.Builder()
@@ -102,7 +92,7 @@ class GarderLesLectures(private val hote: String, private val lectures: Lectures
                 .build()
         }
         val reponse = chain.proceed(requete)
-        if (session && reponse.code == 200 && !LectureGardee.estLaDeconnexion(requete)) {
+        if (session && reponse.code == 200 && !liste.estLaDeconnexion(requete)) {
             lectures.quitterLaConsultation(hote)
         }
         if (cle == null) return reponse

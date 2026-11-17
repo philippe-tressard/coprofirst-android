@@ -7,7 +7,8 @@
  * (`TexteDuSite`, `RenduHTML` : une `AnnotatedString`, que chaque app compose dans son
  * propre `Text`), avec sa liste blanche et les constantes du serveur ; les palettes de la
  * charte, le logo et les tracés des icônes du site (`TracesDuSite`), générés ici ; les types
- * d'alerte (`TypesNotification`) ; les libellés du hors ligne (« à jour au … »). Ses
+ * d'alerte (`TypesNotification`) ; les lectures gardées hors ligne (`LecturesGardees`, sa
+ * porte `GarderLesLectures`, la liste de chaque app `ListeDesLectures`) et leurs libellés. Ses
  * ressources sont dans SON `R` (`fr.coprofirst.app.partage.R`, nonTransitiveRClass). Le
  * Kotlin pur (client HTTP, formats, alerte reçue, découpage du HTML) reste dans `:partage`.
  *
@@ -17,6 +18,7 @@
  */
 plugins {
     alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -59,8 +61,11 @@ androidComponents {
 }
 
 dependencies {
-    // Le découpage du HTML (`LectureHTML`), Kotlin pur.
-    implementation(project(":partage"))
+    // Le découpage du HTML (`LectureHTML`), Kotlin pur ; le client HTTP et OkHttp, que la porte
+    // des lectures gardées (`GarderLesLectures`, `ListeDesLectures`) expose.
+    api(project(":partage"))
+    // L'index chiffré des lectures gardées.
+    implementation(libs.kotlinx.serialization.json)
     // `AnnotatedString` : le texte riche rendu, que le téléphone et la montre composent.
     api(platform(libs.compose.bom))
     api(libs.compose.ui.text)
