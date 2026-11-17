@@ -5,9 +5,6 @@ package fr.coprofirst.app.navigation
 
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -17,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import fr.coprofirst.app.LocalCouleurs
-import fr.coprofirst.app.charte.Pictogrammes
 import fr.coprofirst.app.commun.cliquable
 
 /**
@@ -27,9 +23,9 @@ import fr.coprofirst.app.commun.cliquable
 @Composable
 fun ListeDePlus(pages: List<PageDeNavigation>, ouvrir: (String) -> Unit) {
     LazyColumn {
-        items(pages, key = { it.id }) { page -> Entree(page.libelle, Pictogrammes.icone(page.icone), "plus.${page.id}") { ouvrir(page.id) } }
-        item { Entree(PagesDePlus.profil.libelle, Icons.Filled.AccountCircle, "plus.profil") { ouvrir(PagesDePlus.profil.id) } }
-        item { Entree(PagesDePlus.aPropos.libelle, Icons.Filled.Info, "plus.a-propos") { ouvrir(PagesDePlus.aPropos.id) } }
+        items(PagesDePlus.suivies(pages), key = { it.id }) { page ->
+            Entree(page.libelle, PagesDePlus.icone(page), "plus.${page.id}") { ouvrir(page.id) }
+        }
     }
 }
 
