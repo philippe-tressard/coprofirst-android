@@ -27,7 +27,7 @@ import fr.coprofirst.app.commun.miseenpage.CoupeDeFenetre
  * Les INTERCALAIRES du carnet (#242), sur la tranche droite d'un pliable déplié, comme l'iOS
  * (coprofirst-ios#119) : toutes les pages ouvertes au compte, dans l'ordre servi, puis Profil et
  * À propos — à la place de la barre du bas et de la barre latérale. La page ouverte y est choisie.
- * Repères : `intercalaire.<id>`.
+ * Repères : `carnet.<id>`, ceux de l'iOS.
  */
 @Composable
 internal fun Intercalaires(pages: List<PageDeNavigation>, ouverte: String?, choisir: (String) -> Unit) {
@@ -39,7 +39,7 @@ internal fun Intercalaires(pages: List<PageDeNavigation>, ouverte: String?, choi
                     onClick = { choisir(page.id) },
                     icon = { Icon(PagesDePlus.icone(page), contentDescription = null) },
                     label = { Text(page.libelle, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                    modifier = Modifier.testTag("intercalaire.${page.id}"),
+                    modifier = Modifier.testTag("carnet.${page.id}"),
                 )
             }
         }

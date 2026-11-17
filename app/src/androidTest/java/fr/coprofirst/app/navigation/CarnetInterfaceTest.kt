@@ -109,15 +109,15 @@ class CarnetInterfaceTest {
     @Test
     fun lesIntercalairesRemplacentLesBarres() {
         ouvrir()
-        ecran.attendreTag("intercalaire.${LibellesBarre.ID_FIL}")
-        ecran.attendreTag("intercalaire.profil")
-        ecran.attendreTag("intercalaire.a-propos")
-        ecran.onNodeWithTag("intercalaire.${LibellesBarre.ID_FIL}").assertIsSelected()
+        ecran.attendreTag("carnet.${LibellesBarre.ID_FIL}")
+        ecran.attendreTag("carnet.profil")
+        ecran.attendreTag("carnet.a-propos")
+        ecran.onNodeWithTag("carnet.${LibellesBarre.ID_FIL}").assertIsSelected()
         ecran.attendreDisparition(hasTestTag("barre.profil"))
         ecran.attendreDisparition(hasText("Plus"))
-        ecran.toucherTag("intercalaire.a-propos")
+        ecran.toucherTag("carnet.a-propos")
         ecran.attendreTexte("À propos")
-        ecran.onNodeWithTag("intercalaire.a-propos").assertIsSelected()
+        ecran.onNodeWithTag("carnet.a-propos").assertIsSelected()
         ecran.attendreDisparition(hasContentDescription("Retour"))
     }
 
@@ -159,16 +159,16 @@ class CarnetInterfaceTest {
         ouvrir(deuxJours(maintenant))
         ecran.attendreTag(REPERE_EPHEMERIDE)
         ecran.attendreDisparitionTag(AVANT)
-        ecran.onNodeWithTag("fil.lendemain").assertIsNotEnabled()
-        ecran.toucherTag("fil.veille")
+        ecran.onNodeWithTag("carnet.lendemain").assertIsNotEnabled()
+        ecran.toucherTag("carnet.veille")
         ecran.attendreTag(AVANT)
         ecran.attendreDisparitionTag(CARTE)
-        ecran.onNodeWithTag("fil.veille").assertIsNotEnabled()
+        ecran.onNodeWithTag("carnet.veille").assertIsNotEnabled()
         ecran.runOnUiThread { affiche = false }
         ecran.waitForIdle()
         ecran.runOnUiThread { affiche = true }
         ecran.attendreTag(AVANT)
-        ecran.toucherTag("fil.lendemain")
+        ecran.toucherTag("carnet.lendemain")
         ecran.attendreTag(CARTE)
         ecran.attendreDisparitionTag(AVANT)
     }
