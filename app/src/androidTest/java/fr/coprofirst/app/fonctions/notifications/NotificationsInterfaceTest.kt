@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.SemanticsNodeInteraction
+import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextEquals
@@ -125,6 +126,14 @@ class NotificationsInterfaceTest {
      * « Tout marquer lu » et « Modifier » se voient dans la barre du haut, « 12 non lues » sous
      * son titre ; tout se marque lu, et le sous-titre s'en va.
      */
+    /** #250 : l'icône du type, et son libellé lu ; un type absent de la table prend le défaut. */
+    @Test
+    fun chaqueLignePorteLIconeDeSonType() {
+        ouvrir()
+        el("notification.3.type").assertContentDescriptionEquals(TypesNotification.de("sondage").libelle)
+        el("notification.5.type").assertContentDescriptionEquals(TypesNotification.parDefaut.libelle)
+    }
+
     @Test
     fun toutSeMarqueLu() {
         ouvrir()
