@@ -28,6 +28,7 @@ import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.FlowCapsules
 import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.Pastille
+import fr.coprofirst.app.commun.pleine
 
 /**
  * Le corps de la saisie d'un avis (`FormulaireNotation.svelte`), comme l'iOS (`ChampsAvis`,
@@ -42,10 +43,13 @@ internal fun ChampsAvis(saisie: SaisieAvis, refus: RefusAvis?, prestataire: Stri
         Libelle(stringResource(R.string.notation_etat_groupe), Modifier.semantics { heading() })
         FlowCapsules(espace = 8.dp) {
             SaisieAvis.etats.forEach { e ->
-                val libelle = EtatAvis.teinte(e).libelle
-                Pastille(libelle, retenue = saisie.etat == e, modifier = Modifier.testTag(ReperesSaisieAvis.etat(e))) {
-                    changer(saisie.copy(etat = e))
-                }
+                val teinte = EtatAvis.teinte(e)
+                Pastille(
+                    teinte.libelle,
+                    retenue = saisie.etat == e,
+                    modifier = Modifier.testTag(ReperesSaisieAvis.etat(e)),
+                    teinte = pleine(teinte.badge, couleurs),
+                ) { changer(saisie.copy(etat = e)) }
             }
         }
     }

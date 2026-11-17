@@ -56,10 +56,8 @@ sealed interface ModeAvis {
  * La saisie d'un avis en feuille (`GesteNoter.svelte`), comme la `FeuilleAvis` de l'iOS :
  * l'affaire jugée, la confirmation de l'ajout s'il le faut, l'état, les motifs à cocher et
  * la phrase qu'ils composent, le texte libre (`ChampsAvis`). « Enregistrer » attend ce que le
- * site exige, et la phrase du site dit ce qui manque, sous le dernier champ.
- *
- * ⚠️ Divergence déclarée : l'état choisi prend la teinte de la charte (`Pastille`, commun),
- * pas la teinte pleine de son état comme l'iOS — #259.
+ * site exige, et la phrase du site dit ce qui manque, sous le dernier champ. L'état choisi
+ * prend la teinte pleine de son état, comme l'iOS (#259).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

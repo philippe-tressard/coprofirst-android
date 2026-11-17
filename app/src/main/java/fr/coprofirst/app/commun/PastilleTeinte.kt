@@ -47,6 +47,18 @@ fun PastilleTeinte(libelle: String, badge: String, modifier: Modifier = Modifier
 fun PastilleTeinte(teinte: LibelleTeinte, modifier: Modifier = Modifier, compacte: Boolean = false) =
     PastilleTeinte(teinte.libelle, teinte.badge, modifier, compacte)
 
+/**
+ * La teinte PLEINE d'une classe `badge-*` : le fond d'un état choisi (`Pastille(teinte = …)`),
+ * comme l'iOS (`BoutonEtat` : `dangerPlein`, `successPlein`, sinon `textMuted`, #259). Une
+ * classe sans teinte pleine dans la charte prend le gris sourd.
+ */
+fun pleine(badge: String, c: Couleurs): Color = when (badge) {
+    "badge-red" -> c.dangerPlein
+    "badge-green" -> c.successPlein
+    "badge-blue" -> c.infoPlein
+    else -> c.textMuted
+}
+
 /** Les couleurs d'état de la charte (texte, fond) pour chaque classe du site — celles de l'iOS. */
 fun teintes(badge: String, c: Couleurs): Pair<Color, Color> = when (badge) {
     "badge-blue" -> c.info to c.infoFond
