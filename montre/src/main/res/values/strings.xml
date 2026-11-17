@@ -18,6 +18,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="montre_continuer_sur_le_telephone">Continuer sur le téléphone</string>
     <string name="montre_ouvert_sur_le_telephone">Ouvert sur le téléphone</string>
     <string name="tuile_nom">Alertes</string>
+    <string name="complication_nom">CoproFirst</string>
+    <string name="complication_non_lu">CoproFirst, nouvelles alertes</string>
+    <string name="complication_rien">CoproFirst</string>
     <string name="tuile_description">Le nombre de nouvelles alertes de la résidence, sans leur contenu</string>
     <string name="tuile_alertes_dont">%1$s ·\u00A0%2$s</string>
     <plurals name="tuile_nouvelles_alertes">

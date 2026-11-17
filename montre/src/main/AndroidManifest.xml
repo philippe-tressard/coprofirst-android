@@ -54,6 +54,24 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
             </intent-filter>
         </service>
 
+        <!-- La complication (#207, lot 5) : le logo, un point s'il y a du non lu. -->
+        <service
+            android:name=".complication.ComplicationCloche"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/complication_nom"
+            android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
+            <intent-filter>
+                <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST" />
+            </intent-filter>
+            <meta-data
+                android:name="android.support.wearable.complications.SUPPORTED_TYPES"
+                android:value="SMALL_IMAGE,MONOCHROMATIC_IMAGE" />
+            <meta-data
+                android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
+                android:value="900" />
+        </service>
+
         <!-- La tuile (#207, lot 4) : le nombre de nouvelles alertes, sans leur contenu. -->
         <service
             android:name=".tuile.TuileCloche"

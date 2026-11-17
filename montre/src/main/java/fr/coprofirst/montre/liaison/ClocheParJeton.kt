@@ -9,7 +9,7 @@ import fr.coprofirst.app.fonctions.notifications.NotificationRecue
 import fr.coprofirst.app.session.ClientHttp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 
 /** Le jeton n'ouvre plus rien (retiré, échu, compte changé) : la montre attend le téléphone. */
@@ -18,20 +18,21 @@ class JetonRefuse : Exception()
 /**
  * La cloche lue par la montre : `GET /notifications`, par le client GÉNÉRÉ et le client HTTP
  * commun (`ClientHttp.partage`), avec le jeton de montre en porteur. C'est la seule route que
- * ce jeton ouvre (coprofirst#2771). Le porteur ne part que vers l'hôte de la résidence.
+ * ce jeton ouvre (coprofirst#2771), et le contrat (2.4.0) y déclare l'en-tête `Authorization` :
+ * il passe par le client généré, vers la seule adresse de la résidence (`baseApi`).
  */
-class ClocheParJeton(private val baseApi: String, jeton: String, commun: OkHttpClient = ClientHttp.partage) {
-    private val hote = baseApi.toHttpUrl().host
-    private val client = commun.newBuilder().addInterceptor { chaine ->
-        val requete = chaine.request()
-        chaine.proceed(
-            if (requete.url.host == hote) requete.newBuilder().header("Authorization", "Bearer $jeton").build() else requete,
-        )
-    }.build()
+class ClocheParJeton(
+    private val baseApi: String,
+    private val jeton: String,
+    commun: OkHttpClient = ClientHttp.partage,
+    /** La porte des lectures gardées (`GarderLesLectures`), pour le hors-ligne. */
+    gardien: Interceptor? = null,
+) {
+    private val client = gardien?.let { commun.newBuilder().addInterceptor(it).build() } ?: commun
 
     suspend fun lire(): List<NotificationRecue> = withContext(Dispatchers.IO) {
         try {
-            NotificationsApi(baseApi, client).getNotifications().map(NotificationRecue::depuis)
+            NotificationsApi(baseApi, client).getNotifications(authorization = "Bearer $jeton").map(NotificationRecue::depuis)
         } catch (refus: ClientException) {
             if (refus.statusCode == 401) throw JetonRefuse() else throw refus
         }

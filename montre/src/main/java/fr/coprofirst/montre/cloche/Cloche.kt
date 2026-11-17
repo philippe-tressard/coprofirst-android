@@ -4,6 +4,7 @@
 package fr.coprofirst.montre.cloche
 
 import fr.coprofirst.app.fonctions.notifications.NotificationRecue
+import java.time.Instant
 
 /**
  * La cloche telle que la montre la range (périmètre du 16/11/2026, coprofirst-ios#226) :
@@ -27,15 +28,15 @@ class Cloche private constructor(val nonLues: List<NotificationRecue>, val lues:
     }
 }
 
-/** Ce que la montre sait de la cloche à un instant. Le hors-ligne daté vient au lot 6 (#207). */
+/** Ce que la montre sait de la cloche à un instant. */
 sealed interface LectureCloche {
     data object EnCours : LectureCloche
 
     data class Lue(val cloche: Cloche) : LectureCloche
 
-    /**
-     * La résidence n'a pas répondu. DIVERGENCE déclarée (#207, lot 6) : la dernière lecture,
-     * datée (« à jour à 14:32 »), vient avec le hors-ligne et ses libellés partagés (#206).
-     */
+    /** Sans réseau : la dernière lecture gardée, datée, comme le téléphone (#28). */
+    data class HorsLigne(val cloche: Cloche, val aJourAu: Instant) : LectureCloche
+
+    /** Sans réseau, et rien de gardé : la résidence ne répond pas. */
     data object Injoignable : LectureCloche
 }
