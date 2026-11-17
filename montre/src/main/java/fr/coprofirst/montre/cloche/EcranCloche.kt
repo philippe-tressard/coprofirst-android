@@ -39,6 +39,8 @@ import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.fonctions.notifications.NotificationRecue
 import fr.coprofirst.app.fonctions.notifications.TypesNotification
 import fr.coprofirst.montre.R
+import fr.coprofirst.app.partage.R as RCommun
+import java.time.Instant
 
 /**
  * La liste de la cloche : en tête le nom de la résidence, puis les non lues (urgentes
@@ -57,6 +59,10 @@ fun EcranCloche(residence: String, lecture: LectureCloche, ouvrir: (Int) -> Unit
                 LectureCloche.EnCours -> item { Chargement() }
                 LectureCloche.Injoignable -> item { Message(stringResource(R.string.montre_injoignable), "montre.injoignable") }
                 is LectureCloche.Lue -> cloche(lecture.cloche, luesOuvertes, { luesOuvertes = !luesOuvertes }, ouvrir)
+                is LectureCloche.HorsLigne -> {
+                    item { HorsLigneDate(lecture.aJourAu) }
+                    cloche(lecture.cloche, luesOuvertes, { luesOuvertes = !luesOuvertes }, ouvrir)
+                }
             }
         }
     }
@@ -106,7 +112,8 @@ private fun IconeDuType(type: String) {
     Icon(
         trace,
         contentDescription = decrit.libelle,
-        tint = MaterialTheme.colorScheme.primary,
+        // La teinte du téléphone (#252) : textMuted de la charte (ThemeMontre : onSurfaceVariant).
+        tint = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(end = 6.dp).size(18.dp).testTag("montre.type.$type"),
     )
 }
@@ -121,6 +128,13 @@ private fun BoutonDejaLues(nombre: Int, ouvertes: Boolean, basculer: () -> Unit)
         modifier = Modifier.fillMaxWidth().testTag("montre.dejaLues").semantics { stateDescription = etat },
     )
 }
+
+/** « Hors ligne — à jour au 17/11 à 14:32 » : le libellé du téléphone (partagé, #206). */
+@Composable
+private fun HorsLigneDate(aJourAu: Instant) = Message(
+    stringResource(RCommun.string.hors_ligne_a_jour, FormatsDuSite.dateCourte(aJourAu), FormatsDuSite.heure(aJourAu)),
+    "montre.horsLigne",
+)
 
 @Composable
 private fun Vide() = Message(stringResource(R.string.montre_aucune_alerte), "montre.aucuneAlerte")

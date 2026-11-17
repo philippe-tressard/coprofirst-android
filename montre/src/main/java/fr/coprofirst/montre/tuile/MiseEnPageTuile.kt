@@ -29,6 +29,7 @@ object MiseEnPageTuile {
 
     fun libelles(contexte: Context) = LibellesTuile(
         nonReliee = contexte.getString(R.string.montre_non_reliee),
+        injoignable = contexte.getString(R.string.montre_injoignable),
         aucune = contexte.getString(R.string.montre_aucune_alerte),
         alertes = { n -> contexte.resources.getQuantityString(R.plurals.tuile_nouvelles_alertes, n, n) },
         dontUrgentes = { n -> contexte.resources.getQuantityString(R.plurals.tuile_dont_urgentes, n, n) },

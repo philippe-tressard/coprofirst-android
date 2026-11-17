@@ -10,26 +10,37 @@ import androidx.wear.tiles.RequestBuilders
 import androidx.wear.tiles.TileBuilders
 import androidx.wear.tiles.TileService
 import com.google.common.util.concurrent.ListenableFuture
+import fr.coprofirst.montre.liaison.LectureMontre
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 /**
  * La tuile de la montre, pendant du widget de l'Apple Watch : une phrase, « 2 nouvelles
  * alertes · dont 1 urgente », et rien d'autre (`PhraseTuile`). Un toucher ouvre la cloche.
  *
- * Elle ne lit pas le réseau : elle compte la DERNIÈRE lecture gardée de la cloche, que la
- * montre tient à jour (#207, lot 6). D'ici là, et tant que la liaison est éteinte
- * (`LiaisonMontre`), elle dit de relier la montre.
+ * Elle lit la cloche comme l'app (`LectureMontre`) : en ligne, ou la dernière lecture gardée
+ * hors ligne. Montre pas reliée (ou liaison éteinte, `LiaisonMontre`), elle dit de la relier.
  */
 class TuileCloche : TileService() {
+    private val portee = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
     override fun onTileRequest(requete: RequestBuilders.TileRequest): ListenableFuture<TileBuilders.Tile> =
         CallbackToFutureAdapter.getFuture { attente ->
-            // La dernière lecture gardée vient au lot 6 : aucune encore.
-            val mise = MiseEnPageTuile.de(this, requete.deviceConfiguration, EtatTuile.de(cloche = null))
-            attente.set(
-                TileBuilders.Tile.Builder()
-                    .setResourcesVersion(VERSION_RESSOURCES)
-                    .setTileTimeline(TimelineBuilders.Timeline.fromLayoutElement(mise))
-                    .build(),
-            )
+            val travail = portee.launch {
+                val etat = EtatTuile.de(LectureMontre.de(this@TuileCloche).lire())
+                val mise = MiseEnPageTuile.de(this@TuileCloche, requete.deviceConfiguration, etat)
+                attente.set(
+                    TileBuilders.Tile.Builder()
+                        .setResourcesVersion(VERSION_RESSOURCES)
+                        .setFreshnessIntervalMillis(FRAICHEUR_MS)
+                        .setTileTimeline(TimelineBuilders.Timeline.fromLayoutElement(mise))
+                        .build(),
+                )
+            }
+            attente.addCancellationListener({ travail.cancel() }, Runnable::run)
             "tuile de la cloche"
         }
 
@@ -39,8 +50,16 @@ class TuileCloche : TileService() {
             "ressources de la tuile"
         }
 
+    override fun onDestroy() {
+        portee.cancel()
+        super.onDestroy()
+    }
+
     companion object {
         const val VERSION_RESSOURCES = "1"
+
+        /** Le système redemande la tuile au plus tôt après ce délai (et à chaque lecture de l'app). */
+        private const val FRAICHEUR_MS = 15 * 60 * 1000L
 
         /** Aucune image dans la tuile : des ressources vides, à leur version. */
         fun ressources(): ResourceBuilders.Resources = ResourceBuilders.Resources.Builder().setVersion(VERSION_RESSOURCES).build()

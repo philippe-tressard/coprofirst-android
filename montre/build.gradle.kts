@@ -43,6 +43,8 @@ dependencies {
     // qu'attend TileService, sans Guava.
     implementation(libs.wear.tiles)
     implementation(libs.wear.protolayout.material3)
+    // La complication du cadran (#207, lot 5) : AndroidX, Apache-2.0.
+    implementation(libs.wear.complications.data.source)
     implementation(libs.androidx.concurrent.futures)
     // « Continuer sur le téléphone » (#207, lot 2) : RemoteActivityHelper (AndroidX), qui tire
     // play-services-wearable — permis par la licence (point 4, #213).

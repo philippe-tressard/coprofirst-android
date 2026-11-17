@@ -6,67 +6,58 @@ package fr.coprofirst.montre
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.wear.compose.material3.AppScaffold
-import fr.coprofirst.app.commun.attendreQue
 import fr.coprofirst.app.commun.attendreTag
 import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.fonctions.notifications.NotificationRecue
-import fr.coprofirst.montre.liaison.CoffreLiaison
-import fr.coprofirst.montre.liaison.JetonRefuse
-import fr.coprofirst.montre.liaison.LiaisonGardee
+import fr.coprofirst.montre.cloche.Cloche
+import fr.coprofirst.montre.liaison.EtatLecture
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.io.IOException
 import java.time.Instant
 
-/** La montre à son ouverture (#207, lot 2b) : reliée, elle lit la cloche ; sinon, elle attend le téléphone. */
+/** La montre à son ouverture (#207, lots 2b et 6) : la cloche, la dernière gardée hors ligne, ou le téléphone. */
 @RunWith(AndroidJUnit4::class)
 class PorteMontreInterfaceTest {
     @get:Rule
     val ecran = createComposeRule()
 
-    private class Coffre(var gardee: LiaisonGardee?) : CoffreLiaison {
-        override fun lire() = gardee
-        override fun garder(liaison: LiaisonGardee) { gardee = liaison }
-        override fun effacer() { gardee = null }
-    }
+    private val adresse = "https://residence.exemple.test"
+    private val reliee = EtatMontre.Reliee(adresse, "Les Tilleuls")
+    private val cloche = Cloche.de(listOf(NotificationRecue(3, "ticket_update", "Votre affaire avance", "", false, false, Instant.now())))
 
-    private val tilleuls = LiaisonGardee("https://residence.exemple.test", "Les Tilleuls", "jeton", Instant.now().plusSeconds(86_400))
-    private val alerte = NotificationRecue(3, "ticket_update", "Votre affaire avance", "", false, false, Instant.now())
-
-    private fun ouvrir(coffre: Coffre, actif: Boolean = true, lire: suspend (LiaisonGardee) -> List<NotificationRecue>) =
-        ecran.setContent { ThemeMontre { AppScaffold { PorteMontre(coffre, lire, actif) } } }
+    private fun ouvrir(depart: EtatMontre, lecture: EtatLecture) =
+        ecran.setContent { ThemeMontre { AppScaffold { PorteMontre(depart) { lecture } } } }
 
     @Test
     fun relieeLaClocheSeLit() {
-        ouvrir(Coffre(tilleuls)) { listOf(alerte) }
+        ouvrir(reliee, EtatLecture.Lue("Les Tilleuls", adresse, cloche))
         ecran.attendreTexte("Les Tilleuls")
         ecran.attendreTag("montre.alerte.3")
     }
 
     @Test
-    fun liaisonEteinte_laMontreAttendLeTelephone() {
-        ouvrir(Coffre(tilleuls), actif = false) { listOf(alerte) }
+    fun horsLigne_laDerniereLectureGardeeDatee() {
+        ouvrir(reliee, EtatLecture.HorsLigne("Les Tilleuls", adresse, cloche, Instant.parse("2026-11-17T13:32:00Z")))
+        ecran.attendreTag("montre.horsLigne")
+        ecran.attendreTag("montre.alerte.3")
+    }
+
+    @Test
+    fun jetonRefuse_laMontreAttendLeTelephone() {
+        ouvrir(reliee, EtatLecture.NonReliee)
         ecran.attendreTag("montre.nonReliee")
     }
 
     @Test
-    fun jetonRefuse_laLiaisonSEfface() {
-        val coffre = Coffre(tilleuls)
-        ouvrir(coffre) { throw JetonRefuse() }
-        ecran.attendreTag("montre.nonReliee")
-        ecran.attendreQue("la liaison effacée") { coffre.gardee == null }
-    }
-
-    @Test
-    fun residenceInjoignable_seDit() {
-        ouvrir(Coffre(tilleuls)) { throw IOException("hors ligne") }
+    fun residenceInjoignableSansLectureGardee_seDit() {
+        ouvrir(reliee, EtatLecture.Injoignable("Les Tilleuls", adresse))
         ecran.attendreTag("montre.injoignable")
     }
 
     @Test
-    fun jetonEchu_laMontreAttendLeTelephone() {
-        ouvrir(Coffre(LiaisonGardee(tilleuls.adresse, tilleuls.residence, "jeton", Instant.now().minusSeconds(1)))) { listOf(alerte) }
+    fun pasReliee_laMontreAttendLeTelephone() {
+        ouvrir(EtatMontre.NonReliee, EtatLecture.Lue("Les Tilleuls", adresse, cloche))
         ecran.attendreTag("montre.nonReliee")
     }
 }
