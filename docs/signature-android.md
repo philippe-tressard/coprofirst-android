@@ -17,14 +17,16 @@ fichier de build et toute signature dans `.github/`.
 ## 1. Créer la clé (une fois, par Philippe)
 
 Dans un terminal du Mac. `keytool` demande le mot de passe (le même pour le magasin et
-la clé, format PKCS12), puis l'identité du certificat.
+la clé, format PKCS12), puis l'identité du certificat. Le chemin complet est celui du
+JDK de Homebrew : le Java de macOS n'est qu'un renvoi, et un `keytool` nu répond
+« Unable to locate a Java Runtime ».
 
 ```bash
 mkdir -p ~/.coprofirst-android && chmod 700 ~/.coprofirst-android
 ```
 
 ```bash
-keytool -genkeypair -v -storetype PKCS12 -keystore ~/.coprofirst-android/televersement.jks -alias televersement -keyalg RSA -keysize 4096 -validity 10000
+/opt/homebrew/opt/openjdk@21/bin/keytool -genkeypair -v -storetype PKCS12 -keystore ~/.coprofirst-android/televersement.jks -alias televersement -keyalg RSA -keysize 4096 -validity 10000
 ```
 
 ```bash
