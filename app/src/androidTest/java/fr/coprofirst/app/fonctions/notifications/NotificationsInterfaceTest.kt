@@ -122,18 +122,19 @@ class NotificationsInterfaceTest {
 
     private fun toucher(tag: String) = ecran.toucherTag(tag, useUnmergedTree = true)
 
-    /**
-     * « Tout marquer lu » et « Modifier » se voient dans la barre du haut, « 12 non lues » sous
-     * son titre ; tout se marque lu, et le sous-titre s'en va.
-     */
     /** #250 : l'icône du type, et son libellé lu ; un type absent de la table prend le défaut. */
     @Test
     fun chaqueLignePorteLIconeDeSonType() {
         ouvrir()
+        ecran.attendreTag("notification.3.type", useUnmergedTree = true)
         el("notification.3.type").assertContentDescriptionEquals(TypesNotification.de("sondage").libelle)
         el("notification.5.type").assertContentDescriptionEquals(TypesNotification.parDefaut.libelle)
     }
 
+    /**
+     * « Tout marquer lu » et « Modifier » se voient dans la barre du haut, « 12 non lues » sous
+     * son titre ; tout se marque lu, et le sous-titre s'en va.
+     */
     @Test
     fun toutSeMarqueLu() {
         ouvrir()
