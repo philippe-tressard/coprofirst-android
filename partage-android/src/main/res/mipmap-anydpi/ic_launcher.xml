@@ -3,7 +3,7 @@
 SPDX-FileCopyrightText: 2026 Philippe TRESSARD
 SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 -->
-<!-- L'icône adaptative : le logo de CoproFirst (premier plan) posé sur le fond de sa
+<!-- L'icône adaptative du téléphone ET de la montre (#207) : le logo de CoproFirst (premier plan) posé sur le fond de sa
      tuile ; les deux sont GÉNÉRÉS depuis logo.svg (scripts/generer_logo.py). La
      variante monochrome sert aux icônes à thème du système. -->
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">

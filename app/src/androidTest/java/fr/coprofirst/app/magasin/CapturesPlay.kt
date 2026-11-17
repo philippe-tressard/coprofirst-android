@@ -62,7 +62,7 @@ class CapturesPlay {
     /** L'icône du magasin : les deux couches de l'icône adaptative, à fond perdu. */
     @Test
     fun icone() {
-        val icone = ContextCompat.getDrawable(contexte, R.mipmap.ic_launcher) as AdaptiveIconDrawable
+        val icone = ContextCompat.getDrawable(contexte, RCommun.mipmap.ic_launcher) as AdaptiveIconDrawable
         val image = Bitmap.createBitmap(512, 512, Bitmap.Config.ARGB_8888)
         val toile = Canvas(image)
         listOf(icone.background, icone.foreground).forEach { couche ->

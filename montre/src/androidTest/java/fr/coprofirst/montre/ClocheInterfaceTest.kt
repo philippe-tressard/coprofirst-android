@@ -10,7 +10,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.wear.compose.material3.AppScaffold
-import androidx.wear.compose.material3.MaterialTheme
 import fr.coprofirst.app.commun.amenerTag
 import fr.coprofirst.app.commun.attendreTag
 import fr.coprofirst.app.commun.attendreTexte
@@ -39,7 +38,7 @@ class ClocheInterfaceTest {
         NotificationRecue(id, "system", titre, "", lue, urgente, maintenant.minusSeconds(id * 600L), lien)
 
     private fun montrer(etat: EtatMontre, alertes: List<NotificationRecue> = emptyList()) = ecran.setContent {
-        MaterialTheme { AppScaffold { EcranMontre(etat, LectureCloche.Lue(Cloche.de(alertes))) } }
+        ThemeMontre { AppScaffold { EcranMontre(etat, LectureCloche.Lue(Cloche.de(alertes))) } }
     }
 
     private val reliee = EtatMontre.Reliee("https://residence.exemple.test", "Les Tilleuls")

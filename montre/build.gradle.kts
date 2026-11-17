@@ -29,11 +29,6 @@ android {
         // l'émulateur dans build/outputs/connected_android_test_additional_output.
         testInstrumentationRunnerArguments["useTestStorageService"] = "true"
     }
-    lint {
-        // L'icône vient du logo, généré au build par la couche commune (#206) ; la montre la
-        // reçoit avec la complication (#207, lot 5). Rien n'est publié d'ici là.
-        disable += "MissingApplicationIcon"
-    }
 }
 
 dependencies {
