@@ -106,7 +106,7 @@ class SessionsParHote(
 
     private fun pot(adresse: AdresseInstallation): Pot = parHote.getOrPut(cle(adresse)) {
         // LA porte des lectures gardées, dans le client de l'hôte : toute requête y passe.
-        Pot(lectures?.let { base.newBuilder().addInterceptor(GarderLesLectures(adresse.cleCoffre, it)).build() } ?: base)
+        Pot(lectures?.let { base.newBuilder().addInterceptor(GarderLesLectures(adresse.cleCoffre, it, LectureGardee)).build() } ?: base)
     }
 
     private fun cle(adresse: AdresseInstallation) = adresse.url
