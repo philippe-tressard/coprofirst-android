@@ -33,15 +33,9 @@ Une seule lecture part ailleurs, et elle n'envoie rien : le texte public de la v
 sans cookie, sans jeton, sans paramètre, qui ne porte aucune donnée de l'utilisateur. Rien
 à déclarer dans la grille ; elle est dite ici pour que la fiche reste vraie.
 
-**Une donnée part chez Google, sans contenu : le jeton d'appareil des notifications.**
-Les notifications passent par Firebase Cloud Messaging (bibliothèque permise par le
-point 4 de la licence, décision du 16/11/2026). Le téléphone obtient de Google un
-identifiant d'appareil (le jeton FCM) et l'envoie à la résidence (`postAppareils`). La
-résidence le rend à Google pour acheminer chaque notification, qui ne porte qu'un
-identifiant opaque, jamais de donnée personnelle : le détail se lit ensuite par l'API
-(garde-fou du projet). Ce dépôt **déclare ce jeton partagé avec Google**, pour
-l'acheminement seulement. Google range les transferts à un prestataire qui agit pour le
-compte de l'app hors du « partage » : c'est la lecture la plus prudente qui l'emporte ici.
+**Aucune notification push** (abandonnées le 17/11/2026, décision de Philippe, #269) :
+l'app ne demande à Google aucun jeton d'appareil, la résidence ne lui en confie aucun ; les
+alertes se lisent dans la cloche, par l'API.
 Le lien téléphone ↔ montre (Wearable, #207) se déclare dans le lot qui l'apporte.
 Son premier geste, « Continuer sur le téléphone » (lot 2a), ne fait passer qu'**une adresse
 de page de la résidence** (« https://<résidence>/tickets/12 ») de la montre au téléphone
@@ -58,7 +52,7 @@ la cloche de la résidence (`GET /notifications`, seule route que ce jeton ouvre
 n'envoie rien d'autre.
 **Lecture prudente** : Google Play services peut acheminer par ses serveurs, et pas
 seulement de proche en proche. Ce dépôt déclare donc ce jeton comme un `ID appareil`
-**partagé avec Google**, pour l'acheminement seulement, comme le jeton FCM. Lecture retenue le 17/11/2026
+**partagé avec Google**, pour l'acheminement seulement. Lecture retenue le 17/11/2026
 (coordination, #207) : une fiche qui déclare un peu trop ne cause aucun tort, une qui
 déclare trop peu expose à un retrait par Google. Philippe peut la revoir en remplissant le
 formulaire Play.
@@ -85,7 +79,7 @@ que les bibliothèques ajouteraient au manifeste fusionné se relit au build de 
 ## 3. Les données, dans la grille de Google
 
 Pour chacune : **collectée** oui, **chiffrée en transit** oui (HTTPS), **partagée** non —
-sauf `ID appareil`, partagé avec Google pour l'acheminement des notifications (§1).
+sauf `ID appareil`, partagé avec Google pour l'acheminement vers la montre (§1).
 
 | Code (§4) | Case de la Play Console | Ce que c'est | Obligatoire ? | Finalités |
 |---|---|---|---|---|
@@ -97,7 +91,7 @@ sauf `ID appareil`, partagé avec Google pour l'acheminement des notifications (
 | `Messages` | Messages › Autres messages dans l'application | les messages d'une affaire | facultatif | Fonctionnement de l'app |
 | `Contenu utilisateur` | Activité dans les applications › Autre contenu généré par l'utilisateur | affaires, annonces, idées, avis, votes, commentaires, questions, demandes de badge | facultatif | Fonctionnement de l'app |
 | `Interactions` | Activité dans les applications › Interactions avec l'application | les écrans vus, sous le chemin de la page équivalente du site, et le canal « android » : la mesure d'audience de la résidence, **jamais** si le compte l'a refusée au Profil | facultatif | Analyses |
-| `ID appareil` | Identifiants de l'appareil ou autres | le jeton d'appareil des notifications (FCM) et l'abonnement (#23) ; le jeton de la montre Wear OS reliée et son identifiant (#207) ; **partagés avec Google** (Firebase Cloud Messaging, Data Layer de Wear OS), pour l'acheminement seulement, sans contenu | facultatif | Fonctionnement de l'app |
+| `ID appareil` | Identifiants de l'appareil ou autres | le jeton de la montre Wear OS reliée et son identifiant (#207), seulement quand la liaison s'allume (`LiaisonMontre.ACTIF`) ; **partagés avec Google** (Data Layer de Wear OS), pour l'acheminement seulement, sans contenu | facultatif | Fonctionnement de l'app |
 
 **Non cochées** : localisation, informations financières, santé, photos et vidéos,
 fichiers, agenda, contacts, historique de navigation, applications installées, journaux de
@@ -129,11 +123,9 @@ contrôle le refuse dès que l'envoi existe — la PR qui l'apporte retire la ma
 | `patchAuthMeOptOutTelemetrie` | `Autres infos` |
 | `deleteAuthMeTelemetrie` | — |
 | `postTelemetryCollect` | `Interactions` |
-| `postAppareils` | `ID appareil` |
 | `postMontres` | `ID appareil` |
 | `postMontresMontreIdRenouveler` | `ID appareil` |
 | `deleteMontresMontreId` | — |
-| `deleteAppareilsAbonnement` | `ID appareil` |
 | `postTickets` | `Contenu utilisateur` |
 | `patchTicketsTicketId` | `Contenu utilisateur` |
 | `postTicketsTicketIdEvolutions` | `Contenu utilisateur` |
@@ -202,7 +194,7 @@ Les libellés peuvent avoir changé.
 | Votre application collecte-t-elle ou partage-t-elle des types de données requis ? | **Oui** |
 | Toutes les données sont-elles chiffrées en transit ? | **Oui** |
 | Proposez-vous aux utilisateurs un moyen de demander la suppression de leurs données ? | **Oui** (dans l'app, Profil ; et le lien de la politique) |
-| Les types de données | les neuf du §3, aucun autre (`ID appareil` quand #23 sera publié) |
+| Les types de données | les huit premiers du §3, aucun autre ; `ID appareil` seulement quand la liaison de la montre s'allume (#207) |
 | Pour chacun : collectée / partagée | **collectée** ; **non partagée** (§1) |
 | Traitée de façon éphémère ? | **Non** |
 | Obligatoire ou facultative | la colonne du §3 |

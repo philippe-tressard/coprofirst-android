@@ -4,14 +4,15 @@
 """Aucune bibliothèque Google Play services ni Firebase que la licence ne nomme pas.
 
 La permission additionnelle (point 4 de LICENSES/LicenseRef-CoproFirst-Magasins.txt,
-décision de Philippe du 16/11/2026) autorise la liaison avec deux bibliothèques
-seulement : Firebase Cloud Messaging et Wearable. Une autre bibliothèque de ces
-familles serait liée sans permission : le code distribué violerait sa propre licence.
+accordée le 16/11/2026, restreinte le 17/11/2026 avec l'abandon du push, #269) autorise
+la liaison avec une bibliothèque seulement : Wearable. Une autre bibliothèque de ces
+familles — Firebase Cloud Messaging comprise — serait liée sans permission : le code
+distribué violerait sa propre licence.
 
 La liste autorisée se LIT dans le texte de la licence, jamais recopiée ici : le droit
 et le contrôle ne peuvent pas diverger. Sont jugées les dépendances DÉCLARÉES par le
-dépôt (`gradle/libs.versions.toml` et chaque `build.gradle.kts`) ; ce que ces deux
-bibliothèques tirent elles-mêmes est couvert par la permission.
+dépôt (`gradle/libs.versions.toml` et chaque `build.gradle.kts`) ; ce que la
+bibliothèque permise tire elle-même est couvert par la permission.
 
 Sortie : 0 conforme, 1 refus, 2 INCONNU. `--autotest` prouve que le juge départage.
 """
@@ -93,6 +94,15 @@ def autotest() -> bool:
         for ligne, attendu in cas.items():
             (racine / "gradle" / "libs.versions.toml").write_text(ligne + "\n", encoding="utf-8")
             ok &= len(juger(racine, permises)) == attendu
+        # La permission RÉELLE : depuis le 17/11/2026, Wearable seul (#269, push abandonné).
+        # Firebase Cloud Messaging déclarée serait liée sans permission : refusée.
+        reelles = autorisees(LICENCE.read_text(encoding="utf-8"))
+        (racine / "gradle" / "libs.versions.toml").write_text(
+            'firebase-messaging = { module = "com.google.firebase:firebase-messaging", version.ref = "f" }\n', encoding="utf-8")
+        ok &= len(juger(racine, reelles)) == 1
+        (racine / "gradle" / "libs.versions.toml").write_text(
+            'wearable = { group = "com.google.android.gms", name = "play-services-wearable", version = "1" }\n', encoding="utf-8")
+        ok &= len(juger(racine, reelles)) == 0
     return ok
 
 

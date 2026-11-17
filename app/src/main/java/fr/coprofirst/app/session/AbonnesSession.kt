@@ -6,8 +6,8 @@ package fr.coprofirst.app.session
 import kotlinx.coroutines.CancellationException
 
 /**
- * Ce qui suit le cycle d'une résidence sur l'appareil (#150) : les notifications push
- * (`NotificationsPush`, #23), la liaison avec la montre (#207). Un SEUL point d'accroche :
+ * Ce qui suit le cycle d'une résidence sur l'appareil (#150) : la liaison avec la montre
+ * (#207) — les notifications push, abandonnées le 17/11/2026 (#269), n'y sont plus. Un SEUL point d'accroche :
  * le parcours d'entrée prévient ses abonnés, aucun ne se branche sur la session à part.
  */
 interface AbonneSession {
