@@ -124,6 +124,8 @@ class ServiceResidenceTest {
         assertEquals(2, carnet.groupes[0].entrees.size)
         assertEquals(listOf("Contrat d'entretien de l'ascenseur"), carnet.enAlerte.map { it.libelle })
         assertNull("une chaîne vide servie n'est pas un détail", carnet.entrees[1].detail)
+        // #220 : « À venir » est servi, jamais recalculé ; absent, rien.
+        assertEquals(listOf(false, true, false, false), carnet.entrees.map { it.aVenir })
         // Le modèle commun (#83), lu par `Perimetre.lus` : actifs seulement.
         assertEquals(listOf("bat-a" to "Bâtiment A"), service.perimetres().map { it.code to it.libelle })
     }
@@ -158,7 +160,7 @@ class ServiceResidenceTest {
 
         val CARNET = """{"total": 3, "groupes": [], "annees": ["2026"], "entrees": [
             {"date": "2026-10-28", "libelle": "Révision de la chaudière", "origine": "intervention", "categorie_libelle": "", "perimetre_libelle": "", "equipement": "chaufferie", "detail": "Brûleur."},
-            {"date": "2026-09-15", "libelle": "Contrat d'entretien de l'ascenseur", "origine": "contrat", "categorie_libelle": "", "perimetre_libelle": "", "equipement": "ascenseur", "detail": "", "alerte": "visite attendue"},
+            {"date": "2026-09-15", "libelle": "Contrat d'entretien de l'ascenseur", "origine": "contrat", "categorie_libelle": "", "perimetre_libelle": "", "equipement": "ascenseur", "detail": "", "alerte": "visite attendue", "a_venir": true},
             {"date": "2026-08-02", "libelle": "Fuite", "origine": "affaire", "categorie_libelle": "", "perimetre_libelle": "", "equipement": "chaufferie", "lien": "/tickets/29", "numero": "A-0029"},
             {"date": "2025-12-03", "libelle": "Luminaire", "origine": "affaire", "categorie_libelle": "", "perimetre_libelle": ""}]}"""
 

@@ -69,6 +69,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
         <item quantity="other">%1$d visites attendues</item>
     </plurals>
     <string name="carnet_echeance_depassee">dont l\'échéance est dépassée :</string>
+    <!-- Un contrat du carnet qui n'a pas commencé (`a_venir`, #220), sous « Contrat » comme le site. -->
+    <string name="carnet_a_venir">À venir</string>
     <string name="carnet_voir_affaire">Voir l\'affaire</string>
     <string name="carnet_ouvrir_sur_le_site">Ouvrir sur le site</string>
 

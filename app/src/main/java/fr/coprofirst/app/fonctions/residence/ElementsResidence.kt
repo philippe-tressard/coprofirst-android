@@ -36,6 +36,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
@@ -79,9 +80,9 @@ fun partiesDate(date: Instant): List<String> = FormatsDuSite.date(date).split(Re
 
 /** La gouttière d'une carte : la date de l'acte en trois morceaux, puis la nature. Dite par sa date seule. */
 @Composable
-fun Gouttiere(nature: Nature, date: Instant? = null) {
+fun Gouttiere(nature: Nature, date: Instant? = null, mention: String? = null) {
     val couleurs = LocalCouleurs.current
-    val dite = date?.let(FormatsDuSite::date).orEmpty()
+    val dite = listOfNotNull(date?.let(FormatsDuSite::date), mention).joinToString(", ")
     Column(
         Modifier.width(52.dp).clearAndSetSemantics { if (dite.isNotEmpty()) contentDescription = dite },
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -95,6 +96,8 @@ fun Gouttiere(nature: Nature, date: Instant? = null) {
         }
         Icon(nature.icone, contentDescription = null, tint = couleurs.textMuted, modifier = Modifier.size(18.dp))
         Text(stringResource(nature.abrege), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.SemiBold, color = couleurs.textMuted)
+        // Sous la nature, ce que le site y dit encore (« À venir » d'un contrat, #220).
+        mention?.let { Text(it, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.SemiBold, color = couleurs.primary, textAlign = TextAlign.Center) }
     }
 }
 
@@ -106,11 +109,12 @@ fun CarteAGouttiere(
     date: Instant? = null,
     ouvrir: (() -> Unit)? = null,
     action: String? = null,
+    mention: String? = null,
     contenu: @Composable ColumnScope.() -> Unit,
 ) {
     Carte(modifier, ouvrir = ouvrir, action = action) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Gouttiere(nature, date)
+            Gouttiere(nature, date, mention)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp), content = contenu)
         }
     }

@@ -72,6 +72,7 @@ class ResidenceSimulee(private val acces: Boolean = true) : ServiceResidence {
         val EQUIPEMENTS = mapOf("chaufferie" to "Chaufferie")
 
         val CARNET = listOf(
+            EntreeCarnet("2026-12-01", "Contrat de maintenance des extincteurs", "contrat", equipement = "chaufferie", aVenir = true),
             EntreeCarnet("2026-10-28", "Révision annuelle de la chaudière", "intervention", detail = "Remplacement du brûleur.", equipement = "chaufferie"),
             EntreeCarnet("2026-09-15", "Contrat d'entretien de l'ascenseur", "contrat", equipement = "ascenseur", alerte = "visite attendue le 01/10/2026"),
             EntreeCarnet("2026-08-02", "Fuite sur la colonne d'eau froide", "affaire", numero = "A-0029", equipement = "chaufferie", lien = "/tickets/29"),

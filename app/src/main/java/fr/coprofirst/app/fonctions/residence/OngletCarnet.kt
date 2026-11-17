@@ -164,7 +164,8 @@ private fun EncartAlerte(entrees: List<EntreeCarnet>) {
 @Composable
 private fun CarteEntree(entree: EntreeCarnet, adresse: String, porte: (Destination) -> Boolean) {
     val couleurs = LocalCouleurs.current
-    CarteAGouttiere(Nature.duCarnet(entree.origine), date = entree.jour) {
+    // « À venir » sous « Contrat » dans la gouttière, comme le site (coprofirst#2811) : servi, jamais recalculé.
+    CarteAGouttiere(Nature.duCarnet(entree.origine), date = entree.jour, mention = if (entree.aVenir) stringResource(R.string.carnet_a_venir) else null) {
         Text(entree.libelle, style = MaterialTheme.typography.titleMedium, color = couleurs.text)
         entree.extrait?.let {
             Text(TexteDuSite.apercu(it), style = MaterialTheme.typography.bodyMedium, maxLines = 3, overflow = TextOverflow.Ellipsis, color = couleurs.textMuted)
