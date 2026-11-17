@@ -149,7 +149,9 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   dans « Plus de détails », replié — à la création comme à la modification.
 - **Ma résidence** : la Fiche (photo, immatriculation, lots, assurance et syndic — qui
   ouvre l'annuaire du syndic —, composition par bâtiment ; règles, plans, règlement,
-  comptes-rendus d'AG et diagnostics, chacun s'ouvrant dans l'app de l'appareil) ; aux
+  comptes-rendus d'AG et diagnostics, chacun s'ouvrant dans l'app — un PDF page à page, une
+  image entière, « Partager » et « Ouvrir dans une autre app » ; à côté de la page en fenêtre
+  large ; un autre type de fichier, dans l'app de l'appareil, #274) ; aux
   propriétaires et au conseil, le Carnet d'entretien (par équipement, visites en retard
   en tête, « À venir » sur un contrat qui n'a pas commencé, filtre par périmètre) et le Règlement (poser une question à l'assistant, lire
   son avis, ses fondements et les extraits qu'il cite). Le bilan de l'exercice se lit

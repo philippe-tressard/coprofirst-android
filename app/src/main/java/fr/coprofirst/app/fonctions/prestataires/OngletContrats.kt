@@ -3,6 +3,9 @@
 
 package fr.coprofirst.app.fonctions.prestataires
 
+import fr.coprofirst.app.commun.miseenpage.OccuperLaColonneDeFiche
+import fr.coprofirst.app.commun.pieces.Visionneuse
+import fr.coprofirst.app.commun.pieces.documentChoisi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -63,6 +66,9 @@ internal fun OngletContrats(donnees: DonneesPrestataires, service: ServicePresta
         }
     }
     val ouverture = rememberOuverture(onglet.session)
+    // Un document de contrat s'ouvre dans l'app, à côté de la liste en fenêtre large (#274, coprofirst-ios#279).
+    OccuperLaColonneDeFiche()
+    Visionneuse(ouverture)
     val courants = donnees.contrats
     val carte: @Composable (Contrat) -> Unit = { c ->
         CarteContrat(c, donnees.prestataire(c.prestataireId), service, ouverture, gestes, deplie == c.id) {
@@ -204,6 +210,7 @@ private fun DetailContrat(contrat: Contrat, frequence: String?, documents: List<
         Text(stringResource(R.string.prestataires_aucun_document), style = MaterialTheme.typography.bodyMedium, color = LocalCouleurs.current.textMuted)
     }
     documents.forEach { d ->
-        LigneDocument(d.fichierNom, ouverture.enCours == "document-${d.id}", taille = d.taille) { ouverture.document(d.id, d.fichierNom) }
+        val cle = Ouverture.cleDocument(d.id)
+        LigneDocument(d.fichierNom, ouverture.enCours == cle, Modifier.documentChoisi(cle), taille = d.taille) { ouverture.document(d.id, d.fichierNom) }
     }
 }
