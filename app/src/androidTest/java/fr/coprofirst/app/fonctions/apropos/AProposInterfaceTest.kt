@@ -16,6 +16,7 @@ import fr.coprofirst.app.commun.toucherTexte
 import fr.coprofirst.app.entree.NavigationEntree
 import fr.coprofirst.app.entree.ServeurDeTest
 import fr.coprofirst.app.entree.entrerDansLaResidence
+import fr.coprofirst.app.navigation.ouvrirLaPageDePlus
 import mockwebserver3.Dispatcher
 import mockwebserver3.MockResponse
 import mockwebserver3.RecordedRequest
@@ -59,9 +60,7 @@ class AProposInterfaceTest {
         serveur.serveur.dispatcher = residence
         ecran.setContent { NavigationEntree(serveur.apparence(), serveur.parcours()) }
         ecran.entrerDansLaResidence("residence.exemple.test", "Les Glycines")
-        ecran.attendreTexte("Plus")
-        ecran.toucherTexte("Plus")
-        ecran.toucherTag("plus.a-propos")
+        ecran.ouvrirLaPageDePlus("a-propos")
         ecran.attendreTexte("Syndicat des Glycines")
     }
 

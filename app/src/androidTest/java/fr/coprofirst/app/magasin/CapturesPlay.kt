@@ -22,6 +22,7 @@ import fr.coprofirst.app.commun.toucherTexte
 import fr.coprofirst.app.entree.NavigationEntree
 import fr.coprofirst.app.entree.ServeurDeTest
 import fr.coprofirst.app.entree.entrerDansLaResidence
+import fr.coprofirst.app.navigation.ouvrirLaPageDePlus
 import fr.coprofirst.app.partage.R as RCommun
 import java.io.File
 import org.junit.After
@@ -114,8 +115,7 @@ class CapturesPlay {
             ecran.toucherTexte("Accès")
             ecran.attendreTexte("T3")
             capturer("2-acces")
-            ecran.toucherTexte("Plus")
-            ecran.toucherTag("plus.profil")
+            ecran.ouvrirLaPageDePlus("profil")
             ecran.attendreTexte("Camille EXEMPLE")
             capturer("3-profil")
         } finally {
