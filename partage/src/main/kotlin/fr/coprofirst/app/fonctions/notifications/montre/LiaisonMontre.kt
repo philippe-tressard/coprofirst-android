@@ -20,5 +20,5 @@ package fr.coprofirst.app.fonctions.notifications.montre
  * n'ouvre rien (`:partage`). Comme `RelaisPush` pour le push.
  */
 object LiaisonMontre {
-    const val ACTIF: Boolean = false
+    const val ACTIF: Boolean = true
 }
