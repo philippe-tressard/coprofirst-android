@@ -10,35 +10,18 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CloudOff
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import fr.coprofirst.app.LocalCouleurs
-import fr.coprofirst.app.R
-import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Mouvement
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.partage.R as RCommun
@@ -112,39 +95,16 @@ fun BandeauHorsLigne() {
 
 @Composable
 private fun Bandeau(consultation: Instant?) {
-    val couleurs = LocalCouleurs.current
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surfaceContainer)
-            .padding(horizontal = Mise.marge, vertical = 8.dp)
-            .semantics(mergeDescendants = true) {}
-            .testTag(REPERE_BANDEAU),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Icon(Icons.Filled.CloudOff, contentDescription = null, tint = couleurs.text, modifier = Modifier.size(16.dp))
-            Text(
-                if (consultation != null) {
-                    stringResource(RCommun.string.hors_ligne_a_jour, FormatsDuSite.dateCourte(consultation), FormatsDuSite.heure(consultation))
-                } else {
-                    stringResource(RCommun.string.hors_ligne_peut_dater)
-                },
-                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-                color = couleurs.text,
-                textAlign = TextAlign.Center,
-            )
-        }
+    BandeauSousLaBarre(
+        Icons.Filled.CloudOff,
         if (consultation != null) {
-            Text(
-                stringResource(RCommun.string.hors_ligne_consultation),
-                style = MaterialTheme.typography.labelSmall,
-                color = couleurs.textMuted,
-                textAlign = TextAlign.Center,
-            )
-        }
-    }
+            stringResource(RCommun.string.hors_ligne_a_jour, FormatsDuSite.dateCourte(consultation), FormatsDuSite.heure(consultation))
+        } else {
+            stringResource(RCommun.string.hors_ligne_peut_dater)
+        },
+        consultation?.let { stringResource(RCommun.string.hors_ligne_consultation) },
+        REPERE_BANDEAU,
+    )
 }
 
 /** Le repère du bandeau — l'identifiant d'accessibilité de l'iOS. */

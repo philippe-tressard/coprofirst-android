@@ -36,6 +36,7 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
+import fr.coprofirst.app.commun.BandeauInstallationSuspendue
 import fr.coprofirst.app.commun.BoutonPlein
 import fr.coprofirst.app.commun.LogoResidence
 import fr.coprofirst.app.commun.MessageErreur
@@ -73,6 +74,8 @@ fun EcranRetour(etat: EtatEntree, parcours: ActionsEntree) {
             textAlign = TextAlign.Center,
             modifier = Modifier.semantics { heading() }.testTag(ReperesRetour.RESIDENCE),
         )
+        // Suspendue : le site le dit dès la connexion (#233).
+        BandeauInstallationSuspendue(residence, Modifier.padding(top = 12.dp))
         Spacer(Modifier.height(8.dp))
         Text(
             residence.adresse?.enSaisie.orEmpty(),
