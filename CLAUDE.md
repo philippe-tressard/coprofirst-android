@@ -74,11 +74,11 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   §4.1 bis de coprofirst).
 - **Téléphone et montre partagent**, sans recopie (#206) : `:partage` (Kotlin pur : client
   HTTP, formats, alerte reçue, lecture du HTML) et `:partage-android` (ce qui demande
-  Android : le chiffrement au Keystore, le rendu du texte riche `TexteDuSite`, les palettes,
-  le logo, les libellés du hors ligne — son `R` : `fr.coprofirst.app.partage.R` —, les
-  constantes du serveur générées). SDK, Java et lint de tout module Android :
-  `reglagesCommuns` du build racine ; le périmètre de `verifier-depot.sh` se lit dans
-  `settings.gradle.kts`.
+  Android : chiffrement au Keystore, rendu du texte riche `TexteDuSite`, palettes, logo,
+  tracés des icônes, types d'alerte, libellés du hors ligne, constantes du serveur
+  générées ; son `R` : `fr.coprofirst.app.partage.R`). SDK, Java et lint de tout module
+  Android : `reglagesCommuns` du build racine ; le périmètre de `verifier-depot.sh` se lit
+  dans `settings.gradle.kts`.
 - **Composants communs** : leur API est `docs/COMPOSANTS.md` — le contrat des écrans ;
   un écran la consomme sans la modifier, un besoin devient un ticket. Un écran = un
   paquet `fonctions/<menu>` qui s'inscrit lui-même (`Inscription.kt`, ses tables par

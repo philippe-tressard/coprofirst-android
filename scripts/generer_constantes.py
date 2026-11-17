@@ -14,6 +14,10 @@ Et `FichiersDuSite` (paquet `commun.pieces`), depuis v3.105.0 (#169) : ce qu'est
 parmi les pièces jointes (`motifImage`) et le préfixe retiré du nom montré
 (`prefixeStockage`), comme l'iOS (`generateurs/fichiers.py`).
 
+Et `TypesNotification` (paquet `fonctions.notifications`), depuis v3.108.0 (coprofirst#2802,
+#206) : le pictogramme (catalogue `icones-svg.json`, dessiné par `TracesDuSite`) et le libellé
+d'un type d'alerte, pour un lecteur d'écran — et ceux d'un type que l'app ne connaît pas.
+
 Une constante qui manque ou change de forme : la génération s'arrête.
 
 Usage : generer_constantes.py <constantes-clients.json> <dossier de sortie>
@@ -31,6 +35,9 @@ from generer_tables import TableInattendue, chaine  # noqa: E402
 
 PAQUET = "fr.coprofirst.app.commun"
 PAQUET_PIECES = "fr.coprofirst.app.commun.pieces"
+PAQUET_NOTIFICATIONS = "fr.coprofirst.app.fonctions.notifications"
+TYPE = re.compile(r"^[a-z]+(_[a-z]+)*$")
+PICTOGRAMME = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 # La famille montrée de chaque extension (`FAMILLES_AFFICHAGE` de front/src/lib/fichiers.ts)
 # se lit dans `famillesAffichageFichiers` de tables-clients.json, publiée depuis v3.106.0
 # (coprofirst#2798) : le générateur lit ce fichier à côté des constantes.
@@ -142,6 +149,44 @@ def kotlin_fichiers(constantes: dict, source: str, familles: list[tuple[str, str
     ])
 
 
+def type_notification(nom: str, v) -> str:
+    """Un `{pictogramme, libelle}` publié : le littéral `TypeNotification`."""
+    if (not isinstance(v, dict) or set(v) != {"pictogramme", "libelle"}
+            or not isinstance(v["pictogramme"], str) or not PICTOGRAMME.match(v["pictogramme"])
+            or not isinstance(v["libelle"], str) or not v["libelle"].strip()):
+        raise TableInattendue(f"{nom} : forme inattendue ({v!r})")
+    return f"TypeNotification({chaine(v['pictogramme'])}, {chaine(v['libelle'])})"
+
+
+def kotlin_types(constantes: dict, source: str) -> str:
+    """`TypesNotification` : ce que la cloche montre de chaque type d'alerte (coprofirst#2802)."""
+    types = valeur(constantes, "typesNotification", dict)
+    if not types or not all(isinstance(t, str) and TYPE.match(t) for t in types):
+        raise TableInattendue(f"typesNotification : forme inattendue ({list(types)})")
+    defaut = type_notification("typeNotificationParDefaut", valeur(constantes, "typeNotificationParDefaut", dict))
+    return "\n".join([
+        "// GÉNÉRÉ par scripts/generer_constantes.py — NE PAS MODIFIER À LA MAIN.",
+        f"// Source : {source} (typesNotification, typeNotificationParDefaut).",
+        f"package {PAQUET_NOTIFICATIONS}",
+        "",
+        "/** Ce que la cloche montre d'un type d'alerte : son pictogramme (`TracesDuSite`) et son libellé, lu à voix haute. */",
+        "data class TypeNotification(val pictogramme: String, val libelle: String)",
+        "",
+        "/** Les types d'alerte que l'API émet, publiés par coprofirst (coprofirst#2802). */",
+        "object TypesNotification {",
+        "    val parType: Map<String, TypeNotification> = mapOf(",
+        *[f"        {chaine(t)} to {type_notification(t, v)}," for t, v in types.items()],
+        "    )",
+        "",
+        "    /** Un type que l'app ne connaît pas (`typeNotificationParDefaut`). */",
+        f"    val parDefaut = {defaut}",
+        "",
+        "    fun de(type: String?): TypeNotification = type?.let(parType::get) ?: parDefaut",
+        "}",
+        "",
+    ])
+
+
 def main(argv: list[str]) -> int:
     if len(argv) != 3:
         print(__doc__.strip().splitlines()[-1], file=sys.stderr)
@@ -153,6 +198,7 @@ def main(argv: list[str]) -> int:
             (PAQUET, "ConstantesDuServeur.kt"): kotlin(constantes, entree.name),
             (PAQUET_PIECES, "FichiersDuSite.kt"): kotlin_fichiers(
                 constantes, entree.name, familles_affichage(json.loads((entree.parent / TABLES).read_text(encoding="utf-8"))["tables"])),
+            (PAQUET_NOTIFICATIONS, "TypesNotification.kt"): kotlin_types(constantes, entree.name),
         }
     except (KeyError, TableInattendue) as e:
         print(f"❌ {entree.name} : {e}", file=sys.stderr)
