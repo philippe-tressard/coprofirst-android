@@ -20,11 +20,21 @@ import fr.coprofirst.api.modeles.NotationUpdate
  */
 data class SaisieAvis(
     val etat: String? = null,
-    val commentaire: String = "",
+    /** Les motifs cochés (`commentaireAvis`), qui composent la phrase du commentaire. */
+    val forts: Set<String> = emptySet(),
+    val faibles: Set<String> = emptySet(),
+    /** Le texte libre, qui suit la phrase. */
+    val libre: String = "",
     /** L'affaire jugée ; `null` : un avis sur le prestataire en général. */
     val affaire: Int? = null,
     val confirmeAjout: Boolean = false,
 ) {
+    /** La phrase des cases cochées (`phraseGeneree`) ; vide si rien n'est coché. */
+    val genere: String get() = CommentaireAvis.phrase(forts, faibles)
+
+    /** Le commentaire enregistré : la phrase, puis le texte libre (`commentaireComplet`). */
+    val commentaire: String get() = CommentaireAvis.complet(genere, libre)
+
     /** Ce qui retient l'avis (les refus du site), ou `null` quand il peut partir. */
     fun refus(ajoutRequis: Boolean): RefusAvis? = when {
         etat == null -> RefusAvis.EtatManquant
@@ -37,7 +47,7 @@ data class SaisieAvis(
     fun creation(prestataire: Int, contrat: Int?, ajoutRequis: Boolean) = NotationCreate(
         prestataireId = prestataire,
         etat = NotationCreate.Etat.entries.first { it.value == etat },
-        commentaire = commentaire.trim().ifEmpty { null },
+        commentaire = commentaire.ifEmpty { null },
         contratId = contrat,
         ticketId = affaire,
         confirmerAjout = ajoutRequis && confirmeAjout,
@@ -49,7 +59,7 @@ data class SaisieAvis(
      * que le client n'écrit pas seul : `effacerAffaire` le dit au service (`NulsExplicites`).
      */
     fun correction(avant: AvisPrestataire, ajoutRequis: Boolean): CorrectionAvis {
-        val texte = commentaire.trim()
+        val texte = commentaire
         return CorrectionAvis(
             NotationUpdate(
                 etat = etat?.takeIf { it != avant.etat }?.let { e -> NotationUpdate.Etat.entries.first { it.value == e } },
@@ -62,9 +72,11 @@ data class SaisieAvis(
     }
 
     companion object {
-        /** Corriger son avis : la saisie part de ce qu'il dit. */
-        fun corrigeant(avis: AvisPrestataire) =
-            SaisieAvis(etat = avis.etat.ifEmpty { null }, commentaire = avis.commentaire.orEmpty(), affaire = avis.ticketId)
+        /** Corriger son avis : la saisie part de ce qu'il dit — ses cases RECOCHÉES (`decomposerCommentaire`). */
+        fun corrigeant(avis: AvisPrestataire): SaisieAvis {
+            val lu = CommentaireAvis.decomposer(avis.commentaire)
+            return SaisieAvis(avis.etat.ifEmpty { null }, lu.forts, lu.faibles, lu.libre, avis.ticketId)
+        }
 
         /** Les états d'un avis, dans l'ordre du site (`TablesNotations.etats`, #229). */
         val etats: List<String> = TablesNotations.etats

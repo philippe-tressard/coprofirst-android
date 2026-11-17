@@ -88,6 +88,10 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="notation_modifier">Modifier cet avis</string>
     <string name="notation_retirer">Retirer cet avis</string>
     <string name="notation_etat_groupe">État de l\'intervention</string>
+    <string name="notation_points_forts">Points forts</string>
+    <string name="notation_points_faibles">Points faibles</string>
+    <string name="notation_commentaire_genere">Commentaire généré</string>
+    <string name="notation_rien_de_coche">Rien de coché pour l’instant.</string>
     <string name="notation_commentaire_libre">Commentaire libre</string>
     <string name="notation_aide_libre">(facultatif, sauf pour « Mauvais »)</string>
     <string name="notation_choisir_etat">Choisissez l\'état : Mauvais, Neutre ou Excellent</string>

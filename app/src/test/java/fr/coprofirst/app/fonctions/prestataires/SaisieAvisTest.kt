@@ -18,10 +18,11 @@ class SaisieAvisTest {
     @Test
     fun lesRefusDuSiteDansLeurOrdre() {
         assertEquals(RefusAvis.EtatManquant, SaisieAvis().refus(ajoutRequis = false))
-        assertEquals(RefusAvis.MauvaisSansCommentaire, SaisieAvis(etat = "mauvais", commentaire = "   ").refus(false))
+        assertEquals(RefusAvis.MauvaisSansCommentaire, SaisieAvis(etat = "mauvais", libre = "   ").refus(false))
         assertEquals(RefusAvis.AjoutNonConfirme, SaisieAvis(etat = "neutre", affaire = 52).refus(ajoutRequis = true))
         assertNull(SaisieAvis(etat = "neutre", affaire = 52, confirmeAjout = true).refus(ajoutRequis = true))
         assertNull("Neutre sans commentaire part", SaisieAvis(etat = "neutre").refus(false))
+        assertNull("une case cochée justifie « Mauvais »", SaisieAvis(etat = "mauvais", faibles = setOf("retard")).refus(false))
     }
 
     @Test
@@ -40,7 +41,7 @@ class SaisieAvisTest {
     @Test
     fun corrigerPartDeLAvisEtNEnvoieQueCeQuiChange() {
         val saisie = SaisieAvis.corrigeant(avant)
-        assertEquals(SaisieAvis(etat = "neutre", commentaire = "Délai un peu long.", affaire = 45), saisie)
+        assertEquals(SaisieAvis(etat = "neutre", libre = "Délai un peu long.", affaire = 45), saisie)
         val inchangee = saisie.correction(avant, ajoutRequis = false)
         assertEquals(NotationUpdate(confirmerAjout = false), inchangee.corps)
         assertFalse(inchangee.effacerAffaire)
@@ -51,9 +52,23 @@ class SaisieAvisTest {
         assertNull(etat.ticketId)
     }
 
+    /** #229 : un avis à motifs se corrige cases RECOCHÉES, et ne renvoie que ce qui change. */
+    @Test
+    fun corrigerUnAvisAMotifsRecocheSesCases() {
+        val compose = avant.copy(commentaire = "Points forts : délai respecté, travail soigné.\nRien à redire.")
+        val saisie = SaisieAvis.corrigeant(compose)
+        assertEquals(setOf("délai respecté", "travail soigné"), saisie.forts)
+        assertEquals("Rien à redire.", saisie.libre)
+        assertNull("rien n'a changé", saisie.correction(compose, false).corps.commentaire)
+        assertEquals(
+            "Points forts : délai respecté, travail soigné. Points faibles : retard.\nRien à redire.",
+            saisie.copy(faibles = setOf("retard")).correction(compose, false).corps.commentaire,
+        )
+    }
+
     @Test
     fun unCommentaireVideAvecUnEtatPartEnChaineVide() {
-        val corps = SaisieAvis.corrigeant(avant).copy(commentaire = "  ").correction(avant, false).corps
+        val corps = SaisieAvis.corrigeant(avant).copy(libre = "  ").correction(avant, false).corps
         assertEquals("", corps.commentaire)
     }
 

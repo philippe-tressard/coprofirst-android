@@ -154,7 +154,7 @@ class ServicePrestatairesTest {
 
     @Test
     fun noterEnvoieLAvisEtSaConfirmation() = runTest {
-        val saisie = SaisieAvis(etat = "mauvais", commentaire = "  Retard de trois semaines ", affaire = 52, confirmeAjout = true)
+        val saisie = SaisieAvis(etat = "mauvais", libre = "  Retard de trois semaines ", affaire = 52, confirmeAjout = true)
         service.noter(saisie.creation(prestataire = 1, contrat = null, ajoutRequis = true))
         val envoye = json(simules.corps.getValue("POST /prestataires/notations"))
         assertEquals("1", envoye.getValue("prestataire_id").toString())
