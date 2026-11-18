@@ -29,6 +29,8 @@ data class DroitsOnglet(
     val adminSeul: Boolean = false,
     /** Un proche aidant : la page Délégations lui est ouverte. */
     val aidant: Boolean = false,
+    /** Le compte lui-même (`id` de GET /auth/me) : on ne signale ni ne masque ce qu'on a écrit (#282). */
+    val compte: Int? = null,
 ) {
     /** Les outils du conseil (Prestataires, Espace CS) : modérateur, et pas le compte technique. */
     val outilDuConseil: Boolean get() = cs && !adminSeul
@@ -41,7 +43,7 @@ data class DroitsOnglet(
             statut = moi.statut.value,
             estModerateur = moi.estModerateur,
             delegationsAidant = moi.delegationsAidant?.size ?: 0,
-        )
+        ).copy(compte = moi.id)
 
         fun depuis(roles: List<String>, role: String?, statut: String?, estModerateur: Boolean?, delegationsAidant: Int = 0): DroitsOnglet {
             val portes = (if (roles.isEmpty()) listOfNotNull(role) else roles).toSet()

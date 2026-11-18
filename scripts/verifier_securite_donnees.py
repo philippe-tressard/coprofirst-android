@@ -49,6 +49,19 @@ def ecritures_du_contrat(contrat: dict) -> set[str]:
             for verbe, op in chemin.items() if verbe in ECRITURES}
 
 
+def greffees(racine: pathlib.Path) -> dict:
+    """Les chemins greffés au-dessus du plancher (#282, `GREFFES` de contrat/plancher.env), pris
+    dans contrat/au-dessus/openapi.json : le client généré les porte, leurs écritures se
+    déclarent comme les autres. Aucune greffe : un contrat vide."""
+    env = (racine / "contrat/plancher.env").read_text(encoding="utf-8")
+    m = re.search(r'^GREFFES="([^"]*)"', env, flags=re.M)
+    chemins = m.group(1).split() if m else []
+    if not chemins:
+        return {"paths": {}}
+    haut = json.loads((racine / "contrat/au-dessus/openapi.json").read_text(encoding="utf-8"))
+    return {"paths": {c: haut["paths"][c] for c in chemins}}
+
+
 def appelees(ecritures: set[str], source: str) -> set[str]:
     """Les écritures appelées, au nom exact suivi d'une parenthèse (`api { postX(…) }`, `.postX(`)."""
     return {e for e in ecritures if re.search(rf"\b{e}\(", source)}
@@ -117,7 +130,8 @@ def main(argv: list[str]) -> int:
         source = "\n".join(p.read_text(encoding="utf-8") for app in APPS
                            for p in sorted((racine / app / "src/main/java").rglob("*.kt")))
         manifeste = "\n".join((racine / app / "src/main/AndroidManifest.xml").read_text(encoding="utf-8") for app in APPS)
-        erreurs = verifier(texte, ecritures_du_contrat(contrat), source, manifeste)
+        ecritures = ecritures_du_contrat(contrat) | ecritures_du_contrat(greffees(racine))
+        erreurs = verifier(texte, ecritures, source, manifeste)
     except (OSError, KeyError, ValueError, Inconnu) as e:
         print(f"❓ INCONNU : sécurité des données — {e}", file=sys.stderr)
         return 2

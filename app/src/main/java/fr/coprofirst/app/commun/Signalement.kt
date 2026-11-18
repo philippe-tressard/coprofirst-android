@@ -16,6 +16,18 @@ data class CibleSignalement(val type: String, val id: Int) {
     companion object {
         /** Une réponse d'une idée, d'une annonce, ou le commentaire d'un sondage. */
         fun commentaire(id: Int) = CibleSignalement("commentaire", id)
+
+        // Au-dessus du plancher, derrière la porte `VersionContrat.MODERATION` (coprofirst#2861,
+        // #282) : les types que le site envoie. Un contenu que le lecteur ne voit pas répond 404.
+
+        /** Une affaire. */
+        fun affaire(id: Int) = CibleSignalement("affaire", id)
+
+        /** Une suite d'affaire qui porte un texte. */
+        fun suite(id: Int) = CibleSignalement("suite", id)
+
+        /** La réponse de l'assistant à une question au règlement. */
+        fun questionReglement(id: Int) = CibleSignalement("question_reglement", id)
     }
 }
 

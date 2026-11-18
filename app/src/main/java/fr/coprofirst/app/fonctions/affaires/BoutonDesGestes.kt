@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Flag
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -20,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
@@ -59,11 +62,19 @@ internal fun BoutonDesGestes(
                 val retire = g == GesteSuite.Supprimer
                 DropdownMenuItem(
                     text = { Text(libelle(g), color = if (retire) couleurs.danger else couleurs.text) },
-                    leadingIcon = { Icon(if (retire) Icons.Outlined.Delete else Icons.Outlined.Edit, contentDescription = null) },
+                    leadingIcon = { Icon(icone(g), contentDescription = null) },
                     onClick = { menu = false; choisir(g) },
                     modifier = Modifier.testTag(repereGeste(g)),
                 )
             }
         }
     }
+}
+
+/** L'icône de Material la plus proche de celle du site, par geste : ✏️, 🚩, 🙈, 🗑️. */
+private fun icone(g: GesteSuite): ImageVector = when (g) {
+    GesteSuite.Modifier -> Icons.Outlined.Edit
+    GesteSuite.Signaler -> Icons.Outlined.Flag
+    GesteSuite.Masquer -> Icons.Outlined.VisibilityOff
+    GesteSuite.Supprimer -> Icons.Outlined.Delete
 }

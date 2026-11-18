@@ -61,6 +61,7 @@ import fr.coprofirst.app.commun.texte.TexteRiche
 import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.navigation.TitreDeBarre
 import fr.coprofirst.app.session.SessionOuverte
+import fr.coprofirst.app.session.VersionContrat
 import java.time.Instant
 
 /**
@@ -79,15 +80,16 @@ internal fun FicheAffaire(id: Int, ctx: ContexteFiche) {
         cle = id,
         squelette = { ContenuAffaire(SQUELETTE, ctx.session) },
     ) { affaire, recharger ->
-        val choix = remember(affaire.id) { ChoixDeSuite() }
+        val moderation = ctx.session.installation.sert(VersionContrat.MODERATION)
+        val choix = remember(affaire.id, ctx.moi, moderation) { ChoixDeSuite(ctx.moi, moderation) }
         val choixMessage = remember(affaire.id) { ChoixDeMessage() }
         // Le numéro de l'affaire en titre de la barre, comme l'iOS (`.navigationTitle`).
         ctx.barre?.let { TitreDeBarre(it, affaire.numero) }
         Column(Modifier.fillMaxSize()) {
             PullToRefreshBox(isRefreshing = false, onRefresh = recharger, modifier = Modifier.weight(1f)) {
-                ContenuAffaire(affaire, ctx.session, choix::choisir, choixMessage::choisir)
+                ContenuAffaire(affaire, ctx.session, choix, choixMessage::choisir)
             }
-            BandeauAffaire(affaire, ctx.conseil, ctx.service, ctx.lienSite(affaire.id), ctx.avis, recharger)
+            BandeauAffaire(affaire, ctx.conseil, ctx.service, ctx.lienSite(affaire.id), ctx.avis, recharger, moderation = moderation)
         }
         GestesHistorique(affaire, choix, ctx.service, ctx.avis, recharger)
         GestesDesMessages(affaire, choixMessage, ctx.service, ctx.avis, recharger)
@@ -103,6 +105,8 @@ internal class ContexteFiche(
     val avis: AvisDuGeste,
     /** La barre du haut, qui prend le numéro en titre ; `null` hors de la résidence (tests). */
     val barre: BarreDuHaut?,
+    /** Le compte (`DroitsOnglet.compte`) : on ne signale ni ne masque ce qu'on a écrit (#282). */
+    val moi: Int? = null,
     val lienSite: (Int) -> String?,
 )
 
@@ -110,7 +114,7 @@ internal class ContexteFiche(
 private fun ContenuAffaire(
     affaire: DetailAffaire,
     session: SessionOuverte,
-    gestesSuite: ((GesteSuite, SuiteAffaire) -> Unit)? = null,
+    gestesSuite: ChoixDeSuite? = null,
     gestesMessage: ((GesteSuite, MessageAffaire) -> Unit)? = null,
 ) {
     Column(

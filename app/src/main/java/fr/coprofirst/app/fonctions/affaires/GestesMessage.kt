@@ -33,7 +33,7 @@ val MessageAffaire.contenuSaisi: String? get() = TexteDuSite.saisi(contenu)
 fun MessageAffaire.gestesOfferts(affaire: DetailAffaire): List<GesteSuite> = when {
     !deMoi || affaire.close -> emptyList()
     contenuSaisi == null -> listOf(GesteSuite.Supprimer)
-    else -> GesteSuite.entries
+    else -> listOf(GesteSuite.Modifier, GesteSuite.Supprimer)
 }
 
 /** Le message qu'un geste vise, tenu par la fiche : seule elle présente la feuille et la question. */

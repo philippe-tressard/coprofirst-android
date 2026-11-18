@@ -150,7 +150,7 @@ class DepliageDuFil(private val portee: CoroutineScope, val dureeMs: Long = REGA
  * toucher sous VoiceOver).
  */
 @Composable
-internal fun FilAffaire(affaire: DetailAffaire, session: SessionOuverte, gestes: ((GesteSuite, SuiteAffaire) -> Unit)? = null) {
+internal fun FilAffaire(affaire: DetailAffaire, session: SessionOuverte, gestes: ChoixDeSuite? = null) {
     val portee = rememberCoroutineScope()
     val depliage = remember { DepliageDuFil(portee) }
     val textes = rememberTextesFil()
@@ -171,7 +171,7 @@ private fun Section(
     affaire: DetailAffaire,
     depliage: DepliageDuFil,
     session: SessionOuverte,
-    gestes: ((GesteSuite, SuiteAffaire) -> Unit)?,
+    gestes: ChoixDeSuite?,
 ) {
     val pliee = etape.pliable && depliage.estPliee(etape.cle)
     Column(Modifier.padding(bottom = 18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -226,7 +226,7 @@ private fun EnTeteEtape(etape: EtapeFil, pliee: Boolean, basculer: () -> Unit) {
 /** Un élément sous une section : plié, un titre, une ligne, un aperçu ; ouvert, son texte et ses pièces. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun ElementDuFil(element: ElementFil, depliage: DepliageDuFil, session: SessionOuverte, gestes: ((GesteSuite, SuiteAffaire) -> Unit)?) {
+private fun ElementDuFil(element: ElementFil, depliage: DepliageDuFil, session: SessionOuverte, gestes: ChoixDeSuite?) {
     val c = LocalCouleurs.current
     val ouvert = depliage.estOuvert(element.id)
     val garde = depliage.estGarde(element.id)
@@ -298,16 +298,23 @@ private fun ElementDuFil(element: ElementFil, depliage: DepliageDuFil, session: 
  * (`BoutonDesGestes`). Rien quand le serveur n'en sert aucun, ni hors d'un écran qui les porte.
  */
 @Composable
-private fun GestesDeLEntree(suite: SuiteAffaire?, choisir: ((GesteSuite, SuiteAffaire) -> Unit)?) {
-    if (suite == null || choisir == null) return
+private fun GestesDeLEntree(suite: SuiteAffaire?, choix: ChoixDeSuite?) {
+    if (suite == null || choix == null) return
     val ressources = LocalResources.current
     BoutonDesGestes(
-        GesteSuite.offerts(suite), ReperesAffaires.gestesSuite(suite.id), ReperesAffaires::gesteSuite,
-        stringResource(R.string.historique_gestes), { ressources.getString(libelleGesteSuite(it)) },
-    ) { choisir(it, suite) }
+        choix.offerts(suite), ReperesAffaires.gestesSuite(suite.id), ReperesAffaires::gesteSuite,
+        stringResource(R.string.historique_gestes),
+        // « Masquer ce que publie… » nomme l'auteur de l'entrée.
+        { if (it == GesteSuite.Masquer) ressources.getString(R.string.masquage_geste, suite.auteur.orEmpty()) else ressources.getString(libelleGesteSuite(it)) },
+    ) { choix.choisir(it, suite) }
 }
 
-private fun libelleGesteSuite(g: GesteSuite) = if (g == GesteSuite.Modifier) R.string.historique_modifier else R.string.historique_supprimer
+private fun libelleGesteSuite(g: GesteSuite) = when (g) {
+    GesteSuite.Modifier -> R.string.historique_modifier
+    GesteSuite.Signaler -> R.string.historique_signaler
+    GesteSuite.Masquer -> R.string.masquage_confirmer
+    GesteSuite.Supprimer -> R.string.historique_supprimer
+}
 
 /** Le temps qui reste avant que l'élément se replie : un filet qui se vide. */
 @Composable

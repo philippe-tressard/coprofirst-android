@@ -48,7 +48,8 @@ class SaisieAffaireTest {
     @Test
     fun lesGestesSuiventLesDroitsServis() {
         val tout = DroitsServisAffaire(repondre = true, changerEtat = true, archiver = true, corriger = true)
-        assertEquals(GesteAffaire.entries, GesteAffaire.offerts(fiche(tout), conseil = false))
+        // 🚩 n'est pas un droit servi : il suit la porte de la modération (ModerationTest).
+        assertEquals(GesteAffaire.entries - GesteAffaire.Signaler, GesteAffaire.offerts(fiche(tout), conseil = false))
         // Le conseil suit par la Suite, il ne répond pas.
         assertFalse(GesteAffaire.Repondre in GesteAffaire.offerts(fiche(tout), conseil = true))
         // Ni réponse sur une actualité ni sur une affaire fusionnée ; pas d'archivage d'une archivée.

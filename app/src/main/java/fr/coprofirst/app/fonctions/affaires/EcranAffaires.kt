@@ -116,7 +116,7 @@ fun EcranFicheAffaire(contexte: ContexteDeMenu, id: String) {
             val numero = id.toIntOrNull()
             val adresse = contexte.session.installation.url
             val fiche = remember(service, contexte.droits, contexte.barre, avis) {
-                ContexteFiche(service, contexte.session, contexte.droits.cs, avis, contexte.barre) { OngletsSurLeSite.lien("/tickets/$it", adresse) }
+                ContexteFiche(service, contexte.session, contexte.droits.cs, avis, contexte.barre, moi = contexte.droits.compte) { OngletsSurLeSite.lien("/tickets/$it", adresse) }
             }
             if (numero == null) MessageErreur(ErreurService.Introuvable, Modifier.padding(Mise.marge)) else FicheAffaire(numero, fiche)
         }
