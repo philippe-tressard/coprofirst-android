@@ -68,23 +68,39 @@ def lire_env(chemin: pathlib.Path) -> dict[str, str]:
     return valeurs
 
 
-def operations(contrat: dict) -> dict[str, str]:
-    """Chaque opération du contrat : son nom généré (`postAuthLogin`) → `VERBE /chemin`."""
-    ops = {}
+def _parcourir(contrat: dict):
+    """(nom généré, `VERBE /chemin`, noms des paramètres) de chaque opération du contrat."""
     for chemin, verbes in contrat.get("paths", {}).items():
         for verbe, op in verbes.items():
             if verbe in VERBES and "operationId" in op:
                 morceaux = [m for m in re.split(r"[^A-Za-z0-9]+", op["operationId"]) if m]
-                ops[morceaux[0] + "".join(m[:1].upper() + m[1:] for m in morceaux[1:])] = f"{verbe.upper()} {chemin}"
-    return ops
+                nom = morceaux[0] + "".join(m[:1].upper() + m[1:] for m in morceaux[1:])
+                yield nom, f"{verbe.upper()} {chemin}", tuple(p.get("name") for p in op.get("parameters", []))
+
+
+def operations(contrat: dict) -> dict[str, str]:
+    """Chaque opération du contrat : son nom généré (`postAuthLogin`) → `VERBE /chemin`."""
+    return {nom: route for nom, route, _ in _parcourir(contrat)}
+
+
+def parametres(contrat: dict) -> dict[str, tuple]:
+    """Chaque opération : ses paramètres, dans l'ordre — ceux des fonctions générées."""
+    return {nom: params for nom, _, params in _parcourir(contrat)}
 
 
 def appelees(ops: dict[str, str], source: str) -> set[str]:
-    return {nom for nom in ops if re.search(rf"\b{nom}\(", source)}
+    """Les opérations que le code appelle, sous leurs trois formes générées (#290 : un appel à
+    `…RequestConfig(null)` cassait à la montée, sans que la concordance le voie)."""
+    return {nom for nom in ops if re.search(rf"\b{nom}(RequestConfig|WithHttpInfo)?\(", source)}
+
+
+# Le code qui appelle le client généré : le téléphone, la montre et ce qu'ils partagent.
+SOURCES = ("app/src/main/java", "montre/src/main/java", "partage/src/main/kotlin", "partage-android/src/main/kotlin")
 
 
 def source_de_l_app() -> str:
-    return "\n".join(p.read_text(encoding="utf-8") for p in sorted((RACINE / "app/src/main/java").rglob("*.kt")))
+    return "\n".join(p.read_text(encoding="utf-8") for dossier in SOURCES
+                     for p in sorted((RACINE / dossier).rglob("*.kt")))
 
 
 # ── Le plancher ────────────────────────────────────────────────────────────────────
@@ -173,9 +189,14 @@ def cles_neuves(ancien: dict, neuf: dict, rubrique: str) -> list[str]:
 
 
 def ce_que_monter_demande(ancien: dict, neuf: dict, source: str) -> list[str]:
-    """Les routes que l'app appelle et que le nouveau contrat n'a plus."""
+    """Les routes que l'app appelle et que le nouveau contrat n'a plus, ou dont les paramètres
+    changent (les fonctions générées changent de signature : un appel positionnel casse)."""
     avant, apres = operations(ancien), operations(neuf)
-    return [f"{nom} ({avant[nom]}) disparaît" for nom in sorted(appelees(avant, source) - set(apres))]
+    pa, pn = parametres(ancien), parametres(neuf)
+    appels = appelees(avant, source)
+    return [f"{nom} ({avant[nom]}) disparaît" for nom in sorted(appels - set(apres))] + [
+        f"{nom} ({avant[nom]}) : paramètres {list(pa[nom])} → {list(pn[nom])}"
+        for nom in sorted(appels & set(apres)) if pa[nom] != pn[nom]]
 
 
 def verdict_montee(release: str | None = None) -> tuple[int, list[str]]:
@@ -204,7 +225,7 @@ def verdict_montee(release: str | None = None) -> tuple[int, list[str]]:
     servis = {h: contrat_servi(h) for h in env.get("INSTALLATIONS", "").split()}
     lignes = [f"Release {tag} au-dessus du plancher {env.get('PLANCHER')} — contrat "
               f"{'.'.join(map(str, cible)) if cible else 'illisible'}.", "",
-              "**Routes appelées par l'app qui disparaîtraient** :", *(f"- {d}" for d in disparues or ["aucune"]), "",
+              "**Routes appelées par l'app qui disparaîtraient ou changeraient de paramètres** :", *(f"- {d}" for d in disparues or ["aucune"]), "",
               "**Fichiers générés qui changeraient** :", *(f"- `{c}`" for c in changes or ["aucun"]), "",
               "**Clés publiées au-dessus du plancher** (lues dès qu'il montera ; valeurs tenues d'ici là, #169) :",
               *(f"- {n}" for n in neuves or ["aucune"]), "",
@@ -229,6 +250,9 @@ def autotest() -> int:
     neuf = {"paths": {"/x": {"get": {"operationId": "get_x"}}}}
     assert ce_que_monter_demande(ancien, neuf, "api { postYZ(corps) }") == ["postYZ (POST /y) disparaît"]
     assert ce_que_monter_demande(ancien, ancien, "api { postYZ(corps) }") == []
+    parametre = {"paths": {"/x": {"get": {"operationId": "get_x", "parameters": [{"name": "du"}]}}}}
+    assert ce_que_monter_demande(neuf, parametre, "api.getXRequestConfig(null)") == ["getX (GET /x) : paramètres [] → ['du']"]
+    assert ce_que_monter_demande(neuf, neuf, "api.getXWithHttpInfo()") == []
     assert version("v3.103.0") == (3, 103, 0) and version("x") is None
     assert cles_neuves({"tables": {"a": 1}}, {"tables": {"a": 1, "b": 2}}, "tables") == ["b"]
     assert cles_neuves({"tables": {"a": 1}}, {"tables": {"a": 1}}, "tables") == []

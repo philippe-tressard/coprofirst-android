@@ -23,7 +23,7 @@ import fr.coprofirst.app.session.ListeDesLectures.Companion.muet
  */
 val LectureGardee = ListeDesLectures(
     routes = listOf(
-        FluxApi("", muet).getFluxRequestConfig(null).path,
+        FluxApi("", muet).getFluxRequestConfig(null, null, null).path,
         TicketsApi("", muet).getTicketsRequestConfig(null).path,
         TicketsApi("", muet).getTicketsReferentielsRequestConfig(null).path,
         LotsApi("", muet).getLotsMesPerimetresRequestConfig(null).path,
