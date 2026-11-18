@@ -6,7 +6,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 # Google Play : le chemin de Philippe, du compte à la production
 
 **Décision du 16/11/2026** : compte développeur **personnel**, puis **test fermé avec 12
-copropriétaires pendant 14 jours**, puis la production, le même jour que l'iOS (#12).
+copropriétaires pendant 14 jours**, puis la production — le même jour qu'une version iOS
+si l'occasion se présente, sans l'attendre (décision du 18/11/2026, #12).
 Chaque étape ci-dessous est un geste de Philippe ; ce dépôt prépare le reste. Les règles
 de Google changent : relire son aide (« Exigences de test pour les nouveaux comptes de
 développeur personnels ») au moment de chaque étape.
@@ -105,8 +106,9 @@ C'est la condition des nouveaux comptes personnels pour obtenir la production.
 
 Tableau de bord › **Demander l'accès à la production** : un questionnaire sur le test
 (comment les testeurs ont été recrutés, ce qu'ils ont remonté, ce qui a changé). Google
-répond en quelques jours. Puis : production, **France** d'abord, le **même jour** que la
-version iOS (#12, #4 : contrôle de cohérence et tag de version des deux côtés).
+répond en quelques jours. Puis : production, **France** d'abord ; si une version iOS est
+prête au même moment, les sortir ensemble est une opportunité, pas une obligation (#12 ;
+#4 : contrôle de cohérence et tag de version).
 
 ## Ce que ce dépôt a préparé
 
