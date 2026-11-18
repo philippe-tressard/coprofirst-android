@@ -80,15 +80,17 @@ internal fun FicheAffaire(id: Int, ctx: ContexteFiche) {
         squelette = { ContenuAffaire(SQUELETTE, ctx.session) },
     ) { affaire, recharger ->
         val choix = remember(affaire.id) { ChoixDeSuite() }
+        val choixMessage = remember(affaire.id) { ChoixDeMessage() }
         // Le numéro de l'affaire en titre de la barre, comme l'iOS (`.navigationTitle`).
         ctx.barre?.let { TitreDeBarre(it, affaire.numero) }
         Column(Modifier.fillMaxSize()) {
             PullToRefreshBox(isRefreshing = false, onRefresh = recharger, modifier = Modifier.weight(1f)) {
-                ContenuAffaire(affaire, ctx.session, choix::choisir)
+                ContenuAffaire(affaire, ctx.session, choix::choisir, choixMessage::choisir)
             }
             BandeauAffaire(affaire, ctx.conseil, ctx.service, ctx.lienSite(affaire.id), ctx.avis, recharger)
         }
         GestesHistorique(affaire, choix, ctx.service, ctx.avis, recharger)
+        GestesDesMessages(affaire, choixMessage, ctx.service, ctx.avis, recharger)
     }
 }
 
@@ -109,6 +111,7 @@ private fun ContenuAffaire(
     affaire: DetailAffaire,
     session: SessionOuverte,
     gestesSuite: ((GesteSuite, SuiteAffaire) -> Unit)? = null,
+    gestesMessage: ((GesteSuite, MessageAffaire) -> Unit)? = null,
 ) {
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp),
@@ -118,7 +121,7 @@ private fun ContenuAffaire(
             EnTeteAffaire(affaire)
             FilAffaire(affaire, session, gestesSuite)
             // Pas de messages sur une actualité : elle informe, on n'y répond pas.
-            if (!affaire.estActualite) FilMessages(affaire.messages, session)
+            if (!affaire.estActualite) FilMessages(affaire, session, gestesMessage)
         }
     }
 }
@@ -174,10 +177,12 @@ private fun Meta(icone: ImageVector, texte: String) {
 /**
  * Le fil des MESSAGES, comme l'iOS (`FilMessagesAffaire`) — ce n'est pas la suite : deux
  * tables, deux fils. Une bulle à droite et teintée pour le compte (`est_auteur` servi), à
- * gauche pour les autres ; une note interne, en jaune, porte sa pastille.
+ * gauche pour les autres ; une note interne, en jaune, porte sa pastille. Sur SA bulle, le
+ * « ⋯ » de ses gestes (`GestesDuMessage`, #281), hors du squelette.
  */
 @Composable
-private fun FilMessages(messages: List<MessageAffaire>, session: SessionOuverte) {
+private fun FilMessages(affaire: DetailAffaire, session: SessionOuverte, gestes: ((GesteSuite, MessageAffaire) -> Unit)?) {
+    val messages = affaire.messages
     if (messages.isEmpty()) return
     val c = LocalCouleurs.current
     val vous = stringResource(R.string.affaire_vous)
@@ -211,6 +216,9 @@ private fun FilMessages(messages: List<MessageAffaire>, session: SessionOuverte)
                             Text(FormatsDuSite.dateHeure(m.date), style = MaterialTheme.typography.bodySmall, color = c.textMuted)
                         }
                         TexteRiche(m.contenu, couleur = c.text)
+                    }
+                    if (gestes != null && m.gestesOfferts(affaire).isNotEmpty()) {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) { GestesDuMessage(m, affaire, gestes) }
                     }
                     PiecesJointesVue(remember(m.pieces) { PiecesJointes(m.pieces) }, session, format = FormatPieces.Compact)
                 }

@@ -150,6 +150,19 @@ class ServiceAffairesApiTest {
         assertTrue(recues[1], recues[1].startsWith("DELETE /api/tickets/4/evolutions/11"))
     }
 
+    /** #281 : SON message se corrige (le texte seul, écrit comme le site) et se supprime, par les routes du contrat. */
+    @Test
+    fun sonMessageSeCorrigeEtSeSupprime() = runTest {
+        routes(
+            "PATCH /api/tickets/4/messages/41" to (200 to MESSAGE),
+            "DELETE /api/tickets/4/messages/41" to (204 to ""),
+        )
+        service.corrigerMessage(4, 41, " Merci,\nà jeudi ")
+        assertEquals("PATCH /api/tickets/4/messages/41 {\"contenu\":\"<p>Merci,<br>à jeudi</p>\"}", recues[0])
+        service.supprimerMessage(4, 41)
+        assertTrue(recues[1], recues[1].startsWith("DELETE /api/tickets/4/messages/41"))
+    }
+
     @Test
     fun enregistrerNEnvoieQueLesChampsChanges() = runTest {
         routes("PATCH /api/tickets/4" to (200 to ticket(4)))
@@ -228,6 +241,7 @@ class ServiceAffairesApiTest {
             "perimetre_libelle": "Bât. A", "archivee": $archivee, "suivi_kanban": true, "prestataires": $prestataires,
             "peut_archiver": true, "peut_deplacer_au_kanban": true}"""
 
+        const val MESSAGE = """{"id": 41, "ticket_id": 4, "contenu": "<p>Merci,<br>à jeudi</p>", "interne": false, "cree_le": "2026-11-05T10:00:00Z", "est_auteur": true}"""
         const val EVOLUTION = """{"id": 11, "type": "etat", "cree_le": "2026-11-03T10:00:00Z", "ticket_id": 4,
             "etat_propose_libelle": "", "nouveau_statut_libelle": "", "perimetre_precise_libelle": "", "ancien_statut": "ouvert", "nouveau_statut": "résolu"}"""
 

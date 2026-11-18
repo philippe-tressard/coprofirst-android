@@ -70,6 +70,9 @@ object ReperesAffaires {
     fun gestesSuite(id: Int) = "historique.gestes.$id"
     fun gesteSuite(geste: GesteSuite) = "historique.geste.${geste.name.lowercase()}"
     const val CONFIRMER_SUPPRESSION = "historique.confirmerSuppression"
+    fun gestesMessage(id: Int) = "message.gestes.$id"
+    fun gesteMessage(geste: GesteSuite) = "message.geste.${geste.name.lowercase()}"
+    const val CONFIRMER_SUPPRESSION_MESSAGE = "message.confirmerSuppression"
     const val APPLIQUER = "historique.appliquer"
 }
 

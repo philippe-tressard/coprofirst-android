@@ -142,7 +142,9 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   selon ce que le serveur ouvre au compte : copier ou partager le lien, Répondre, Ajouter
   une suite (un commentaire ou un nouvel état), Modifier (seuls les champs changés
   partent), épingler ou marquer urgente, archiver.
-  Chaque entrée de la suite se corrige ou se supprime (« ⋯ »), si le serveur le permet.
+  Chaque entrée de la suite se corrige ou se supprime (« ⋯ »), si le serveur le permet ;
+  son propre message aussi, tant que l'affaire n'est pas close (un texte mis en forme sur
+  le site se modifie depuis le site).
   « Nouvelle affaire » (le « + » du haut) : catégorie, titre, description, lieu, urgence —
   les photos et ce que le conseil désigne se règlent sur le site. « Modifier » règle aussi
   ses prestataires (ajouter, retirer, réordonner), selon le droit servi.

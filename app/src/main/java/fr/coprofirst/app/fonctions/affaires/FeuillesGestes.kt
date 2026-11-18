@@ -115,15 +115,30 @@ internal fun FeuilleDeSaisie(
     }
 }
 
-/** « Répondre », comme l'iOS (`RepondreFeuille`) : un message du fil de l'affaire. */
+/**
+ * « Répondre », comme l'iOS (`RepondreFeuille`) : un message du fil de l'affaire.
+ *
+ * Et sa CORRECTION, « Modifier mon message » (`corrige`, #281) : la même feuille, partie du
+ * texte servi ; elle n'enregistre qu'un changement. Elle ne s'ouvre que sur un texte que
+ * l'app réécrit sans rien perdre (`MessageAffaire.contenuSaisi`).
+ */
 @Composable
-internal fun FeuilleRepondre(affaire: DetailAffaire, service: ServiceAffaires, fermer: () -> Unit, envoyee: () -> Unit) {
-    var texte by rememberSaveable { mutableStateOf("") }
+internal fun FeuilleRepondre(
+    affaire: DetailAffaire,
+    service: ServiceAffaires,
+    fermer: () -> Unit,
+    corrige: MessageAffaire? = null,
+    envoyee: () -> Unit,
+) {
+    var texte by rememberSaveable(corrige?.id) { mutableStateOf(corrige?.contenuSaisi.orEmpty()) }
     val focus = remember { FocusRequester() }
+    val change = corrige == null || TexteDuSite.html(texte.trim()) != corrige.contenu
     FeuilleDeSaisie(
-        R.string.geste_repondre, R.string.nouvelle_envoyer, ReperesFeuilles.REPONDRE_ENVOYER, texte.isNotBlank(), fermer,
+        if (corrige == null) R.string.geste_repondre else R.string.historique_titre_correction,
+        if (corrige == null) R.string.nouvelle_envoyer else R.string.feuille_enregistrer,
+        ReperesFeuilles.REPONDRE_ENVOYER, texte.isNotBlank() && change, fermer,
         envoyer = {
-            service.repondre(affaire.id, texte)
+            if (corrige == null) service.repondre(affaire.id, texte) else service.corrigerMessage(affaire.id, corrige.id, texte)
             envoyee()
         },
     ) {
