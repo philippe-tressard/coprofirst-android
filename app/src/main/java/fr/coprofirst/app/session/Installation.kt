@@ -40,6 +40,9 @@ data class Installation(
     val adresse: AdresseInstallation? get() = AdresseInstallation.relire(url)
     val contrat: VersionContrat? get() = VersionContrat.lire(versionContrat)
 
+    /** Sert-elle ce contrat (une porte au-dessus du plancher) ? Un contrat illisible : non. */
+    fun sert(version: VersionContrat): Boolean = contrat?.let { it >= version } ?: false
+
     /** La barre de cette résidence : ses pages, dans son ordre, avec ses libellés. */
     val pages: List<PageDeNavigation>
         get() = OrdrePages.ordonner(PagesParDefaut.toutes, ordrePages, surchargesPages)

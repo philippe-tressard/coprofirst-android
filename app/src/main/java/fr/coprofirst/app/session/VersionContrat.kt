@@ -27,5 +27,14 @@ data class VersionContrat(val majeure: Int, val mineure: Int, val correctif: Int
 
         /** Le contrat sur lequel le client est généré : le plancher (client-api). */
         val PLANCHER: VersionContrat = requireNotNull(lire(VERSION_CONTRAT_PLANCHER))
+
+        /**
+         * La modération du contenu (#282, coprofirst#2861) : `/masquages`, greffé au-dessus du
+         * plancher (`GREFFES` de contrat/plancher.env), et les cibles `affaire`, `suite`,
+         * `question_reglement` de POST /signalements. Une PORTE : l'app n'offre ces gestes qu'à
+         * une installation qui sert ce contrat (`Installation.sert`). Un test la refuse dès que
+         * le plancher l'atteint — la porte est morte, on la retire.
+         */
+        val MODERATION = VersionContrat(2, 9, 0)
     }
 }

@@ -31,6 +31,13 @@ for piece in "${PIECES[@]}"; do
   gh release download "$PLANCHER" -R "$DEPOT" -p "$piece" -D "$TMP" 2>/dev/null \
     || { echo "❓ INCONNU : $piece de $DEPOT $PLANCHER illisible (gh auth status ?)" >&2; exit 2; }
 done
+# Au-dessus du plancher (#282) : la seule pièce `openapi.json` de AU_DESSUS, à part.
+if [ -n "${AU_DESSUS:-}" ]; then
+  [[ "$AU_DESSUS" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "❓ INCONNU : AU_DESSUS illisible (contrat/plancher.env)" >&2; exit 2; }
+  mkdir -p "$TMP/au-dessus"
+  gh release download "$AU_DESSUS" -R "$DEPOT" -p openapi.json -D "$TMP/au-dessus" 2>/dev/null \
+    || { echo "❓ INCONNU : openapi.json de $DEPOT $AU_DESSUS illisible" >&2; exit 2; }
+fi
 COMMIT=$(gh api "repos/$DEPOT/commits/$PLANCHER" -q .sha 2>/dev/null)
 [[ "$COMMIT" =~ ^[0-9a-f]{40}$ ]] || { echo "❓ INCONNU : commit de $PLANCHER illisible" >&2; exit 2; }
 CONTRAT=$(python3 -I -c 'import json, sys; print(json.load(open(sys.argv[1]))["info"]["version"])' "$TMP/openapi.json") \
@@ -45,6 +52,12 @@ if [ "${1:-}" = "--verifier" ]; then
     cmp -s "$TMP/$licence.txt" "LICENSES/$licence.txt" \
       || { echo "❌ LICENSES/$licence.txt diffère de $DEPOT $PLANCHER : bash scripts/importer-contrat.sh" >&2; exit 1; }
   done
+  if [ -n "${AU_DESSUS:-}" ]; then
+    cmp -s "$TMP/au-dessus/openapi.json" contrat/au-dessus/openapi.json \
+      || { echo "❌ contrat/au-dessus/openapi.json diffère de $DEPOT $AU_DESSUS : bash scripts/importer-contrat.sh" >&2; exit 1; }
+  elif [ -e contrat/au-dessus ]; then
+    echo "❌ contrat/au-dessus/ sans AU_DESSUS dans contrat/plancher.env : la greffe est morte, retirer le dossier" >&2; exit 1
+  fi
   grep -q "$COMMIT" contrat/PROVENANCE.md \
     || { echo "❌ contrat/PROVENANCE.md ne cite pas $COMMIT : bash scripts/importer-contrat.sh" >&2; exit 1; }
   echo "✅ ${PIECES[*]} identiques à $DEPOT $PLANCHER (contrat $CONTRAT)"
@@ -52,6 +65,10 @@ if [ "${1:-}" = "--verifier" ]; then
 fi
 
 for piece in "${PIECES[@]}"; do cp "$TMP/$piece" "contrat/$piece"; done
+rm -rf contrat/au-dessus
+if [ -n "${AU_DESSUS:-}" ]; then
+  mkdir -p contrat/au-dessus && cp "$TMP/au-dessus/openapi.json" contrat/au-dessus/openapi.json
+fi
 for licence in "${LICENCES[@]}"; do cp "$TMP/$licence.txt" "LICENSES/$licence.txt"; done
 cat > contrat/PROVENANCE.md <<FIN
 <!--
@@ -72,6 +89,7 @@ GÉNÉRÉ par scripts/importer-contrat.sh — NE PAS MODIFIER À LA MAIN.
 | Charte | \`tables-clients.json\` : jetons de la charte et des palettes, d'où \`scripts/generer_charte.py\` tire \`Palette\` au build |
 | Constantes | \`constantes-clients.json\` : ce que le serveur applique sans le dire dans le contrat (longueur du mot de passe, schémas de lien…) |
 | Icônes | \`icones-svg.json\` : les tracés Lucide du site (ISC, MIT pour la part issue de Feather), le logo WhatsApp de Simple Icons (CC0-1.0) ; leurs textes dans \`LICENSES/\` |
+| Au-dessus du plancher | \`au-dessus/openapi.json\` : la pièce de ${AU_DESSUS:-aucune release} ; seuls ses chemins \`${GREFFES:-—}\` (et leurs schémas) sont greffés au client, derrière une porte de version |
 | Normalisation | aucune : chaque fichier est la pièce jointe, à l'octet |
 FIN
 echo "✅ contrat/{${PIECES[*]}} = $DEPOT $PLANCHER (contrat $CONTRAT)"

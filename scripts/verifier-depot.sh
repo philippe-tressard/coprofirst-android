@@ -67,7 +67,7 @@ MODULES_CODE=$(grep -vx 'client-api' <<< "$modules" | paste -sd '|' -)
 
 # Dispensés de la limite de longueur : produits par un outil ou textes de licence,
 # jamais écrits à la main. Toute autre exception se discute, elle ne s'ajoute pas.
-DISPENSES_LONGUEUR='^(LICENSE|LICENSES/.*|contrat/openapi\.json|contrat/tables-clients\.json)$'
+DISPENSES_LONGUEUR='^(LICENSE|LICENSES/.*|contrat/openapi\.json|contrat/au-dessus/openapi\.json|contrat/tables-clients\.json)$'
 
 while IFS= read -r f; do
   [ -f "$f" ] || continue

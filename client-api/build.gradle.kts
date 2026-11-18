@@ -15,12 +15,76 @@ kotlin { jvmToolchain(21) }
 
 val genere = layout.buildDirectory.dir("generated/openapi")
 
+// AU-DESSUS du plancher (#282) : le contrat du plancher, plus les chemins de GREFFES
+// (contrat/plancher.env) pris dans contrat/au-dessus/openapi.json, avec les schémas qu'ils
+// citent. Comme l'iOS (« Au-dessus du plancher »). Refusé : un chemin greffé déjà au
+// plancher (la greffe est morte : retirer la ligne), un schéma cité qui a changé entre les
+// deux (la greffe ne réécrit jamais le plancher), un dossier au-dessus/ sans greffe.
+val greffe = layout.buildDirectory.file("generated/greffe/openapi.json")
+val greffer by tasks.registering {
+    val plancher = rootProject.file("contrat/openapi.json")
+    val auDessus = rootProject.file("contrat/au-dessus/openapi.json")
+    val env = rootProject.file("contrat/plancher.env")
+    val sortie = greffe
+    inputs.files(plancher, env)
+    inputs.files(rootProject.fileTree("contrat/au-dessus"))
+    outputs.file(sortie)
+    doLast {
+        val cles = env.readLines().filter { '=' in it && !it.trimStart().startsWith("#") }
+            .associate { it.substringBefore('=').trim() to it.substringAfter('=').trim().removeSurrounding("\"") }
+        val chemins = cles["GREFFES"].orEmpty().split(' ').filter { it.isNotBlank() }
+        val lecteur = groovy.json.JsonSlurper()
+        @Suppress("UNCHECKED_CAST")
+        val contrat = lecteur.parse(plancher) as MutableMap<String, Any?>
+        if (chemins.isEmpty()) {
+            require(!auDessus.exists()) { "contrat/au-dessus/ sans GREFFES : la greffe est morte, retirer le dossier" }
+        } else {
+            require(auDessus.exists()) { "GREFFES sans contrat/au-dessus/openapi.json : bash scripts/importer-contrat.sh" }
+            @Suppress("UNCHECKED_CAST")
+            val haut = lecteur.parse(auDessus) as Map<String, Any?>
+            @Suppress("UNCHECKED_CAST")
+            val routes = contrat["paths"] as MutableMap<String, Any?>
+            @Suppress("UNCHECKED_CAST")
+            val schemas = (contrat["components"] as MutableMap<String, Any?>)["schemas"] as MutableMap<String, Any?>
+            val schemasHaut = (haut["components"] as Map<*, *>)["schemas"] as Map<*, *>
+            fun cites(noeud: Any?): List<String> = when (noeud) {
+                is Map<*, *> -> noeud.entries.flatMap { (cle, valeur) ->
+                    if (cle == "\$ref" && valeur is String) listOf(valeur.substringAfterLast('/')) else cites(valeur)
+                }
+                is List<*> -> noeud.flatMap { cites(it) }
+                else -> emptyList()
+            }
+            val aGreffer = ArrayDeque<String>()
+            chemins.forEach { chemin ->
+                require(chemin !in routes) { "greffe morte : $chemin est au plancher — le retirer de GREFFES" }
+                val route = (haut["paths"] as Map<*, *>)[chemin] ?: error("$chemin absent de contrat/au-dessus/openapi.json")
+                routes[chemin] = route
+                aGreffer += cites(route)
+            }
+            while (aGreffer.isNotEmpty()) {
+                val nom = aGreffer.removeFirst()
+                val haute = schemasHaut[nom] ?: error("schéma $nom absent de contrat/au-dessus/openapi.json")
+                if (nom in schemas) {
+                    require(schemas[nom] == haute) { "schéma $nom changé au-dessus du plancher : la greffe ne réécrit pas le plancher" }
+                } else {
+                    schemas[nom] = haute
+                    aGreffer += cites(haute)
+                }
+            }
+        }
+        sortie.get().asFile.apply {
+            parentFile.mkdirs()
+            writeText(groovy.json.JsonOutput.toJson(contrat))
+        }
+    }
+}
+
 openApiGenerate {
     generatorName.set("kotlin")
     // Nos gabarits, là où celui du générateur ne convient pas (lecture des dates, #44).
     templateDir.set(layout.projectDirectory.dir("gabarits").asFile.path)
     library.set("jvm-okhttp4")
-    inputSpec.set(rootProject.file("contrat/openapi.json").path)
+    inputSpec.set(greffe.map { it.asFile.path })
     outputDir.set(genere)
     packageName.set("fr.coprofirst.api")
     apiPackage.set("fr.coprofirst.api.routes")
@@ -90,6 +154,7 @@ val genererVersionContrat by tasks.registering {
 
 sourceSets["main"].kotlin.srcDir(genere.map { it.dir("src/main/kotlin") })
 sourceSets["main"].kotlin.srcDir(contrat)
+tasks.named("openApiGenerate") { dependsOn(greffer) }
 tasks.named("compileKotlin") { dependsOn("openApiGenerate", genererVersionContrat) }
 
 dependencies {
