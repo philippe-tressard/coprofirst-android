@@ -72,7 +72,7 @@ class InstallationTest {
         Installation.depuisConfig(adresse, mapOf("site_nom" to "Récente", "version_contrat" to "99.0.0"))
     }
 
-    /** #233 : `installation_suspendue` est une CHAÎNE ; « 1 » seul suspend ; absente (sous v3.111.0), rien. */
+    /** #233 : `installation_suspendue` est une CHAÎNE ; « 1 » seul suspend ; absente, rien. */
     @Test
     fun laSuspensionSeLitDansLaChaineServie() {
         fun suspendue(valeur: String?) =

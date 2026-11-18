@@ -14,7 +14,7 @@ class JetonDeMontre(val id: Int, val jeton: String, val expireLe: Instant) {
     override fun toString() = "JetonDeMontre(id=$id, jeton=•••, expireLe=$expireLe)"
 
     companion object {
-        /** La seule lecture du type généré : il change de nom avec coprofirst#2824 (`JetonAppareil`). */
+        /** La seule lecture du type généré (`MontreEmise`). */
         fun depuis(m: MontreEmise) = JetonDeMontre(m.id, m.jeton, m.expireLe.toInstant())
     }
 }

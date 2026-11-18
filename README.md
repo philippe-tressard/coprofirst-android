@@ -172,7 +172,7 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   l'archiver ou le restaurer. Une idée ou une annonce ouverte porte le fil des réponses
   (répondre, supprimer la sienne, signaler celles des autres) et « Signaler » au conseil
   syndical ; chaque contenu dit qui le lit et où.
-- **Espace CS** (conseil syndical) : six onglets, ceux que le serveur ouvre au compte.
+- **Espace CS** (conseil syndical) : les onglets que le serveur ouvre au compte.
   **Comptes & accès** — la file de travail du conseil : les comptes à valider, puis les
   demandes de badges et de télécommandes, chacune approuvée (un nouvel arrivant, les codes
   remis) ou rejetée. **Badges & télécommandes** — qui détient quoi, en consultation (la
@@ -184,7 +184,8 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   WhatsApp et le PDF restent au site. **Annuaire CS & Syndic** — les fiches du conseil puis
   du syndic, à corriger, ajouter, retirer (et, pour le syndic, ordonner). **Courriels
   affaires** — ce que la relève a fait de chaque message reçu à l'adresse des affaires, et
-  pourquoi ; « Affaire #… » ouvre l'affaire rejointe.
+  pourquoi ; « Affaire #… » ouvre l'affaire rejointe. **Écrans du hall** dit encore
+  « Bientôt » (#283).
 - **Paramétrage** (administration et opérateur de la plateforme), en partie :
   **À traiter** (la file des comptes et des commandes d'accès, celle de l'Espace CS, puis
   les demandes de changement de profil : approuver, ou rejeter avec un motif facultatif),

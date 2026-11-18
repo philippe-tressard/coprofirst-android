@@ -74,7 +74,7 @@ class LectureMontre(
     companion object {
         /** Ce que la montre garde : la cloche, seule (le client GÉNÉRÉ en donne le chemin). */
         val LISTE = ListeDesLectures(
-            routes = listOf(NotificationsApi("", ListeDesLectures.muet).getNotificationsRequestConfig(null, null).path),
+            routes = listOf(NotificationsApi("", ListeDesLectures.muet).getNotificationsRequestConfig(null).path),
         )
 
         /** L'alias de la clé du Keystore qui chiffre les lectures gardées de la montre. */
