@@ -9,6 +9,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.charte.Palettes
 import fr.coprofirst.app.commun.GestesDeSortie
+import fr.coprofirst.app.commun.ENTETE_SUSPENDUE
 import fr.coprofirst.app.commun.REPERE_BANDEAU_SUSPENDUE
 import fr.coprofirst.app.commun.attendreDisparition
 import fr.coprofirst.app.commun.attendreTag
@@ -50,7 +51,8 @@ class BandeauInstallationInterfaceTest {
     fun uneInstallationSuspendueLeDitSurLaPage() {
         ouvrir(suspendue = true)
         ecran.attendreTag(REPERE_BANDEAU_SUSPENDUE)
-        ecran.attendreTexte("Installation suspendue")
+        // Le libellé PUBLIÉ par la release (#288), composé comme le site.
+        ecran.attendreTexte(ENTETE_SUSPENDUE)
         ecran.ouvrirLaPageDePlus("profil")
         ecran.attendreTag(REPERE_BANDEAU_SUSPENDUE)
     }

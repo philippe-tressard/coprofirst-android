@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
@@ -29,8 +28,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
-import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.commun.texte.Separateur
 import fr.coprofirst.app.session.Installation
 
 /**
@@ -80,8 +79,9 @@ fun BandeauSousLaBarre(
  * du site : dès la connexion et sur chaque page de la résidence, sans bouton pour le fermer.
  * Rien hors suspension — `Installation.suspendue`, lu dans GET /config.
  *
- * ⚠️ Divergence déclarée : le texte du bandeau n'est pas publié avec la release ; il est écrit dans
- * les ressources (`installation_suspendue*`) jusqu'à sa publication (coprofirst#2840).
+ * Ses mots sont ceux que la release publie (`bandeauSuspendue`, `BandeauSuspendue` généré, #288),
+ * composés comme le site et l'iOS : « Installation suspendue — lecture seule. » en tête, le texte
+ * dessous, lus d'une seule annonce.
  */
 @Composable
 fun BandeauInstallationSuspendue(installation: Installation?, modifier: Modifier = Modifier) {
@@ -89,8 +89,8 @@ fun BandeauInstallationSuspendue(installation: Installation?, modifier: Modifier
     val couleurs = LocalCouleurs.current
     BandeauSousLaBarre(
         Icons.Filled.Lock,
-        stringResource(R.string.installation_suspendue),
-        stringResource(R.string.installation_suspendue_detail),
+        ENTETE_SUSPENDUE,
+        BandeauSuspendue.texte,
         REPERE_BANDEAU_SUSPENDUE,
         fond = couleurs.warningFond,
         encre = couleurs.warningTexte,
@@ -98,6 +98,9 @@ fun BandeauInstallationSuspendue(installation: Installation?, modifier: Modifier
         modifier = modifier.semantics { liveRegion = LiveRegionMode.Polite },
     )
 }
+
+/** L'en-tête du bandeau, comme le site le compose : titre, tiret, précision, point. */
+const val ENTETE_SUSPENDUE = BandeauSuspendue.titre + Separateur.tiret + BandeauSuspendue.precision + "."
 
 /** Le repère du bandeau de l'installation suspendue (celui que l'iOS reprendra, coprofirst-ios#262). */
 const val REPERE_BANDEAU_SUSPENDUE = "bandeau.installation"

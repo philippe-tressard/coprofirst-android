@@ -64,7 +64,8 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   et tout se relit. L'appareil qui perd le réseau, l'app ouverte : « ce qui est affiché
   peut dater ».
 - **Installation suspendue** : quand la résidence est suspendue (consultation seule), un
-  bandeau le dit dès la connexion et sous la barre de chaque page ; un geste refusé dit
+  bandeau le dit dès la connexion et sous la barre de chaque page — « Installation
+  suspendue — lecture seule. », puis le texte que publie le site ; un geste refusé dit
   pourquoi avec la phrase du serveur, comme un sixième compte refusé en mode limité.
 - **La résidence ouverte** : la barre du bas, dans l'ordre et avec les libellés réglés
   par l'administration de la résidence, filtrée selon le compte (Espace CS, Prestataires,

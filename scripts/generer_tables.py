@@ -420,6 +420,7 @@ def main(argv: list[str]) -> int:
             (PAQUET_CHARTE, "NaturesDuFil.kt"): kotlin_natures(tables, entree.name),
             (tc.PAQUET_ACCES, "TablesAcces.kt"): tc.kotlin_acces(tables, entree.name),
             ("fr.coprofirst.app.commun", "StatutsAffaire.kt"): tc.kotlin_statuts_affaire(tables, entree.name),
+            ("fr.coprofirst.app.commun", "BandeauSuspendue.kt"): tc.kotlin_bandeau_suspendue(tables, entree.name),
         }
     except TableInattendue as e:
         print(f"❌ {entree.name} : {e}", file=sys.stderr)
