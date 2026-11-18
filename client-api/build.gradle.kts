@@ -84,7 +84,7 @@ openApiGenerate {
     // Nos gabarits, là où celui du générateur ne convient pas (lecture des dates, #44).
     templateDir.set(layout.projectDirectory.dir("gabarits").asFile.path)
     library.set("jvm-okhttp4")
-    inputSpec.set(greffe.map { it.asFile.path })
+    inputSpec.set(greffe)
     outputDir.set(genere)
     packageName.set("fr.coprofirst.api")
     apiPackage.set("fr.coprofirst.api.routes")
