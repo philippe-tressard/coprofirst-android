@@ -23,8 +23,11 @@ Deux verdicts, jamais confondus :
 
 Une release, une pièce ou une installation illisible : INCONNU (sortie 2), jamais vert.
 
-Usage : concordance.py [--plancher | --montee | --autotest] [--rapport FICHIER.md]
-                       [--simuler-ecart]
+   `--release vX.Y.Z` vise une release précise plutôt que la dernière (une montée
+   qui s'arrête sous la dernière, parce qu'une installation ne la sert pas encore).
+
+Usage : concordance.py [--plancher | --montee [--release vX.Y.Z] | --autotest]
+                       [--rapport FICHIER.md] [--simuler-ecart]
 """
 
 from __future__ import annotations
@@ -175,11 +178,13 @@ def ce_que_monter_demande(ancien: dict, neuf: dict, source: str) -> list[str]:
     return [f"{nom} ({avant[nom]}) disparaît" for nom in sorted(appelees(avant, source) - set(apres))]
 
 
-def verdict_montee() -> tuple[int, list[str]]:
+def verdict_montee(release: str | None = None) -> tuple[int, list[str]]:
     env = lire_env(RACINE / "contrat/plancher.env")
-    tag = derniere_release()
+    if release is not None and not version(release):
+        raise Illisible(f"release illisible : {release}")
+    tag = release or derniere_release()
     if version(tag) == version(env.get("PLANCHER")):
-        return 0, [f"La dernière release ({tag}) est le plancher : rien à monter."]
+        return 0, [f"La release visée ({tag}) est le plancher : rien à monter."]
     with tempfile.TemporaryDirectory() as tmp:
         dossier = pathlib.Path(tmp)
         telecharger(tag, dossier)
@@ -237,13 +242,14 @@ def main(argv: list[str]) -> int:
     mode.add_argument("--plancher", action="store_true")
     mode.add_argument("--montee", action="store_true")
     mode.add_argument("--autotest", action="store_true")
+    p.add_argument("--release", help="la release visée par --montee (défaut : la dernière)")
     p.add_argument("--rapport", type=pathlib.Path)
     p.add_argument("--simuler-ecart", action="store_true")
     args = p.parse_args(argv)
     if args.autotest:
         return autotest()
     try:
-        code, lignes = verdict_montee() if args.montee else verdict_plancher(args.simuler_ecart)
+        code, lignes = verdict_montee(args.release) if args.montee else verdict_plancher(args.simuler_ecart)
     except (Illisible, OSError, ValueError, KeyError) as e:
         code, lignes = INCONNU, [f"❓ INCONNU : {e}"]
     texte = "\n".join(["## " + ("Montée possible" if args.montee else "Écart au plancher"), "", *lignes, ""])

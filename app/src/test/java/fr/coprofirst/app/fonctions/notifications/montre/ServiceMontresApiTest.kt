@@ -17,7 +17,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.time.Instant
 
-/** Chaque geste de la liaison part par SA route du contrat 2.4.0 (coprofirst#2771). */
+/** Chaque geste de la liaison part par SA route du contrat (coprofirst#2771). */
 class ServiceMontresApiTest {
     private val serveur = MockWebServer().apply { start() }
     private val session = SessionOuverte(

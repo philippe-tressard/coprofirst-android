@@ -18,8 +18,10 @@ class JetonRefuse : Exception()
 /**
  * La cloche lue par la montre : `GET /notifications`, par le client GÉNÉRÉ et le client HTTP
  * commun (`ClientHttp.partage`), avec le jeton de montre en porteur. C'est la seule route que
- * ce jeton ouvre (coprofirst#2771), et le contrat (2.4.0) y déclare l'en-tête `Authorization` :
- * il passe par le client généré, vers la seule adresse de la résidence (`baseApi`).
+ * ce jeton ouvre (coprofirst#2771) ; le contrat (2.6.0 et suivants) la protège par le schéma
+ * `JetonAppareil` (http bearer, coprofirst#2824). Le jeton se donne à CETTE instance du client
+ * (`accessTokenProvider`), jamais à `ApiClient.accessToken`, global à toutes les requêtes de
+ * l'app (#264) ; il ne part que vers la seule adresse de la résidence (`baseApi`).
  */
 class ClocheParJeton(
     private val baseApi: String,
@@ -32,7 +34,8 @@ class ClocheParJeton(
 
     suspend fun lire(): List<NotificationRecue> = withContext(Dispatchers.IO) {
         try {
-            NotificationsApi(baseApi, client).getNotifications(authorization = "Bearer $jeton").map(NotificationRecue::depuis)
+            NotificationsApi(baseApi, client).apply { accessTokenProvider = { jeton } }
+                .getNotifications().map(NotificationRecue::depuis)
         } catch (refus: ClientException) {
             if (refus.statusCode == 401) throw JetonRefuse() else throw refus
         }

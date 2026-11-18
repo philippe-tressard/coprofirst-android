@@ -3,7 +3,7 @@
  "info": {
   "title": "CoproFirst API",
   "description": "API de gestion de copropriétés",
-  "version": "2.4.0"
+  "version": "2.8.0"
  },
  "paths": {
   "/auth/batiments": {
@@ -9098,23 +9098,12 @@
     ],
     "summary": "List Notifications",
     "operationId": "get_notifications",
-    "parameters": [
+    "security": [
      {
-      "name": "authorization",
-      "in": "header",
-      "required": false,
-      "schema": {
-       "anyOf": [
-        {
-         "type": "string"
-        },
-        {
-         "type": "null"
-        }
-       ],
-       "title": "Authorization"
-      }
-     },
+      "JetonAppareil": []
+     }
+    ],
+    "parameters": [
      {
       "name": "access_token",
       "in": "cookie",
@@ -9740,6 +9729,323 @@
     "responses": {
      "204": {
       "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/ecrans/appairage": {
+   "post": {
+    "tags": [
+     "ecrans"
+    ],
+    "summary": "Demander Appairage",
+    "description": "L'écran demande un code d'appareil et un code court à afficher (RFC 8628).",
+    "operationId": "post_ecrans_appairage",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/DemandeAppairage"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/ecrans/appairage/jeton": {
+   "post": {
+    "tags": [
+     "ecrans"
+    ],
+    "summary": "Interroger Appairage",
+    "description": "L'écran échange son code d'appareil contre son jeton, une fois le code confirmé.\n\nSinon 400, et `detail` dit quoi faire : `en_attente` (réinterroger après\nl'intervalle), `ralentir` (l'intervalle a grandi de 5 s), `inconnu` (recommencer).",
+    "operationId": "post_ecrans_appairage_jeton",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Interrogation"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/JetonEcran"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/ecrans": {
+   "get": {
+    "tags": [
+     "ecrans"
+    ],
+    "summary": "Lister Ecrans",
+    "description": "Les écrans appairés, avec leur dernière lecture.",
+    "operationId": "get_ecrans",
+    "parameters": [
+     {
+      "name": "access_token",
+      "in": "cookie",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Access Token"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/EcranLu"
+         },
+         "title": "Response Get Ecrans"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "ecrans"
+    ],
+    "summary": "Confirmer Appairage",
+    "description": "Le conseil saisit le code court affiché par l'écran, et choisit son nom et son périmètre.",
+    "operationId": "post_ecrans",
+    "parameters": [
+     {
+      "name": "access_token",
+      "in": "cookie",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Access Token"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Confirmation"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AppairageConfirme"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/ecrans/{ecran_id}": {
+   "delete": {
+    "tags": [
+     "ecrans"
+    ],
+    "summary": "Retirer Ecran",
+    "description": "Retire un écran : son jeton cesse aussitôt de servir.",
+    "operationId": "delete_ecrans_ecran_id",
+    "parameters": [
+     {
+      "name": "ecran_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Ecran Id"
+      }
+     },
+     {
+      "name": "access_token",
+      "in": "cookie",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Access Token"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/ecrans/moi/affiches": {
+   "get": {
+    "tags": [
+     "ecrans"
+    ],
+    "summary": "Affiches De Mon Ecran",
+    "description": "Les affiches de son périmètre, non archivées — sans auteur, destinataires ni gestes.",
+    "operationId": "get_ecrans_moi_affiches",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/AfficheEcran"
+         },
+         "type": "array",
+         "title": "Response Get Ecrans Moi Affiches"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "JetonAppareil": []
+     }
+    ]
+   }
+  },
+  "/ecrans/moi/affiches/{affiche_id}/images/{rang}": {
+   "get": {
+    "tags": [
+     "ecrans"
+    ],
+    "summary": "Image D Une Affiche",
+    "description": "Une image d'une affiche que l'écran montre — 404 pour toute autre.",
+    "operationId": "get_ecrans_moi_affiches_affiche_id_images_rang",
+    "security": [
+     {
+      "JetonAppareil": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "affiche_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Affiche Id"
+      }
+     },
+     {
+      "name": "rang",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Rang"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Le fichier, avec son type",
+      "content": {
+       "application/octet-stream": {
+        "schema": {
+         "type": "string",
+         "format": "binary"
+        }
+       }
+      }
      },
      "422": {
       "description": "Validation Error",
@@ -21774,8 +22080,47 @@
      "flux"
     ],
     "summary": "Get Flux",
+    "description": "Le fil — ou, avec `du` et `au`, celui d'une période, chaque carte à son jour (#2834).",
     "operationId": "get_flux",
     "parameters": [
+     {
+      "name": "du",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "format": "date"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Premier jour d'une période (AAAA-MM-JJ, Paris)",
+       "title": "Du"
+      },
+      "description": "Premier jour d'une période (AAAA-MM-JJ, Paris)"
+     },
+     {
+      "name": "au",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "format": "date"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Dernier jour, inclus — 31 jours au plus",
+       "title": "Au"
+      },
+      "description": "Dernier jour, inclus — 31 jours au plus"
+     },
      {
       "name": "access_token",
       "in": "cookie",
@@ -26566,6 +26911,63 @@
     "title": "AffaireVisee",
     "description": "L'affaire où le transfert est désormais — l'écran y conduit."
    },
+   "AfficheEcran": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "titre": {
+      "type": "string",
+      "title": "Titre"
+     },
+     "message": {
+      "type": "string",
+      "title": "Message"
+     },
+     "format": {
+      "type": "string",
+      "title": "Format"
+     },
+     "images": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Images"
+     },
+     "envoyee_le": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Envoyee Le"
+     },
+     "creee_le": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Creee Le"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "id",
+     "titre",
+     "message",
+     "format",
+     "images",
+     "envoyee_le",
+     "creee_le"
+    ],
+    "title": "AfficheEcran",
+    "description": "Une affiche telle que la montre un écran de hall — rien d'autre ne sort."
+   },
    "AlerteLue": {
     "properties": {
      "code": {
@@ -27560,6 +27962,30 @@
     "type": "object",
     "title": "ApercuLectureEntree",
     "description": "Ce que la saisie dit de ses lecteurs."
+   },
+   "AppairageConfirme": {
+    "properties": {
+     "nom": {
+      "type": "string",
+      "title": "Nom"
+     },
+     "perimetre": {
+      "type": "string",
+      "title": "Perimetre"
+     },
+     "perimetre_libelle": {
+      "type": "string",
+      "title": "Perimetre Libelle"
+     }
+    },
+    "type": "object",
+    "required": [
+     "nom",
+     "perimetre",
+     "perimetre_libelle"
+    ],
+    "title": "AppairageConfirme",
+    "description": "Ce que deviendra l'écran — `perimetre_libelle` vide pour le périmètre par défaut."
    },
    "AppareilEnregistre": {
     "properties": {
@@ -30970,6 +31396,35 @@
     "title": "ConfigSauvegardeUpdate",
     "description": "🔴 Ce que l'écran règle, et rien d'autre (#2055).\n\nLa route prenait un `dict` et posait **tout attribut du modèle** reçu —\n`id` compris —, sans type ni borne : une heure « abc » passait, et ne cassait\nqu'au démarrage suivant du planificateur. `frequence` et les jours, que plus\nrien ne lit (#2059), ne s'écrivent plus ; un ancien onglet qui enverrait\nencore `frequence` n'est pas refusé, il est ignoré (`extra=\"ignore\"`)."
    },
+   "Confirmation": {
+    "properties": {
+     "code_court": {
+      "type": "string",
+      "maxLength": 32,
+      "title": "Code Court"
+     },
+     "nom": {
+      "type": "string",
+      "maxLength": 80,
+      "minLength": 1,
+      "title": "Nom"
+     },
+     "perimetre": {
+      "type": "string",
+      "maxLength": 120,
+      "minLength": 1,
+      "title": "Perimetre"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "code_court",
+     "nom",
+     "perimetre"
+    ],
+    "title": "Confirmation"
+   },
    "ConseilEnregistre": {
     "properties": {
      "ag_annee": {
@@ -33263,6 +33718,35 @@
     "title": "DelegationRead",
     "description": "Une délégation, et les deux gestes que CE lecteur peut y faire (#2525).\n\nTypée depuis #2525 : elle était déclarée ici sans servir, et les routes\nrendaient des `dict` que le contrat annonçait `{}`."
    },
+   "DemandeAppairage": {
+    "properties": {
+     "code_appareil": {
+      "type": "string",
+      "title": "Code Appareil"
+     },
+     "code_court": {
+      "type": "string",
+      "title": "Code Court"
+     },
+     "expire_dans": {
+      "type": "integer",
+      "title": "Expire Dans"
+     },
+     "intervalle": {
+      "type": "integer",
+      "title": "Intervalle"
+     }
+    },
+    "type": "object",
+    "required": [
+     "code_appareil",
+     "code_court",
+     "expire_dans",
+     "intervalle"
+    ],
+    "title": "DemandeAppairage",
+    "description": "Ce que l'écran affiche et garde — rendu une fois, rien sur l'installation."
+   },
    "DemandeDecision": {
     "properties": {
      "geste": {
@@ -34673,6 +35157,65 @@
      "absents"
     ],
     "title": "EcheanceLue"
+   },
+   "EcranLu": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "nom": {
+      "type": "string",
+      "title": "Nom"
+     },
+     "perimetre": {
+      "type": "string",
+      "title": "Perimetre"
+     },
+     "perimetre_libelle": {
+      "type": "string",
+      "title": "Perimetre Libelle"
+     },
+     "cree_le": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Cree Le"
+     },
+     "vu_le": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Vu Le"
+     },
+     "expire_le": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Expire Le"
+     },
+     "echu": {
+      "type": "boolean",
+      "title": "Echu"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "nom",
+     "perimetre",
+     "perimetre_libelle",
+     "cree_le",
+     "vu_le",
+     "expire_le",
+     "echu"
+    ],
+    "title": "EcranLu",
+    "description": "Un écran, tel que le conseil le voit — jamais son jeton."
    },
    "EntreeCarnetLue": {
     "properties": {
@@ -36220,6 +36763,33 @@
        }
       ],
       "title": "Me Concerne"
+     },
+     "jour": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Jour"
+     },
+     "rattachement": {
+      "anyOf": [
+       {
+        "type": "string",
+        "enum": [
+         "echeance",
+         "publication"
+        ]
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Rattachement"
      }
     },
     "type": "object",
@@ -37234,6 +37804,21 @@
     "title": "InfoSyndicAdmin",
     "description": "`GET /admin/annuaire/syndic` : le nom vient du CONTRAT quand il y en a un (#535)."
    },
+   "Interrogation": {
+    "properties": {
+     "code_appareil": {
+      "type": "string",
+      "maxLength": 128,
+      "title": "Code Appareil"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "code_appareil"
+    ],
+    "title": "Interrogation"
+   },
    "Intervention": {
     "properties": {
      "ticket_id": {
@@ -37271,6 +37856,26 @@
     ],
     "title": "Intervention",
     "description": "Une affaire du prestataire, et les avis portés sur ce couple (aucun : « non notée »)."
+   },
+   "JetonEcran": {
+    "properties": {
+     "jeton": {
+      "type": "string",
+      "title": "Jeton"
+     },
+     "expire_le": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Expire Le"
+     }
+    },
+    "type": "object",
+    "required": [
+     "jeton",
+     "expire_le"
+    ],
+    "title": "JetonEcran",
+    "description": "Le jeton de l'écran, rendu UNE fois ; à présenter en `Authorization: Bearer`."
    },
    "JournalCourriels": {
     "properties": {
@@ -37837,6 +38442,18 @@
       ],
       "title": "Canal",
       "default": "site"
+     },
+     "appareil": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 20
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Appareil"
      }
     },
     "type": "object",
@@ -40116,6 +40733,35 @@
     ],
     "title": "PaletteRead"
    },
+   "PartAppareil": {
+    "properties": {
+     "appareil": {
+      "type": "string",
+      "title": "Appareil"
+     },
+     "libelle": {
+      "type": "string",
+      "title": "Libelle"
+     },
+     "vues": {
+      "type": "integer",
+      "title": "Vues"
+     },
+     "part": {
+      "type": "integer",
+      "title": "Part"
+     }
+    },
+    "type": "object",
+    "required": [
+     "appareil",
+     "libelle",
+     "vues",
+     "part"
+    ],
+    "title": "PartAppareil",
+    "description": "Une classe d'appareil sous son canal (#2774). `part` : en pour cent des vues DU\nCANAL, calculée par le serveur ; `non_precise` regroupe les vues sans appareil."
+   },
    "PartCanal": {
     "properties": {
      "canal": {
@@ -40144,6 +40790,14 @@
        }
       ],
       "title": "Visiteurs"
+     },
+     "appareils": {
+      "items": {
+       "$ref": "#/components/schemas/PartAppareil"
+      },
+      "type": "array",
+      "title": "Appareils",
+      "default": []
      }
     },
     "type": "object",
@@ -49676,6 +50330,16 @@
       "type": "string",
       "title": "Raison"
      },
+     "applique": {
+      "type": "boolean",
+      "title": "Applique",
+      "default": false
+     },
+     "plafond_comptes_actifs": {
+      "type": "integer",
+      "title": "Plafond Comptes Actifs",
+      "default": 5
+     },
      "identifiant": {
       "anyOf": [
        {
@@ -50132,6 +50796,13 @@
     ],
     "title": "MessageRead",
     "description": "Un geste qui ne rend qu'une phrase, que l'écran affiche telle quelle\n(« Vote enregistré », « Vote retiré »)."
+   }
+  },
+  "securitySchemes": {
+   "JetonAppareil": {
+    "type": "http",
+    "description": "Le jeton d'un appareil appairé (montre, écran de hall) : une portée, et seulement les routes qu'elle ouvre.",
+    "scheme": "bearer"
    }
   }
  },

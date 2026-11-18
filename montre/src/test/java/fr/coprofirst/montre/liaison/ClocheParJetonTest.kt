@@ -3,11 +3,14 @@
 
 package fr.coprofirst.montre.liaison
 
+import fr.coprofirst.api.infrastructure.ApiClient
+import fr.coprofirst.api.routes.NotificationsApi
 import kotlinx.coroutines.test.runTest
 import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.fail
 import org.junit.Test
 
@@ -33,6 +36,21 @@ class ClocheParJetonTest {
         assertEquals("Bearer jeton-de-montre", requete.headers["Authorization"])
         assertEquals(listOf(5), alertes.map { it.id })
         assertEquals("/tickets/12", alertes.single().lien)
+    }
+
+    /**
+     * #264 : le jeton se donne à l'instance du client, jamais à `ApiClient.accessToken`, global :
+     * la requête suivante d'un autre client (la cloche du téléphone, par sa session) part sans lui.
+     */
+    @Test
+    fun leJetonNeFuitPasVersLesAutresRequetes() = runTest {
+        repondre(200, "[]")
+        repondre(200, "[]")
+        cloche.lire()
+        assertNull(ApiClient.accessToken)
+        NotificationsApi(serveur.url("/api").toString()).getNotifications()
+        serveur.takeRequest()
+        assertNull(serveur.takeRequest().headers["Authorization"])
     }
 
     @Test

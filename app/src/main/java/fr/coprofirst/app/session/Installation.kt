@@ -33,7 +33,7 @@ data class Installation(
     val aUnLogoSombre: Boolean = false,
     /**
      * Suspendue (`installation_suspendue`, Registre R6, contrat 2.5.0) : consultation seule. Servie
-     * en CHAÎNE, « 1 » ou « 0 » ; absente sous v3.111.0 — non suspendue, sans monter le plancher.
+     * en CHAÎNE, « 1 » ou « 0 » ; toute autre valeur, ou son absence : non suspendue.
      */
     val suspendue: Boolean = false,
 ) {
