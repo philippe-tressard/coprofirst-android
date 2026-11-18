@@ -179,7 +179,8 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   l'archiver ou le restaurer. Une idée ou une annonce ouverte porte le fil des réponses
   (répondre, supprimer la sienne, signaler celles des autres) et « Signaler » au conseil
   syndical ; chaque contenu dit qui le lit et où. Sur une installation au contrat 2.9.0,
-  « Masquer ce que publie… » l'auteur d'une annonce ou d'une réponse (un résident nommé,
+  « Masquer ce que publie… » l'auteur d'une annonce, d'une réponse ou d'un commentaire de
+  sondage (un résident nommé,
   hors du conseil) ; ce qu'il publie ne se voit plus, et se rétablit au Profil.
 - **Espace CS** (conseil syndical) : les onglets que le serveur ouvre au compte.
   **Comptes & accès** — la file de travail du conseil : les comptes à valider, puis les
