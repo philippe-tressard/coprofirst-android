@@ -19,6 +19,7 @@ import fr.coprofirst.app.entree.ServeurDeTest
 import fr.coprofirst.app.entree.entrerDansLaResidence
 import fr.coprofirst.app.fonctions.profil.FixturesProfil
 import fr.coprofirst.app.navigation.ouvrirLaPageDePlus
+import fr.coprofirst.app.session.audience.AppareilAudience
 import fr.coprofirst.app.session.audience.MesureAudience
 import fr.coprofirst.app.session.audience.ServiceAudienceApi
 import java.util.concurrent.CopyOnWriteArrayList
@@ -75,7 +76,10 @@ class AudienceInterfaceTest {
     /** Ouvre la résidence, la première page de la barre, puis le Profil ; et passe en arrière-plan. */
     private fun deuxPagesPuisArrierePlan(refus: Boolean) {
         serveur.serveur.dispatcher = residence(refus)
-        val mesure = MesureAudience(ServiceAudienceApi, CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate))
+        val mesure = MesureAudience(
+            ServiceAudienceApi { AppareilAudience.TABLETTE },
+            CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
+        )
         ecran.runOnUiThread { appli.registre.currentState = Lifecycle.State.RESUMED }
         ecran.setContent {
             CompositionLocalProvider(LocalLifecycleOwner provides appli) {
@@ -97,6 +101,7 @@ class AudienceInterfaceTest {
         ecran.waitUntil(DELAI_MS) { lots.isNotEmpty() }
         val lot = lots.joinToString()
         assertTrue(lot, "\"canal\":\"android\"" in lot.replace(" ", ""))
+        assertTrue(lot, "\"appareil\":\"tablette\"" in lot.replace(" ", ""))
         assertTrue(lot, "\"/profil\"" in lot)
         assertTrue(lot, "\"view\"" in lot)
     }

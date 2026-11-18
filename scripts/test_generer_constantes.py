@@ -92,6 +92,28 @@ class Types(unittest.TestCase):
                 g.kotlin_types({k: v for k, v in self.types(**casse).items() if v is not None}, "t")
 
 
+class Appareils(unittest.TestCase):
+    """`AppareilAudience` (coprofirst#2774, #77) : les classes d'appareil du canal android."""
+
+    def test_chaque_classe_devient_une_entree(self):
+        texte = g.kotlin_appareils({"appareilsParCanal": c({"ios": ["iphone"], "android": ["telephone", "tv"]})}, "t")
+        self.assertIn('    TELEPHONE("telephone"),', texte)
+        self.assertIn('    TV("tv"),', texte)
+        self.assertNotIn("iphone", texte)
+
+    def test_le_plancher_se_genere(self):
+        publiees = json.loads((RACINE / "contrat" / "constantes-clients.json").read_text(encoding="utf-8"))["constantes"]
+        texte = g.kotlin_appareils(publiees, "constantes-clients.json")
+        for attendu in ("TELEPHONE(", "TABLETTE(", "TV(", "MONTRE(", "VOITURE(", "ORDINATEUR("):
+            self.assertIn(attendu, texte)
+
+    def test_une_forme_inattendue_arrete(self):
+        for valeur in ({"ios": ["iphone"]}, {"android": []}, {"android": ["telephone", "telephone"]},
+                       {"android": ["Téléphone"]}, {"android": "telephone"}, ["telephone"]):
+            with self.assertRaises(TableInattendue, msg=str(valeur)):
+                g.kotlin_appareils({"appareilsParCanal": c(valeur)}, "t")
+
+
 class Fichiers(unittest.TestCase):
     """`FichiersDuSite` (#169) : les motifs publiés depuis v3.105.0, les familles d'affichage depuis v3.106.0."""
 

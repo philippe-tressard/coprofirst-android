@@ -27,6 +27,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -114,7 +115,7 @@ fun NavigationEntree(
     apparence: Apparence,
     parcours: ParcoursEntree = viewModel(factory = FabriqueParcoursEntree),
     /** La mesure d'audience (#144) : celle du processus ; un test passe la sienne, ou `null`. */
-    mesure: MesureAudience? = AudienceDeLApp.mesure,
+    mesure: MesureAudience? = AudienceDeLApp.de(LocalContext.current),
 ) {
     val etat by parcours.etat.collectAsStateWithLifecycle()
     val enLigne by parcours.reseau.enLigne.collectAsStateWithLifecycle()

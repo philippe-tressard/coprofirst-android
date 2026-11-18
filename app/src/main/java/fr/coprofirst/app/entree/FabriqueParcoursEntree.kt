@@ -55,8 +55,8 @@ val FabriqueParcoursEntree = viewModelFactory {
             Decouverte(), sessions, Connexion(sessions), InstallationsConnues(stockage, CoffreKeystore(application)),
             reseau = ReseauDuSysteme(application),
             effacerLesPieces = { PiecesLocales.effacer(application) },
-            avantSortie = { AudienceDeLApp.mesure.vider() },
-            apresSortie = { AudienceDeLApp.mesure.oublier(it.url) },
+            avantSortie = { AudienceDeLApp.de(application).vider() },
+            apresSortie = { AudienceDeLApp.de(application).oublier(it.url) },
             // Les abonnés au cycle des résidences (#150) : la seule liste.
             abonnes = AbonnesSession(listOf(LiaisonsMontre.de(application), MarquesPages.de(application))),
         )
