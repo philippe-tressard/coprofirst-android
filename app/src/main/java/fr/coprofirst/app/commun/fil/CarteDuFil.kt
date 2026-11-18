@@ -137,13 +137,13 @@ private fun TexteDeCarte(element: ElementDuFil, maintenant: Instant, modifier: M
 
 /**
  * Les pièces jointes (lues par la session, absentes sans elle) et le chevron d'une carte qui
- * s'ouvre, posés dans la rangée de l'appelant. `placeChevron` : la place du chevron dans la rangée.
+ * s'ouvre, posés dans la rangée de l'appelant. `modifier` : la place du chevron dans la rangée.
  */
 @Composable
-private fun Ornements(element: ElementDuFil, session: SessionOuverte?, chevron: Boolean, placeChevron: Modifier = Modifier) {
+private fun Ornements(element: ElementDuFil, session: SessionOuverte?, chevron: Boolean, modifier: Modifier = Modifier) {
     if (session != null) VignettePieces(element.pieces, session)
     if (chevron) {
-        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = LocalCouleurs.current.textMuted, modifier = placeChevron)
+        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = LocalCouleurs.current.textMuted, modifier = modifier)
     }
 }
 
