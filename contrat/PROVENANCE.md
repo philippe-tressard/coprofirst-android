@@ -16,4 +16,5 @@ GÉNÉRÉ par scripts/importer-contrat.sh — NE PAS MODIFIER À LA MAIN.
 | Charte | `tables-clients.json` : jetons de la charte et des palettes, d'où `scripts/generer_charte.py` tire `Palette` au build |
 | Constantes | `constantes-clients.json` : ce que le serveur applique sans le dire dans le contrat (longueur du mot de passe, schémas de lien…) |
 | Icônes | `icones-svg.json` : les tracés Lucide du site (ISC, MIT pour la part issue de Feather), le logo WhatsApp de Simple Icons (CC0-1.0) ; leurs textes dans `LICENSES/` |
+| Au-dessus du plancher | `au-dessus/openapi.json` : la pièce de v3.118.0 ; seuls ses chemins `/masquages /masquages/{auteur_id}` (et leurs schémas) sont greffés au client, derrière une porte de version |
 | Normalisation | aucune : chaque fichier est la pièce jointe, à l'octet |

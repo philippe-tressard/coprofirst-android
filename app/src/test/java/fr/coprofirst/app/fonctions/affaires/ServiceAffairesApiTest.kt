@@ -3,6 +3,8 @@
 
 package fr.coprofirst.app.fonctions.affaires
 
+import fr.coprofirst.app.commun.CibleSignalement
+import fr.coprofirst.app.commun.masquages.AuteurAMasquer
 import fr.coprofirst.app.commun.perimetres.Perimetre
 import fr.coprofirst.app.session.AdresseInstallation
 import fr.coprofirst.app.session.ErreurService
@@ -161,6 +163,27 @@ class ServiceAffairesApiTest {
         assertEquals("PATCH /api/tickets/4/messages/41 {\"contenu\":\"<p>Merci,<br>à jeudi</p>\"}", recues[0])
         service.supprimerMessage(4, 41)
         assertTrue(recues[1], recues[1].startsWith("DELETE /api/tickets/4/messages/41"))
+    }
+
+    /** #282 : signaler une affaire ou une suite, masquer et démasquer un auteur — par le client généré, greffe comprise. */
+    @Test
+    fun signalerEtMasquerPartentParLeursRoutes() = runTest {
+        routes(
+            "POST /api/signalements" to (201 to "{}"),
+            "GET /api/masquages" to (200 to """[{"auteur_id": 31, "auteur": "Dominique EXEMPLE", "cree_le": "2026-11-12T18:30:00Z"}]"""),
+            "POST /api/masquages" to (201 to """{"auteur_id": 31, "auteur": "Dominique EXEMPLE", "cree_le": "2026-11-18T20:00:00Z"}"""),
+            "DELETE /api/masquages/31" to (204 to ""),
+        )
+        service.signalerAuConseil(CibleSignalement.affaire(4), "Propos blessants")
+        assertTrue(recues[0], recues[0].startsWith("POST /api/signalements ") && "\"cible_type\":\"affaire\"" in recues[0] &&
+            "\"cible_id\":4" in recues[0] && "\"motif\":\"Propos blessants\"" in recues[0])
+        service.signalerAuConseil(CibleSignalement.suite(11), "Hors sujet")
+        assertTrue(recues[1], "\"cible_type\":\"suite\"" in recues[1] && "\"cible_id\":11" in recues[1])
+        assertEquals(listOf(31 to "Dominique EXEMPLE"), service.masques().map { it.auteurId to it.auteur })
+        service.masquer(AuteurAMasquer(31, "Dominique EXEMPLE"))
+        assertEquals("POST /api/masquages {\"auteur_id\":31}", recues[3])
+        service.demasquer(31)
+        assertTrue(recues[4], recues[4].startsWith("DELETE /api/masquages/31"))
     }
 
     @Test

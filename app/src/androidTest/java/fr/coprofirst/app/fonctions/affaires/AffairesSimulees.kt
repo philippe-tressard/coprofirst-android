@@ -3,6 +3,9 @@
 
 package fr.coprofirst.app.fonctions.affaires
 
+import fr.coprofirst.app.commun.CibleSignalement
+import fr.coprofirst.app.commun.masquages.AuteurAMasquer
+import fr.coprofirst.app.commun.masquages.Masquage
 import fr.coprofirst.app.commun.apercu.SaisieLecture
 import fr.coprofirst.app.commun.lecture.Lecture
 import fr.coprofirst.app.commun.perimetres.Perimetre
@@ -120,6 +123,18 @@ internal class AffairesSimulees : ServiceAffaires {
     override suspend fun supprimerMessage(id: Int, message: Int) {
         messagesSupprimes += message
     }
+    val signalements = mutableListOf<Pair<CibleSignalement, String>>()
+    override suspend fun signalerAuConseil(cible: CibleSignalement, motif: String) {
+        signalements += cible to motif
+    }
+    val masquesPoses = mutableListOf<AuteurAMasquer>()
+    override suspend fun masques() = masquesPoses.map { Masquage(it.id, it.nom, Instant.EPOCH) }
+    override suspend fun masquer(auteur: AuteurAMasquer) {
+        if (masquesPoses.none { it.id == auteur.id }) masquesPoses += auteur
+    }
+    override suspend fun demasquer(auteurId: Int) {
+        masquesPoses.removeAll { it.id == auteurId }
+    }
     override suspend fun affaire(id: Int): DetailAffaire {
         val a = affaires.firstOrNull { it.id == id } ?: throw ErreurService.Introuvable
         return DetailAffaire(
@@ -128,7 +143,7 @@ internal class AffairesSimulees : ServiceAffaires {
             suites = listOf(
                 SuiteAffaire(
                     31, "etat", a.creeLe.plusSeconds(3600), "Le syndic", "<p>Le syndic est prévenu.</p>", "ouvert", "en_cours",
-                    peutModifier = true, peutSupprimer = true,
+                    peutModifier = true, peutSupprimer = true, auteurId = 31,
                 ),
             ),
             messages = listOf(MessageAffaire(41, "<p>Merci pour le suivi.</p>", a.creeLe.plusSeconds(7200), true, null, null, false)),

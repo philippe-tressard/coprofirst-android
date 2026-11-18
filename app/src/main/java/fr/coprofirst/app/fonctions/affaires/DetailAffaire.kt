@@ -144,6 +144,8 @@ data class SuiteAffaire(
     val pieces: List<String> = emptyList(),
     val peutModifier: Boolean = false,
     val peutSupprimer: Boolean = false,
+    /** Son auteur (`auteur_id`) : on ne signale pas ce qu'on a écrit ; « Masquer ce que publie… » le vise (#282). */
+    val auteurId: Int? = null,
 ) {
     /** « Ouvert → Chez le syndic » — le nouvel état servi avec elle, l'ancien par les référentiels. */
     fun changementDEtat(servis: ReferentielsAffaires): String? {
@@ -157,6 +159,7 @@ data class SuiteAffaire(
             ancienStatut = e.ancienStatut ?: e.statutAvant, nouveauStatut = e.nouveauStatut,
             nouveauStatutLibelle = e.nouveauStatutLibelle, perimetrePrecise = e.perimetrePreciseLibelle.takeIf { it.isNotEmpty() },
             pieces = e.fichiersUrls.orEmpty(), peutModifier = e.peutModifier ?: false, peutSupprimer = e.peutSupprimer ?: false,
+            auteurId = e.auteurId,
         )
     }
 }

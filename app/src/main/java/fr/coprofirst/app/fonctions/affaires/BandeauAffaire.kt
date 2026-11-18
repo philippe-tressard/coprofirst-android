@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.outlined.Archive
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Flag
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Sync
@@ -54,6 +55,8 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.AvisDuGeste
+import fr.coprofirst.app.commun.CibleSignalement
+import fr.coprofirst.app.commun.SignalementAuConseil
 import fr.coprofirst.app.commun.gesteEnLigne
 import kotlinx.coroutines.launch
 
@@ -81,6 +84,8 @@ internal fun BandeauAffaire(
     avis: AvisDuGeste,
     recharger: () -> Unit,
     modifier: Modifier = Modifier,
+    /** L'installation sert-elle la modération (`VersionContrat.MODERATION`, #282) : 🚩. */
+    moderation: Boolean = false,
 ) {
     val c = LocalCouleurs.current
     val ressources = LocalResources.current
@@ -90,9 +95,10 @@ internal fun BandeauAffaire(
     var feuille by remember { mutableStateOf<FeuilleGeste?>(null) }
     var partage by remember { mutableStateOf(false) }
     var options by remember { mutableStateOf(false) }
+    var aSignaler by remember { mutableStateOf(false) }
     val annonce = rememberGesteAnnonce(avis, recharger)
     val enCours = annonce.enCours
-    val gestes = GesteAffaire.offerts(affaire, conseil).filter { it != GesteAffaire.Lien || lien != null }
+    val gestes = GesteAffaire.offerts(affaire, conseil, moderation).filter { it != GesteAffaire.Lien || lien != null }
 
     Row(
         modifier.fillMaxWidth().background(c.surface).navigationBarsPadding().padding(horizontal = Mise.marge, vertical = 4.dp),
@@ -147,6 +153,13 @@ internal fun BandeauAffaire(
                         }
                     }
                 }
+                // 🚩 : rien ne change à l'affaire, l'avis le confirme (#282).
+                GesteAffaire.Signaler -> {
+                    val geste = gesteEnLigne()
+                    IconButton({ aSignaler = true }, geste.modifier.testTag(repereGeste(g)), enabled = geste.actif) {
+                        Icon(icone(g), contentDescription = libelle, tint = if (geste.actif) c.primary else c.textMuted)
+                    }
+                }
                 GesteAffaire.Archiver -> {
                     val geste = gesteEnLigne(!enCours)
                     IconButton(
@@ -172,6 +185,16 @@ internal fun BandeauAffaire(
     }
     HorizontalDivider(color = c.border)
 
+    SignalementAuConseil(
+        affaire.takeIf { aSignaler },
+        envoyer = { signalee, motif ->
+            annonce.lancer(ressources.getString(R.string.signalement_transmis)) {
+                service.signalerAuConseil(CibleSignalement.affaire(signalee.id), motif)
+            }
+        },
+        fermer = { aSignaler = false },
+    )
+
     // La phrase attend que la feuille soit fermée : sinon elle passerait derrière.
     val fermer: () -> Unit = {
         feuille = null
@@ -196,6 +219,7 @@ internal fun BandeauAffaire(
 
 private fun libelleGeste(g: GesteAffaire) = when (g) {
     GesteAffaire.Lien -> R.string.geste_lien
+    GesteAffaire.Signaler -> R.string.signalement_titre
     GesteAffaire.Repondre -> R.string.geste_repondre
     GesteAffaire.Suite -> R.string.geste_suite
     GesteAffaire.Modifier -> R.string.geste_modifier
@@ -206,6 +230,7 @@ private fun libelleGeste(g: GesteAffaire) = when (g) {
 /** L'icône de Material la plus proche de celle du site (`IconeAction`, Lucide). */
 private fun icone(g: GesteAffaire): ImageVector = when (g) {
     GesteAffaire.Lien -> Icons.Outlined.Link
+    GesteAffaire.Signaler -> Icons.Outlined.Flag
     GesteAffaire.Repondre -> Icons.AutoMirrored.Outlined.Chat
     GesteAffaire.Suite -> Icons.Outlined.Sync
     GesteAffaire.Modifier -> Icons.Outlined.Edit

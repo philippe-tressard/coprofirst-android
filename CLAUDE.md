@@ -25,6 +25,10 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   la pièce jointe de la release de coprofirst au **plancher** (`contrat/plancher.env`),
   recopiée à l'octet par `bash scripts/importer-contrat.sh` ; la CI rejoue
   `--verifier`. Rien de généré n'est versionné. Les chemins s'entendent sous `/api`.
+  **Au-dessus du plancher** (#282, comme l'iOS) : `AU_DESSUS` et `GREFFES` de
+  `contrat/plancher.env` greffent au client des chemins nommés d'une release plus récente
+  (`contrat/au-dessus/`), appelés derrière une porte (`VersionContrat`, `Installation.sert`) ;
+  une greffe ou une porte que le plancher atteint est refusée (build, `InstallationTest`).
 - **État** : il se lit dans `README.md` (« Ce que fait l'app ») et les issues
   ouvertes.
 - **L'app iOS est la référence fonctionnelle** (consigne de Philippe, 15/11/2026) :

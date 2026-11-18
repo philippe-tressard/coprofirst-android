@@ -3,6 +3,9 @@
 
 package fr.coprofirst.app.fonctions.affaires
 
+import fr.coprofirst.app.commun.CibleSignalement
+import fr.coprofirst.app.commun.masquages.AuteurAMasquer
+import fr.coprofirst.app.commun.masquages.Masquage
 import fr.coprofirst.app.commun.apercu.SaisieLecture
 import fr.coprofirst.app.commun.lecture.Lecture
 import fr.coprofirst.app.commun.perimetres.Perimetre
@@ -49,6 +52,10 @@ class EtatAffairesTest {
         override suspend fun supprimerSuite(id: Int, suite: Int) = Unit
         override suspend fun corrigerMessage(id: Int, message: Int, texte: String) = Unit
         override suspend fun supprimerMessage(id: Int, message: Int) = Unit
+        override suspend fun signalerAuConseil(cible: CibleSignalement, motif: String) = Unit
+        override suspend fun masques() = emptyList<Masquage>()
+        override suspend fun masquer(auteur: AuteurAMasquer) = Unit
+        override suspend fun demasquer(auteurId: Int) = Unit
     }
 
     @Test

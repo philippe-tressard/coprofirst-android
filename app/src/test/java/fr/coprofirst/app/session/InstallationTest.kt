@@ -72,6 +72,22 @@ class InstallationTest {
         Installation.depuisConfig(adresse, mapOf("site_nom" to "Récente", "version_contrat" to "99.0.0"))
     }
 
+    /** #282 : une porte au-dessus du plancher s'ouvre au contrat servi qui l'atteint, jamais sans contrat lisible. */
+    @Test
+    fun unePorteSOuvreAuContratQuiLAtteint() {
+        fun servi(v: String?) = Installation("https://glycines.exemple.test", "Les Glycines", versionContrat = v)
+        assertTrue(servi("2.9.0").sert(VersionContrat.MODERATION))
+        assertTrue(servi("2.10.0").sert(VersionContrat.MODERATION))
+        assertFalse(servi("2.8.0").sert(VersionContrat.MODERATION))
+        assertFalse(servi(null).sert(VersionContrat.MODERATION))
+    }
+
+    /** Une porte que le plancher atteint est MORTE : elle se retire, avec la greffe de `GREFFES`. */
+    @Test
+    fun aucunePorteSousLePlancher() {
+        assertTrue("porte morte : le plancher sert la modération — retirer MODERATION et la greffe", plancher < VersionContrat.MODERATION)
+    }
+
     /** #233 : `installation_suspendue` est une CHAÎNE ; « 1 » seul suspend ; absente, rien. */
     @Test
     fun laSuspensionSeLitDansLaChaineServie() {

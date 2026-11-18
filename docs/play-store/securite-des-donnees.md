@@ -135,6 +135,8 @@ contrôle le refuse dès que l'envoi existe — la PR qui l'apporte retire la ma
 | `patchTicketsTicketIdMessagesMsgId` | `Messages` |
 | `deleteTicketsTicketIdMessagesMsgId` | — |
 | `postSignalements` | `Contenu utilisateur` |
+| `postMasquages` | `Contenu utilisateur` |
+| `deleteMasquagesAuteurId` | — |
 | `postPerimetresLibelle` | `Contenu utilisateur` |
 | `postLecturesApercu` | `Contenu utilisateur` |
 | `postNomsAffiche` | `Nom` |

@@ -33,6 +33,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.api.modeles.UserRead
+import fr.coprofirst.app.commun.masquages.ReperesMasquage
+import fr.coprofirst.app.commun.masquages.ServiceMasquages
+import fr.coprofirst.app.commun.masquages.ServiceMasquagesApi
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
@@ -48,16 +51,23 @@ import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.gesteEnLigne
 import fr.coprofirst.app.navigation.ContexteDeMenu
 import fr.coprofirst.app.session.Installation
+import fr.coprofirst.app.session.VersionContrat
 
 /** Plus › Profil : l'écran du registre (`RegistreDesMenus`). */
 @Composable
 fun EcranProfil(contexte: ContexteDeMenu) {
     val service = remember(contexte.session) { ServiceProfilApi(contexte.session) }
-    PageHorsLigne { EcranProfil(service, contexte.session.installation, contexte.sortie, contexte.apparence, contexte.relireDroits) }
+    // Personnes masquées (#282) : seulement si l'installation sert la modération.
+    val masquages = remember(contexte.session) {
+        ServiceMasquagesApi(contexte.session).takeIf { contexte.session.installation.sert(VersionContrat.MODERATION) }
+    }
+    PageHorsLigne {
+        EcranProfil(service, contexte.session.installation, contexte.sortie, contexte.apparence, contexte.relireDroits, masquages)
+    }
 }
 
 /** Les formulaires du Profil, chacun dans sa feuille. */
-private enum class Feuille { Identite, MotDePasse, DemandeModification, Preferences }
+private enum class Feuille { Identite, MotDePasse, DemandeModification, Preferences, Masquees }
 
 /**
  * Plus › Profil, comme l'iOS (`ProfilView`), dans l'ordre du site : la résidence et le
@@ -76,6 +86,8 @@ fun EcranProfil(
     sortie: GestesDeSortie,
     apparence: Apparence,
     relireDroits: suspend () -> Unit = {},
+    /** Les masquages (#282) ; `null` : l'installation ne les sert pas, l'entrée ne paraît pas. */
+    masquages: ServiceMasquages? = null,
 ) {
     var feuille by rememberSaveable { mutableStateOf<Feuille?>(null) }
     var phrase by remember { mutableStateOf<Phrase?>(null) }
@@ -94,6 +106,10 @@ fun EcranProfil(
                     SectionApparence(apparence)
                     Section(null) {
                         LigneAction(stringResource(R.string.profil_preferences), ReperesPreferences.OUVRIR) { feuille = Feuille.Preferences }
+                        // Ce que je ne veux plus voir (#282), comme l'iOS.
+                        if (masquages != null) {
+                            LigneAction(stringResource(R.string.masquage_titre_liste), ReperesMasquage.PROFIL) { feuille = Feuille.Masquees }
+                        }
                     }
                     SectionDroits(compte, installation, service, relireDroits) { compte = it }
                     SectionSuppressionCompte(service)
@@ -106,6 +122,7 @@ fun EcranProfil(
                     Feuille.MotDePasse -> FormulaireMotDePasse(service) { feuille = null }
                     Feuille.DemandeModification -> FeuilleDemandeModification(service) { feuille = null }
                     Feuille.Preferences -> FeuillePreferences(compte, service, fermer = { feuille = null }) { compte = it }
+                    Feuille.Masquees -> masquages?.let { FeuillePersonnesMasquees(it) { feuille = null } }
                     null -> Unit
                 }
             }

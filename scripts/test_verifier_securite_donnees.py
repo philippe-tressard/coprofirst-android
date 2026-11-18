@@ -64,6 +64,12 @@ class SecuriteDesDonnees(unittest.TestCase):
         with self.assertRaises(v.Inconnu):
             v.verifier(DECLARATION.replace("<!-- table:envois -->", ""), ECRITURES, SOURCE, MANIFESTE)
 
+    def test_les_ecritures_greffees_au_dessus_du_plancher_se_declarent(self):
+        # #282 : le contrôle ne lisait que le contrat du plancher ; postMasquages passait sans ligne.
+        greffees = v.ecritures_du_contrat(v.greffees(RACINE))
+        self.assertIn("postMasquages", greffees)
+        self.assertIn("deleteMasquagesAuteurId", greffees)
+
     def test_le_depot_est_conforme(self):
         self.assertEqual(v.main(["x", str(RACINE)]), 0)
 

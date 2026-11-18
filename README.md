@@ -89,6 +89,7 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   supprimer les siens (confirmé), signaler ceux des autres au conseil syndical (motif
   obligatoire). Tirer la liste la relit ; un fil vide le dit.
 - **Profil** (Plus › Profil) : la résidence, le statut et les rôles du compte ; les
+  personnes masquées et « Ne plus masquer » (installation au contrat 2.9.0) ; les
   informations personnelles (le nom tel qu'il sera affiché se lit sous la saisie ; une
   nouvelle adresse demande le mot de passe et ne vaut qu'une fois confirmée) ; le mot de passe ; une demande de changement de profil ou de
   bâtiment au conseil syndical ; vos droits RGPD (politique de confidentialité, refus,
@@ -145,7 +146,9 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   partent), épingler ou marquer urgente, archiver.
   Chaque entrée de la suite se corrige ou se supprime (« ⋯ »), si le serveur le permet ;
   son propre message aussi, tant que l'affaire n'est pas close (un texte mis en forme sur
-  le site se modifie depuis le site).
+  le site se modifie depuis le site). Sur une installation qui le sert (contrat 2.9.0) :
+  🚩 signale l'affaire au conseil syndical à qui la lit sans pouvoir la corriger ; le
+  « ⋯ » d'une suite écrite par un autre la signale, ou masque ce que publie son auteur.
   « Nouvelle affaire » (le « + » du haut) : catégorie, titre, description, lieu, urgence —
   les photos et ce que le conseil désigne se règlent sur le site. « Modifier » règle aussi
   ses prestataires (ajouter, retirer, réordonner), selon le droit servi.

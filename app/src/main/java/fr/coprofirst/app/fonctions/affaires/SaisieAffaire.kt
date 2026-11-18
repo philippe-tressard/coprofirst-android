@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.fonctions.affaires
 
+import fr.coprofirst.app.commun.masquages.AuteurAMasquer
 import fr.coprofirst.api.modeles.CategorieTicket
 import fr.coprofirst.api.modeles.TicketEvolutionRead
 import fr.coprofirst.app.commun.texte.TexteDuSite
@@ -116,20 +117,24 @@ data class SaisieSuite(val statutActuel: String, val statut: String = statutActu
 
 /**
  * Une icône du bandeau d'une affaire, dans l'ordre de la rangée du site
- * (`ActionsTicket.svelte`) : 🔗 · 💬 · 🔄 · ✏️ · options · 📦, comme l'iOS (`GesteAffaire`).
+ * (`ActionsTicket.svelte`) : 🔗 · 🚩 · 💬 · 🔄 · ✏️ · options · 📦, comme l'iOS (`GesteAffaire`).
  */
 enum class GesteAffaire {
-    Lien, Repondre, Suite, Modifier, Options, Archiver;
+    Lien, Signaler, Repondre, Suite, Modifier, Options, Archiver;
 
     companion object {
         /**
          * Les gestes offerts à CE lecteur. Chaque droit est servi avec l'affaire ; l'app n'en
          * ajoute aucun, elle en retire : 💬 jamais au conseil syndical (il suit par 🔄), ni sur
-         * une actualité ou une affaire fusionnée ; 📦 tant que l'affaire n'est pas aux Archives.
+         * une actualité ou une affaire fusionnée ; 📦 tant que l'affaire n'est pas aux Archives ;
+         * 🚩 à qui la lit sans pouvoir la corriger, hors des Archives — son auteur, le conseil et
+         * l'administration ont d'autres gestes —, si l'installation le sert (`moderation` : la
+         * porte `VersionContrat.MODERATION`, coprofirst#2861, #282).
          */
-        fun offerts(affaire: DetailAffaire, conseil: Boolean): List<GesteAffaire> = entries.filter { geste ->
+        fun offerts(affaire: DetailAffaire, conseil: Boolean, moderation: Boolean = false): List<GesteAffaire> = entries.filter { geste ->
             when (geste) {
                 Lien -> true
+                Signaler -> moderation && !affaire.droits.corriger && !affaire.archivee
                 Repondre -> affaire.droits.repondre && !conseil && !affaire.estActualite && !affaire.fusionnee
                 Suite -> affaire.droits.changerEtat
                 Modifier, Options -> affaire.droits.corriger
@@ -139,13 +144,32 @@ enum class GesteAffaire {
     }
 }
 
-/** Un geste sur UNE entrée de la suite, dans l'ordre du site (`RubriqueHistorique.svelte`) : ✏️ puis 🗑️. */
+/**
+ * Un geste sur UNE entrée de la suite, dans l'ordre du site (`RubriqueHistorique.svelte`) :
+ * ✏️, 🚩, 🙈 puis 🗑️, l'irréversible en dernier. Le « ⋯ » d'un message n'en prend que ✏️ et 🗑️.
+ */
 enum class GesteSuite {
-    Modifier, Supprimer;
+    Modifier, Signaler, Masquer, Supprimer;
 
     companion object {
-        /** Ceux que le serveur a servis AVEC l'entrée (`peut_modifier`, `peut_supprimer`), et aucun autre. */
-        fun offerts(suite: SuiteAffaire): List<GesteSuite> = entries.filter { if (it == Modifier) suite.peutModifier else suite.peutSupprimer }
+        /**
+         * ✏️ et 🗑️ : ceux que le serveur a servis AVEC l'entrée (`peut_modifier`, `peut_supprimer`).
+         * 🚩 et 🙈 (#282) suivent la règle du site (`peutSignaler` de `RubriqueHistorique.svelte`),
+         * comme l'iOS : une entrée qui porte un texte, écrite par un autre — `moi` connu, sinon
+         * rien —, et l'installation qui le sert (`moderation`) ; masquer exige un auteur nommé.
+         */
+        fun offerts(suite: SuiteAffaire, moi: Int? = null, moderation: Boolean = false): List<GesteSuite> {
+            val signalable = moderation && !suite.contenu.isNullOrEmpty() && moi != null &&
+                suite.auteurId != null && suite.auteurId != moi
+            return entries.filter {
+                when (it) {
+                    Modifier -> suite.peutModifier
+                    Signaler -> signalable
+                    Masquer -> signalable && AuteurAMasquer.de(suite.auteurId, suite.auteur, moi) != null
+                    Supprimer -> suite.peutSupprimer
+                }
+            }
+        }
     }
 }
 

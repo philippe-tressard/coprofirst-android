@@ -22,9 +22,13 @@ import androidx.compose.ui.res.stringResource
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.commun.AvisDuGeste
+import fr.coprofirst.app.commun.CibleSignalement
+import fr.coprofirst.app.commun.SignalementAuConseil
 import fr.coprofirst.app.commun.TonAvis
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.gesteEnLigne
+import fr.coprofirst.app.commun.masquages.AuteurAMasquer
+import fr.coprofirst.app.commun.masquages.ConfirmationMasquage
 import fr.coprofirst.app.commun.phrase
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.CoroutineScope
@@ -79,16 +83,31 @@ internal fun rememberGesteAnnonce(avis: AvisDuGeste, recharger: () -> Unit): Ges
  * multiplieraient avec le fil.
  */
 @Stable
-internal class ChoixDeSuite {
+internal class ChoixDeSuite(
+    /** Le compte (`DroitsOnglet.compte`) : on ne signale ni ne masque ce qu'on a écrit. */
+    private val moi: Int? = null,
+    /** L'installation sert-elle la modération (`VersionContrat.MODERATION`, #282) ? */
+    private val moderation: Boolean = false,
+) {
     var aCorriger by mutableStateOf<SuiteAffaire?>(null)
     var aSupprimer by mutableStateOf<SuiteAffaire?>(null)
+    var aSignaler by mutableStateOf<SuiteAffaire?>(null)
+    var aMasquer by mutableStateOf<AuteurAMasquer?>(null)
+
+    /** Les gestes qu'offre CETTE entrée à ce compte. */
+    fun offerts(suite: SuiteAffaire): List<GesteSuite> = GesteSuite.offerts(suite, moi, moderation)
 
     /** Une correction que l'affaire n'a pas suivie : remise par la feuille, dite une fois la feuille fermée. */
     var nonSuivie by mutableStateOf<IssueCorrection?>(null)
     var aDire by mutableStateOf<IssueCorrection?>(null)
 
     fun choisir(geste: GesteSuite, suite: SuiteAffaire) {
-        if (geste == GesteSuite.Modifier) aCorriger = suite else aSupprimer = suite
+        when (geste) {
+            GesteSuite.Modifier -> aCorriger = suite
+            GesteSuite.Signaler -> aSignaler = suite
+            GesteSuite.Masquer -> aMasquer = AuteurAMasquer.de(suite.auteurId, suite.auteur, moi)
+            GesteSuite.Supprimer -> aSupprimer = suite
+        }
     }
 
     fun feuilleFermee() {
@@ -103,6 +122,10 @@ internal class ChoixDeSuite {
  * l'entrée, « Supprimer cette entrée » se confirme ; chacun s'annonce, puis l'affaire se
  * relit. Une correction que l'affaire n'a pas suivie s'annonce par une ALERTE — la phrase
  * du serveur et, si le compte peut changer l'état, l'état qu'il propose d'appliquer.
+ *
+ * Signaler une suite au conseil, masquer ce que publie son auteur (#282), comme l'iOS : le
+ * motif, puis l'avis ; la confirmation, puis l'affaire relue — le serveur ne sert plus ses
+ * suites ni ses messages.
  */
 @Composable
 internal fun GestesHistorique(affaire: DetailAffaire, choix: ChoixDeSuite, service: ServiceAffaires, avis: AvisDuGeste, recharger: () -> Unit) {
@@ -145,6 +168,22 @@ internal fun GestesHistorique(affaire: DetailAffaire, choix: ChoixDeSuite, servi
             dismissButton = { TextButton(onClick = { choix.aSupprimer = null }) { Text(stringResource(R.string.annuler)) } },
         )
     }
+
+    SignalementAuConseil(
+        choix.aSignaler,
+        envoyer = { suite, motif ->
+            annonce.lancer(ressources.getString(R.string.signalement_transmis)) {
+                service.signalerAuConseil(CibleSignalement.suite(suite.id), motif)
+            }
+        },
+        fermer = { choix.aSignaler = null },
+    )
+
+    ConfirmationMasquage(
+        choix.aMasquer,
+        masquer = { auteur -> annonce.lancer(ressources.getString(R.string.masquage_masque, auteur.nom)) { service.masquer(auteur) } },
+        fermer = { choix.aMasquer = null },
+    )
 
     choix.aDire?.let { issue ->
         val proposition = issue.proposition(affaire)
