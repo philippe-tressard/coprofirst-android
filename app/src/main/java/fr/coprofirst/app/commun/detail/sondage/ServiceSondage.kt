@@ -3,6 +3,9 @@
 
 package fr.coprofirst.app.commun.detail.sondage
 
+import fr.coprofirst.app.commun.masquages.ServiceMasquages
+import fr.coprofirst.app.commun.masquages.ServiceMasquagesApi
+import fr.coprofirst.app.session.VersionContrat
 import fr.coprofirst.api.modeles.CommentaireBody
 import fr.coprofirst.api.routes.AuthApi
 import fr.coprofirst.api.routes.SondagesApi
@@ -16,9 +19,13 @@ import kotlinx.coroutines.coroutineScope
 /**
  * Ce que la fiche d'un sondage demande à la résidence, comme l'iOS (`ServiceSondage`). Le fil
  * et la Communauté l'ouvrent : un composant commun, son service avec lui. Signaler un
- * commentaire : le signalement commun (`ServiceSignalements`).
+ * commentaire : le signalement commun (`ServiceSignalements`) ; masquer son auteur : les
+ * masquages communs (`ServiceMasquages`, #297), derrière la porte `moderation`.
  */
-interface ServiceSondage : ServiceSignalements {
+interface ServiceSondage : ServiceSignalements, ServiceMasquages {
+    /** L'installation sert-elle la modération (`VersionContrat.MODERATION`, #282) ? */
+    val moderation: Boolean
+
     /** GET /sondages/{id}, et GET /auth/me pour l'identifiant du compte. */
     suspend fun sondage(id: Int): DetailSondage
 
@@ -35,7 +42,10 @@ interface ServiceSondage : ServiceSignalements {
 /** La fiche d'un sondage par le client GÉNÉRÉ, à travers la porte de la résidence. */
 class ServiceSondageApi(private val session: SessionOuverte) :
     ServiceSondage,
-    ServiceSignalements by ServiceSignalementsApi(session) {
+    ServiceSignalements by ServiceSignalementsApi(session),
+    ServiceMasquages by ServiceMasquagesApi(session) {
+    override val moderation: Boolean get() = session.installation.sert(VersionContrat.MODERATION)
+
 
     override suspend fun sondage(id: Int): DetailSondage = coroutineScope {
         val compte = async {

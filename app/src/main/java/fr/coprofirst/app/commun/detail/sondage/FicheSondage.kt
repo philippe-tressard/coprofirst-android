@@ -3,6 +3,8 @@
 
 package fr.coprofirst.app.commun.detail.sondage
 
+import fr.coprofirst.app.commun.masquages.AuteurAMasquer
+import fr.coprofirst.app.commun.masquages.ConfirmationMasquage
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -106,13 +108,17 @@ private fun ContenuSondage(sondage: DetailSondage, service: ServiceSondage?, avi
     var vote by remember(sondage.id) { mutableStateOf(VoteSondage()) }
     var envoi by remember { mutableStateOf(false) }
     var signale by remember { mutableStateOf<ReponseCommunauteRead?>(null) }
+    var aMasquer by remember { mutableStateOf<AuteurAMasquer?>(null) }
 
-    /** Un geste : la phrase du site s'il réussit (puis la fiche se relit), celle du serveur sinon. */
-    suspend fun geste(reussite: Int, relire: Boolean = true, action: suspend (ServiceSondage) -> Unit): Boolean {
+    /**
+     * Un geste : la phrase du site s'il réussit (puis la fiche se relit), celle du serveur sinon.
+     * `dire` : une phrase déjà composée (le nom de qui on masque) plutôt que `reussite`.
+     */
+    suspend fun geste(reussite: Int, relire: Boolean = true, dire: String? = null, action: suspend (ServiceSondage) -> Unit): Boolean {
         service ?: return false
         return try {
             action(service)
-            avis.dire(ressources.getString(reussite))
+            avis.dire(dire ?: ressources.getString(reussite))
             if (relire) recharger()
             true
         } catch (e: ErreurService) {
@@ -125,6 +131,8 @@ private fun ContenuSondage(sondage: DetailSondage, service: ServiceSondage?, avi
         publier = { texte -> geste(R.string.sondage_commentaire_publie) { it.commenter(texte, sondage.id) } },
         retirer = { reponse -> geste(R.string.sondage_commentaire_supprime) { it.supprimerCommentaire(reponse.id, sondage.id) } },
         signaler = { signale = it },
+        // « Masquer ce que publie… » l'auteur d'un commentaire (#297), comme l'iOS.
+        masquer = if (service?.moderation == true) ({ aMasquer = it }) else null,
     )
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Mise.marge).padding(bottom = Mise.marge),
@@ -161,6 +169,12 @@ private fun ContenuSondage(sondage: DetailSondage, service: ServiceSondage?, avi
             geste(R.string.signalement_transmis, relire = false) { it.signalerAuConseil(CibleSignalement.commentaire(reponse.id), motif) }
         }
     }, fermer = { signale = null })
+    // Le serveur ne sert plus ses commentaires : la fiche se relit.
+    ConfirmationMasquage(aMasquer, masquer = { auteur ->
+        portee.launch {
+            geste(R.string.masquage_confirmer, dire = ressources.getString(R.string.masquage_masque, auteur.nom)) { it.masquer(auteur) }
+        }
+    }, fermer = { aMasquer = null })
 }
 
 /** L'état, la clôture, la question, la description et le nombre de votes. */

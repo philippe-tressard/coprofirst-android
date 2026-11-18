@@ -3,6 +3,8 @@
 
 package fr.coprofirst.app.commun.detail.sondage
 
+import fr.coprofirst.app.commun.masquages.AuteurAMasquer
+import fr.coprofirst.app.commun.masquages.Masquage
 import fr.coprofirst.api.modeles.ReponseCommunauteRead
 import fr.coprofirst.app.commun.CibleSignalement
 import fr.coprofirst.app.session.ErreurService
@@ -16,7 +18,21 @@ import java.time.ZoneOffset
  * changent comme le serveur (`participation.py`) — le vote compte, sa précision rejoint les
  * réponses libres, son commentaire rejoint les commentaires.
  */
-class SondageSimule(private val attente: Long = 150) : ServiceSondage {
+class SondageSimule(private val attente: Long = 150, override val moderation: Boolean = false) : ServiceSondage {
+    /** Les auteurs masqués (#297), comme le serveur : idempotent. */
+    val masquesPoses = mutableListOf<AuteurAMasquer>()
+
+    override suspend fun masques() = masquesPoses.map { Masquage(it.id, it.nom, java.time.Instant.EPOCH) }
+
+    override suspend fun masquer(auteur: AuteurAMasquer) {
+        delay(attente)
+        if (masquesPoses.none { it.id == auteur.id }) masquesPoses += auteur
+    }
+
+    override suspend fun demasquer(auteurId: Int) {
+        masquesPoses.removeAll { it.id == auteurId }
+    }
+
     private val fiches = FixturesSondage.detaillees().toMutableList()
 
     /** Les signalements reçus. */

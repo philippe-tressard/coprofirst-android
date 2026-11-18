@@ -16,6 +16,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.unit.Density
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import fr.coprofirst.app.commun.masquages.ReperesMasquage
 import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.commun.AvisEphemere
@@ -49,14 +50,14 @@ class FicheSondageInterfaceTest {
     private val serveur = SondageSimule()
 
     /** La fiche `id`, en clair ou en sombre, au texte normal ou très grand (`echelle`). */
-    private fun ouvrir(id: Int = 12, sombre: Boolean = false, echelle: Float = 1f) {
+    private fun ouvrir(id: Int = 12, sombre: Boolean = false, echelle: Float = 1f, service: SondageSimule = serveur) {
         val session = SessionOuverte(Installation("https://residence.example.test", "Les Glycines"), SessionsParHote())
         val avis = AvisDuGeste()
         ecran.setContent {
             val densite = LocalDensity.current
             CompositionLocalProvider(LocalDensity provides Density(densite.density, fontScale = echelle)) {
                 ThemeCoproFirst(sombre = sombre) {
-                    AvisEphemere(avis, Modifier.fillMaxSize()) { FicheSondage(id, session, avis, service = serveur) }
+                    AvisEphemere(avis, Modifier.fillMaxSize()) { FicheSondage(id, session, avis, service = service) }
                 }
             }
         }
@@ -155,5 +156,18 @@ class FicheSondageInterfaceTest {
 
     private companion object {
         const val DELAI_MS = 10_000L
+    }
+
+    /** #297 : sur une installation qui le sert, masquer l'auteur d'un commentaire (le conseil ne se masque pas : ReponsesTest). */
+    @Test
+    fun lAuteurDUnCommentaireSeMasque() {
+        val moderee = SondageSimule(moderation = true)
+        ouvrir(service = moderee)
+        ecran.toucherTag(ReperesReponses.actions(32))
+        ecran.toucherTag(ReperesReponses.masquer(32))
+        ecran.attendreTexte("Masquer ce que publie Voisin du bât. A ?")
+        ecran.toucherTag(ReperesMasquage.CONFIRMER)
+        ecran.attendreTexte("Ce que publie Voisin du bât. A est masqué pour vous")
+        assertEquals(listOf(5), moderee.masquesPoses.map { it.id })
     }
 }
