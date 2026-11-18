@@ -12,7 +12,7 @@ import fr.coprofirst.app.commun.validations.OngletComptesCS
 import fr.coprofirst.app.navigation.ContexteDeMenu
 
 /**
- * L'Espace conseil syndical (page `espace-cs`, #24), comme l'iOS (`EspaceCSView`) : six
+ * L'Espace conseil syndical (page `espace-cs`, #24), comme l'iOS (`EspaceCSView`) : les
  * onglets du site, dans son ordre, filtrés par le cadre selon les droits du compte. Un
  * onglet que l'app ne porte pas encore dit « Bientôt » (le cadre).
  *
@@ -34,6 +34,8 @@ val PageEspaceCS = PageAOnglets(
         "reporting" to { onglet -> OngletReporting(onglet) },
 
         "annonces-hall" to { onglet -> OngletAnnoncesHall(onglet) },
+
+        "ecrans" to { onglet -> OngletEcransCS(onglet) },
 
         "annuaire" to { onglet -> OngletAnnuaireCS(onglet) },
 

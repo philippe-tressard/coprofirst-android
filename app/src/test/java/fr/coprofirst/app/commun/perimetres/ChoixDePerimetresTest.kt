@@ -31,6 +31,23 @@ class ChoixDePerimetresTest {
         assertEquals("bat_a", arbre.tete("bat_a/toit"))
     }
 
+    /** #283 : le `mode="single"` du site (le lieu d'un écran de hall) — un toucher remplace, jamais n'ajoute. */
+    @Test
+    fun enChoixUniqueUnToucherRemplaceLaSelection() {
+        var choix = ChoixDePerimetres(unique = true).choisirDefaut(arbre)
+        choix = choix.basculer("bat_a", arbre)
+        assertTrue(choix.codes == setOf("bat_a") && choix.ouverte(arbre) == "bat_a")
+        choix = choix.basculer("bat_a/toit", arbre)
+        assertTrue(choix.codes == setOf("bat_a/toit") && choix.ouverte(arbre) == "bat_a")
+        choix = choix.basculer("parking", arbre)
+        assertEquals("le parking remplace le toit, il ne s'y ajoute pas", setOf("parking"), choix.codes)
+        choix = choix.basculer("parking", arbre)
+        assertEquals("toucher la valeur retenue la garde : jamais vide", setOf("parking"), choix.codes)
+        choix = choix.choisirDefaut(arbre)
+        assertEquals(setOf("copropriete"), choix.codes)
+        assertTrue("le défaut garde le mode", choix.unique)
+    }
+
     @Test
     fun uneTeteSAjouteEtOuvreSesEspacesPuisSeRetireEtLesReferme() {
         var choix = ChoixDePerimetres().choisirDefaut(arbre)

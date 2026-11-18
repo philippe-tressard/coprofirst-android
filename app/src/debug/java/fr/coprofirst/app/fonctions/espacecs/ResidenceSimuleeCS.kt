@@ -24,6 +24,9 @@ class ResidenceSimuleeCS {
     /** L'annuaire du conseil et du syndic, que les PUT réécrivent. */
     val annuaire = AnnuaireSimuleCS()
 
+    /** Les écrans du hall (#283), que POST et DELETE changent. */
+    val ecrans = EcransSimulesCS()
+
     /** Les requêtes reçues : « MÉTHODE /chemin corps ». */
     val recues = mutableListOf<String>()
 
@@ -38,6 +41,7 @@ class ResidenceSimuleeCS {
         commandeTraitee.matchEntire(route)?.let { m -> return traiterCommande(m.groupValues[1].toInt(), corps) }
         if (methode == "POST" && accueil.matches(route)) return 200 to FixturesEspaceCS.ACCUEIL
         annuaire.repondre(methode, route, corps)?.let { return it }
+        ecrans.repondre(methode, route, corps)?.let { return it }
         annonceGeste.matchEntire(route)?.let { m -> return gesteAnnonce(methode, m.groupValues[1].toInt(), m.groupValues[2]) }
         return when ("$methode $route") {
             "GET /admin/comptes-en-attente" -> 200 to JsonArray(comptes).toString()

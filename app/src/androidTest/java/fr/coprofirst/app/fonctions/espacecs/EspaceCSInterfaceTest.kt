@@ -44,7 +44,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * L'Espace conseil syndical (#24) à l'écran, comme l'iOS (`EspaceCSUITests`) : les six
+ * L'Espace conseil syndical (#24) à l'écran, comme l'iOS (`EspaceCSUITests`) : les
  * onglets du site, dans son ordre ; approuver un compte en nouvel arrivant, accepter une
  * commande avec le code remis, chercher un badge — contre la résidence simulée, servie en
  * HTTPS à l'app par son vrai client. Les repères sont les identifiants de l'iOS.
@@ -102,8 +102,8 @@ class EspaceCSInterfaceTest {
     }
 
     @Test
-    fun lesSixOngletsDuSite() {
-        listOf("validations", "badges", "reporting", "annonces-hall", "annuaire", "courriels").forEach {
+    fun lesOngletsDuSite() {
+        listOf("validations", "badges", "reporting", "annonces-hall", "ecrans", "annuaire", "courriels").forEach {
             ecran.attendreTag(ReperesOnglets.onglet(it))
         }
     }
@@ -189,6 +189,26 @@ class EspaceCSInterfaceTest {
         ecran.toucherTag(ReperesEspaceCS.ANNONCE_ARCHIVER)
         ecran.attendreTexte("Annonce archivée")
         assertTrue(residence.recues.any { it.startsWith("PATCH /api/annonces-hall/5") })
+    }
+
+    /** #283 : appairer un écran avec le code qu'il affiche, puis en retirer un — comme l'iOS (`EcransHallUITests`). */
+    @Test
+    fun appairerPuisRetirerUnEcran() {
+        ecran.toucherTag(ReperesOnglets.onglet("ecrans"))
+        ecran.attendreTag(ReperesEcrans.echu(8))
+        ecran.toucherTag(ReperesEcrans.APPAIRER)
+        ecran.attendreTag(ReperesEcrans.FEUILLE_CODE)
+        ecran.onNodeWithTag(ReperesEcrans.FEUILLE_CODE).performTextInput("bcdf-ghjk")
+        ecran.onNodeWithTag(ReperesEcrans.FEUILLE_NOM).performTextInput("Hall du bâtiment 2")
+        ecran.toucherTag(ReperesEcrans.FEUILLE_ENREGISTRER)
+        ecran.attendreTexte("« Hall du bâtiment 2 » est appairé : l'écran reçoit son accès dans quelques secondes.")
+        val envoi = synchronized(residence) { residence.recues.toList() }.single { it.startsWith("POST /api/ecrans ") }
+        assertTrue(envoi, envoi.contains("\"code_court\":\"BCDFGHJK\"") && envoi.contains("\"perimetre\":\"copropriete\""))
+
+        ecran.toucherTag(ReperesEcrans.retirer(8))
+        ecran.toucherTag(ReperesEcrans.RETIRER_CONFIRMER)
+        ecran.attendreTexte("Écran retiré")
+        ecran.attendreDisparitionTag(ReperesEcrans.ecran(8))
     }
 
     @Test

@@ -153,9 +153,9 @@ internal fun NouvelleAnnonceHall(service: ServiceAnnoncesHall, perimetres: Servi
     }
 }
 
-/** Un champ : son libellé (petites capitales), le contrôle, puis son aide éventuelle. */
+/** Un champ : son libellé (petites capitales), le contrôle, puis son aide éventuelle — aussi celui de « Appairer un écran ». */
 @Composable
-private fun Champ(libelle: Int, aide: Int? = null, controle: @Composable () -> Unit) {
+internal fun Champ(libelle: Int, aide: Int? = null, controle: @Composable () -> Unit) {
     val c = LocalCouleurs.current
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Libelle(stringResource(libelle))

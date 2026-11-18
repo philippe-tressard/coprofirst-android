@@ -186,8 +186,9 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   WhatsApp et le PDF restent au site. **Annuaire CS & Syndic** — les fiches du conseil puis
   du syndic, à corriger, ajouter, retirer (et, pour le syndic, ordonner). **Courriels
   affaires** — ce que la relève a fait de chaque message reçu à l'adresse des affaires, et
-  pourquoi ; « Affaire #… » ouvre l'affaire rejointe. **Écrans du hall** dit encore
-  « Bientôt » (#283).
+  pourquoi ; « Affaire #… » ouvre l'affaire rejointe. **Écrans du hall** — appairer un
+  écran avec le code qu'il affiche (son nom, les annonces qu'il montre), voir sa dernière
+  lecture, le retirer.
 - **Paramétrage** (administration et opérateur de la plateforme), en partie :
   **À traiter** (la file des comptes et des commandes d'accès, celle de l'Espace CS, puis
   les demandes de changement de profil : approuver, ou rejeter avec un motif facultatif),
