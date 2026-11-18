@@ -243,6 +243,23 @@ class Acces(unittest.TestCase):
             self.assertIn(attendu, texte)
 
 
+class BandeauSuspendue(unittest.TestCase):
+    """`BandeauSuspendue` : le texte publié du bandeau d'une installation suspendue (#288)."""
+
+    def test_le_plancher_se_genere(self):
+        publiees = json.loads((RACINE / "contrat" / "tables-clients.json").read_text(encoding="utf-8"))["tables"]
+        texte = tc.kotlin_bandeau_suspendue(publiees, "tables-clients.json")
+        self.assertIn('const val titre = "Installation suspendue"', texte)
+        self.assertIn('const val precision = "lecture seule"', texte)
+        self.assertIn("const val texte = \"Tout reste consultable", texte)
+
+    def test_une_forme_inattendue_arrete(self):
+        bon = {"titre": "T", "precision": "p", "texte": "x"}
+        for v in (None, {**bon, "titre": " "}, {k: bon[k] for k in ("titre", "texte")}, {**bon, "autre": "y"}, {**bon, "texte": 3}):
+            with self.assertRaises(g.TableInattendue, msg=str(v)):
+                tc.kotlin_bandeau_suspendue({"bandeauSuspendue": t(v)}, "t")
+
+
 class StatutsAffaire(unittest.TestCase):
     """`StatutsAffaire` : la teinte du statut d'une affaire, commune (#92)."""
 

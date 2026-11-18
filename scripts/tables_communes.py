@@ -2,8 +2,9 @@
 # SPDX-FileCopyrightText: 2026 Philippe TRESSARD
 # SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 """Les tables COMMUNES à plusieurs menus, générées par `generer_tables.py` (qui les écrit) :
-l'état d'un accès (`TablesAcces`, #79) et la teinte du statut d'une affaire
-(`StatutsAffaire`, #92). Module à part pour que `generer_tables.py` reste sous 500 lignes ;
+l'état d'un accès (`TablesAcces`, #79), la teinte du statut d'une affaire
+(`StatutsAffaire`, #92) et le texte du bandeau d'une installation suspendue
+(`BandeauSuspendue`, #288). Module à part pour que `generer_tables.py` reste sous 500 lignes ;
 il ne s'appelle pas `generer_tables_<menu>.py`, que le build découvre comme table d'un menu.
 """
 
@@ -69,6 +70,28 @@ def kotlin_statuts_affaire(tables: dict, source: str) -> str:
         "    val pastilles: Map<String, String> = mapOf(",
         *[f"        {chaine(c)} to {chaine(b)}," for c, b in pastilles_statut(tables)],
         "    )",
+        "}",
+        "",
+    ])
+
+
+def kotlin_bandeau_suspendue(tables: dict, source: str) -> str:
+    """`BandeauSuspendue` : le texte du bandeau d'une installation suspendue, tel que le site
+    l'écrit (`BANDEAU_SUSPENDUE`, Registre R6, #288) — titre, précision, texte."""
+    v = tables.get("bandeauSuspendue", {}).get("valeur")
+    cles = ("titre", "precision", "texte")
+    if not isinstance(v, dict) or set(v) != set(cles) or not all(isinstance(v[c], str) and v[c].strip() for c in cles):
+        raise TableInattendue(f"bandeauSuspendue : forme inattendue ({v!r})")
+    return "\n".join([
+        "// GÉNÉRÉ par scripts/generer_tables.py — NE PAS MODIFIER À LA MAIN.",
+        f"// Source : {source} (bandeauSuspendue).",
+        "package fr.coprofirst.app.commun",
+        "",
+        "/** Le bandeau d'une installation suspendue (`BandeauInstallation` du site), ses mots publiés. */",
+        "object BandeauSuspendue {",
+        f"    const val titre = {chaine(v['titre'])}",
+        f"    const val precision = {chaine(v['precision'])}",
+        f"    const val texte = {chaine(v['texte'])}",
         "}",
         "",
     ])
