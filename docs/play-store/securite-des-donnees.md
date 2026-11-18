@@ -146,6 +146,8 @@ contrôle le refuse dès que l'envoi existe — la PR qui l'apporte retire la ma
 | `patchAnnoncesHallAnnonceId` | — |
 | `deleteAnnoncesHallAnnonceId` | — |
 | `postAnnoncesHallAnnonceIdRenvoyerEmail` | — |
+| `postEcrans` | `Contenu utilisateur` |
+| `deleteEcransEcranId` | — |
 | `postIdees` | `Contenu utilisateur` |
 | `postIdeesIdeeIdVoter` | `Contenu utilisateur` |
 | `postIdeesCibleIdReponses` | `Contenu utilisateur` |

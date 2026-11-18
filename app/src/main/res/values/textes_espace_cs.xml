@@ -200,4 +200,26 @@ strings_validations.xml.
     <string name="espacecs_annuaire_telephones">Téléphones</string>
     <string name="espacecs_annuaire_retirer_numero">Retirer ce numéro</string>
     <string name="espacecs_annuaire_ok">OK</string>
+
+    <!-- Écrans du hall (OngletEcransCS, FeuilleAppairage, #283) : les mots du site (OngletEcrans.svelte, v3.117.0), ceux de l'iOS -->
+    <string name="ecrans_appairer">Appairer un écran</string>
+    <string name="ecrans_aide_code">Sur l\'écran du hall, ouvrez l\'application CoproFirst : elle affiche un code de huit lettres, valable dix minutes. Saisissez-le ici.</string>
+    <string name="ecrans_code">Code affiché par l\'écran</string>
+    <string name="ecrans_code_exemple">BCDF-GHJK</string>
+    <string name="ecrans_nom">Nom de l\'écran</string>
+    <string name="ecrans_nom_exemple">Hall du bâtiment 2</string>
+    <string name="ecrans_perimetre">Annonces affichées</string>
+    <string name="ecrans_aide_perimetre">L\'écran affiche le titre, le message et les photos des annonces de hall en cours qui concernent ce périmètre, sans l\'auteur ni les destinataires. Il ne peut rien modifier.</string>
+    <string name="ecrans_vide_titre">Aucun écran appairé</string>
+    <string name="ecrans_vide_message">Un écran appairé fait défiler les annonces de hall dans le hall de la résidence.</string>
+    <string name="ecrans_echu">Échu : à appairer de nouveau</string>
+    <string name="ecrans_aucune_lecture">Aucune lecture pour le moment</string>
+    <string name="ecrans_derniere_lecture">Dernière lecture : %1$s</string>
+    <string name="ecrans_appaire_le">appairé le %1$s</string>
+    <string name="ecrans_retirer">Retirer</string>
+    <string name="ecrans_retirer_titre">Retirer cet écran</string>
+    <string name="ecrans_retirer_libelle">Retirer l\'écran %1$s</string>
+    <string name="ecrans_retirer_message">« %1$s » cessera aussitôt d\'afficher les annonces. Pour le remettre en service, il faudra l\'appairer de nouveau.</string>
+    <string name="ecrans_retire">Écran retiré</string>
+    <string name="ecrans_appaire">« %1$s » est appairé : l\'écran reçoit son accès dans quelques secondes.</string>
 </resources>

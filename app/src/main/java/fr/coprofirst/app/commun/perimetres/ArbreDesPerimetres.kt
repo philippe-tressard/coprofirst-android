@@ -74,6 +74,10 @@ class ArbreDesPerimetres(
  * | le défaut | tout est vidé | se ferme |
  *
  * « Tout le bâtiment 3 » et « le toit du bâtiment 3 » sont deux cibles exclusives.
+ *
+ * `unique` : le `mode="single"` du site (le lieu d'un écran de hall, #283) — un toucher
+ * REMPLACE la sélection au lieu d'y ajouter, la rangée de sa tête reste ouverte ; toucher la
+ * valeur retenue la garde (jamais vide). Même rendu, mêmes pastilles.
  * Immuable : chaque geste rend le nouvel état — l'état d'un écran se garde tel quel
  * (`mutableStateOf(ChoixDePerimetres())`).
  */
@@ -82,6 +86,8 @@ data class ChoixDePerimetres(
     val codes: Set<String> = emptySet(),
     /** La tête touchée en dernier (`parentTouche` du site). */
     val touchee: String? = null,
+    /** Un seul périmètre à la fois. */
+    val unique: Boolean = false,
 ) {
     fun estDefaut(arbre: ArbreDesPerimetres): Boolean = codes.isEmpty() || codes == setOfNotNull(arbre.defaut?.code)
 
@@ -113,10 +119,11 @@ data class ChoixDePerimetres(
     fun aide(arbre: ArbreDesPerimetres): String? =
         codes.singleOrNull()?.let { arbre.noeud(it)?.description }?.takeIf { it.isNotEmpty() }
 
-    fun choisirDefaut(arbre: ArbreDesPerimetres) = ChoixDePerimetres(setOfNotNull(arbre.defaut?.code), touchee = null)
+    fun choisirDefaut(arbre: ArbreDesPerimetres) = copy(codes = setOfNotNull(arbre.defaut?.code), touchee = null)
 
     fun basculer(code: String, arbre: ArbreDesPerimetres): ChoixDePerimetres {
         val racine = arbre.tete(code)
+        if (unique) return copy(codes = setOf(code), touchee = racine ?: code)
         val estTete = racine == code
         val retenus = codes.toMutableSet()
         arbre.defaut?.code?.let { retenus.remove(it) }
@@ -133,6 +140,6 @@ data class ChoixDePerimetres(
             if (!estTete && racine != null) retenus.remove(racine) // 4. Un espace remplace sa tête.
             retenus.add(code)
         }
-        return ChoixDePerimetres(if (retenus.isEmpty()) setOfNotNull(arbre.defaut?.code) else retenus, tete)
+        return copy(codes = if (retenus.isEmpty()) setOfNotNull(arbre.defaut?.code) else retenus, touchee = tete)
     }
 }
