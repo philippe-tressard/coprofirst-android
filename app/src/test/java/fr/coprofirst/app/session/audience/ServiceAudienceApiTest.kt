@@ -22,7 +22,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-/** Le lot part par le client généré : la route du contrat, le canal de l'app, rien d'autre. */
+/** Le lot part par le client généré : la route du contrat, le canal et la classe de l'appareil, rien d'autre. */
 class ServiceAudienceApiTest {
     private val serveur = MockWebServer().apply { start() }
     private val session = SessionOuverte(
@@ -35,19 +35,20 @@ class ServiceAudienceApiTest {
     fun arreter() = serveur.close()
 
     @Test
-    fun leLotDitLeCanalAndroidEtRienDAutre() = runTest {
+    fun leLotDitLeCanalAndroidEtLaClasseDeLAppareil() = runTest {
         serveur.enqueue(MockResponse.Builder().code(204).build())
-        ServiceAudienceApi.envoyer(listOf("/tableau-de-bord", "/admin#telemetry"), session)
+        ServiceAudienceApi { AppareilAudience.TABLETTE }.envoyer(listOf("/tableau-de-bord", "/admin#telemetry"), session)
         val requete = serveur.takeRequest()
         assertEquals("POST", requete.method)
         assertEquals("/api/telemetry/collect", requete.url.encodedPath)
         val corps = Json.parseToJsonElement(requete.body!!.utf8()).jsonObject
-        assertEquals(setOf("events", "canal"), corps.keys)
+        assertEquals(setOf("events", "canal", "appareil"), corps.keys)
         assertEquals("android", corps["canal"]!!.jsonPrimitive.content)
+        assertEquals("tablette", corps["appareil"]!!.jsonPrimitive.content)
         val evenements = corps["events"]!!.jsonArray.map { it as JsonObject }
         assertEquals(listOf("/tableau-de-bord", "/admin#telemetry"), evenements.map { it["page"]!!.jsonPrimitive.content })
         assertEquals(setOf("view"), evenements.map { it["action"]!!.jsonPrimitive.content }.toSet())
-        // Ni identifiant d'appareil, ni modèle, ni détail : une page et une action.
+        // Ni identifiant d'appareil, ni modèle, ni détail : une page et une action ; la classe, une fois.
         assertEquals(setOf(setOf("page", "action")), evenements.map { it.keys }.toSet())
     }
 }

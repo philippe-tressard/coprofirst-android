@@ -37,7 +37,8 @@ data class ResidenceMesuree(val session: SessionOuverte, val refusMesure: Boolea
  *   `android` (une installation plus ancienne que le plancher ne s'ouvre pas) ;
  * - sans résidence ouverte, ou en consultation hors ligne : `courante` rend `null`.
  *
- * Aucun identifiant d'appareil, aucun modèle : une page, l'action `view`, le canal. Un échec
+ * Aucun identifiant d'appareil, aucun modèle : une page, l'action `view`, le canal, et la
+ * classe de l'appareil (`TraitsAppareil`, #77). Un échec
  * ne se dit pas et ne se rejoue pas — la mesure ne gêne jamais l'usage.
  *
  * Toutes ses méthodes s'appellent du fil principal ; les envois partent dans `portee`, qui

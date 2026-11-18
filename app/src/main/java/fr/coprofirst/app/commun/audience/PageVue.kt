@@ -3,12 +3,14 @@
 
 package fr.coprofirst.app.commun.audience
 
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.staticCompositionLocalOf
 import fr.coprofirst.app.session.audience.CheminDuSite
 import fr.coprofirst.app.session.audience.MesureAudience
 import fr.coprofirst.app.session.audience.ServiceAudienceApi
+import fr.coprofirst.app.session.audience.TraitsAppareil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -22,8 +24,17 @@ val LocalMesureAudience = staticCompositionLocalOf<MesureAudience?> { null }
 
 /** UNE mesure par processus, dans la portée de l'application : elle survit aux écrans. */
 object AudienceDeLApp {
-    val mesure: MesureAudience by lazy {
-        MesureAudience(ServiceAudienceApi, CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate))
+    @Volatile
+    private var instance: MesureAudience? = null
+
+    /** La mesure de l'app ; la classe de l'appareil se relit à chaque lot (#77). */
+    fun de(contexte: Context): MesureAudience = instance ?: synchronized(this) {
+        instance ?: contexte.applicationContext.let { application ->
+            MesureAudience(
+                ServiceAudienceApi { TraitsAppareil.de(application).classe() },
+                CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
+            )
+        }.also { instance = it }
     }
 }
 

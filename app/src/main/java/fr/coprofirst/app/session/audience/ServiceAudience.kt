@@ -26,12 +26,18 @@ fun interface ServiceAudience {
  * La mesure par le client GÉNÉRÉ : le lot est typé, canal compris. `android` range ses vues
  * sous « App Android » au tableau de bord du site ; le canal ne s'écrit pas, il se choisit
  * dans l'énumération générée — une valeur hors de la liste du serveur serait refusée (422).
+ *
+ * Chaque lot porte la CLASSE de l'appareil (#77, coprofirst#2774), relue à chaque envoi
+ * (`appareil`) : une valeur de `AppareilAudience`, générée depuis la liste du serveur
+ * (`appareilsParCanal`), jamais écrite à la main. Le refus de la mesure coupe tout, elle
+ * comprise : rien n'arrive ici (`MesureAudience`).
  */
-object ServiceAudienceApi : ServiceAudience {
+class ServiceAudienceApi(private val appareil: () -> AppareilAudience) : ServiceAudience {
     override suspend fun envoyer(pages: List<String>, session: SessionOuverte) {
         val lot = LotAudience(
             events = pages.map { EvenementAudience(page = it, action = MesureAudience.ACTION) },
             canal = LotAudience.Canal.ANDROID,
+            appareil = appareil().code,
         )
         session.appeler { base, client -> TelemetryApi(base, client).postTelemetryCollect(lot) }
     }

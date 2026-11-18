@@ -18,6 +18,10 @@ Et `TypesNotification` (paquet `fonctions.notifications`), depuis v3.108.0 (copr
 #206) : le pictogramme (catalogue `icones-svg.json`, dessiné par `TracesDuSite`) et le libellé
 d'un type d'alerte, pour un lecteur d'écran — et ceux d'un type que l'app ne connaît pas.
 
+Et `AppareilAudience` (paquet `session.audience`), depuis v3.115.0 (coprofirst#2774, #77) :
+les classes d'appareil que l'app Android peut déclarer à la mesure d'audience
+(`appareilsParCanal`, canal `android`) — une valeur hors de la liste ferait refuser le lot.
+
 Une constante qui manque ou change de forme : la génération s'arrête.
 
 Usage : generer_constantes.py <constantes-clients.json> <dossier de sortie>
@@ -36,6 +40,8 @@ from generer_tables import TableInattendue, chaine  # noqa: E402
 PAQUET = "fr.coprofirst.app.commun"
 PAQUET_PIECES = "fr.coprofirst.app.commun.pieces"
 PAQUET_NOTIFICATIONS = "fr.coprofirst.app.fonctions.notifications"
+PAQUET_AUDIENCE = "fr.coprofirst.app.session.audience"
+CANAL = "android"
 TYPE = re.compile(r"^[a-z]+(_[a-z]+)*$")
 PICTOGRAMME = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 # La famille montrée de chaque extension (`FAMILLES_AFFICHAGE` de front/src/lib/fichiers.ts)
@@ -187,6 +193,28 @@ def kotlin_types(constantes: dict, source: str) -> str:
     ])
 
 
+def kotlin_appareils(constantes: dict, source: str) -> str:
+    """`AppareilAudience` : les classes d'appareil du canal `android` (coprofirst#2774)."""
+    appareils = valeur(constantes, "appareilsParCanal", dict).get(CANAL)
+    if (not isinstance(appareils, list) or not appareils or len(set(appareils)) != len(appareils)
+            or not all(isinstance(a, str) and TYPE.match(a) for a in appareils)):
+        raise TableInattendue(f"appareilsParCanal.{CANAL} : forme inattendue ({appareils!r})")
+    return "\n".join([
+        "// GÉNÉRÉ par scripts/generer_constantes.py — NE PAS MODIFIER À LA MAIN.",
+        f"// Source : {source} (appareilsParCanal.{CANAL}).",
+        f"package {PAQUET_AUDIENCE}",
+        "",
+        "/**",
+        " * Les classes d'appareil que l'app peut déclarer à la mesure d'audience (`LotAudience.appareil`),",
+        " * publiées par coprofirst (coprofirst#2774) : une classe, jamais un modèle ni un identifiant.",
+        " */",
+        "enum class AppareilAudience(val code: String) {",
+        *[f"    {a.upper()}({chaine(a)})," for a in appareils],
+        "}",
+        "",
+    ])
+
+
 def main(argv: list[str]) -> int:
     if len(argv) != 3:
         print(__doc__.strip().splitlines()[-1], file=sys.stderr)
@@ -199,6 +227,7 @@ def main(argv: list[str]) -> int:
             (PAQUET_PIECES, "FichiersDuSite.kt"): kotlin_fichiers(
                 constantes, entree.name, familles_affichage(json.loads((entree.parent / TABLES).read_text(encoding="utf-8"))["tables"])),
             (PAQUET_NOTIFICATIONS, "TypesNotification.kt"): kotlin_types(constantes, entree.name),
+            (PAQUET_AUDIENCE, "AppareilAudience.kt"): kotlin_appareils(constantes, entree.name),
         }
     except (KeyError, TableInattendue) as e:
         print(f"❌ {entree.name} : {e}", file=sys.stderr)

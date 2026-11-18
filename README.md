@@ -201,9 +201,10 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   lien ; lancer une tâche ou un export reste au site, et l'écran le dit.
 
 - **Mesure d'audience** : comme sur le site, la résidence compte les écrans vus (sous le
-  chemin de la page équivalente du site, canal « android »), pour ses statistiques de
+  chemin de la page équivalente du site, canal « android », et la classe de l'appareil :
+  téléphone, tablette, TV, montre, voiture ou ordinateur), pour ses statistiques de
   fréquentation ; jamais si le compte l'a refusée (Profil › Vos droits), ni hors d'une
-  résidence ouverte. Aucun identifiant d'appareil, rien chez l'éditeur.
+  résidence ouverte. Ni modèle ni identifiant d'appareil, rien chez l'éditeur.
 - **À propos** (Plus) : la résidence et la mention de son pied de page (©, texte libre,
   version de l'app) ; ses mentions légales et sa politique de confidentialité, lues dans
   l'app (« Logiciel libre » sous les mentions) ; le site de CoproFirst, le code du serveur
