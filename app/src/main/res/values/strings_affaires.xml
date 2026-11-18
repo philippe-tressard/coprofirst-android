@@ -171,6 +171,15 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="historique_compris">OK</string>
     <string name="historique_appliquer">Appliquer « %1$s » à l’affaire</string>
 
+    <!-- Les gestes de SON message du fil (GestesMessage, TextesMessage, #281) -->
+    <string name="message_gestes">Actions sur mon message</string>
+    <string name="message_modifier">Modifier mon message</string>
+    <string name="message_supprimer">Supprimer mon message</string>
+    <string name="message_question">Supprimer ce message ? Il disparaît aussi de l’Historique.</string>
+    <string name="message_confirmer">Supprimer</string>
+    <string name="message_corrige">Message modifié</string>
+    <string name="message_supprime">Message supprimé</string>
+
     <!-- Modifier l'affaire (ModifierAffaireFeuille, ChampsAffaire) -->
     <string name="geste_modifier">Modifier</string>
     <string name="modifier_contenu_fige">L\'affaire n\'est plus ouverte : son contenu ne se modifie plus. Son urgence, si.</string>

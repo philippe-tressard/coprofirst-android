@@ -5,6 +5,7 @@ package fr.coprofirst.app.fonctions.affaires
 
 import fr.coprofirst.api.modeles.CategorieTicket
 import fr.coprofirst.api.modeles.MessageCreate
+import fr.coprofirst.api.modeles.MessageUpdate
 import fr.coprofirst.api.modeles.StatutTicket
 import fr.coprofirst.api.modeles.TicketCreate
 import fr.coprofirst.api.modeles.TicketEvolutionCreate
@@ -61,6 +62,12 @@ interface ServiceAffaires : ServicePerimetres, ServiceLectures {
 
     /** POST /tickets/{id}/messages : « Répondre » — un message du fil, que le serveur double d'une suite. */
     suspend fun repondre(id: Int, texte: String)
+
+    /** PATCH /tickets/{id}/messages/{msg_id} : « Modifier mon message » — le texte seul, les pièces jointes restent. */
+    suspend fun corrigerMessage(id: Int, message: Int, texte: String)
+
+    /** DELETE /tickets/{id}/messages/{msg_id} : « Supprimer mon message » ; le serveur retire aussi son miroir de l'Historique. */
+    suspend fun supprimerMessage(id: Int, message: Int)
 
     /** POST /tickets/{id}/evolutions : « Ajouter une suite » — un commentaire, ou un nouvel état. */
     suspend fun ajouterSuite(id: Int, suite: SaisieSuite)
@@ -125,6 +132,12 @@ class ServiceAffairesApi(private val session: SessionOuverte) :
     override suspend fun repondre(id: Int, texte: String) {
         tickets { postTicketsTicketIdMessages(id, MessageCreate(contenu = TexteDuSite.html(texte.trim()))) }
     }
+
+    override suspend fun corrigerMessage(id: Int, message: Int, texte: String) {
+        tickets { patchTicketsTicketIdMessagesMsgId(id, message, MessageUpdate(contenu = TexteDuSite.html(texte.trim()))) }
+    }
+
+    override suspend fun supprimerMessage(id: Int, message: Int) = tickets { deleteTicketsTicketIdMessagesMsgId(id, message) }
 
     override suspend fun ajouterSuite(id: Int, suite: SaisieSuite) {
         val nouveau = if (suite.changeEtat) StatutTicket.decode(suite.statut) ?: throw ErreurService.Inattendue else null

@@ -32,13 +32,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.outlined.AttachFile
-import androidx.compose.material.icons.outlined.MoreHoriz
-import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -63,9 +59,7 @@ import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -75,7 +69,6 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Typo
-import fr.coprofirst.app.commun.gesteEnLigne
 import fr.coprofirst.app.commun.pieces.FormatPieces
 import fr.coprofirst.app.commun.pieces.PiecesJointes
 import fr.coprofirst.app.commun.pieces.PiecesJointesVue
@@ -301,42 +294,17 @@ private fun ElementDuFil(element: ElementFil, depliage: DepliageDuFil, session: 
 }
 
 /**
- * Les gestes d'UNE entrée de la suite, comme l'iOS (`GestesSuite`) : un « ⋯ » visible à sa
- * droite — un appui long seul serait un geste caché —, et les mêmes en actions du lecteur
- * d'écran. Rien quand le serveur n'en sert aucun, ni hors d'un écran qui les porte.
+ * Les gestes d'UNE entrée de la suite, comme l'iOS (`GestesSuite`), sous le « ⋯ » commun
+ * (`BoutonDesGestes`). Rien quand le serveur n'en sert aucun, ni hors d'un écran qui les porte.
  */
 @Composable
 private fun GestesDeLEntree(suite: SuiteAffaire?, choisir: ((GesteSuite, SuiteAffaire) -> Unit)?) {
     if (suite == null || choisir == null) return
-    val offerts = GesteSuite.offerts(suite)
-    if (offerts.isEmpty()) return
-    var menu by remember { mutableStateOf(false) }
     val ressources = LocalResources.current
-    // Grisés en consultation hors ligne — et sans actions du lecteur d'écran, qui passeraient outre.
-    val geste = gesteEnLigne()
-    val actions = if (!geste.actif) emptyList() else offerts.map { g ->
-        CustomAccessibilityAction(ressources.getString(libelleGesteSuite(g))) { choisir(g, suite); true }
-    }
-    Box {
-        IconButton(
-            { menu = true },
-            geste.modifier.size(32.dp).semantics { customActions = actions }.testTag(ReperesAffaires.gestesSuite(suite.id)),
-            enabled = geste.actif,
-        ) {
-            val couleurs = LocalCouleurs.current
-            Icon(Icons.Outlined.MoreHoriz, contentDescription = stringResource(R.string.historique_gestes), tint = if (geste.actif) couleurs.primary else couleurs.textMuted)
-        }
-        DropdownMenu(menu, { menu = false }) {
-            offerts.forEach { g ->
-                DropdownMenuItem(
-                    text = { Text(stringResource(libelleGesteSuite(g)), color = if (g == GesteSuite.Supprimer) LocalCouleurs.current.danger else LocalCouleurs.current.text) },
-                    leadingIcon = { Icon(if (g == GesteSuite.Supprimer) Icons.Outlined.Delete else Icons.Outlined.Edit, contentDescription = null) },
-                    onClick = { menu = false; choisir(g, suite) },
-                    modifier = Modifier.testTag(ReperesAffaires.gesteSuite(g)),
-                )
-            }
-        }
-    }
+    BoutonDesGestes(
+        GesteSuite.offerts(suite), ReperesAffaires.gestesSuite(suite.id), ReperesAffaires::gesteSuite,
+        stringResource(R.string.historique_gestes), { ressources.getString(libelleGesteSuite(it)) },
+    ) { choisir(it, suite) }
 }
 
 private fun libelleGesteSuite(g: GesteSuite) = if (g == GesteSuite.Modifier) R.string.historique_modifier else R.string.historique_supprimer
