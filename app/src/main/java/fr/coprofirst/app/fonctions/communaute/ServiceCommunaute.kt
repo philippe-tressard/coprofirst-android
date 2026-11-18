@@ -3,6 +3,9 @@
 
 package fr.coprofirst.app.fonctions.communaute
 
+import fr.coprofirst.app.commun.masquages.ServiceMasquages
+import fr.coprofirst.app.commun.masquages.ServiceMasquagesApi
+import fr.coprofirst.app.session.VersionContrat
 import fr.coprofirst.api.modeles.AnnonceCreate
 import fr.coprofirst.api.modeles.AnnonceRead
 import fr.coprofirst.api.modeles.AnnonceStatutUpdate
@@ -39,7 +42,10 @@ import java.math.BigDecimal
  * recalcule aucune règle de rôles. Signaler au conseil syndical : le service commun
  * (`ServiceSignalements`), dont il hérite.
  */
-interface ServiceCommunaute : ServiceSignalements {
+interface ServiceCommunaute : ServiceSignalements, ServiceMasquages {
+    /** L'installation sert-elle la modération (`VersionContrat.MODERATION`, #282) : « Masquer ce que publie… ». */
+    val moderation: Boolean
+
     /** GET /auth/me : qui regarde, et la conclusion du serveur sur son accès. */
     suspend fun moi(): MoiCommunaute
 
@@ -74,7 +80,10 @@ interface ServiceCommunaute : ServiceSignalements {
 /** La Communauté par le client GÉNÉRÉ, à travers LA porte de la résidence. */
 class ServiceCommunauteApi(private val session: SessionOuverte) :
     ServiceCommunaute,
-    ServiceSignalements by ServiceSignalementsApi(session) {
+    ServiceSignalements by ServiceSignalementsApi(session),
+    ServiceMasquages by ServiceMasquagesApi(session) {
+    override val moderation: Boolean get() = session.installation.sert(VersionContrat.MODERATION)
+
     override suspend fun moi() = session.appeler { b, c ->
         val moi = AuthApi(b, c).getAuthMe()
         MoiCommunaute(moi.id, DroitsOnglet.depuis(moi), moi.communauteMotifRefus?.takeIf { it.isNotBlank() })

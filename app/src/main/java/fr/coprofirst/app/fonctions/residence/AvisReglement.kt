@@ -72,12 +72,17 @@ enum class SectionAvis(@param:StringRes val titre: Int) {
  * après section.
  */
 @Composable
-fun AvisReglement(question: QuestionReglement) {
+fun AvisReglement(
+    question: QuestionReglement,
+    /** 🚩 la réponse de l'assistant (#282) ; `null` : l'installation ne le sert pas. */
+    signaler: (suspend (motif: String) -> Unit)? = null,
+) {
     val couleurs = LocalCouleurs.current
     Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
         Text(question.question, style = Typo.titre(), color = couleurs.text, modifier = Modifier.semantics { heading() })
         PiedQuestion(question)
         Text(mention(question), style = MaterialTheme.typography.bodySmall, fontStyle = FontStyle.Italic, color = couleurs.textMuted)
+        signaler?.let { SignalerLaReponse(question, it) }
         if (question.avecRenvois) AvisARenvois(question) else AvisDAvant(question)
     }
 }

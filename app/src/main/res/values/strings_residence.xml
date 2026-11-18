@@ -139,4 +139,6 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="avis_replie">replié</string>
     <string name="avis_deplier">Déplie la section</string>
     <string name="avis_replier">Replie la section</string>
+    <!-- 🚩 la réponse de l'assistant (#282), le mot de l'iOS. -->
+    <string name="avis_signaler">Signaler la réponse de l\'assistant</string>
 </resources>

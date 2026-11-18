@@ -3,6 +3,8 @@
 
 package fr.coprofirst.app.fonctions.communaute
 
+import fr.coprofirst.app.commun.masquages.AuteurAMasquer
+import fr.coprofirst.app.commun.masquages.Masquage
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.test.SemanticsNodeInteraction
@@ -57,7 +59,21 @@ import org.junit.runner.RunWith
  * Une Communauté simulée, comme l'API simulée de l'iOS : des contenus inventés (aucune
  * personne réelle), et les droits SERVIS que l'écran doit suivre.
  */
-private class CommunauteSimulee(val motif: String? = null, val peutCreer: Boolean = true) : ServiceCommunaute {
+private class CommunauteSimulee(
+    val motif: String? = null,
+    val peutCreer: Boolean = true,
+    override val moderation: Boolean = false,
+) : ServiceCommunaute {
+    /** Les auteurs masqués (#282), comme le serveur : idempotent. */
+    val masquesPoses = mutableListOf<AuteurAMasquer>()
+    override suspend fun masques() = masquesPoses.map { Masquage(it.id, it.nom, java.time.Instant.EPOCH) }
+    override suspend fun masquer(auteur: AuteurAMasquer) {
+        if (masquesPoses.none { it.id == auteur.id }) masquesPoses += auteur
+    }
+    override suspend fun demasquer(auteurId: Int) {
+        masquesPoses.removeAll { it.id == auteurId }
+    }
+
     var votes = 0
     val deposes = mutableListOf<String>()
     private var idees = listOf(idee(5, "Un composteur dans la cour", 7, false), idee(3, "Des bacs à fleurs au portail", 12, false))

@@ -3,6 +3,10 @@
 
 package fr.coprofirst.app.fonctions.communaute
 
+import androidx.compose.material.icons.outlined.VisibilityOff
+import androidx.compose.ui.platform.LocalResources
+import fr.coprofirst.app.commun.masquages.AuteurAMasquer
+import fr.coprofirst.app.commun.masquages.ConfirmationMasquage
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -63,8 +67,18 @@ fun DetailAnnonce(
     // La suppression ferme l'annonce : sa phrase se dit sur la liste.
     val gestesDeLaListe = rememberGestes(contexte.avis)
     var aSupprimer by remember { mutableStateOf(false) }
+    // L'auteur de l'annonce, qu'on peut masquer (#282) : nommé, pas soi, et l'installation le sert.
+    val auteurAMasquer = annonce?.takeIf { it.estAuteur != true && service.moderation }
+        ?.let { AuteurAMasquer.de(it.auteurId, it.auteurAffiche, moi) }
+    var aMasquer by remember { mutableStateOf<AuteurAMasquer?>(null) }
+    val ressources = LocalResources.current
     val signaler = annonce?.takeIf { it.estAuteur != true }?.let { FilCommunaute.Annonce(it.id) to R.string.annonces_signaler }
     DetailCommunaute(R.string.annonces_titre_detail, fermer, service, signaler, actions = {
+        auteurAMasquer?.let { auteur ->
+            IconButton(onClick = { aMasquer = auteur }, modifier = Modifier.testTag(ReperesCommunaute.ANNONCE_MASQUER)) {
+                Icon(Icons.Outlined.VisibilityOff, contentDescription = stringResource(R.string.masquage_geste, auteur.nom))
+            }
+        }
         if (annonce?.peutSupprimer == true) {
             IconButton(onClick = { aSupprimer = true }, modifier = Modifier.testTag(ReperesCommunaute.ANNONCE_SUPPRIMER)) {
                 Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.annonces_supprimer), tint = LocalCouleurs.current.danger)
@@ -97,6 +111,17 @@ fun DetailAnnonce(
             invite = stringResource(R.string.annonces_question),
         )
     }
+    // Masquer l'auteur de CETTE annonce la retire de la liste : la fiche se ferme.
+    ConfirmationMasquage(
+        aMasquer,
+        masquer = { auteur ->
+            gestesDeLaListe.agir(R.string.masquage_confirmer, apres = { reussi -> if (reussi) { fermer(); recharger() } }) {
+                service.masquer(auteur)
+                ressources.getString(R.string.masquage_masque, auteur.nom)
+            }
+        },
+        fermer = { aMasquer = null },
+    )
     if (aSupprimer && annonce != null) {
         AlertDialog(
             onDismissRequest = { aSupprimer = false },

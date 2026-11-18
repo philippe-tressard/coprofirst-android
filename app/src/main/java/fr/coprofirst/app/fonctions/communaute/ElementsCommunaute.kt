@@ -54,6 +54,7 @@ object ReperesCommunaute {
     const val SIGNALER = "communaute.signaler"
     const val ANNONCE_CONTACT = "annonce.contact"
     const val ANNONCE_SUPPRIMER = "annonce.supprimer"
+    const val ANNONCE_MASQUER = "annonce.masquer"
     const val ANNONCE_CONFIRMER = "annonce.confirmerSuppression"
     fun sondage(id: Int) = "sondage.$id"
     fun idee(id: Int) = "idee.$id"

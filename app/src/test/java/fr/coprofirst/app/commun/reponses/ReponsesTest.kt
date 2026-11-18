@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.commun.reponses
 
+import fr.coprofirst.app.commun.masquages.AuteurAMasquer
 import fr.coprofirst.api.modeles.ReponseCommunauteRead
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -32,6 +33,16 @@ class ReponsesTest {
         assertFalse(Reponses.peutSignaler(reponse(7), moi = 7))
         // Le compte illisible : « Signaler » partout, le serveur juge.
         assertTrue(Reponses.peutSignaler(reponse(5), moi = null))
+    }
+
+    /** #282 : on masque un autre résident nommé, jamais soi, jamais le conseil syndical. */
+    @Test
+    fun onMasqueUnAutreResidentNommeHorsDuConseil() {
+        assertEquals(AuteurAMasquer(5, "Voisin du bât. A"), Reponses.aMasquer(reponse(5), moi = 7))
+        assertNull(Reponses.aMasquer(reponse(7), moi = 7))
+        assertNull(Reponses.aMasquer(reponse(5, cs = true), moi = 7))
+        assertNull(Reponses.aMasquer(reponse(null), moi = 7))
+        assertNull(Reponses.aMasquer(reponse(5, nom = "  "), moi = 7))
     }
 
     @Test

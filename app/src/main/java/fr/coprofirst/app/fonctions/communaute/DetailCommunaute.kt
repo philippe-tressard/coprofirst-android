@@ -3,6 +3,9 @@
 
 package fr.coprofirst.app.fonctions.communaute
 
+import androidx.compose.ui.platform.LocalResources
+import fr.coprofirst.app.commun.masquages.AuteurAMasquer
+import fr.coprofirst.app.commun.masquages.ConfirmationMasquage
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -91,6 +94,8 @@ fun FilDuContenu(
     invite: String? = null,
 ) {
     var signalee by remember { mutableStateOf<ReponseCommunauteRead?>(null) }
+    var aMasquer by remember { mutableStateOf<AuteurAMasquer?>(null) }
+    val ressources = LocalResources.current
     val fils = GestesReponses(
         publier = { texte ->
             gestes.tenter(R.string.communaute_reponse_publiee) { service.repondre(fil, texte); null }.also { if (it) recharger() }
@@ -99,8 +104,20 @@ fun FilDuContenu(
             if (gestes.tenter(R.string.communaute_reponse_supprimee) { service.supprimerReponse(fil, reponse.id); null }) recharger()
         },
         signaler = { signalee = it },
+        masquer = if (service.moderation) ({ aMasquer = it }) else null,
     )
     FilReponses(reponses, moi, fils, invite = invite)
+    // Le serveur ne sert plus ses réponses : la liste se relit (#282).
+    ConfirmationMasquage(
+        aMasquer,
+        masquer = { auteur ->
+            gestes.agir(R.string.masquage_confirmer, apres = { if (it) recharger() }) {
+                service.masquer(auteur)
+                ressources.getString(R.string.masquage_masque, auteur.nom)
+            }
+        },
+        fermer = { aMasquer = null },
+    )
     SignalementAuConseil(
         signalee,
         envoyer = { reponse, motif -> signalerAuConseil(gestes, service, CibleSignalement.commentaire(reponse.id), motif) },

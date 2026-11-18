@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.commun.reponses
 
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -51,7 +52,13 @@ import fr.coprofirst.app.commun.formats.FormatsDuSite
  * sont sous « ⋮ » ; sans geste, pas de bouton.
  */
 @Composable
-internal fun LigneReponse(reponse: ReponseCommunauteRead, supprimer: (() -> Unit)?, signaler: (() -> Unit)?) {
+internal fun LigneReponse(
+    reponse: ReponseCommunauteRead,
+    supprimer: (() -> Unit)?,
+    signaler: (() -> Unit)?,
+    /** « Masquer ce que publie… » son auteur (#282) ; `null` : le geste ne s'offre pas. */
+    masquer: (() -> Unit)? = null,
+) {
     val couleurs = LocalCouleurs.current
     val cs = Reponses.estCs(reponse)
     val forme = RoundedCornerShape(Mise.rayon)
@@ -88,13 +95,14 @@ internal fun LigneReponse(reponse: ReponseCommunauteRead, supprimer: (() -> Unit
                 Text(reponse.contenu, style = MaterialTheme.typography.bodyLarge, color = couleurs.text)
             }
         }
-        if (supprimer != null || signaler != null) GestesDUneReponse(reponse.id, supprimer, signaler)
+        if (supprimer != null || signaler != null || masquer != null) GestesDUneReponse(reponse, supprimer, signaler, masquer)
     }
 }
 
-/** « ⋮ », puis « Signaler cette réponse » et « Supprimer » (en rouge), selon ce qui s'offre. */
+/** « ⋮ », puis « Signaler cette réponse », « Masquer ce que publie… » et « Supprimer » (en rouge), selon ce qui s'offre. */
 @Composable
-private fun GestesDUneReponse(id: Int, supprimer: (() -> Unit)?, signaler: (() -> Unit)?) {
+private fun GestesDUneReponse(reponse: ReponseCommunauteRead, supprimer: (() -> Unit)?, signaler: (() -> Unit)?, masquer: (() -> Unit)?) {
+    val id = reponse.id
     val couleurs = LocalCouleurs.current
     var ouvert by remember { mutableStateOf(false) }
     Box {
@@ -111,6 +119,17 @@ private fun GestesDUneReponse(id: Int, supprimer: (() -> Unit)?, signaler: (() -
                         signaler()
                     },
                     modifier = Modifier.testTag(ReperesReponses.signaler(id)),
+                )
+            }
+            if (masquer != null) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.masquage_geste, Reponses.auteur(reponse).orEmpty())) },
+                    leadingIcon = { Icon(Icons.Outlined.VisibilityOff, contentDescription = null, tint = couleurs.textMuted) },
+                    onClick = {
+                        ouvert = false
+                        masquer()
+                    },
+                    modifier = Modifier.testTag(ReperesReponses.masquer(id)),
                 )
             }
             if (supprimer != null) {
