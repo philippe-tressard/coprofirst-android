@@ -3,6 +3,9 @@
 
 package fr.coprofirst.app.fonctions.residence
 
+import fr.coprofirst.app.session.VersionContrat
+import fr.coprofirst.app.commun.ServiceSignalementsApi
+import fr.coprofirst.app.commun.CibleSignalement
 import fr.coprofirst.app.commun.pieces.Visionneuse
 import fr.coprofirst.app.commun.miseenpage.FicheOuFeuille
 import fr.coprofirst.app.commun.miseenpage.OccuperLaColonneDeFiche
@@ -141,6 +144,10 @@ internal fun EcranMaResidence(
     // Un onglet qui se ferme (rôle, accès retiré) ramène sur la Fiche.
     val actif = onglet.takeIf { id -> ouverts.any { it.id == id } } ?: OngletsResidence.FICHE
     val ouverture = session?.let { rememberOuverture(it) }
+    // 🚩 la réponse de l'assistant (#282) : seulement si l'installation sert la modération.
+    val signalements = remember(session) {
+        session?.takeIf { it.installation.sert(VersionContrat.MODERATION) }?.let { ServiceSignalementsApi(it) }
+    }
     val ouvrir = OuvrirFiche(
         document = { ouverture?.document(it.id, it.fichier, it.titre) },
         rapport = { ouverture?.fichier(RAPPORTS, it.id.toString(), it.fichier, "rapport-${it.id}", it.titre, ServiceResidenceApi.rapport(it.id)) },
@@ -183,7 +190,16 @@ internal fun EcranMaResidence(
     val fermer = { destination = null }
     when (val ouverte = destination) {
         is PageOuverte.Avis -> FicheOuFeuille(NATURE_AVIS, ouverte.question.id.toString(), fermer) {
-            FeuilleResidence(stringResource(R.string.avis_titre), fermer) { AvisReglement(ouverte.question) }
+            FeuilleResidence(stringResource(R.string.avis_titre), fermer) {
+                val question = ouverte.question
+                val envoi = signalements
+                val signaler: (suspend (String) -> Unit)? = if (envoi == null) {
+                    null
+                } else {
+                    { motif: String -> envoi.signalerAuConseil(CibleSignalement.questionReglement(question.id), motif) }
+                }
+                AvisReglement(question, signaler)
+            }
         }
         PageOuverte.Syndic -> FicheOuFeuille(NATURE_SYNDIC, NATURE_SYNDIC, fermer) {
             FeuilleResidence(stringResource(R.string.annuaire_titre), fermer, defile = false) {

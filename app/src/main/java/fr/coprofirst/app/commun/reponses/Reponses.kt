@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.commun.reponses
 
+import fr.coprofirst.app.commun.masquages.AuteurAMasquer
 import fr.coprofirst.api.modeles.ReponseCommunauteRead
 
 /**
@@ -16,6 +17,8 @@ class GestesReponses(
     val publier: suspend (String) -> Boolean,
     val retirer: suspend (ReponseCommunauteRead) -> Unit,
     val signaler: (ReponseCommunauteRead) -> Unit,
+    /** « Masquer ce que publie… » (#282) ; `null` quand l'installation ne le sert pas. */
+    val masquer: ((AuteurAMasquer) -> Unit)? = null,
 )
 
 /**
@@ -40,6 +43,13 @@ object Reponses {
     /** Le nom servi ; vide : `null`, l'écran dit « Un résident ». */
     fun auteur(reponse: ReponseCommunauteRead): String? = reponse.auteurNom.trim().takeIf { it.isNotEmpty() }
 
+    /**
+     * L'auteur qu'on peut masquer (#282), comme l'iOS : un autre résident nommé, hors du conseil
+     * syndical (`est_cs`) — le serveur refuserait de toute façon.
+     */
+    fun aMasquer(reponse: ReponseCommunauteRead, moi: Int?): AuteurAMasquer? =
+        if (estCs(reponse)) null else AuteurAMasquer.de(reponse.auteurId, auteur(reponse), moi)
+
     /** Le texte à publier : sans ses blancs ; vide, rien ne part. */
     fun aPublier(saisi: String): String? = saisi.trim().takeIf { it.isNotEmpty() }
 }
@@ -57,4 +67,7 @@ object ReperesReponses {
     fun actions(id: Int) = "reponse.$id.actions"
     fun supprimer(id: Int) = "reponse.$id.supprimer"
     fun signaler(id: Int) = "reponse.$id.signaler"
+
+    /** « Masquer ce que publie… » l'auteur d'une réponse (#282), celui de l'iOS. */
+    fun masquer(id: Int) = "reponse.$id.masquer"
 }

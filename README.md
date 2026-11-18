@@ -161,7 +161,8 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   large ; un autre type de fichier, dans l'app de l'appareil, #274) ; aux
   propriétaires et au conseil, le Carnet d'entretien (par équipement, visites en retard
   en tête, « À venir » sur un contrat qui n'a pas commencé, filtre par périmètre) et le Règlement (poser une question à l'assistant, lire
-  son avis, ses fondements et les extraits qu'il cite). Le bilan de l'exercice se lit
+  son avis, ses fondements et les extraits qu'il cite ; « Signaler la réponse de
+  l'assistant » au conseil syndical, installation au contrat 2.9.0). Le bilan de l'exercice se lit
   encore sur le site.
 - **Annuaire** : le conseil syndical (par bâtiment, président et gestionnaire mis en
   avant, groupe WhatsApp) et le syndic (espace client, contacts) — un toucher appelle ou
@@ -177,7 +178,9 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   l'application : filtre par note, réponse de l'équipe ; donner son avis, le corriger,
   l'archiver ou le restaurer. Une idée ou une annonce ouverte porte le fil des réponses
   (répondre, supprimer la sienne, signaler celles des autres) et « Signaler » au conseil
-  syndical ; chaque contenu dit qui le lit et où.
+  syndical ; chaque contenu dit qui le lit et où. Sur une installation au contrat 2.9.0,
+  « Masquer ce que publie… » l'auteur d'une annonce ou d'une réponse (un résident nommé,
+  hors du conseil) ; ce qu'il publie ne se voit plus, et se rétablit au Profil.
 - **Espace CS** (conseil syndical) : les onglets que le serveur ouvre au compte.
   **Comptes & accès** — la file de travail du conseil : les comptes à valider, puis les
   demandes de badges et de télécommandes, chacune approuvée (un nouvel arrivant, les codes

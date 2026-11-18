@@ -86,6 +86,7 @@ fun FilReponses(
                 reponse,
                 supprimer = if (Reponses.peutSupprimer(reponse)) ({ aRetirer = reponse }) else null,
                 signaler = if (Reponses.peutSignaler(reponse, moi)) ({ gestes.signaler(reponse) }) else null,
+                masquer = gestes.masquer?.let { masquer -> Reponses.aMasquer(reponse, moi)?.let { auteur -> { masquer(auteur) } } },
             )
         }
         SaisieReponse(invite ?: stringResource(R.string.reponses_invite), gestes.publier)
