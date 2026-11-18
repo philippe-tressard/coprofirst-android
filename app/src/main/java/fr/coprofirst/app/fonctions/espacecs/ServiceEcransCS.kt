@@ -14,7 +14,7 @@ import java.time.Instant
 /**
  * Ce que l'onglet « Écrans du hall » demande (#283, serveur coprofirst#2770), comme l'iOS
  * (`ServiceEcransCS`) : les gestes du CONSEIL — lister, confirmer le code qu'affiche un
- * écran, retirer. La part de l'écran lui-même (`/ecrans/appairage*`, `/ecrans/moi/*`) n'est
+ * écran, retirer. La part de l'écran lui-même (`/ecrans/appairage…`, `/ecrans/moi/…`) n'est
  * pas celle du téléphone.
  */
 interface ServiceEcransCS {

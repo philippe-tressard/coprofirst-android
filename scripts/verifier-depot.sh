@@ -27,6 +27,7 @@
 #   7 decies. aucune dépendance Google Play services ni Firebase que la licence ne nomme ;
 #   7 undecies. un seul client HTTP, ClientHttp.partage, dans les deux apps (#206) ;
 #   7 duodecies. chaque module inclus a son build.gradle.kts suivi par git ;
+#   7 terdecies. aucun « /* » dans un commentaire Kotlin : il en ouvre un imbriqué (#293) ;
 #   8. un seul bouton plein, `BoutonPlein` (commun/Boutons.kt) ;
 #   9. les générateurs du build passent leurs tests (scripts/test_*.py) ;
 #  10. aucun chemin de .claude/worktrees/ suivi.
@@ -225,6 +226,13 @@ CLIC_DIRECT='\.performClick\('
 autotest_motif "toucher hors du geste commun" "$CLIC_DIRECT" '        ecran.onNodeWithTag(r).performClick()' '        ecran.toucherTag(r)'
 interdire "$CLIC_DIRECT" "toucher écrit à la main dans un test d'interface — passer par toucher (commun/Gestes.kt)" \
   '^tests-interface-communs/fr/coprofirst/app/commun/Gestes\.kt$' '^((app|montre)/src/androidTest|tests-interface-communs)/.*\.kt$'
+
+# Kotlin IMBRIQUE ses commentaires : un « /* » dans un commentaire (un chemin `/ecrans/moi/*`)
+# en ouvre un second que rien ne ferme, et le fichier ne compile plus (#293). Au poste, le
+# verrou peut priver de compilation : ce motif le voit avant la CI.
+COMMENTAIRE_IMBRIQUE='^[[:space:]]*(/\*\*?|\*).*/\*'
+autotest_motif "commentaire imbriqué" "$COMMENTAIRE_IMBRIQUE" ' * la part de l écran (`/ecrans/moi/*`) n est pas' ' * la part de l écran (`/ecrans/moi/…`) n est pas'
+interdire "$COMMENTAIRE_IMBRIQUE" "« /* » dans un commentaire Kotlin — il ouvre un commentaire imbriqué jamais fermé" '' '\.kts?$'
 
 # Une page de « Plus » s'ouvre par LE geste des tests (#69) : la barre latérale d'une fenêtre large
 # (la tablette de la CI), sinon « Plus » puis l'entrée. Recopier « Plus » fait tomber la tablette.
