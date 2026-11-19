@@ -118,6 +118,11 @@ subprojects {
             sourceSets.getByName("androidTest").kotlin.srcDir(rootProject.file("tests-interface-communs"))
             buildFeatures { compose = true }
         }
+        // Un PLANCHER, pas une dépendance : fragment n'entre que si une bibliothèque le tire
+        // (CameraX, Play services), et jamais sous la version que Google Play accepte (#306).
+        dependencies.constraints.add("implementation", libs.androidx.fragment) {
+            because("fragment 1.1.0, tiré par CameraX et Play services, est obsolète pour Google Play (#306)")
+        }
         val application = extensions.getByType<ApplicationExtension>().defaultConfig
         tasks.register("afficherVersion") {
             val code = provider { application.versionCode }
