@@ -22,6 +22,11 @@ espresso = "3.7.0"
 # CameraX reste en 1.5 : la 1.6 embarque Dagger et Guava entiers (#6).
 camerax = "1.5.3"
 zxing = "3.5.4"
+# Fragment n'est déclaré par aucun module : CameraX (camera-view, via appcompat 1.1.0) et
+# Google Play services (base, basement) tirent la 1.1.0, que son éditeur a déclarée obsolète
+# (Play Console, #306). Ce plancher s'impose par une contrainte des applications
+# (build.gradle.kts racine) ; la 1.8 n'ajoute aucune bibliothèque à l'arbre, la 1.9 tire tracing 2.
+fragment = "1.8.9"
 # La montre Wear OS (#207) : Compose pour Wear OS (AndroidX, Apache-2.0). Aucune bibliothèque
 # de Google Play services : vérifié le 16/11/2026 sur leur arbre de dépendances.
 wear-compose = "1.7.1"
@@ -41,6 +46,7 @@ androidx-test-services = "1.6.0"
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
 androidx-window = { module = "androidx.window:window", version.ref = "window" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
+androidx-fragment = { module = "androidx.fragment:fragment", version.ref = "fragment" }
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
 compose-ui = { module = "androidx.compose.ui:ui" }
 compose-ui-text = { module = "androidx.compose.ui:ui-text" }
