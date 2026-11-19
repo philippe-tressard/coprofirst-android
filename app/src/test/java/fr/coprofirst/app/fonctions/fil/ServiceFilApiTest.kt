@@ -20,6 +20,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
+import java.time.LocalDate
 
 /** Le fil part par SA route du contrat (GET /flux), par le client généré, et ses erreurs se disent. */
 class ServiceFilApiTest {
@@ -57,6 +58,24 @@ class ServiceFilApiTest {
         assertTrue(fil.first().urgent)
         assertEquals(CibleDuFil.Affaire(41), fil.first().cible)
         assertEquals(CibleDuFil.Resume(null), fil.last().cible)
+    }
+
+    /** #286 : la semaine du carnet part en jours de Paris (`du`, `au`), et chaque carte garde son jour SERVI. */
+    @Test
+    fun laPeriodeSeDemandeEtSonJourServiSeGarde() = runTest {
+        repondre(
+            200,
+            """{"delai_recent_jours": 7, "items": [
+                 {"type": "ticket_ouvert", "id": "41", "date": "2026-11-16T08:30:00Z", "titre": "Ramonage",
+                  "meta": {"ticket_id": 41}, "jour": "2026-11-19"}
+               ]}""",
+        )
+        val semaine = service.periode(LocalDate.parse("2026-11-16"), LocalDate.parse("2026-11-22"))
+        val requete = serveur.takeRequest()
+        assertEquals("/api/flux", requete.url.encodedPath)
+        assertEquals("2026-11-16", requete.url.queryParameter("du"))
+        assertEquals("2026-11-22", requete.url.queryParameter("au"))
+        assertEquals("2026-11-19", semaine.single().jour)
     }
 
     @Test

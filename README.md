@@ -236,7 +236,10 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   Un pliable déplié en livre devient un **carnet** (#242, comme l'iOS) : les intercalaires
   sur la tranche droite remplacent les barres, la liste se tient à gauche du pli et la
   fiche à droite ; le Fil s'y lit une journée par double page (l'éphéméride en tête, « Veille »
-  et « Lendemain » au pied de la page, ou balayer la page loin des bords) ; il rouvre la résidence où on l'avait refermée (marque-page gardé sur
+  et « Lendemain » au pied de la page, ou balayer la page loin des bords) ; **pincer** la page
+  ouvre sa semaine sur toute la double page (du lundi au jeudi à gauche, du vendredi au dimanche
+  à droite, chaque carte au jour que l'API lui sert, `GET /flux?du=&au=`), écarter les doigts sur
+  un jour ou toucher son en-tête le rouvre (#286) ; il rouvre la résidence où on l'avait refermée (marque-page gardé sur
   l'appareil seul, effacé à la déconnexion ; un téléphone ordinaire n'en garde aucun).
 - **Montre Wear OS** (`montre/`, en construction, #207) : la même app Google Play, pour
   la cloche de la dernière résidence ouverte, en lecture seule — pendant de l'Apple Watch.

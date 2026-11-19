@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasContentDescription
@@ -19,6 +20,8 @@ import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.pinch
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -29,11 +32,14 @@ import fr.coprofirst.app.commun.attendreDisparition
 import fr.coprofirst.app.commun.attendreDisparitionTag
 import fr.coprofirst.app.commun.attendreTag
 import fr.coprofirst.app.commun.attendreTexte
+import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.miseenpage.REPERE_COLONNE
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.entree.ServeurDeTest
 import fr.coprofirst.app.fonctions.fil.FilInterfaceTest
 import fr.coprofirst.app.fonctions.fil.REPERE_EPHEMERIDE
+import fr.coprofirst.app.fonctions.fil.REPERE_JOUR
+import fr.coprofirst.app.fonctions.fil.REPERE_SEMAINE
 import fr.coprofirst.app.session.Installation
 import org.junit.After
 import org.junit.Assert.assertTrue
@@ -171,6 +177,75 @@ class CarnetInterfaceTest {
         ecran.toucherTag("carnet.lendemain")
         ecran.attendreTag(CARTE)
         ecran.attendreDisparitionTag(AVANT)
+    }
+
+    /**
+     * #286, comme `CarnetUITests` de l'iOS (coprofirst-ios#277) : PINCER la page du jour ouvre sa
+     * semaine sur toute la double page, chaque carte au jour servi, « Rien ce jour » ailleurs ;
+     * ÉCARTER les doigts sur un jour le rouvre.
+     */
+    @Test
+    fun pincerOuvreLaSemaineEtEcarterRameneAuJour() {
+        val maintenant = Instant.now()
+        ouvrir(semaineEtAvant(maintenant))
+        pincer(REPERE_JOUR, ferme = true)
+        ecran.attendreTag(REPERE_SEMAINE)
+        ecran.attendreTag(CARTE)
+        ecran.attendreTexte("Rien ce jour")
+        ecran.attendreDisparitionTag(REPERE_JOUR)
+        ecran.attendreDisparitionTag(REPERE_COLONNE)
+        pincer("$REPERE_SEMAINE.${FormatsDuSite.jourIso(maintenant)}", ferme = false)
+        ecran.attendreTag(REPERE_EPHEMERIDE)
+        ecran.attendreDisparitionTag(REPERE_SEMAINE)
+        ecran.attendreTexte("Aucune sélection")
+    }
+
+    /**
+     * La semaine se tourne au pied de page, jamais avant celle du plus ancien jour du fil ; l'en-tête
+     * d'un jour le rouvre ; une carte touchée s'ouvre sur la page de son jour, sa fiche à droite du pli.
+     */
+    @Test
+    fun laSemaineSeTourneEtSesJoursEtSesCartesSOuvrent() {
+        val maintenant = Instant.now()
+        ouvrir(semaineEtAvant(maintenant))
+        pincer(REPERE_JOUR, ferme = true)
+        ecran.attendreTag(REPERE_SEMAINE)
+        ecran.toucherTag("$REPERE_SEMAINE.precedente")
+        ecran.attendreTag(AVANT)
+        ecran.onNodeWithTag("$REPERE_SEMAINE.precedente").assertIsNotEnabled()
+        ecran.toucherTag("$REPERE_SEMAINE.${FormatsDuSite.jourIso(maintenant.minus(Duration.ofDays(8)))}")
+        ecran.attendreTag(REPERE_EPHEMERIDE)
+        ecran.attendreTag(AVANT)
+        ecran.attendreDisparitionTag(CARTE)
+        pincer(REPERE_JOUR, ferme = true)
+        ecran.attendreTag(REPERE_SEMAINE)
+        ecran.toucherTag("$REPERE_SEMAINE.suivante")
+        ecran.toucherTag(CARTE)
+        ecran.attendreTag(REPERE_JOUR)
+        ecran.attendreDisparition(hasText("Aucune sélection"))
+        ecran.onNodeWithTag(CARTE).assertIsSelected()
+    }
+
+    /** Deux doigts sur `repere` : rapprochés (`ferme`) ou écartés, de part et d'autre de son centre. */
+    private fun pincer(repere: String, ferme: Boolean) {
+        ecran.attendreTag(repere)
+        ecran.onNodeWithTag(repere).performTouchInput {
+            val loin = minOf(width / 2f - 4f, 70f * densite)
+            val pres = 6f * densite
+            val (debut, fin) = if (ferme) loin to pres else pres to loin
+            pinch(center - Offset(debut, 0f), center - Offset(fin, 0f), center + Offset(debut, 0f), center + Offset(fin, 0f))
+        }
+    }
+
+    /** L'affaire d'aujourd'hui (41) et le sondage de huit jours avant (3), chacun à son jour SERVI. */
+    private fun semaineEtAvant(maintenant: Instant): String {
+        val avant = maintenant.minus(Duration.ofDays(8))
+        return """{"delai_recent_jours": 7, "items": [
+        {"type": "ticket_ouvert", "id": "41", "date": "${maintenant.minusSeconds(60)}", "titre": "Fuite d'eau au plafond du parking",
+         "jour": "${FormatsDuSite.jourIso(maintenant)}", "meta": {"ticket_id": 41, "affaire": {"natures": ["activite"]}}},
+        {"type": "sondage_ouvert", "id": "3", "date": "$avant", "titre": "Quel jour pour la fête des voisins ?",
+         "jour": "${FormatsDuSite.jourIso(avant)}", "lien": "/sondages/3", "meta": {"sondage_id": 3}}
+    ]}"""
     }
 
     /** Une affaire d'aujourd'hui (41), un sondage de trois jours avant (3) : deux jours d'activité. */
