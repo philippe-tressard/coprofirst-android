@@ -24,6 +24,7 @@ import fr.coprofirst.app.commun.attendreTag
 import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.miseenpage.EnFenetreLarge
 import fr.coprofirst.app.commun.miseenpage.LocalPageDuCarnet
+import fr.coprofirst.app.commun.miseenpage.TailleDeLEcran
 import fr.coprofirst.app.commun.toucher
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.fonctions.annuaire.AnnuaireSimule
@@ -103,7 +104,8 @@ class ResidenceInterfaceTest {
         val page = mutableStateOf<String?>(null)
         ecran.setContent {
             ThemeCoproFirst {
-                EnFenetreLarge {
+                // Le cadre tient dans l'écran : la page de droite se TOUCHE (320 dp de large en CI).
+                EnFenetreLarge(TailleDeLEcran.ecran()) {
                     CompositionLocalProvider(LocalPageDuCarnet provides page) {
                         EcranMaResidence(residence, AnnuaireSimule(), DroitsOnglet(proprioOuCS = true, cs = true), null)
                     }
