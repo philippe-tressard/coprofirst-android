@@ -127,16 +127,19 @@ private fun LignePrestataire(prestataire: PrestataireAffaire, rang: Int, choisis
 private fun Ajouter(disponibles: List<PrestataireAffaire>, lu: Boolean, ajouter: (PrestataireAffaire) -> Unit) {
     val c = LocalCouleurs.current
     var menu by remember { mutableStateOf(false) }
-    Box {
+    // Toute la rangée se touche, aussi large que celles des prestataires (pendant de
+    // coprofirst-ios#309) : réduite à son libellé, sa droite restait vide sous le doigt.
+    Box(Modifier.fillMaxWidth()) {
         TextButton(
             onClick = { menu = true },
             enabled = disponibles.isNotEmpty(),
-            modifier = Modifier.heightIn(min = Mise.cible).testTag(ReperesPrestatairesAffaire.AJOUTER),
+            modifier = Modifier.fillMaxWidth().heightIn(min = Mise.cible).testTag(ReperesPrestatairesAffaire.AJOUTER),
         ) {
             Icon(Icons.Filled.AddCircle, contentDescription = null, tint = if (disponibles.isNotEmpty()) c.primary else c.textMuted)
+            // Le libellé prend le reste de la rangée : il reste à gauche, le bouton s'étend à droite.
             Text(
                 stringResource(R.string.prestataires_affaire_ajouter),
-                Modifier.weight(1f, fill = false),
+                Modifier.weight(1f),
                 fontWeight = FontWeight.Medium,
                 color = if (disponibles.isNotEmpty()) c.primary else c.textMuted,
             )
