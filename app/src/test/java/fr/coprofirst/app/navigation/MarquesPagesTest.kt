@@ -24,7 +24,7 @@ class MarquesPagesTest {
             if (valeur == null) disque.remove(cle) else disque[cle] = valeur
         }
     }
-    private val marque = MarquePage("PLUS", pageDePlus = "profil", ficheNature = "ticket", ficheId = "41", jour = "2026-11-17", enColonne = true)
+    private val marque = MarquePage("PLUS", pageDePlus = "profil", ficheNature = "ticket", ficheId = "41", jour = "2026-11-17", enColonne = true, page = "rubrique.plans")
 
     @Test
     fun unPliableRouvreOuIlAvaitReferme() {

@@ -239,7 +239,10 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   et « Lendemain » au pied de la page, ou balayer la page loin des bords) ; **pincer** la page
   ouvre sa semaine sur toute la double page (du lundi au jeudi à gauche, du vendredi au dimanche
   à droite, chaque carte au jour que l'API lui sert, `GET /flux?du=&au=`), écarter les doigts sur
-  un jour ou toucher son en-tête le rouvre (#286) ; il rouvre la résidence où on l'avait refermée (marque-page gardé sur
+  un jour ou toucher son en-tête le rouvre (#286) ; « Ma résidence » s'y lit en double page, son
+  **sommaire** à gauche (les rubriques de la Fiche dans l'ordre du site, puis le Carnet
+  d'entretien et le Règlement ouverts au compte) et la page choisie en face, la première d'office
+  (#287) ; il rouvre la résidence où on l'avait refermée (marque-page gardé sur
   l'appareil seul, effacé à la déconnexion ; un téléphone ordinaire n'en garde aucun).
 - **Montre Wear OS** (`montre/`, en construction, #207) : la même app Google Play, pour
   la cloche de la dernière résidence ouverte, en lecture seule — pendant de l'Apple Watch.

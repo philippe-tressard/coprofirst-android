@@ -64,21 +64,31 @@ fun OngletFiche(
     ouvrir: OuvrirFiche,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(28.dp)) {
-        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        RubriqueFiche.ouvertes(locataire).forEach { RubriqueDeLaFiche(it, contenu, session, ouvrir) }
+    }
+}
+
+/**
+ * Une rubrique de la Fiche : dans l'onglet, toutes à la suite ; dans le carnet du pliable, celle
+ * que le sommaire ouvre en face de lui (#287). Écrite une fois pour les deux.
+ */
+@Composable
+fun RubriqueDeLaFiche(rubrique: RubriqueFiche, contenu: ContenuFiche, session: SessionOuverte?, ouvrir: OuvrirFiche) {
+    when (rubrique) {
+        RubriqueFiche.Identite -> Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             BanniereResidence(contenu.fiche, session)
             CarteFiche(contenu, ouvrir.syndic)
         }
-        RubriqueRegles(contenu, ouvrir.document)
-        RubriqueDocuments(R.string.residence_plans, R.string.residence_plans_vide, contenu.plans, contenu, Nature.Plan, ouvrir.document)
-        RubriqueDocuments(R.string.residence_reglement, R.string.residence_reglement_vide, contenu.reglements, contenu, Nature.Reglement, ouvrir.document)
-        // Les comptes-rendus d'AG et les diagnostics ne s'affichent pas au locataire.
-        if (!locataire) {
-            RubriqueDocuments(
-                R.string.residence_comptes_rendus, R.string.residence_comptes_rendus_vide, contenu.comptesRendus, contenu,
-                Nature.Assemblee, ouvrir.document,
-            )
-            RubriqueDiagnostics(contenu, ouvrir)
-        }
+        RubriqueFiche.Regles -> RubriqueRegles(contenu, ouvrir.document)
+        RubriqueFiche.Plans ->
+            RubriqueDocuments(R.string.residence_plans, R.string.residence_plans_vide, contenu.plans, contenu, Nature.Plan, ouvrir.document)
+        RubriqueFiche.Reglement ->
+            RubriqueDocuments(R.string.residence_reglement, R.string.residence_reglement_vide, contenu.reglements, contenu, Nature.Reglement, ouvrir.document)
+        RubriqueFiche.ComptesRendus -> RubriqueDocuments(
+            R.string.residence_comptes_rendus, R.string.residence_comptes_rendus_vide, contenu.comptesRendus, contenu,
+            Nature.Assemblee, ouvrir.document,
+        )
+        RubriqueFiche.Diagnostics -> RubriqueDiagnostics(contenu, ouvrir)
     }
 }
 

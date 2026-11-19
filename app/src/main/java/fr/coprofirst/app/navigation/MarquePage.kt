@@ -16,7 +16,8 @@ import kotlinx.serialization.json.Json
 
 /**
  * Où l'on a refermé la résidence (#242) : la page, la page de « Plus », l'élément ouvert — à côté
- * de sa liste (`enColonne`) ou poussé —, le jour du Fil.
+ * de sa liste (`enColonne`) ou poussé —, le jour du Fil, la page de « Ma résidence » en face de
+ * son sommaire (`page`, par son nom, #287).
  */
 @Serializable
 data class MarquePage(
@@ -26,6 +27,7 @@ data class MarquePage(
     val ficheId: String? = null,
     val jour: String? = null,
     val enColonne: Boolean = false,
+    val page: String? = null,
 )
 
 /** Le disque du marque-page, une valeur par clé ; `null` l'efface. */

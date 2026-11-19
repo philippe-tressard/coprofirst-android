@@ -3,6 +3,8 @@
 
 package fr.coprofirst.app.fonctions.residence
 
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsSelected
@@ -17,10 +19,12 @@ import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.commun.amenerTag
 import fr.coprofirst.app.commun.annuaire.ReperesContact
 import fr.coprofirst.app.commun.attendre
+import fr.coprofirst.app.commun.attendreDisparition
 import fr.coprofirst.app.commun.attendreTag
 import fr.coprofirst.app.commun.attendreTexte
-import fr.coprofirst.app.commun.attendreDisparition
 import fr.coprofirst.app.commun.miseenpage.EnFenetreLarge
+import fr.coprofirst.app.commun.miseenpage.LocalPageDuCarnet
+import fr.coprofirst.app.commun.miseenpage.TailleDeLEcran
 import fr.coprofirst.app.commun.toucher
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.fonctions.annuaire.AnnuaireSimule
@@ -87,6 +91,46 @@ class ResidenceInterfaceTest {
 
         ecran.fermerLaFiche()
         ecran.attendreTexte("Aucune sélection")
+    }
+
+    /**
+     * #287, comme `CarnetUITests.testLesDocumentsDeLaResidenceEnDoublePage` de l'iOS : dans le carnet
+     * du pliable, le sommaire à gauche, la page choisie en face — la première d'office, jamais
+     * « Aucune sélection » ; pas d'onglets ; ce que la page ouvre s'empile au-dessus d'elle, et la
+     * page revient quand on le referme ; « Voir le règlement dans la Fiche » ouvre sa rubrique.
+     */
+    @Test
+    fun dansLeCarnetLeSommaireEtSaPageEnDoublePage() {
+        val page = mutableStateOf<String?>(null)
+        ecran.setContent {
+            ThemeCoproFirst {
+                // Le cadre tient dans l'écran : la page de droite se TOUCHE (320 dp de large en CI).
+                EnFenetreLarge(TailleDeLEcran.ecran()) {
+                    CompositionLocalProvider(LocalPageDuCarnet provides page) {
+                        EcranMaResidence(residence, AnnuaireSimule(), DroitsOnglet(proprioOuCS = true, cs = true), null)
+                    }
+                }
+            }
+        }
+        ecran.attendreTag("residence.sommaire.rubrique.identite")
+        ecran.attendreTexte("AA0-000-000") // la Fiche, en face
+        ecran.onNodeWithTag("residence.sommaire.rubrique.identite").assertIsSelected()
+        ecran.attendreDisparition(hasText("Aucune sélection"))
+        ecran.attendreDisparition(hasTestTag("onglet.carnet"))
+
+        ecran.toucherTag(ReperesResidence.SYNDIC)
+        ecran.attendreTexte("Gestionnaire de copropriété") // au-dessus de la page
+        ecran.fermerLaFiche()
+        ecran.attendreTexte("AA0-000-000")
+
+        ecran.toucherTag("residence.sommaire.onglet.carnet")
+        ecran.attendreTexte("Révision annuelle de la chaudière")
+        ecran.onNodeWithTag("residence.sommaire.onglet.carnet").assertIsSelected()
+        assertEquals("onglet.carnet", page.value)
+
+        ecran.toucherTag("residence.sommaire.onglet.reglement")
+        ecran.attendreTexte("Puis-je installer une climatisation sur mon balcon ?")
+        ecran.attendreTag("residence.sommaire.rubrique.plans") // le sommaire reste
     }
 
     @Test
