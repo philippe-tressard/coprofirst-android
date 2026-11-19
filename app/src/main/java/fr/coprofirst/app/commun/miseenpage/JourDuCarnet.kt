@@ -13,3 +13,10 @@ import androidx.compose.runtime.staticCompositionLocalOf
  * se lit en entier, comme avant.
  */
 val LocalJourDuCarnet = staticCompositionLocalOf<MutableState<String?>?> { null }
+
+/**
+ * La page ouverte en face du sommaire de « Ma résidence » dans le CARNET (#287) : sa clé
+ * (`rubrique.plans`, `onglet.carnet`), `null` : la première. Fournie par la résidence, gardée avec
+ * la page et dans le marque-page, par son NOM ; `null` hors du carnet : les onglets, comme avant.
+ */
+val LocalPageDuCarnet = staticCompositionLocalOf<MutableState<String?>?> { null }

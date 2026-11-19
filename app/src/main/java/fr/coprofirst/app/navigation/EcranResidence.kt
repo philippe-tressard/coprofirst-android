@@ -55,6 +55,7 @@ import fr.coprofirst.app.commun.miseenpage.ColonneDeFiche
 import fr.coprofirst.app.commun.miseenpage.LocalColonneDeFiche
 import fr.coprofirst.app.commun.miseenpage.LocalFicheParDessus
 import fr.coprofirst.app.commun.miseenpage.LocalJourDuCarnet
+import fr.coprofirst.app.commun.miseenpage.LocalPageDuCarnet
 import fr.coprofirst.app.commun.miseenpage.PageEtColonneDeFiche
 import fr.coprofirst.app.commun.miseenpage.ficheLocale
 import fr.coprofirst.app.session.SessionOuverte
@@ -100,6 +101,8 @@ fun EcranResidence(
     var ficheDUneListe by rememberSaveable { mutableStateOf(false) }
     // Le jour du Fil ouvert dans le carnet (#242) : gardé avec la page et dans le marque-page.
     val jourDuCarnet = rememberSaveable { mutableStateOf<String?>(null) }
+    // La page de « Ma résidence » en face de son sommaire, dans le carnet (#287) : gardée de même.
+    val pageDuCarnet = rememberSaveable { mutableStateOf<String?>(null) }
     val barreDuHaut = remember { BarreDuHaut() }
     // La fiche ouverte dans la colonne d'une fenêtre large pose SA barre dans sa colonne (#69).
     val barreDeFiche = remember { BarreDuHaut() }
@@ -161,13 +164,14 @@ fun EcranResidence(
         aiguillage != Aiguillage.Aucun
     }
     // Le marque-page d'un pliable (#242) : rouvrir où l'on avait refermé ; un lien, posé après, l'emporte.
-    val ici = MarquePage(onglet ?: EtatResidence.PLUS, pageDePlus, ficheNature, ficheId, jourDuCarnet.value, colonne.occupee && ficheId != null)
+    val ici = MarquePage(onglet ?: EtatResidence.PLUS, pageDePlus, ficheNature, ficheId, jourDuCarnet.value, colonne.occupee && ficheId != null, pageDuCarnet.value)
     MarquePageDeLaResidence(residence, ici) { marque ->
         if (marque.onglet == EtatResidence.PLUS || barre.any { it.id == marque.onglet }) parcours.choisir(marque.onglet)
         pageDePlus = marque.pageDePlus
         ficheNature = marque.ficheNature
         ficheId = marque.ficheId
         jourDuCarnet.value = marque.jour
+        pageDuCarnet.value = marque.page
         if (marque.enColonne) colonne.retenir()
     }
     // Un lien d'application : l'écran visé ; une page que le compte ne voit pas, le fil (l'iOS).
@@ -268,6 +272,7 @@ fun EcranResidence(
                     LocalColonneDeFiche provides colonne.takeIf { large },
                     LocalFicheParDessus provides !aCote,
                     LocalJourDuCarnet provides jourDuCarnet.takeIf { carnet },
+                    LocalPageDuCarnet provides pageDuCarnet.takeIf { carnet },
                 ) {
                     when {
                         // Fenêtre large : la page garde sa place ; en paysage, une liste qui l'occupe ouvre la

@@ -3,7 +3,9 @@
 
 package fr.coprofirst.app.fonctions.residence
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.largeurDeLecture
@@ -34,6 +37,7 @@ import fr.coprofirst.app.commun.CibleSignalement
 import fr.coprofirst.app.commun.PageHorsLigne
 import fr.coprofirst.app.commun.ServiceSignalementsApi
 import fr.coprofirst.app.commun.miseenpage.FicheOuFeuille
+import fr.coprofirst.app.commun.miseenpage.LocalPageDuCarnet
 import fr.coprofirst.app.commun.miseenpage.OccuperLaColonneDeFiche
 import fr.coprofirst.app.commun.onglets.BarreOnglets
 import fr.coprofirst.app.commun.perimetres.Perimetre
@@ -154,32 +158,71 @@ internal fun EcranMaResidence(
         rapportEnCours = ouverture?.enCours?.removePrefix("$RAPPORTS-")?.toIntOrNull(),
         syndic = { destination = PageOuverte.Syndic },
     )
-    Actualisable(enCours = false, actualiser = { relecture++ }, modifier = Modifier.fillMaxSize()) {
-        Column(
-            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            if (ouverts.size > 1) {
-                BarreOnglets(ouverts, actif, marges = PaddingValues(horizontal = Mise.marge)) { onglet = it }
-            }
+    val fermer = { destination = null }
+    val ouvrirAvis: (QuestionReglement) -> Unit = { destination = PageOuverte.Avis(it) }
+    /** Une page de la résidence, qu'on tire pour actualiser, à la largeur de lecture ; les onglets en tête, s'il y en a. */
+    val corps: @Composable (onglets: Boolean, contenu: @Composable () -> Unit) -> Unit = { onglets, contenu ->
+        Actualisable(enCours = false, actualiser = { relecture++ }, modifier = Modifier.fillMaxSize()) {
             Column(
-                Modifier.largeurDeLecture().fillMaxWidth().padding(horizontal = Mise.marge, vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(Mise.ecart),
+                Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                ouverture?.let { AvisOuverture(it) }
-                when (actif) {
-                    OngletsResidence.CARNET -> Carnet(service, droits.cs, session?.installation?.url.orEmpty(), relecture, porte)
-                    OngletsResidence.REGLEMENT -> Reglement(service, droits.cs, relecture, { onglet = OngletsResidence.FICHE }) {
-                        destination = PageOuverte.Avis(it)
-                    }
-                    else -> Chargement(
-                        charger = { service.fiche() },
-                        cle = relecture,
-                        squelette = { OngletFiche(ApercuResidence.fiche, null, droits.locataire, OuvrirFiche()) },
-                    ) { contenu, _ ->
-                        OngletFiche(contenu, session, droits.locataire, ouvrir)
+                if (onglets && ouverts.size > 1) {
+                    BarreOnglets(ouverts, actif, marges = PaddingValues(horizontal = Mise.marge)) { onglet = it }
+                }
+                Column(
+                    Modifier.largeurDeLecture().fillMaxWidth().padding(horizontal = Mise.marge, vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(Mise.ecart),
+                ) {
+                    ouverture?.let { AvisOuverture(it) }
+                    contenu()
+                }
+            }
+        }
+    }
+    val carnetDEntretien: @Composable () -> Unit = { Carnet(service, droits.cs, session?.installation?.url.orEmpty(), relecture, porte) }
+    // Dans le carnet du pliable (#287) : le sommaire à gauche du pli, la page choisie en face.
+    val pageDuCarnet = LocalPageDuCarnet.current
+    val sommaire = PageDuSommaire.sommaire(droits.locataire, ouverts)
+    val choisie = pageDuCarnet?.let { PageDuSommaire.choisie(sommaire, it.value) }
+    if (pageDuCarnet != null && choisie != null) {
+        Sommaire(sommaire) { pageDuCarnet.value = it.cle }
+        // La page choisie se tient dans la colonne de fiche ; ce qu'elle ouvre (un document, une
+        // question, le syndic) s'empile au-dessus d'elle, et une affaire du carnet par la porte.
+        FicheOuFeuille(NATURE_PAGE_DU_SOMMAIRE, choisie.cle, fermer = {}) {
+            Box(Modifier.fillMaxSize()) {
+                corps(false) {
+                    when (choisie) {
+                        is PageDuSommaire.Rubrique -> Chargement(
+                            charger = { service.fiche() },
+                            cle = relecture,
+                            squelette = { RubriqueDeLaFiche(choisie.rubrique, ApercuResidence.fiche, null, OuvrirFiche()) },
+                        ) { contenu, _ -> RubriqueDeLaFiche(choisie.rubrique, contenu, session, ouvrir) }
+                        is PageDuSommaire.Onglet -> when (choisie.onglet.id) {
+                            OngletsResidence.CARNET -> carnetDEntretien()
+                            // « Voir le règlement dans la Fiche » : la rubrique du règlement, à sa place dans le sommaire.
+                            else -> Reglement(service, droits.cs, relecture, {
+                                pageDuCarnet.value = PageDuSommaire.Rubrique(RubriqueFiche.Reglement).cle
+                            }, ouvrirAvis)
+                        }
                     }
                 }
+                if (destination != null) Box(Modifier.fillMaxSize().background(LocalCouleurs.current.bg)) { DestinationOuverte(destination, fermer, signalements, annuaire, session) }
+                ouverture?.let { Box(if (it.montre != null) Modifier.fillMaxSize().background(LocalCouleurs.current.bg) else Modifier) { Visionneuse(it) } }
+            }
+        }
+        return
+    }
+    corps(true) {
+        when (actif) {
+            OngletsResidence.CARNET -> carnetDEntretien()
+            OngletsResidence.REGLEMENT -> Reglement(service, droits.cs, relecture, { onglet = OngletsResidence.FICHE }, ouvrirAvis)
+            else -> Chargement(
+                charger = { service.fiche() },
+                cle = relecture,
+                squelette = { OngletFiche(ApercuResidence.fiche, null, droits.locataire, OuvrirFiche()) },
+            ) { contenu, _ ->
+                OngletFiche(contenu, session, droits.locataire, ouvrir)
             }
         }
     }
@@ -187,15 +230,23 @@ internal fun EcranMaResidence(
     ouverture?.let { Visionneuse(it) }
     // En fenêtre large, l'avis et l'annuaire du syndic s'ouvrent À CÔTÉ de la page (#69,
     // coprofirst-ios#279) ; en fenêtre étroite, dans leur feuille.
-    val fermer = { destination = null }
-    when (val ouverte = destination) {
-        is PageOuverte.Avis -> FicheOuFeuille(NATURE_AVIS, ouverte.question.id.toString(), fermer) {
+    DestinationOuverte(destination, fermer, signalements, annuaire, session)
+}
+
+/** L'avis d'une question ou l'annuaire placé sur le syndic : à côté de la page, dans sa feuille, ou au-dessus d'elle. */
+@Composable
+private fun DestinationOuverte(
+    destination: PageOuverte?,
+    fermer: () -> Unit,
+    signalements: ServiceSignalementsApi?,
+    annuaire: ServiceAnnuaire,
+    session: SessionOuverte?,
+) {
+    when (destination) {
+        is PageOuverte.Avis -> FicheOuFeuille(NATURE_AVIS, destination.question.id.toString(), fermer) {
             FeuilleResidence(stringResource(R.string.avis_titre), fermer) {
-                val question = ouverte.question
-                val envoi = signalements
-                val signaler: (suspend (String) -> Unit)? = if (envoi == null) {
-                    null
-                } else {
+                val question = destination.question
+                val signaler: (suspend (String) -> Unit)? = signalements?.let { envoi ->
                     { motif: String -> envoi.signalerAuConseil(CibleSignalement.questionReglement(question.id), motif) }
                 }
                 AvisReglement(question, signaler)
