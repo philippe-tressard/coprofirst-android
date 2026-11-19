@@ -85,11 +85,44 @@
       "textes": ["LICENSES/CC0-1.0.txt"]
     },
     {
-      "nom": "Google Play services (Wearable)",
+      "nom": "Google Play services (Wearable, Cloud Messaging)",
       "licences": ["LicenseRef-Android-SDK"],
-      "role": "Le lien entre le téléphone et la montre Wear OS (Data Layer). Bibliothèque propriétaire de Google, permise par le point 4 de la licence de l'app.",
-      "modules": ["com.google.android.gms:*"],
+      "role": "Le lien entre le téléphone et la montre Wear OS (Data Layer), et la réception des notifications. Bibliothèques propriétaires de Google, permises par le point 4 de la licence de l'app.",
+      "modules": ["com.google.android.gms:*", "com.google.firebase:firebase-iid-interop", "com.google.firebase:firebase-measurement-connector"],
       "textes": ["app/src/main/tiers/LICENSE-LicenseRef-Android-SDK.txt"]
+    },
+    {
+      "nom": "Firebase Cloud Messaging",
+      "licences": ["Apache-2.0"],
+      "role": "L'acheminement des notifications sur le téléphone (#280), permis par le point 4 de la licence de l'app ; seul Messaging est lié, Firebase ne s'initialise qu'après « Activer ».",
+      "modules": [
+        "com.google.firebase:firebase-messaging",
+        "com.google.firebase:firebase-common",
+        "com.google.firebase:firebase-components",
+        "com.google.firebase:firebase-annotations",
+        "com.google.firebase:firebase-datatransport",
+        "com.google.firebase:firebase-encoders",
+        "com.google.firebase:firebase-encoders-json",
+        "com.google.firebase:firebase-encoders-proto",
+        "com.google.firebase:firebase-installations",
+        "com.google.firebase:firebase-installations-interop",
+        "com.google.android.datatransport:*"
+      ],
+      "textes": ["LICENSES/Apache-2.0.txt"]
+    },
+    {
+      "nom": "javax.inject (JSR-330)",
+      "licences": ["Apache-2.0"],
+      "role": "Les annotations d'injection que Firebase emporte ; aucun code exécuté.",
+      "modules": ["javax.inject:javax.inject"],
+      "textes": ["LICENSES/Apache-2.0.txt"]
+    },
+    {
+      "nom": "Error Prone (annotations)",
+      "licences": ["Apache-2.0"],
+      "role": "Des annotations de vérification que Firebase emporte ; aucun code exécuté.",
+      "modules": ["com.google.errorprone:error_prone_annotations"],
+      "textes": ["LICENSES/Apache-2.0.txt"]
     }
   ]
 }

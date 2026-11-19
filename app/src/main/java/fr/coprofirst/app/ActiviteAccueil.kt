@@ -22,6 +22,7 @@ import fr.coprofirst.app.entree.NavigationEntree
 import fr.coprofirst.app.entree.ParcoursEntree
 import fr.coprofirst.app.entree.vitrine.LocalVitrine
 import fr.coprofirst.app.entree.vitrine.VitrineDuSite
+import fr.coprofirst.app.fonctions.notifications.push.NotificationsPush
 import fr.coprofirst.app.navigation.LocalMarquesPages
 import fr.coprofirst.app.navigation.LocalPosture
 import fr.coprofirst.app.navigation.MarquesPages
@@ -30,8 +31,9 @@ import fr.coprofirst.app.navigation.posture
 import kotlinx.coroutines.flow.map
 
 /**
- * Point d'entrée de l'app : le parcours d'entrée (qui pose le thème de sa résidence), et
- * les liens d'application qui l'ouvrent (#7) — au lancement comme app ouverte.
+ * Point d'entrée de l'app : le parcours d'entrée (qui pose le thème de sa résidence), les
+ * liens d'application qui l'ouvrent (#7) et les notifications push touchées (#280) — au
+ * lancement comme app ouverte.
  */
 class ActiviteAccueil : ComponentActivity() {
     /** Le même parcours que celui de `NavigationEntree` : un par activité, gardé à la rotation. */
@@ -70,7 +72,15 @@ class ActiviteAccueil : ComponentActivity() {
     }
 
     private fun suivre(intent: Intent?) {
-        if (intent?.action != Intent.ACTION_VIEW) return
+        intent ?: return
+        // Une notification touchée : son seul abonnement, posé par Android (app en arrière-plan)
+        // ou par `AvertissementPush`. Il ne se suit qu'une fois.
+        intent.getStringExtra(NotificationsPush.CLE_ABONNEMENT)?.let { abonnement ->
+            intent.removeExtra(NotificationsPush.CLE_ABONNEMENT)
+            NotificationsPush.de(applicationContext).residenceDe(abonnement)?.let(parcours::suivreNotification)
+            return
+        }
+        if (intent.action != Intent.ACTION_VIEW) return
         intent.dataString?.let(parcours::suivreLien)
     }
 }

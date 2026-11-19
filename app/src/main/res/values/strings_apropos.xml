@@ -15,7 +15,7 @@ licence, dépôt) est généré : `TextesDuPied`.
     <!-- %1$s : le logiciel (« CoproFirst ») ; %2$s : le nom de sa licence. -->
     <string name="apropos_distribue">%1$s est distribué sous la %2$s.</string>
     <!-- LICENSES/LicenseRef-CoproFirst-Magasins.txt, points 1 à 4. -->
-    <string name="apropos_permissions_app">L\'app y ajoute deux permissions (article 7) : sa distribution par les magasins d\'applications, et sa liaison avec une bibliothèque de Google Play services, Wearable.</string>
+    <string name="apropos_permissions_app">L\'app y ajoute deux permissions (article 7) : sa distribution par les magasins d\'applications, et sa liaison avec deux bibliothèques de Google Play services, Firebase Cloud Messaging et Wearable.</string>
     <string name="apropos_non_publie">La résidence n\'a pas encore publié ce texte.</string>
     <!-- Du HTML, lu par TexteRiche : %1$s le logiciel, %2$s l'adresse de la licence, %3$s son nom, %4$s son identifiant SPDX, %5$s le dépôt. -->
     <string name="apropos_logiciel_libre"><![CDATA[<p>Ce site et cette app reposent sur <strong>%1$s</strong>, distribué sous la <a href="%2$s">%3$s</a> (%4$s) : chacun peut l\'utiliser, l\'étudier, le modifier et le redistribuer, à condition de publier ses modifications sous la même licence. Le code est sur <a href="%5$s">GitHub</a>.</p>]]></string>

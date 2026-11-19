@@ -89,12 +89,13 @@ fun OngletBadges(contexte: ContexteOnglet) {
 | API | Pendant iOS | Usage |
 |---|---|---|
 | `BoutonCloche(page, nonLues) { ouvrir }` | `ClocheNotifications` | Dans la barre du haut de chaque page de la résidence (posée par `EcranResidence`, après les actions de l'écran ; repère `cloche`). Au-delà de zéro non lue, un point `danger` (repère `cloche.point`, `bell.badge` de l'iOS), et « 12 non lues » dit par TalkBack. |
-| `CompteurNonLues.partage` : `nombre(residence)`, `noter(residence, n)`, `relire(residence) { lire }` ; `CompteurNonLues.phrase(n)` | `CompteurNonLues` | Le nombre de non lues de CHAQUE résidence (clé : `Installation.url`), lu par la cloche en composition. Aucune route ne le sert seul : il se compte sur GET /notifications — la page des notifications le note à chaque lecture et à chaque geste, la résidence le relit à son ouverture (`ParcoursResidence.relireNonLues`) ; un échec garde le nombre noté. `phrase` : « 1 non lue », « 12 non lues ». |
+| `CompteurNonLues.partage` : `nombre(residence)`, `noter(residence, n)`, `relire(residence) { lire }`, `demanderRelecture(residence)` et `relectures` (#280) ; `CompteurNonLues.phrase(n)` | `CompteurNonLues` | Le nombre de non lues de CHAQUE résidence (clé : `Installation.url`), lu par la cloche en composition. Aucune route ne le sert seul : il se compte sur GET /notifications — la page des notifications le note à chaque lecture et à chaque geste, la résidence le relit à son ouverture (`ParcoursResidence.relireNonLues`) ; un échec garde le nombre noté. `phrase` : « 1 non lue », « 12 non lues ». |
 | `FeuilleNotifications(page, contexte, fermer)` | `.feuilleNotifications` | La page `notifications` DU REGISTRE (`RegistreDesMenus`), en feuille : son titre et le sous-titre que son écran déclare (`SousTitreDeBarre`), ses actions (`ActionsDeBarre` : la barre de la feuille), « OK » (repère `notifications.ok`). |
 | `Cloche.page` | — | La page des notifications (`PagesParDefaut.horsMenu`, générée) ; absente : pas de cloche. |
 
-Aucune notification push (abandonnées le 17/11/2026, #269) : le nombre se relit à
-l'ouverture de la résidence et sur la page des notifications.
+Le nombre se relit à l'ouverture de la résidence, sur la page des notifications, et à
+l'arrivée d'une notification push pour la résidence ouverte (`CompteurNonLues.demanderRelecture`,
+écouté par l'écran de la résidence, #280).
 
 ## Formats — `fr.coprofirst.app.commun.formats.FormatsDuSite`
 

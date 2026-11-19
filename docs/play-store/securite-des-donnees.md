@@ -33,9 +33,23 @@ Une seule lecture part ailleurs, et elle n'envoie rien : le texte public de la v
 sans cookie, sans jeton, sans paramètre, qui ne porte aucune donnée de l'utilisateur. Rien
 à déclarer dans la grille ; elle est dite ici pour que la fiche reste vraie.
 
-**Aucune notification push** (abandonnées le 17/11/2026, décision de Philippe, #269) :
-l'app ne demande à Google aucun jeton d'appareil, la résidence ne lui en confie aucun ; les
-alertes se lisent dans la cloche, par l'API.
+**Une donnée part chez Google, sans contenu : le jeton d'appareil des notifications (#280).**
+Les notifications passent par Firebase Cloud Messaging (bibliothèque permise par le point 4
+de la licence, rouvert le 18/11/2026, « voie A »). Seule l'alerte d'une actualité ⚡ urgente
+du conseil syndical ou de l'administration part vers un téléphone (coprofirst v3.120.0).
+Après « Activer » dans la cloche, et seulement alors, le téléphone obtient de Google un
+identifiant d'installation Firebase et un jeton d'appareil (le jeton FCM), et envoie le
+jeton à la résidence avec un **abonnement** aléatoire tiré par l'app (`postAppareils`), si
+elle sert le contrat 2.10.0. Le relais de CoproFirst rend le jeton à Google pour acheminer
+chaque notification, qui ne porte qu'un texte fixe et l'abonnement, jamais de donnée
+personnelle : le détail se lit ensuite par l'API (garde-fou du projet). À la déconnexion,
+l'app retire l'appareil (`deleteAppareilsAbonnement`). Firebase ne s'initialise jamais au
+lancement : son initialisation automatique est éteinte et aucune autre bibliothèque
+Firebase n'est liée (ni Analytics, ni Crashlytics : `verifier_dependances_google.py`).
+Ce dépôt **déclare ce jeton partagé avec Google**, pour l'acheminement seulement. Google
+range les transferts à un prestataire qui agit pour le compte de l'app hors du « partage » :
+c'est la lecture la plus prudente qui l'emporte ici. Tant que le relais est éteint
+(`RelaisPush.ACTIF`), rien de cela ne se fait.
 Le lien téléphone ↔ montre (Wearable, #207) se déclare dans le lot qui l'apporte.
 Son premier geste, « Continuer sur le téléphone » (lot 2a), ne fait passer qu'**une adresse
 de page de la résidence** (« https://<résidence>/tickets/12 ») de la montre au téléphone
@@ -52,7 +66,7 @@ la cloche de la résidence (`GET /notifications`, seule route que ce jeton ouvre
 n'envoie rien d'autre.
 **Lecture prudente** : Google Play services peut acheminer par ses serveurs, et pas
 seulement de proche en proche. Ce dépôt déclare donc ce jeton comme un `ID appareil`
-**partagé avec Google**, pour l'acheminement seulement. Lecture retenue le 17/11/2026
+**partagé avec Google**, pour l'acheminement seulement, comme le jeton FCM. Lecture retenue le 17/11/2026
 (coordination, #207) : une fiche qui déclare un peu trop ne cause aucun tort, une qui
 déclare trop peu expose à un retrait par Google. Philippe peut la revoir en remplissant le
 formulaire Play.
@@ -69,17 +83,20 @@ lecture l'emporte, ce fichier et la saisie changent ensemble.
 | `android.permission.CAMERA` | lire, sur l'appareil, le QR code de la fiche d'arrivée ; l'image ne quitte pas l'appareil |
 | `android.permission.USE_BIOMETRIC` | rouvrir la session gardée au Keystore ; l'app ne reçoit que la réponse du système |
 | `android.permission.ACCESS_NETWORK_STATE` | savoir si le réseau est là, pour la consultation hors ligne ; rien ne quitte l'appareil |
+| `android.permission.POST_NOTIFICATIONS` | avertir le téléphone de l'alerte d'une actualité urgente (#280) ; demandée après « Activer » dans la cloche, jamais au lancement |
 
-Aucune autre : ni localisation, ni contacts, ni stockage partagé, ni notifications tant
-que #23 ne les demande. « à venir (#N) » : la permission que le ticket ajoute, refusée
+Aucune autre : ni localisation, ni contacts, ni stockage partagé. « à venir (#N) » : la permission que le ticket ajoute, refusée
 dès qu'elle est demandée — la PR qui l'apporte retire la marque. Le contrôle lit le manifeste du dépôt ; ce
 que les bibliothèques ajouteraient au manifeste fusionné se relit au build de la release
-(§6).
+(§6). Relevé le 19/11/2026 (#280) : Firebase Messaging y ajoute
+`com.google.android.c2dm.permission.RECEIVE` (recevoir ses messages) et
+`android.permission.WAKE_LOCK` (les traiter écran éteint) ; aucune donnée de plus. Son
+fournisseur d'initialisation (`FirebaseInitProvider`) en est retiré.
 
 ## 3. Les données, dans la grille de Google
 
 Pour chacune : **collectée** oui, **chiffrée en transit** oui (HTTPS), **partagée** non —
-sauf `ID appareil`, partagé avec Google pour l'acheminement vers la montre (§1).
+sauf `ID appareil`, partagé avec Google pour l'acheminement des notifications et vers la montre (§1).
 
 | Code (§4) | Case de la Play Console | Ce que c'est | Obligatoire ? | Finalités |
 |---|---|---|---|---|
@@ -91,7 +108,7 @@ sauf `ID appareil`, partagé avec Google pour l'acheminement vers la montre (§1
 | `Messages` | Messages › Autres messages dans l'application | les messages d'une affaire | facultatif | Fonctionnement de l'app |
 | `Contenu utilisateur` | Activité dans les applications › Autre contenu généré par l'utilisateur | affaires, annonces, idées, avis, votes, commentaires, questions, demandes de badge | facultatif | Fonctionnement de l'app |
 | `Interactions` | Activité dans les applications › Interactions avec l'application | les écrans vus, sous le chemin de la page équivalente du site, le canal « android » et la classe de l'appareil (téléphone, tablette, TV, montre, voiture, ordinateur ; ni modèle, ni version du système, ni identifiant, #77) : la mesure d'audience de la résidence, **jamais** si le compte l'a refusée au Profil | facultatif | Analyses |
-| `ID appareil` | Identifiants de l'appareil ou autres | le jeton de la montre Wear OS reliée et son identifiant (#207), seulement quand la liaison s'allume (`LiaisonMontre.ACTIF`) ; **partagés avec Google** (Data Layer de Wear OS), pour l'acheminement seulement, sans contenu | facultatif | Fonctionnement de l'app |
+| `ID appareil` | Identifiants de l'appareil ou autres | le jeton d'appareil des notifications (FCM), l'identifiant d'installation Firebase et l'abonnement (#280), seulement après « Activer », relais allumé (`RelaisPush.ACTIF`) ; le jeton de la montre Wear OS reliée et son identifiant (#207), seulement quand la liaison s'allume (`LiaisonMontre.ACTIF`) ; **partagés avec Google** (Firebase Cloud Messaging, Data Layer de Wear OS), pour l'acheminement seulement, sans contenu | facultatif | Fonctionnement de l'app |
 
 **Non cochées** : localisation, informations financières, santé, photos et vidéos,
 fichiers, agenda, contacts, historique de navigation, applications installées, journaux de
@@ -123,6 +140,8 @@ contrôle le refuse dès que l'envoi existe — la PR qui l'apporte retire la ma
 | `patchAuthMeOptOutTelemetrie` | `Autres infos` |
 | `deleteAuthMeTelemetrie` | — |
 | `postTelemetryCollect` | `Interactions` |
+| `postAppareils` | `ID appareil` |
+| `deleteAppareilsAbonnement` | `ID appareil` |
 | `postMontres` | `ID appareil` |
 | `postMontresMontreIdRenouveler` | `ID appareil` |
 | `deleteMontresMontreId` | — |
@@ -200,8 +219,8 @@ Les libellés peuvent avoir changé.
 | Votre application collecte-t-elle ou partage-t-elle des types de données requis ? | **Oui** |
 | Toutes les données sont-elles chiffrées en transit ? | **Oui** |
 | Proposez-vous aux utilisateurs un moyen de demander la suppression de leurs données ? | **Oui** (dans l'app, Profil ; et le lien de la politique) |
-| Les types de données | les huit premiers du §3, aucun autre ; `ID appareil` seulement quand la liaison de la montre s'allume (#207) |
-| Pour chacun : collectée / partagée | **collectée** ; **non partagée** (§1) |
+| Les types de données | les huit premiers du §3, aucun autre ; `ID appareil` dès que le relais des notifications (#280) ou la liaison de la montre (#207) s'allume |
+| Pour chacun : collectée / partagée | **collectée** ; **non partagée** (§1), sauf `ID appareil` : **partagé** avec Google, pour l'acheminement |
 | Traitée de façon éphémère ? | **Non** |
 | Obligatoire ou facultative | la colonne du §3 |
 | Finalités | la colonne du §3 |

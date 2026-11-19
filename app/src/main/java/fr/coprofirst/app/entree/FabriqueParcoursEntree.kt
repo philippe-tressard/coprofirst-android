@@ -10,6 +10,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import fr.coprofirst.app.commun.audience.AudienceDeLApp
 import fr.coprofirst.app.commun.pieces.PiecesLocales
 import fr.coprofirst.app.fonctions.notifications.montre.LiaisonsMontre
+import fr.coprofirst.app.fonctions.notifications.push.NotificationsPush
 import fr.coprofirst.app.navigation.MarquesPages
 import fr.coprofirst.app.session.AbonnesSession
 import fr.coprofirst.app.session.ChiffrementKeystore
@@ -58,7 +59,7 @@ val FabriqueParcoursEntree = viewModelFactory {
             avantSortie = { AudienceDeLApp.de(application).vider() },
             apresSortie = { AudienceDeLApp.de(application).oublier(it.url) },
             // Les abonnés au cycle des résidences (#150) : la seule liste.
-            abonnes = AbonnesSession(listOf(LiaisonsMontre.de(application), MarquesPages.de(application))),
+            abonnes = AbonnesSession(listOf(NotificationsPush.de(application), LiaisonsMontre.de(application), MarquesPages.de(application))),
         )
     }
 }

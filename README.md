@@ -109,7 +109,10 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   elle est définitive ; les lues supprimées, un avis le dit. Balayer vers la droite marque
   lu, vers la gauche supprime. Tirer la liste la relit. La cloche, en haut de chaque page
   de la résidence, ouvre la liste en feuille ; un point y dit qu'une alerte attend (le
-  nombre, au lecteur d'écran). Pas de notification push pour l'instant ; les alertes du syndic sont prévues (#280).
+  nombre, au lecteur d'écran). Les notifications sur le téléphone (#280) : l'offre « Être averti sur ce
+  téléphone » en tête de la cloche, puis l'alerte d'une actualité ⚡ urgente du conseil syndical sonne,
+  sans rien dire de son contenu ; la toucher ouvre la cloche de sa résidence. Éteintes tant que le relais
+  ne l'est pas (`RelaisPush`), et seulement auprès d'une résidence au contrat 2.10.0.
 - **FAQ** : les questions de la résidence par catégorie, une réponse dépliée à la fois ;
   « Partager le lien » d'une question ; « Créer une affaire » et le Manuel utilisateur. La rédaction reste au site,
   et l'écran ne le dit qu'à qui le serveur l'ouvre.
@@ -291,10 +294,10 @@ plancher — pièces identiques, contrat servi par chaque installation connue
 ## Licence
 
 AGPL-3.0-or-later, avec des permissions additionnelles (article 7) : la distribution par
-les magasins d'applications Android, et la liaison avec une bibliothèque de Google Play
-services, nommée, et elle seule — Wearable (lien avec la montre), décision du 16/11/2026,
-restreinte le 17/11/2026 au retrait du client push (Firebase Cloud Messaging n'y est plus ;
-son retour pour les alertes du syndic, #280, demandera de rouvrir ce point).
+les magasins d'applications Android, et la liaison avec deux bibliothèques de Google Play
+services, nommées, et elles seules — Firebase Cloud Messaging (notifications) et Wearable
+(lien avec la montre), décision du 16/11/2026, restreinte le 17/11/2026 au retrait du client
+push, rouverte à Firebase Cloud Messaging le 18/11/2026 (« voie A », #280).
 Voir `LICENSE` et `LICENSES/` ;
 `scripts/verifier_dependances_google.py` refuse toute autre bibliothèque de ces familles.
 Conformité [REUSE](https://reuse.software) : `reuse lint`.

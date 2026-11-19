@@ -80,12 +80,15 @@ class InstallationTest {
         assertTrue(servi("2.10.0").sert(VersionContrat.MODERATION))
         assertFalse(servi("2.8.0").sert(VersionContrat.MODERATION))
         assertFalse(servi(null).sert(VersionContrat.MODERATION))
+        assertTrue(servi("2.10.0").sert(VersionContrat.PUSH))
+        assertFalse(servi("2.9.0").sert(VersionContrat.PUSH))
     }
 
     /** Une porte que le plancher atteint est MORTE : elle se retire, avec la greffe de `GREFFES`. */
     @Test
     fun aucunePorteSousLePlancher() {
         assertTrue("porte morte : le plancher sert la modération — retirer MODERATION et la greffe", plancher < VersionContrat.MODERATION)
+        assertTrue("porte morte : le plancher relaie FCM — retirer PUSH", plancher < VersionContrat.PUSH)
     }
 
     /** #233 : `installation_suspendue` est une CHAÎNE ; « 1 » seul suspend ; absente, rien. */

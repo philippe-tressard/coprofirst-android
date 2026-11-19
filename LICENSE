@@ -44,21 +44,23 @@ liaison avec deux bibliothèques de Google Play services (point 4).
    Hors de ces services, l'AGPL s'applique sans cette permission.
 
 4. Bibliothèques Google Play services (permission accordée le 16/11/2026,
-   restreinte le 17/11/2026)
+   restreinte le 17/11/2026, rouverte à Firebase Cloud Messaging le 18/11/2026)
 
    Vous êtes autorisé à combiner le programme, ou une œuvre fondée sur lui, avec
-   la bibliothèque de Google nommée ci-dessous, et à distribuer cette
+   les bibliothèques de Google nommées ci-dessous, et à distribuer cette
    combinaison sous forme de code objet, par les services du point 1 ou
-   autrement. Le code de cette bibliothèque n'est alors pas tenu de faire partie
-   du Source correspondant, ni d'être distribué sous les termes de l'AGPL :
+   autrement. Le code de ces bibliothèques n'est alors pas tenu de faire partie du
+   Source correspondant, ni d'être distribué sous les termes de l'AGPL :
 
+   - com.google.firebase:firebase-messaging (Firebase Cloud Messaging :
+     l'acheminement des notifications) ;
    - com.google.android.gms:play-services-wearable (Wearable : le lien entre le
      téléphone et la montre) ;
 
-   ainsi que les bibliothèques de Google qu'elle requiert elle-même, telles que
-   sa publication les déclare. Cette permission ne s'étend à aucune autre
-   bibliothèque. Elle ne restreint en rien les droits que l'AGPL donne sur le
-   reste du programme, dont le Source correspondant reste dû.
+   ainsi que les bibliothèques de Google que ces deux-là requièrent elles-mêmes,
+   telles que leur publication les déclare. Cette permission ne s'étend à aucune
+   autre bibliothèque. Elle ne restreint en rien les droits que l'AGPL donne sur
+   le reste du programme, dont le Source correspondant reste dû.
 
 5. Versions modifiées
 
