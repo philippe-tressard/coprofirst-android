@@ -9,6 +9,7 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -20,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
@@ -33,6 +35,7 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
+import fr.coprofirst.app.charte.largeurDeLecture
 import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.CibleSignalement
@@ -134,35 +137,38 @@ private fun ContenuSondage(sondage: DetailSondage, service: ServiceSondage?, avi
         // « Masquer ce que publie… » l'auteur d'un commentaire (#297), comme l'iOS.
         masquer = if (service?.moderation == true) ({ aMasquer = it }) else null,
     )
-    Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Mise.marge).padding(bottom = Mise.marge),
-        verticalArrangement = Arrangement.spacedBy(Mise.ecart),
-    ) {
-        Carte { EnteteSondage(sondage) }
-        // Visibles et le vote encore à faire : les résultats (provisoires) passent au-dessus
-        // du formulaire (5Hostachy #2803, coprofirst-ios#257).
-        if (sondage.resultatsAvantVote) ResultatsSondage(sondage)
-        AnimatedContent(targetState = sondage.peutVoter, label = "vote") { ouvert ->
-            if (ouvert) {
-                FormulaireVote(sondage, vote, { vote = it }, envoi) {
-                    val envoye = vote
-                    envoi = true
-                    portee.launch {
-                        if (geste(R.string.sondage_vote_enregistre) { it.voter(envoye, sondage.id) }) vote = VoteSondage()
-                        envoi = false
+    // La largeur de lecture sur une tablette (#69) ; la page entière défile, ses marges comprises.
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            Modifier.largeurDeLecture().fillMaxWidth().padding(horizontal = Mise.marge).padding(bottom = Mise.marge),
+            verticalArrangement = Arrangement.spacedBy(Mise.ecart),
+        ) {
+            Carte { EnteteSondage(sondage) }
+            // Visibles et le vote encore à faire : les résultats (provisoires) passent au-dessus
+            // du formulaire (5Hostachy #2803, coprofirst-ios#257).
+            if (sondage.resultatsAvantVote) ResultatsSondage(sondage)
+            AnimatedContent(targetState = sondage.peutVoter, label = "vote") { ouvert ->
+                if (ouvert) {
+                    FormulaireVote(sondage, vote, { vote = it }, envoi) {
+                        val envoye = vote
+                        envoi = true
+                        portee.launch {
+                            if (geste(R.string.sondage_vote_enregistre) { it.voter(envoye, sondage.id) }) vote = VoteSondage()
+                            envoi = false
+                        }
                     }
+                } else {
+                    ResultatsSondage(sondage)
                 }
-            } else {
-                ResultatsSondage(sondage)
             }
+            FilReponses(
+                sondage.commentaires,
+                sondage.moi,
+                gestes,
+                invite = stringResource(R.string.sondage_commentaire_invite_fil),
+                entete = { stringResource(R.string.sondage_commentaires, it) },
+            )
         }
-        FilReponses(
-            sondage.commentaires,
-            sondage.moi,
-            gestes,
-            invite = stringResource(R.string.sondage_commentaire_invite_fil),
-            entete = { stringResource(R.string.sondage_commentaires, it) },
-        )
     }
     SignalementAuConseil(signale, envoyer = { reponse, motif ->
         portee.launch {

@@ -3,9 +3,6 @@
 
 package fr.coprofirst.app.fonctions.fil
 
-import fr.coprofirst.app.commun.pieces.Ouverture
-import fr.coprofirst.app.commun.pieces.Visionneuse
-import fr.coprofirst.app.commun.pieces.documentChoisi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,7 +15,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,6 +33,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.commun.Actualisable
 import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.EtatVide
 import fr.coprofirst.app.commun.Libelle
@@ -50,6 +47,9 @@ import fr.coprofirst.app.commun.miseenpage.LocalJourDuCarnet
 import fr.coprofirst.app.commun.miseenpage.OccuperLaColonneDeFiche
 import fr.coprofirst.app.commun.miseenpage.rangeeChoisie
 import fr.coprofirst.app.commun.pieces.AvisOuverture
+import fr.coprofirst.app.commun.pieces.Ouverture
+import fr.coprofirst.app.commun.pieces.Visionneuse
+import fr.coprofirst.app.commun.pieces.documentChoisi
 import fr.coprofirst.app.commun.pieces.rememberOuverture
 import fr.coprofirst.app.navigation.ContexteDeMenu
 import fr.coprofirst.app.navigation.Destination
@@ -111,7 +111,7 @@ private fun ListeFil(parcours: ParcoursFil, session: SessionOuverte, ouvrir: (De
     val affiches = if (carnet == null) jours else listOfNotNull(feuillet)
     // Dans le carnet, le pied de page (« Veille », « Lendemain ») tient sous la page qui défile.
     Column(Modifier.fillMaxSize()) {
-        PullToRefreshBox(isRefreshing = etat.rafraichissement, onRefresh = parcours::rafraichir, modifier = Modifier.fillMaxWidth().weight(1f)) {
+        Actualisable(enCours = etat.rafraichissement, actualiser = parcours::rafraichir, modifier = Modifier.fillMaxWidth().weight(1f)) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize().let { m -> feuillet?.let { m.tournerLaPage(it.jour, veille, lendemain) } ?: m },
                 contentPadding = PaddingValues(bottom = 16.dp),

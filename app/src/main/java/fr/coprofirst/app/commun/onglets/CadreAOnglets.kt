@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -20,7 +19,6 @@ import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -36,6 +34,8 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.charte.largeurDeLecture
+import fr.coprofirst.app.commun.Actualisable
 import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.commun.AvisEphemere
 import fr.coprofirst.app.commun.EtatVide
@@ -97,9 +97,9 @@ private fun Contenu(
     val descriptif = page.descriptifs[actif.id]
         ?: stringResource(R.string.onglets_sur_le_site_descriptif).takeIf { actif.id == OngletsSurLeSite.ID }
     AvisEphemere(avis, modifier) {
-        PullToRefreshBox(isRefreshing = false, onRefresh = { actualisation += 1 }, modifier = Modifier.fillMaxSize()) {
+        Actualisable(enCours = false, actualiser = { actualisation += 1 }, modifier = Modifier.fillMaxSize()) {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
-                Column(Modifier.widthIn(max = LARGEUR_MAX).fillMaxWidth().padding(bottom = 32.dp)) {
+                Column(Modifier.largeurDeLecture().fillMaxWidth().padding(bottom = 32.dp)) {
                     BarreOnglets(onglets.barre, actif.id, marges = PaddingValues(horizontal = Mise.marge), choisir = choisir)
                     Column(
                         Modifier.padding(horizontal = Mise.marge).padding(top = 12.dp),
@@ -141,6 +141,4 @@ private fun Onglet(
     }
 }
 
-/** La largeur de lecture d'une page à onglets (tablette, paysage), celle de l'iOS. */
-private val LARGEUR_MAX = 720.dp
 private const val DUREE_TRANSITION_MS = 220

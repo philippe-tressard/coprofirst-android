@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -34,10 +33,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
+import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.charte.largeurDeLecture
 import fr.coprofirst.app.commun.BoutonContour
 import fr.coprofirst.app.commun.BoutonPlein
-import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.partage.R as RCommun
 
 /**
@@ -74,7 +74,7 @@ fun EcranAccueil(parcours: ActionsEntree) {
         )
         Spacer(Modifier.weight(1f).height(32.dp))
         Column(
-            modifier = Modifier.widthIn(max = 480.dp).fillMaxWidth(),
+            modifier = Modifier.largeurDeLecture(Mise.formulaire).fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             BoutonPlein(R.string.accueil_entrer, onClick = parcours::entrer)

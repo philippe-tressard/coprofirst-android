@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.fonctions.affaires
 
+import android.view.KeyEvent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.CompositionLocalProvider
@@ -27,6 +28,9 @@ import fr.coprofirst.app.commun.apercu.SaisieLecture
 import fr.coprofirst.app.commun.attendreDisparitionTag
 import fr.coprofirst.app.commun.attendreTag
 import fr.coprofirst.app.commun.attendreTexte
+import fr.coprofirst.app.commun.clavier.LocalRaccourcisClavier
+import fr.coprofirst.app.commun.clavier.Raccourci
+import fr.coprofirst.app.commun.clavier.RaccourcisClavier
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.toucher
 import fr.coprofirst.app.navigation.ActionsDeclarees
@@ -38,6 +42,7 @@ import fr.coprofirst.app.session.SessionsParHote
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -52,12 +57,15 @@ class AffairesInterfaceTest {
     private val fiches = mutableListOf<Int>()
     private val session = SessionOuverte(Installation("https://residence.exemple.test", "Les Glycines"), SessionsParHote())
 
+    /** Les raccourcis du clavier, comme l'activité les tient (#69). */
+    private val raccourcis = RaccourcisClavier()
+
     private fun ouvrir(droits: DroitsOnglet = DroitsOnglet(cs = true, proprioOuCS = true), saisie: String? = null): AffairesSimulees {
         val service = AffairesSimulees()
         val barre = BarreDuHaut()
         ecran.setContent {
             ThemeCoproFirst {
-                CompositionLocalProvider(LocalSaisieAffaire provides saisie) {
+                CompositionLocalProvider(LocalSaisieAffaire provides saisie, LocalRaccourcisClavier provides raccourcis) {
                     Column {
                         Row { ActionsDeclarees(barre) }
                         EcranAffaires(service, barre, droits, { "https://residence.exemple.test/tickets/$it" }) { fiches += it }
@@ -192,6 +200,21 @@ class AffairesInterfaceTest {
         ecran.attendreTag(ReperesAffaires.carte("A-0009"), useUnmergedTree = true)
         assertEquals("copro", service.creees.single().perimetre)
         assertEquals("panne", service.creees.single().categorie)
+    }
+
+    /**
+     * #69, `AffairesUITests/testCommandeNOuvreUneNouvelleAffaire` de l'iOS : au clavier d'une
+     * tablette, Ctrl+N ouvre « Nouvelle affaire », et Ctrl+R est offert (la liste s'actualise).
+     */
+    @Test
+    fun ctrlNOuvreUneNouvelleAffaire() {
+        ouvrir()
+        ecran.attendreTag(ReperesNouvelle.NOUVELLE, useUnmergedTree = true)
+        ecran.runOnIdle {
+            assertEquals(listOf(Raccourci.NouvelleAffaire, Raccourci.Actualiser), raccourcis.offerts())
+            assertTrue(raccourcis.declencher(KeyEvent.KEYCODE_N, ctrl = true))
+        }
+        ecran.attendreTag(ReperesChamps.NOUVELLE.categorie("panne"), useUnmergedTree = true)
     }
 
     /**

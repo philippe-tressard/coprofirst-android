@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -56,6 +55,7 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
+import fr.coprofirst.app.charte.largeurDeLecture
 import fr.coprofirst.app.commun.BoutonContour
 import fr.coprofirst.app.commun.BoutonPlein
 import fr.coprofirst.app.commun.Carte
@@ -261,7 +261,7 @@ private fun PageAuPied(retour: () -> Unit, pied: (@Composable ColumnScope.() -> 
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
                     .padding(Mise.marge)
-                    .widthIn(max = 640.dp),
+                    .largeurDeLecture(),
                 verticalArrangement = Arrangement.spacedBy(24.dp),
                 content = contenu,
             )

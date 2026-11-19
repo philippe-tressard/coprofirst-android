@@ -3,23 +3,15 @@
 
 package fr.coprofirst.app.fonctions.residence
 
-import fr.coprofirst.app.session.VersionContrat
-import fr.coprofirst.app.commun.ServiceSignalementsApi
-import fr.coprofirst.app.commun.CibleSignalement
-import fr.coprofirst.app.commun.pieces.Visionneuse
-import fr.coprofirst.app.commun.miseenpage.FicheOuFeuille
-import fr.coprofirst.app.commun.miseenpage.OccuperLaColonneDeFiche
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -35,12 +27,19 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.charte.largeurDeLecture
+import fr.coprofirst.app.commun.Actualisable
 import fr.coprofirst.app.commun.Chargement
+import fr.coprofirst.app.commun.CibleSignalement
 import fr.coprofirst.app.commun.PageHorsLigne
+import fr.coprofirst.app.commun.ServiceSignalementsApi
+import fr.coprofirst.app.commun.miseenpage.FicheOuFeuille
+import fr.coprofirst.app.commun.miseenpage.OccuperLaColonneDeFiche
+import fr.coprofirst.app.commun.onglets.BarreOnglets
 import fr.coprofirst.app.commun.perimetres.Perimetre
 import fr.coprofirst.app.commun.pieces.AvisOuverture
+import fr.coprofirst.app.commun.pieces.Visionneuse
 import fr.coprofirst.app.commun.pieces.rememberOuverture
-import fr.coprofirst.app.commun.onglets.BarreOnglets
 import fr.coprofirst.app.fonctions.annuaire.AncreAnnuaire
 import fr.coprofirst.app.fonctions.annuaire.EcranAnnuaire
 import fr.coprofirst.app.fonctions.annuaire.ServiceAnnuaire
@@ -53,6 +52,7 @@ import fr.coprofirst.app.navigation.OngletsDuSite
 import fr.coprofirst.app.navigation.ouverts
 import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.SessionOuverte
+import fr.coprofirst.app.session.VersionContrat
 
 /** Les repères des tests d'interface : les identifiants d'accessibilité de l'iOS. */
 object ReperesResidence {
@@ -154,7 +154,7 @@ internal fun EcranMaResidence(
         rapportEnCours = ouverture?.enCours?.removePrefix("$RAPPORTS-")?.toIntOrNull(),
         syndic = { destination = PageOuverte.Syndic },
     )
-    PullToRefreshBox(isRefreshing = false, onRefresh = { relecture++ }, modifier = Modifier.fillMaxSize()) {
+    Actualisable(enCours = false, actualiser = { relecture++ }, modifier = Modifier.fillMaxSize()) {
         Column(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -163,7 +163,7 @@ internal fun EcranMaResidence(
                 BarreOnglets(ouverts, actif, marges = PaddingValues(horizontal = Mise.marge)) { onglet = it }
             }
             Column(
-                Modifier.widthIn(max = 720.dp).fillMaxWidth().padding(horizontal = Mise.marge, vertical = 16.dp),
+                Modifier.largeurDeLecture().fillMaxWidth().padding(horizontal = Mise.marge, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(Mise.ecart),
             ) {
                 ouverture?.let { AvisOuverture(it) }

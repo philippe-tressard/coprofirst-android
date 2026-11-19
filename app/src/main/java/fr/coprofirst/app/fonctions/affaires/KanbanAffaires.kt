@@ -33,7 +33,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -63,6 +62,7 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.commun.Actualisable
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.texte.Separateur
 import kotlinx.coroutines.launch
@@ -127,9 +127,9 @@ internal fun KanbanAffaires(ctx: ContexteAffaires) {
         Sauts(referentiels?.colonnes.orEmpty(), colonnes.getOrNull(pages.currentPage)?.id, etat) { i ->
             portee.launch { pages.animateScrollToPage(i) }
         }
-        PullToRefreshBox(
-            isRefreshing = rafraichit,
-            onRefresh = { portee.launch { rafraichit = true; etat.charger(); rafraichit = false } },
+        Actualisable(
+            enCours = rafraichit,
+            actualiser = { portee.launch { rafraichit = true; etat.charger(); rafraichit = false } },
             modifier = Modifier.fillMaxSize(),
         ) {
             HorizontalPager(

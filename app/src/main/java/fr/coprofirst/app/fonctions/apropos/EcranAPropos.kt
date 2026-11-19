@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -48,11 +47,11 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
+import fr.coprofirst.app.charte.largeurDeLecture
 import fr.coprofirst.app.commun.LogoResidence
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.Section
 import fr.coprofirst.app.commun.cliquable
-// La section groupée du Profil, importée et non recopiée : elle monte dans commun/ par #138.
 import fr.coprofirst.app.navigation.ContexteDeMenu
 import fr.coprofirst.app.navigation.Destination
 import fr.coprofirst.app.session.ErreurService
@@ -116,7 +115,7 @@ internal fun EcranAPropos(service: ServiceAPropos, nomResidence: String, residen
         Modifier.fillMaxSize().background(LocalCouleurs.current.bg).verticalScroll(rememberScrollState()).padding(vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Column(Modifier.widthIn(max = 720.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(20.dp)) {
+        Column(Modifier.largeurDeLecture().fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(20.dp)) {
             Section(titre = null) { Marque(nomResidence, AProposResidence.mention(lu, Year.now().value, version(ressources)), residence) }
             AnimatedVisibility(erreur != null) {
                 erreur?.let { MessageErreur(it, Modifier.padding(horizontal = Mise.marge)) { essai++ } }

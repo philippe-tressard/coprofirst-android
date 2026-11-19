@@ -39,14 +39,15 @@ class FicheLocale(val nature: String, val id: String, val contenu: @Composable (
 val LocalDansLaColonne = staticCompositionLocalOf { false }
 
 /**
- * Le choix d'une liste, comme `LienDeFiche` de l'iOS : en fenêtre large, si la liste occupe la
- * colonne (`OccuperLaColonneDeFiche`), `contenu` s'ouvre À CÔTÉ d'elle ; sinon, il se compose
- * ici — sa feuille, comme avant. La rangée choisie se souligne par `rangeeChoisie(nature, id)`.
+ * Le choix d'une liste, comme `LienDeFiche` de l'iOS : en fenêtre large et en paysage, si la
+ * liste occupe la colonne (`OccuperLaColonneDeFiche`), `contenu` s'ouvre À CÔTÉ d'elle ; sinon
+ * (téléphone, portrait), il se compose ici — sa feuille, comme avant. La rangée choisie se souligne par `rangeeChoisie(nature, id)`.
  */
 @Composable
 fun FicheOuFeuille(nature: String, id: String, fermer: () -> Unit, contenu: @Composable () -> Unit) {
     val colonne = LocalColonneDeFiche.current
-    if (colonne == null || !colonne.occupee) {
+    // En portrait, la fiche se pousse par-dessus la liste, comme au téléphone (`LocalFicheParDessus`).
+    if (colonne == null || !colonne.occupee || LocalFicheParDessus.current) {
         contenu()
         return
     }

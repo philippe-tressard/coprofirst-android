@@ -17,10 +17,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.ThemeCoproFirst
@@ -32,6 +34,7 @@ import fr.coprofirst.app.commun.attendreDisparitionTag
 import fr.coprofirst.app.commun.attendreTag
 import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.miseenpage.REPERE_COLONNE
+import fr.coprofirst.app.commun.toucherDescription
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.entree.ServeurDeTest
 import fr.coprofirst.app.fonctions.fil.FilInterfaceTest
@@ -81,7 +84,11 @@ class ListeEtFicheInterfaceTest {
         ecran.runOnUiThread { affiche = true }
     }
 
-    private fun ouvrir(largeur: Dp) {
+    /** La taille du cadre : la tablette se tourne sans reconstruire l'écran (multi-fenêtre). */
+    private var taille by mutableStateOf(DpSize(LARGE, PAYSAGE))
+
+    private fun ouvrir(largeur: Dp, hauteur: Dp = PAYSAGE) {
+        taille = DpSize(largeur, hauteur)
         serveur.flux = FilInterfaceTest.fil(Instant.now())
         val session = serveur.session(Installation("https://residence.exemple.test", "Les Glycines"))
         ecran.setContent {
@@ -90,7 +97,7 @@ class ListeEtFicheInterfaceTest {
                 CompositionLocalProvider(LocalSaveableStateRegistry provides actuel) {
                     ThemeCoproFirst(Palettes.pour(null), sombre = false) {
                         // Calé en haut à gauche : plus large que l'écran du téléphone, il ne déborde qu'à droite.
-                        Box(Modifier.wrapContentSize(Alignment.TopStart, unbounded = true).requiredSize(largeur, 700.dp)) {
+                        Box(Modifier.wrapContentSize(Alignment.TopStart, unbounded = true).requiredSize(taille)) {
                             EcranResidence(session, sortie, serveur.apparence())
                         }
                     }
@@ -155,6 +162,40 @@ class ListeEtFicheInterfaceTest {
         ecran.attendreDisparitionTag(CARTE)
     }
 
+    /**
+     * coprofirst-ios#308 : une fenêtre large EN PORTRAIT garde la barre latérale, mais la liste
+     * prend toute la page et pousse sa fiche par-dessus elle, avec un retour vers la liste.
+     */
+    @Test
+    fun enPortraitLaFicheSePousseParDessusLaListe() {
+        ouvrir(LARGE, PORTRAIT)
+        ecran.attendre(hasTestTag(BARRE_LATERALE))
+        ecran.attendreDisparitionTag(REPERE_COLONNE)
+        ecran.toucherTag(CARTE)
+        ecran.attendre(hasContentDescription("Retour"))
+        ecran.attendreDisparitionTag(CARTE)
+        ecran.attendreDisparitionTag(REPERE_COLONNE)
+        ecran.attendre(hasTestTag(BARRE_LATERALE))
+        ecran.toucherDescription("Retour")
+        ecran.attendreTag(CARTE)
+    }
+
+    /** La tablette tournée : la fiche poussée en portrait se tient à côté de sa liste en paysage, et inversement. */
+    @Test
+    fun laFicheSuitLaTabletteQuOnTourne() {
+        ouvrir(LARGE, PORTRAIT)
+        ecran.toucherTag(CARTE)
+        ecran.attendreDisparitionTag(CARTE)
+        taille = DpSize(LARGE, PAYSAGE)
+        ecran.attendreTag(CARTE)
+        ecran.onNodeWithTag(CARTE).assertIsSelected()
+        ecran.attendreTag(REPERE_COLONNE)
+        ecran.attendreDisparition(hasText("Aucune sélection"))
+        taille = DpSize(LARGE, PORTRAIT)
+        ecran.attendre(hasContentDescription("Retour"))
+        ecran.attendreDisparitionTag(CARTE)
+    }
+
     private companion object {
         /** La première carte du fil (l'affaire 41) : à l'écran même quand la liste n'a que 190 dp. */
         const val CARTE = "fil.ticket_ouvert:41"
@@ -162,5 +203,12 @@ class ListeEtFicheInterfaceTest {
         /** Juste au-dessus du seuil : la barre latérale et la liste tiennent sur l'émulateur du téléphone. */
         val LARGE = 640.dp
         val ETROITE = 400.dp
+
+        /** Les hauteurs du cadre : plus basse que la largeur (paysage), plus haute (portrait). */
+        val PAYSAGE = 600.dp
+        val PORTRAIT = 1000.dp
+
+        /** Profil, toujours dans la barre latérale (`barre.<id>`, le repère de l'iOS). */
+        const val BARRE_LATERALE = "barre.profil"
     }
 }

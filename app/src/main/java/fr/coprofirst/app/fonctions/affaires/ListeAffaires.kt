@@ -37,7 +37,6 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -56,8 +55,8 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.api.RECHERCHE_AFFAIRES_MINIMALE
 import fr.coprofirst.app.LocalCouleurs
@@ -65,6 +64,7 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.NaturesAffaire
 import fr.coprofirst.app.charte.Pictogrammes
+import fr.coprofirst.app.commun.Actualisable
 import fr.coprofirst.app.commun.BoutonPlein
 import fr.coprofirst.app.commun.ChampRecherche
 import fr.coprofirst.app.commun.EtatVide
@@ -93,9 +93,9 @@ internal fun ListeAffaires(ctx: ContexteAffaires) {
     var rafraichit by remember { mutableStateOf(false) }
     LaunchedEffect(etat.recherche) { etat.chercher() }
 
-    PullToRefreshBox(
-        isRefreshing = rafraichit,
-        onRefresh = { portee.launch { rafraichit = true; etat.charger(); rafraichit = false } },
+    Actualisable(
+        enCours = rafraichit,
+        actualiser = { portee.launch { rafraichit = true; etat.charger(); rafraichit = false } },
         modifier = Modifier.fillMaxSize(),
     ) {
         LazyColumn(

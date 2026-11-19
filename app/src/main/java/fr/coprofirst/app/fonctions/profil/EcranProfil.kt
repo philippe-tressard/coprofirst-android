@@ -4,11 +4,14 @@
 package fr.coprofirst.app.fonctions.profil
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -39,6 +42,7 @@ import fr.coprofirst.app.commun.masquages.ServiceMasquagesApi
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.charte.largeurDeLecture
 import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.GestesDeSortie
@@ -91,44 +95,49 @@ fun EcranProfil(
 ) {
     var feuille by rememberSaveable { mutableStateOf<Feuille?>(null) }
     var phrase by remember { mutableStateOf<Phrase?>(null) }
+    // La largeur de lecture sur une tablette (#69) : chaque rangée centrée, la page entière défile.
     LazyColumn(
+        Modifier.fillMaxSize(),
         contentPadding = PaddingValues(vertical = Mise.marge),
         verticalArrangement = Arrangement.spacedBy(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         item(key = "compte") {
-            Chargement(charger = { service.moi() }, squelette = { SqueletteProfil(installation) }) { lu, recharger ->
-                var compte by remember(lu) { mutableStateOf(lu) }
-                Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
-                    SectionResidence(installation, compte) { feuille = Feuille.DemandeModification }
-                    SectionIdentite(compte) { feuille = Feuille.Identite }
-                    SectionSecurite { feuille = Feuille.MotDePasse }
-                    SectionSaisieAffaire(compte, service, relireDroits) { compte = it }
-                    SectionApparence(apparence)
-                    Section(null) {
-                        LigneAction(stringResource(R.string.profil_preferences), ReperesPreferences.OUVRIR) { feuille = Feuille.Preferences }
-                        // Ce que je ne veux plus voir (#282), comme l'iOS.
-                        if (masquages != null) {
-                            LigneAction(stringResource(R.string.masquage_titre_liste), ReperesMasquage.PROFIL) { feuille = Feuille.Masquees }
+            Box(Modifier.largeurDeLecture().fillMaxWidth()) {
+                Chargement(charger = { service.moi() }, squelette = { SqueletteProfil(installation) }) { lu, recharger ->
+                    var compte by remember(lu) { mutableStateOf(lu) }
+                    Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
+                        SectionResidence(installation, compte) { feuille = Feuille.DemandeModification }
+                        SectionIdentite(compte) { feuille = Feuille.Identite }
+                        SectionSecurite { feuille = Feuille.MotDePasse }
+                        SectionSaisieAffaire(compte, service, relireDroits) { compte = it }
+                        SectionApparence(apparence)
+                        Section(null) {
+                            LigneAction(stringResource(R.string.profil_preferences), ReperesPreferences.OUVRIR) { feuille = Feuille.Preferences }
+                            // Ce que je ne veux plus voir (#282), comme l'iOS.
+                            if (masquages != null) {
+                                LigneAction(stringResource(R.string.masquage_titre_liste), ReperesMasquage.PROFIL) { feuille = Feuille.Masquees }
+                            }
                         }
+                        SectionDroits(compte, installation, service, relireDroits) { compte = it }
+                        SectionSuppressionCompte(service)
                     }
-                    SectionDroits(compte, installation, service, relireDroits) { compte = it }
-                    SectionSuppressionCompte(service)
-                }
-                when (feuille) {
-                    Feuille.Identite -> FormulaireIdentite(compte, service, fermer = { feuille = null }) { message ->
-                        phrase = message
-                        recharger()
+                    when (feuille) {
+                        Feuille.Identite -> FormulaireIdentite(compte, service, fermer = { feuille = null }) { message ->
+                            phrase = message
+                            recharger()
+                        }
+                        Feuille.MotDePasse -> FormulaireMotDePasse(service) { feuille = null }
+                        Feuille.DemandeModification -> FeuilleDemandeModification(service) { feuille = null }
+                        Feuille.Preferences -> FeuillePreferences(compte, service, fermer = { feuille = null }) { compte = it }
+                        Feuille.Masquees -> masquages?.let { FeuillePersonnesMasquees(it) { feuille = null } }
+                        null -> Unit
                     }
-                    Feuille.MotDePasse -> FormulaireMotDePasse(service) { feuille = null }
-                    Feuille.DemandeModification -> FeuilleDemandeModification(service) { feuille = null }
-                    Feuille.Preferences -> FeuillePreferences(compte, service, fermer = { feuille = null }) { compte = it }
-                    Feuille.Masquees -> masquages?.let { FeuillePersonnesMasquees(it) { feuille = null } }
-                    null -> Unit
                 }
             }
         }
         // Toujours là, même si le compte ne se lit pas : on doit pouvoir sortir (iOS : hors du `if let compte`).
-        item(key = "sortie") { SectionSortie(installation.nom, sortie) }
+        item(key = "sortie") { Box(Modifier.largeurDeLecture().fillMaxWidth()) { SectionSortie(installation.nom, sortie) } }
     }
     AvisProfil(phrase) { phrase = null }
 }

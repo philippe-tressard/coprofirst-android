@@ -91,6 +91,15 @@ class ColonneDeFiche(retenueInitiale: Boolean = false) {
 /** La colonne de fiche de la page affichée ; `null` : une fenêtre étroite, la fiche se pousse. */
 val LocalColonneDeFiche = staticCompositionLocalOf<ColonneDeFiche?> { null }
 
+/**
+ * Une fenêtre large EN PORTRAIT (plus haute que large, #69, `\.ficheParDessus` de l'iOS,
+ * coprofirst-ios#308) : la barre latérale reste, mais la liste prend toute la page et pousse
+ * sa fiche PAR-DESSUS elle, comme au téléphone — trois colonnes y seraient illisibles. La
+ * colonne reste fournie, pour savoir qu'une liste l'occupe (la fiche revient à côté d'elle au
+ * retour en paysage) ; rien ne s'y ouvre.
+ */
+val LocalFicheParDessus = staticCompositionLocalOf { false }
+
 /** Une liste qui ouvre des fiches le dit : en fenêtre large, sa fiche ira dans la colonne. */
 @Composable
 fun OccuperLaColonneDeFiche() {

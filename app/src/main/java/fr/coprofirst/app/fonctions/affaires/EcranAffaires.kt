@@ -32,6 +32,8 @@ import fr.coprofirst.app.commun.AvisEphemere
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.PageHorsLigne
 import fr.coprofirst.app.commun.TonAvis
+import fr.coprofirst.app.commun.clavier.Raccourci
+import fr.coprofirst.app.commun.clavier.RaccourciClavier
 import fr.coprofirst.app.commun.gesteEnLigne
 import fr.coprofirst.app.commun.onglets.BarreOnglets
 import fr.coprofirst.app.commun.onglets.OngletsSurLeSite
@@ -153,6 +155,8 @@ internal fun EcranAffaires(
     ActionsDeBarre(barre) {
         if (actif == ONGLET_LISTE) MenuFiltres(etat)
         val geste = gesteEnLigne()
+        // Ctrl+N au clavier d'une tablette (⌘N de l'iOS, #69) : tant que le « + » est là, et actif.
+        RaccourciClavier(Raccourci.NouvelleAffaire, actif = geste.actif) { nouvelle = true }
         IconButton({ nouvelle = true }, geste.modifier.testTag(ReperesNouvelle.NOUVELLE), enabled = geste.actif) {
             val couleurs = LocalCouleurs.current
             Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.nouvelle_titre), tint = if (geste.actif) couleurs.primary else couleurs.textMuted)

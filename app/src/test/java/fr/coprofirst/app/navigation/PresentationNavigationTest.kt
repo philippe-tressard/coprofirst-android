@@ -6,7 +6,9 @@ package fr.coprofirst.app.navigation
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.commun.miseenpage.CoupeDeFenetre
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /** #69 : la présentation suit la largeur disponible — le seuil du « grand écran » (600 dp) ; #242 : et le pli. */
@@ -37,5 +39,21 @@ class PresentationNavigationTest {
         assertEquals(CoupeDeFenetre(1000, 1040), livre.coupe())
         assertNull(Posture.depuis(true, listOf(Pli(vertical = false, gauche = 0, droite = 2000, aPlat = false))).coupe())
         assertNull(Posture().coupe())
+    }
+
+    /**
+     * coprofirst-ios#308 : en PORTRAIT (fenêtre plus haute que large), la fiche se pousse
+     * par-dessus la liste, la barre latérale gardée ; en paysage, elle se tient à côté. Le
+     * carnet garde ses deux pages ; le téléphone pousse toujours.
+     */
+    @Test
+    fun laFicheSeTientACoteEnPaysageSeulement() {
+        val laterale = PresentationNavigation.Laterale
+        assertTrue(laterale.ficheACote(1280.dp, 800.dp))
+        assertTrue("une fenêtre carrée est un paysage", laterale.ficheACote(900.dp, 900.dp))
+        assertFalse(laterale.ficheACote(800.dp, 1280.dp))
+        assertFalse(laterale.ficheACote(600.dp, 960.dp))
+        assertTrue(PresentationNavigation.Carnet.ficheACote(500.dp, 900.dp))
+        assertFalse(PresentationNavigation.Barre.ficheACote(411.dp, 300.dp))
     }
 }

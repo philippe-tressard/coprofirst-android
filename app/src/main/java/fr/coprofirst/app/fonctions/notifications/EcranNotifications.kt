@@ -16,7 +16,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.NotificationsOff
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,6 +37,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.commun.Actualisable
 import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.commun.AvisEphemere
 import fr.coprofirst.app.commun.Chargement
@@ -139,9 +139,9 @@ private fun ListeNotifications(parcours: ParcoursNotifications, barre: BarreDuHa
     )
     AvisEphemere(avis, Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {
-            PullToRefreshBox(
-                isRefreshing = etat.rafraichissement,
-                onRefresh = parcours::rafraichir,
+            Actualisable(
+                enCours = etat.rafraichissement,
+                actualiser = parcours::rafraichir,
                 modifier = Modifier.weight(1f),
             ) {
                 LazyColumn(

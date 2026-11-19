@@ -36,6 +36,8 @@ class MesuresTest {
         "mosaique" to MesurePropre(Mise.mosaique, null, "la mosaïque des photos d'un élément ouvert, comme l'iOS ; sans jeton au site", "16/11/2026"),
         "mosaiqueCompacte" to MesurePropre(Mise.mosaiqueCompacte, null, "la mosaïque sous une suite ou un message, comme l'iOS ; sans jeton au site", "16/11/2026"),
         "vignette" to MesurePropre(Mise.vignette, null, "la vignette d'une carte du fil, comme l'iOS ; sans jeton au site", "16/11/2026"),
+        "lecture" to MesurePropre(Mise.lecture, null, "la largeur de lecture d'une tablette (Mise.lecture de l'iOS, #69) ; sans jeton au site", "19/11/2026"),
+        "formulaire" to MesurePropre(Mise.formulaire, null, "la largeur d'un formulaire de l'entrée (#69) ; sans jeton au site", "19/11/2026"),
     )
 
     /** Les mesures de `Mise`, par réflexion (hors `$stable` du compilateur Compose) : une mesure ajoutée sans déclaration fait échouer le test. */
