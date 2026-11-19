@@ -55,6 +55,12 @@ data class ElementDuFil(
     val meConcerne: Boolean = false,
     val cible: CibleDuFil,
     val meta: MetaDuFil = MetaDuFil(),
+    /**
+     * Le jour SERVI de la carte (`FluxItem.jour`, AAAA-MM-JJ, Paris) : son échéance, sa
+     * publication sinon — la semaine du carnet range par lui, jamais par un jour recalculé ici
+     * (décision du 17/11/2026, `jourServi` de l'iOS). `null` hors d'une période.
+     */
+    val jour: String? = null,
 ) {
     val nature: NatureDuFil get() = NatureDuFil.de(type)
     val echeance: EcheanceDuFil? get() = meta.echeance
@@ -99,6 +105,7 @@ data class ElementDuFil(
                 meConcerne = item.meConcerne ?: false,
                 cible = CibleDuFil.pour(item.type, meta, item.lien),
                 meta = meta,
+                jour = item.jour?.toString(),
             )
         }
     }

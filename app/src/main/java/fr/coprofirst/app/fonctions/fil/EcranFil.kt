@@ -3,6 +3,11 @@
 
 package fr.coprofirst.app.fonctions.fil
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,12 +21,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -39,9 +47,11 @@ import fr.coprofirst.app.commun.EtatVide
 import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.PageHorsLigne
+import fr.coprofirst.app.commun.animationsCoupees
 import fr.coprofirst.app.commun.fil.CarteDuFil
 import fr.coprofirst.app.commun.fil.CibleDuFil
 import fr.coprofirst.app.commun.fil.ElementDuFil
+import fr.coprofirst.app.commun.fil.JourDuFil
 import fr.coprofirst.app.commun.fil.TextesFil
 import fr.coprofirst.app.commun.miseenpage.LocalJourDuCarnet
 import fr.coprofirst.app.commun.miseenpage.OccuperLaColonneDeFiche
@@ -56,6 +66,7 @@ import fr.coprofirst.app.navigation.Destination
 import fr.coprofirst.app.navigation.RegistreDesMenus
 import fr.coprofirst.app.session.SessionOuverte
 import java.time.Instant
+import java.time.LocalDate
 
 /**
  * Le fil de la résidence, jour par jour — la page `tableau-de-bord`, la première après la
@@ -80,20 +91,24 @@ fun EcranFil(contexte: ContexteDeMenu) {
     PageHorsLigne {
         Column {
             LogementDuFil(contexte.logement) { contexte.ouvrir(Destination.Page(PAGE_MES_LOTS)) }
-            EcranFil(parcours, session, contexte.ouvrir)
+            // Pincer vers la semaine ferme la fiche ouverte à droite du pli : la page se rouvre, seule (#286).
+            EcranFil(parcours, session, contexte.ouvrir) { contexte.ouvrir(Destination.Page(contexte.page.id)) }
         }
     }
 }
 
-/** @param ouvrir la porte (`ContexteDeMenu.ouvrir`) : l'affaire et le sondage s'ouvrent par elle. */
+/**
+ * @param ouvrir la porte (`ContexteDeMenu.ouvrir`) : l'affaire et le sondage s'ouvrent par elle.
+ * @param fermerLaFiche dans le carnet, ferme la fiche ouverte à droite du pli (la semaine prend la double page).
+ */
 @Composable
-fun EcranFil(parcours: ParcoursFil, session: SessionOuverte, ouvrir: (Destination) -> Boolean) {
-    Chargement(charger = { parcours.charger() }, squelette = { SqueletteFil() }) { _, _ -> ListeFil(parcours, session, ouvrir) }
+fun EcranFil(parcours: ParcoursFil, session: SessionOuverte, ouvrir: (Destination) -> Boolean, fermerLaFiche: () -> Unit = {}) {
+    Chargement(charger = { parcours.charger() }, squelette = { SqueletteFil() }) { _, _ -> ListeFil(parcours, session, ouvrir, fermerLaFiche) }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ListeFil(parcours: ParcoursFil, session: SessionOuverte, ouvrir: (Destination) -> Boolean) {
+private fun ListeFil(parcours: ParcoursFil, session: SessionOuverte, ouvrir: (Destination) -> Boolean, fermerLaFiche: () -> Unit) {
     val etat by parcours.etat.collectAsStateWithLifecycle()
     val jours = remember(etat.elements) { etat.jours }
     val maintenant = remember(etat.elements) { Instant.now() }
@@ -101,19 +116,106 @@ private fun ListeFil(parcours: ParcoursFil, session: SessionOuverte, ouvrir: (De
     val ouverture = rememberOuverture(session)
     // Un document du fil s'ouvre dans l'app (#274), à côté du fil en fenêtre large.
     Visionneuse(ouverture)
-    // En fenêtre large, la fiche d'un élément du fil s'ouvre à côté de lui (#69).
-    OccuperLaColonneDeFiche()
-    // Dans le carnet d'un pliable (#242), une journée par double page.
+    // Dans le carnet d'un pliable (#242), une journée par double page ; pincée, sa semaine (#286).
     val carnet = LocalJourDuCarnet.current
-    val feuillet = carnet?.let { FeuilletsDuFil.jour(jours, it.value) }
-    val veille = feuillet?.let { f -> FeuilletsDuFil.veille(jours, f.jour)?.let { j -> { carnet.value = j } } }
-    val lendemain = feuillet?.let { f -> FeuilletsDuFil.lendemain(jours, f.jour)?.let { j -> { carnet.value = j } } }
-    val affiches = if (carnet == null) jours else listOfNotNull(feuillet)
+    var semaine by rememberSaveable { mutableStateOf<String?>(null) }
+    val lundi = semaine?.takeIf { carnet != null }?.let(LocalDate::parse)
+    // En fenêtre large, la fiche d'un élément du fil s'ouvre à côté de lui (#69) ; la semaine prend
+    // toute la double page, sans colonne.
+    if (lundi == null) OccuperLaColonneDeFiche()
+    // Ce qu'une carte touchée dans la semaine ouvre, une fois la page du jour revenue (et la colonne occupée).
+    var aOuvrir by remember { mutableStateOf<(() -> Unit)?>(null) }
+    LaunchedEffect(aOuvrir, lundi) {
+        if (lundi == null) aOuvrir?.let { geste -> aOuvrir = null; geste() }
+    }
+    /** Ce qu'ouvre un toucher sur la carte, et ce qu'il dit au lecteur d'écran. */
+    @Composable
+    fun gesteDe(element: ElementDuFil): Pair<String?, (() -> Unit)?> {
+        val destination = DestinationDuFil.pour(element.cible, RegistreDesMenus.fiches.keys)
+        return (destination?.let { actionDuFil(it) }) to when (destination) {
+            null -> null
+            DestinationDuFil.Resume -> ({ resume = element.id })
+            is DestinationDuFil.Document -> ({ ouverture.document(destination.id, destination.nom, element.titre) })
+            is DestinationDuFil.Element -> ({ ouvrir(Destination.Element(destination.nature, destination.id.toString())) })
+        }
+    }
+    val fige = animationsCoupees()
+    AnimatedContent(
+        targetState = lundi,
+        transitionSpec = {
+            if (fige) fadeIn() togetherWith fadeOut() else (fadeIn() + scaleIn(initialScale = ECHELLE_ENTREE)) togetherWith fadeOut()
+        },
+        label = "carnet",
+    ) { semaineAffichee ->
+        if (semaineAffichee != null && carnet != null) {
+            PageDeLaSemaine(
+                semaineAffichee,
+                jours,
+                lire = parcours::semaine,
+                carte = { element, jour, modifier ->
+                    val (action, geste) = gesteDe(element)
+                    CarteDuFil(element, session, modifier, maintenant = maintenant, action = action, ouvrir = geste?.let {
+                        {
+                            SemaineDuFil.jourDeLaCarte(jours, element, jour)?.let { carnet.value = it }
+                            aOuvrir = it
+                            semaine = null
+                        }
+                    })
+                },
+                changer = { semaine = it.toString() },
+                ouvrirLeJour = { jour ->
+                    SemaineDuFil.jourDuFil(jours, jour)?.let { carnet.value = it }
+                    semaine = null
+                },
+            )
+        } else {
+            PageDuFil(etat, parcours, jours, maintenant, carnet?.let { j ->
+                FeuilletsDuFil.jour(jours, j.value)?.let { f ->
+                    Feuillet(f, j, jours, voirLaSemaine = {
+                        fermerLaFiche()
+                        semaine = SemaineDuFil.lundi(LocalDate.parse(f.jour)).toString()
+                    })
+                }
+            }, ouverture, fige) { element, modifier ->
+                val (action, geste) = gesteDe(element)
+                CarteDuFil(element, session, modifier, maintenant = maintenant, action = action, ouvrir = geste)
+            }
+        }
+    }
+    etat.elements.firstOrNull { it.id == resume }?.let { element -> FeuilleResume(element, session) { resume = null } }
+}
+
+/** Le jour ouvert dans le carnet, et ses voisins : la veille, le lendemain, la semaine. */
+private class Feuillet(val jour: JourDuFil, carnet: MutableState<String?>, jours: List<JourDuFil>, val voirLaSemaine: () -> Unit) {
+    val veille: (() -> Unit)? = FeuilletsDuFil.veille(jours, jour.jour)?.let { j -> { carnet.value = j } }
+    val lendemain: (() -> Unit)? = FeuilletsDuFil.lendemain(jours, jour.jour)?.let { j -> { carnet.value = j } }
+}
+
+/** Le fil jour par jour ; dans le carnet (`feuillet`), le seul jour ouvert, son éphéméride et son pied de page. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PageDuFil(
+    etat: EtatFil,
+    parcours: ParcoursFil,
+    jours: List<JourDuFil>,
+    maintenant: Instant,
+    feuillet: Feuillet?,
+    ouverture: Ouverture,
+    fige: Boolean,
+    carte: @Composable (ElementDuFil, Modifier) -> Unit,
+) {
+    val affiches = if (feuillet == null) jours else listOf(feuillet.jour)
     // Dans le carnet, le pied de page (« Veille », « Lendemain ») tient sous la page qui défile.
     Column(Modifier.fillMaxSize()) {
         Actualisable(enCours = etat.rafraichissement, actualiser = parcours::rafraichir, modifier = Modifier.fillMaxWidth().weight(1f)) {
             LazyColumn(
-                modifier = Modifier.fillMaxSize().let { m -> feuillet?.let { m.tournerLaPage(it.jour, veille, lendemain) } ?: m },
+                modifier = Modifier.fillMaxSize().let { m ->
+                    feuillet?.let {
+                        m.testTag(REPERE_JOUR)
+                            .zoomDuCarnet(ZoomDuCarnet.Sens.Pincer, fige, it.voirLaSemaine)
+                            .tournerLaPage(it.jour.jour, it.veille, it.lendemain)
+                    } ?: m
+                },
                 contentPadding = PaddingValues(bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
@@ -131,39 +233,29 @@ private fun ListeFil(parcours: ParcoursFil, session: SessionOuverte, ouvrir: (De
                     }
                 }
                 affiches.forEach { jour ->
-                    if (carnet != null) {
-                        item(key = "ephemeride") { Ephemeride(jour, maintenant) }
+                    if (feuillet != null) {
+                        item(key = "ephemeride") { Ephemeride(jour, maintenant, feuillet.voirLaSemaine) }
                     } else {
                         stickyHeader(key = "jour-${jour.jour}") { EnTeteJour(TextesFil.entete(jour, maintenant)) }
                     }
                     items(jour.elements, key = { it.id }) { element ->
                         val destination = DestinationDuFil.pour(element.cible, RegistreDesMenus.fiches.keys)
-                        CarteDuFil(
+                        carte(
                             element,
-                            session,
                             Modifier.padding(horizontal = Mise.marge).animateItem().let { m ->
                                 when (destination) {
-                                is DestinationDuFil.Element -> m.rangeeChoisie(destination.nature, destination.id.toString())
-                                is DestinationDuFil.Document -> m.documentChoisi(Ouverture.cleDocument(destination.id))
-                                else -> m
-                            }
-                            },
-                            maintenant = maintenant,
-                            action = destination?.let { actionDuFil(it) },
-                            ouvrir = when (destination) {
-                                null -> null
-                                DestinationDuFil.Resume -> ({ resume = element.id })
-                                is DestinationDuFil.Document -> ({ ouverture.document(destination.id, destination.nom, element.titre) })
-                                is DestinationDuFil.Element -> ({ ouvrir(Destination.Element(destination.nature, destination.id.toString())) })
+                                    is DestinationDuFil.Element -> m.rangeeChoisie(destination.nature, destination.id.toString())
+                                    is DestinationDuFil.Document -> m.documentChoisi(Ouverture.cleDocument(destination.id))
+                                    else -> m
+                                }
                             },
                         )
                     }
                 }
             }
         }
-        if (feuillet != null) PiedDuJour(veille, lendemain)
+        if (feuillet != null) PiedDuJour(feuillet.veille, feuillet.lendemain)
     }
-    etat.elements.firstOrNull { it.id == resume }?.let { element -> FeuilleResume(element, session) { resume = null } }
 }
 
 /** L'en-tête d'un jour, collé en haut tant que sa journée défile (déjà en capitales). */
@@ -192,3 +284,6 @@ private fun SqueletteFil() {
         repeat(3) { CarteDuFil(squelette, session = null, Modifier.padding(horizontal = Mise.marge)) }
     }
 }
+
+/** La semaine qui paraît d'un pincement s'approche à peine : elle part de 108 %. */
+private const val ECHELLE_ENTREE = 1.08f

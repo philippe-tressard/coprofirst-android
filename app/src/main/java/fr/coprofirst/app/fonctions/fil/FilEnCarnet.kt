@@ -32,7 +32,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -53,12 +55,10 @@ import kotlin.math.abs
  * Le Fil d'un CARNET (#242), comme l'iOS (coprofirst-ios#119) : une journée par double page — à
  * gauche, la date en éphéméride et les cartes du jour ; à droite, la carte choisie (la colonne de
  * fiche). Tourner la page : balayer la page de gauche, ou « Veille » / « Lendemain » au pied de
- * la page. Les jours
- * sont ceux qui ont de l'activité : `GET /flux` ne sert aucune période.
+ * la page. Les jours sont ceux qui ont de l'activité dans le fil.
  *
- * ⚠️ Pas de pincement pour la semaine (décision du 17/11/2026) : le fil d'une période sera servi
- * par l'API (coprofirst#2834) ; le geste n'apparaîtra qu'avec la version de contrat qui la sert —
- * aucun geste inerte d'ici là. La page ne « tourne » pas : les cartes du jour se fondent
+ * PINCER la page ouvre sa semaine (#286, `PageDeLaSemaine.kt`), servie par l'API
+ * (`GET /flux?du=&au=`). La page ne « tourne » pas : les cartes du jour se fondent
  * (`animateItem`), le mouvement réduit les pose sans transition.
  */
 object FeuilletsDuFil {
@@ -81,9 +81,10 @@ object FeuilletsDuFil {
  * alignés à gauche. Le lecteur d'écran n'en lit qu'une chose : la date longue, en titre.
  */
 @Composable
-internal fun Ephemeride(jour: JourDuFil, maintenant: Instant) {
+internal fun Ephemeride(jour: JourDuFil, maintenant: Instant, voirLaSemaine: (() -> Unit)? = null) {
     val premier = jour.elements.first().date
     val couleurs = LocalCouleurs.current
+    val semaine = stringResource(R.string.carnet_voir_la_semaine)
     Column(
         Modifier
             .fillMaxWidth()
@@ -92,6 +93,8 @@ internal fun Ephemeride(jour: JourDuFil, maintenant: Instant) {
             .clearAndSetSemantics {
                 contentDescription = FormatsDuSite.dateLongue(premier)
                 heading()
+                // Le pincement, au lecteur d'écran (« Voir la semaine » de l'iOS, #286).
+                if (voirLaSemaine != null) customActions = listOf(CustomAccessibilityAction(semaine) { voirLaSemaine(); true })
             },
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
@@ -108,27 +111,41 @@ internal fun Ephemeride(jour: JourDuFil, maintenant: Instant) {
 
 /**
  * Le pied de la page du jour, comme l'iOS : « ‹ Veille » à gauche, « Lendemain › » à droite, comme
- * les pages d'un carnet. Quand les deux mots ne tiennent pas sur la demi-page (très grand texte),
- * les chevrons seuls, leur nom gardé pour le lecteur d'écran. Un bouton sans jour où aller est
- * inactif : pas de lendemain après aujourd'hui.
+ * les pages d'un carnet. Un bouton sans jour où aller est inactif : pas de lendemain après aujourd'hui.
  */
 @Composable
-internal fun PiedDuJour(veille: (() -> Unit)?, lendemain: (() -> Unit)?) {
+internal fun PiedDuJour(veille: (() -> Unit)?, lendemain: (() -> Unit)?) = PiedDeFeuillet(
+    stringResource(R.string.fil_veille), veille, "carnet.veille",
+    stringResource(R.string.fil_lendemain), lendemain, "carnet.lendemain",
+)
+
+/**
+ * Le pied d'un feuillet du carnet — le jour, la semaine (#286, `FeuilletDuCarnet` de l'iOS) : le
+ * bouton d'avant à gauche, celui d'après à droite. Quand les deux mots ne tiennent pas (très grand
+ * texte), les chevrons seuls, leur nom gardé pour le lecteur d'écran. Sans page où aller : inactif.
+ */
+@Composable
+internal fun PiedDeFeuillet(
+    titreAvant: String,
+    avant: (() -> Unit)?,
+    repereAvant: String,
+    titreApres: String,
+    apres: (() -> Unit)?,
+    repereApres: String,
+) {
     val couleurs = LocalCouleurs.current
     val style = MaterialTheme.typography.labelLarge
     val mesure = rememberTextMeasurer()
-    val titreVeille = stringResource(R.string.fil_veille)
-    val titreLendemain = stringResource(R.string.fil_lendemain)
     Column(Modifier.fillMaxWidth().background(couleurs.surface)) {
         HorizontalDivider(color = couleurs.border)
         BoxWithConstraints(Modifier.fillMaxWidth().heightIn(min = 48.dp).padding(horizontal = Mise.marge)) {
             // Ce que demandent les deux boutons titrés : leurs mots, leurs chevrons, leurs marges.
-            val titres = mesure.measure(titreVeille, style).size.width + mesure.measure(titreLendemain, style).size.width
+            val titres = mesure.measure(titreAvant, style).size.width + mesure.measure(titreApres, style).size.width
             val avecTitres = with(LocalDensity.current) { titres.toDp() } + PAR_BOUTON * 2 <= maxWidth
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                BoutonDePage(titreVeille, Icons.AutoMirrored.Filled.KeyboardArrowLeft, avant = true, avecTitres, veille, "carnet.veille")
+                BoutonDePage(titreAvant, Icons.AutoMirrored.Filled.KeyboardArrowLeft, avant = true, avecTitres, avant, repereAvant)
                 Spacer(Modifier.weight(1f))
-                BoutonDePage(titreLendemain, Icons.AutoMirrored.Filled.KeyboardArrowRight, avant = false, avecTitres, lendemain, "carnet.lendemain")
+                BoutonDePage(titreApres, Icons.AutoMirrored.Filled.KeyboardArrowRight, avant = false, avecTitres, apres, repereApres)
             }
         }
     }
@@ -153,12 +170,12 @@ private fun BoutonDePage(titre: String, chevron: ImageVector, avant: Boolean, av
 private val PAR_BOUTON = 48.dp
 
 /**
- * Tourner la page d'un balayage horizontal : vers la gauche, le lendemain ; vers la droite, la
- * veille. Un balayage qui part d'un bord (à moins d'une marge) n'est pas le sien : les bords
- * restent au geste « retour » du système, comme l'iOS laisse le bord gauche au sien. Relancé à
- * chaque page tournée (`jour`) : la veille et le lendemain sont ceux du jour affiché.
+ * Tourner la page d'un balayage horizontal : vers la gauche, la suivante (le lendemain, la semaine
+ * d'après) ; vers la droite, la précédente. Un balayage qui part d'un bord (à moins d'une marge)
+ * n'est pas le sien : les bords restent au geste « retour » du système, comme l'iOS laisse le bord
+ * gauche au sien. Relancé à chaque page tournée (`page`) : avant et après sont ceux de la page affichée.
  */
-internal fun Modifier.tournerLaPage(jour: String, veille: (() -> Unit)?, lendemain: (() -> Unit)?): Modifier = pointerInput(jour) {
+internal fun Modifier.tournerLaPage(page: String, veille: (() -> Unit)?, lendemain: (() -> Unit)?): Modifier = pointerInput(page) {
     val seuil = SEUIL_DP.dp.toPx()
     val bord = Mise.marge.toPx()
     var cumul = 0f

@@ -16,16 +16,26 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 /** Ce que le fil demande à la résidence ouverte, comme l'iOS (`ServiceAPI.fil`). */
 interface ServiceFil {
     /** GET /flux : le flux que lit le tableau de bord du site. */
     suspend fun fil(): List<ElementDuFil>
+
+    /**
+     * GET /flux?du=&au= : le fil d'une PÉRIODE (coprofirst#2834, servi au plancher), chaque carte
+     * à son jour servi (`ElementDuFil.jour`) — la semaine du carnet (#286).
+     */
+    suspend fun periode(du: LocalDate, au: LocalDate): List<ElementDuFil>
 }
 
 class ServiceFilApi(private val session: SessionOuverte) : ServiceFil {
     override suspend fun fil(): List<ElementDuFil> =
         session.appeler { base, client -> FluxApi(base, client).getFlux() }.items.orEmpty().map(ElementDuFil::depuis)
+
+    override suspend fun periode(du: LocalDate, au: LocalDate): List<ElementDuFil> =
+        session.appeler { base, client -> FluxApi(base, client).getFlux(du = du, au = au) }.items.orEmpty().map(ElementDuFil::depuis)
 }
 
 /** Ce que montre le fil. */
@@ -59,6 +69,12 @@ class ParcoursFil(private val service: ServiceFil) : ViewModel() {
         lu = true
         _etat.update { it.copy(elements = elements, echec = null) }
     }
+
+    /**
+     * La semaine du carnet (#286), du lundi au dimanche : lue à chaque ouverture, jamais gardée
+     * (le fil du jour reste celui de `charger`). @throws ErreurService si la lecture échoue.
+     */
+    suspend fun semaine(lundi: LocalDate): List<ElementDuFil> = service.periode(lundi, lundi.plusDays(6))
 
     /** Tiré du haut de la liste : la relecture se voit, son échec se dit. */
     fun rafraichir() {

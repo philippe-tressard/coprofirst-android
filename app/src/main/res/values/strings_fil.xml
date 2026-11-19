@@ -26,4 +26,11 @@ Les textes du fil d'activité, écrits une fois — ceux de l'iOS (`FilView`, `C
     <!-- Le logement en tête du fil (#181), les mots de l'iOS (`PastilleLogement`). -->
     <string name="fil_logement">Mon logement : %1$s</string>
     <string name="fil_logement_ouvre">Ouvre Mes lots &amp; accès</string>
+    <!-- La semaine du carnet (#286), les mots de l'iOS (coprofirst-ios#277). -->
+    <string name="carnet_semaine_du">Semaine du %1$s</string>
+    <string name="carnet_rien_ce_jour">Rien ce jour</string>
+    <string name="carnet_semaine_precedente">Semaine précédente</string>
+    <string name="carnet_semaine_suivante">Semaine suivante</string>
+    <string name="carnet_voir_la_semaine">Voir la semaine</string>
+    <string name="carnet_ouvrir_ce_jour">Ouvrir ce jour</string>
 </resources>

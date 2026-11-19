@@ -43,19 +43,35 @@ import fr.coprofirst.app.R
  */
 @Composable
 fun PageEtColonneDeFiche(enColonne: Boolean, page: @Composable () -> Unit, fiche: (@Composable () -> Unit)?, coupe: CoupeDeFenetre? = null) {
+    DoublePage(
+        coupe,
+        gauche = page,
+        droite = if (enColonne) ({
+            Box(Modifier.fillMaxSize().background(LocalCouleurs.current.bg).testTag(REPERE_COLONNE)) { fiche?.invoke() ?: AucuneSelection() }
+        }) else null,
+    )
+}
+
+/**
+ * Deux pages côte à côte : `gauche` à la largeur d'une liste (`ColonneDeFiche.largeurDeListe`),
+ * `droite` après un filet ; ou, dans le carnet (`coupe`), de part et d'autre du PLI, que le pli
+ * lui-même sépare (#242). `droite == null` : `gauche` prend toute la largeur, À LA MÊME PLACE dans
+ * l'arbre — passer de l'un à l'autre ne la recrée pas. La colonne de fiche et la semaine du Fil
+ * (#286) s'y posent.
+ */
+@Composable
+fun DoublePage(coupe: CoupeDeFenetre?, gauche: @Composable () -> Unit, droite: (@Composable () -> Unit)?) {
     var origine by remember { mutableFloatStateOf(0f) }
     BoxWithConstraints(Modifier.fillMaxSize().onGloballyPositioned { origine = it.positionInWindow().x }) {
         val densite = LocalDensity.current
-        val largeurDeListe = coupe?.let { with(densite) { (it.gauche - origine).toDp() }.coerceIn(0.dp, maxWidth) }
+        val largeurGauche = coupe?.let { with(densite) { (it.gauche - origine).toDp() }.coerceIn(0.dp, maxWidth) }
             ?: ColonneDeFiche.largeurDeListe(maxWidth)
         val pli = coupe?.let { with(densite) { (it.droite - it.gauche).toDp() } } ?: 0.dp
         Row(Modifier.fillMaxSize()) {
-            Box(if (enColonne) Modifier.width(largeurDeListe).fillMaxHeight() else Modifier.weight(1f).fillMaxHeight()) { page() }
-            if (enColonne) {
+            Box(if (droite != null) Modifier.width(largeurGauche).fillMaxHeight() else Modifier.weight(1f).fillMaxHeight()) { gauche() }
+            if (droite != null) {
                 if (coupe != null) Spacer(Modifier.width(pli)) else VerticalDivider(color = LocalCouleurs.current.border)
-                Box(Modifier.weight(1f).fillMaxHeight().background(LocalCouleurs.current.bg).testTag(REPERE_COLONNE)) {
-                    fiche?.invoke() ?: AucuneSelection()
-                }
+                Box(Modifier.weight(1f).fillMaxHeight()) { droite() }
             }
         }
     }
