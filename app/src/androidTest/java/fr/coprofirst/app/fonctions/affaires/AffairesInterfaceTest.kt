@@ -7,9 +7,11 @@ import android.view.KeyEvent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -39,13 +41,13 @@ import fr.coprofirst.app.navigation.DroitsOnglet
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsParHote
-import java.time.Instant
-import java.time.temporal.ChronoUnit
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 /** « Mes affaires », comme les tests d'interface de l'iOS (`AffairesUITests`). */
 @RunWith(AndroidJUnit4::class)
@@ -364,6 +366,26 @@ class AffairesInterfaceTest {
         el(ReperesNouvelle.MODIFIER_ENREGISTRER).toucher()
         ecran.attendreTexte("Affaire modifiée", useUnmergedTree = true)
         assertEquals(listOf(EditionAffaire(prestataires = listOf(5))), service.editions)
+    }
+
+    /**
+     * Pendant de coprofirst-ios#309 : « Ajouter un prestataire » se touche sur TOUTE sa rangée,
+     * aussi large que celles des prestataires au-dessus d'elle — pas seulement sur son libellé, ce
+     * qui laissait vide la droite de la rangée (une feuille de tablette la rend très large).
+     */
+    @Test
+    fun toutLaRangeeAjouterUnPrestataireSeTouche() {
+        ouvrirFiche(1)
+        ecran.attendreTag(repereGeste(GesteAffaire.Modifier), useUnmergedTree = true)
+        el(repereGeste(GesteAffaire.Modifier)).toucher()
+        ecran.attendreTag(ReperesPrestatairesAffaire.ligne(AffairesSimulees.ASCENSEURS), useUnmergedTree = true)
+        val ajouter = ecran.amenerTag(ReperesPrestatairesAffaire.AJOUTER, useUnmergedTree = true)
+        val rangee = el(ReperesPrestatairesAffaire.ligne(AffairesSimulees.ASCENSEURS)).fetchSemanticsNode().boundsInRoot
+        val bouton = ajouter.fetchSemanticsNode().boundsInRoot
+        assertTrue("la rangée « Ajouter » s'arrête à ${bouton.right}, avant ${rangee.right}", bouton.right >= rangee.right - 1f)
+        // Un toucher à DROITE de la rangée, loin du libellé, ouvre la liste.
+        ajouter.performTouchInput { click(Offset(width - 12f, height / 2f)) }
+        ecran.attendreTag(ReperesPrestatairesAffaire.choix(AffairesSimulees.PLOMBERIE), useUnmergedTree = true)
     }
 
     private companion object {
