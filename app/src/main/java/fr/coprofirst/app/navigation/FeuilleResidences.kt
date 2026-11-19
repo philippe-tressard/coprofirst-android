@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.navigation
 
+import fr.coprofirst.app.commun.GRANDE_ECHELLE
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -65,7 +66,7 @@ import fr.coprofirst.app.session.RolesConnus
 @Composable
 internal fun PastilleResidence(installation: Installation, ouvrir: () -> Unit) {
     val couleurs = LocalCouleurs.current
-    val logoSeul = LocalDensity.current.fontScale >= GRAND_TEXTE
+    val logoSeul = LocalDensity.current.fontScale >= GRANDE_ECHELLE
     val annonce = stringResource(R.string.residence_pastille, installation.nom)
     Row(
         Modifier.heightIn(min = Mise.cible).padding(horizontal = 4.dp).testTag(REPERE_PASTILLE)
@@ -192,5 +193,3 @@ internal const val REPERE_UNE_AUTRE = "residence.uneAutre"
 internal const val REPERE_FEUILLE_OK = "residence.ok"
 internal fun repereAutre(installation: Installation) = "residence.autre.${installation.adresse?.enSaisie ?: installation.url}"
 
-/** À partir de cette échelle de texte, la pastille ne montre que le logo (`isAccessibilitySize` de l'iOS). */
-private const val GRAND_TEXTE = 1.5f

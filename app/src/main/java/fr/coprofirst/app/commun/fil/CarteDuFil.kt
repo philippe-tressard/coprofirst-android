@@ -3,6 +3,9 @@
 
 package fr.coprofirst.app.commun.fil
 
+import fr.coprofirst.app.commun.GRANDE_ECHELLE
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -83,37 +86,64 @@ fun CarteDuFil(
         ouvrir = ouvrir,
         action = action,
     ) {
-        Row(
-            Modifier.fillMaxWidth().padding(start = if (urgent) LISERE else 0.dp).clearAndSetSemantics { contentDescription = vocal },
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            VignetteDeNature(element)
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                EnTeteCarte(element)
-                element.echeance?.let { VignetteEcheance(it, element.nature.couleur(couleurs), maintenant) }
-                Text(element.titre, style = MaterialTheme.typography.titleMedium, color = couleurs.text)
-                val detail = element.detail?.let(TexteDuSite::apercu).orEmpty()
-                if (detail.isNotEmpty()) {
-                    Text(detail, style = MaterialTheme.typography.bodyMedium, color = couleurs.textMuted, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        val disposition = Modifier.fillMaxWidth().padding(start = if (urgent) LISERE else 0.dp).clearAndSetSemantics { contentDescription = vocal }
+        // Au très grand texte, la carte s'EMPILE (#295, comme l'iOS #266) : la gouttière, les
+        // pièces et le chevron sur une rangée, puis le texte sur toute la largeur. En ligne,
+        // ils lui laissaient une colonne où « Urgent » se coupait en syllabes.
+        if (empilee(LocalDensity.current.fontScale)) {
+            Column(disposition, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(ESPACE)) {
+                    VignetteDeNature(element)
+                    Spacer(Modifier.weight(1f))
+                    Ornements(element, session, ouvrir != null)
                 }
-                // Qui la lit, puis où (#129, #130) — rien hors affaire ni pour le défaut.
-                if (Lecture.aMontrer(element.meta.lecture) != null || element.meta.lieu != null) {
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        PastilleLecture(element.meta.lecture)
-                        EtiquetteLieu(element.meta.lieu)
-                    }
-                }
+                TexteDeCarte(element, maintenant, Modifier.fillMaxWidth())
             }
-            if (session != null) VignettePieces(element.pieces, session)
-            if (ouvrir != null) {
-                Icon(
-                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    contentDescription = null,
-                    tint = couleurs.textMuted,
-                    modifier = Modifier.align(Alignment.CenterVertically),
-                )
+        } else {
+            Row(disposition, horizontalArrangement = Arrangement.spacedBy(ESPACE)) {
+                VignetteDeNature(element)
+                TexteDeCarte(element, maintenant, Modifier.weight(1f))
+                // Hors grand texte, rien ne change : les pièces en haut, le chevron au milieu.
+                Ornements(element, session, ouvrir != null, Modifier.align(Alignment.CenterVertically))
             }
         }
+    }
+}
+
+/** La carte s'empile-t-elle à cette échelle du texte ? Aux tailles d'accessibilité (`GRANDE_ECHELLE`). */
+internal fun empilee(echelle: Float): Boolean = echelle >= GRANDE_ECHELLE
+
+/** Rubrique et heure, l'échéance, le titre, l'aperçu, qui la lit et où. */
+@Composable
+private fun TexteDeCarte(element: ElementDuFil, maintenant: Instant, modifier: Modifier) {
+    val couleurs = LocalCouleurs.current
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        EnTeteCarte(element)
+        element.echeance?.let { VignetteEcheance(it, element.nature.couleur(couleurs), maintenant) }
+        Text(element.titre, style = MaterialTheme.typography.titleMedium, color = couleurs.text)
+        val detail = element.detail?.let(TexteDuSite::apercu).orEmpty()
+        if (detail.isNotEmpty()) {
+            Text(detail, style = MaterialTheme.typography.bodyMedium, color = couleurs.textMuted, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        }
+        // Qui la lit, puis où (#129, #130) — rien hors affaire ni pour le défaut.
+        if (Lecture.aMontrer(element.meta.lecture) != null || element.meta.lieu != null) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                PastilleLecture(element.meta.lecture)
+                EtiquetteLieu(element.meta.lieu)
+            }
+        }
+    }
+}
+
+/**
+ * Les pièces jointes (lues par la session, absentes sans elle) et le chevron d'une carte qui
+ * s'ouvre, posés dans la rangée de l'appelant. `modifier` : la place du chevron dans la rangée.
+ */
+@Composable
+private fun Ornements(element: ElementDuFil, session: SessionOuverte?, chevron: Boolean, modifier: Modifier = Modifier) {
+    if (session != null) VignettePieces(element.pieces, session)
+    if (chevron) {
+        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = LocalCouleurs.current.textMuted, modifier = modifier)
     }
 }
 
@@ -176,6 +206,9 @@ fun VignetteEcheance(echeance: EcheanceDuFil, teinte: Color, maintenant: Instant
 
 /** Le liseré d'une urgence. */
 private val LISERE = 4.dp
+
+/** L'écart entre la gouttière, le texte et les ornements. */
+private val ESPACE = 12.dp
 
 /** Des chiffres à chasse fixe (`monospacedDigit` de l'iOS) : l'heure et le délai ne dansent pas. */
 private const val CHIFFRES = "tnum"

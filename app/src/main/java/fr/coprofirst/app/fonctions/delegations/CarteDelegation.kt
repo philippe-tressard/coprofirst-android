@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.fonctions.delegations
 
+import fr.coprofirst.app.commun.GRANDE_ECHELLE
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -60,8 +61,6 @@ object ReperesDelegations {
     fun resident(id: Int) = "nouvelle-delegation.resident.$id"
 }
 
-/** À partir de cette échelle de texte, les deux personnes se posent l'une sous l'autre. */
-private const val ECHELLE_EMPILEE = 1.5f
 
 /**
  * Une délégation, comme `CarteDelegation` de l'iOS : qui est aidé, par qui, son état et sa
@@ -94,7 +93,7 @@ internal fun CarteDelegation(delegation: Delegation, enCours: Boolean, accepter:
 /** Personne aidée → aidant ; l'une sous l'autre aux grandes tailles de texte. */
 @Composable
 private fun Personnes(delegation: Delegation) {
-    val empilees = LocalDensity.current.fontScale >= ECHELLE_EMPILEE
+    val empilees = LocalDensity.current.fontScale >= GRANDE_ECHELLE
     val fleche: @Composable () -> Unit = {
         Icon(
             if (empilees) Icons.Filled.ArrowDownward else Icons.AutoMirrored.Filled.ArrowForward,
