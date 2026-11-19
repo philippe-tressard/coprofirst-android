@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
@@ -31,6 +30,7 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
+import fr.coprofirst.app.charte.largeurDeLecture
 import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.texte.TexteDuSite
 import fr.coprofirst.app.commun.texte.TexteRiche
@@ -51,7 +51,7 @@ private fun Page(contenu: @Composable ColumnScope.() -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Column(
-            Modifier.widthIn(max = 720.dp).fillMaxWidth().padding(Mise.marge),
+            Modifier.largeurDeLecture().fillMaxWidth().padding(Mise.marge),
             verticalArrangement = Arrangement.spacedBy(18.dp),
             content = contenu,
         )

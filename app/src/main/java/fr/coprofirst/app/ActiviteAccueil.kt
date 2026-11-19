@@ -5,6 +5,10 @@ package fr.coprofirst.app
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.KeyEvent
+import android.view.KeyboardShortcutGroup
+import android.view.KeyboardShortcutInfo
+import android.view.Menu
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -16,6 +20,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.layout.WindowInfoTracker
 import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.commun.StockageApparencePreferences
+import fr.coprofirst.app.commun.clavier.LocalRaccourcisClavier
+import fr.coprofirst.app.commun.clavier.RaccourcisClavier
 import fr.coprofirst.app.commun.pieces.PiecesLocales
 import fr.coprofirst.app.entree.FabriqueParcoursEntree
 import fr.coprofirst.app.entree.NavigationEntree
@@ -39,6 +45,9 @@ class ActiviteAccueil : ComponentActivity() {
     /** Le même parcours que celui de `NavigationEntree` : un par activité, gardé à la rotation. */
     private val parcours: ParcoursEntree by lazy { ViewModelProvider(this, FabriqueParcoursEntree)[ParcoursEntree::class.java] }
 
+    /** Les raccourcis du clavier matériel que l'écran affiché offre (#69). */
+    private val raccourcis = RaccourcisClavier()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Portrait au téléphone, libre sur grand écran ; un pliable qu'on déplie recrée
@@ -57,12 +66,30 @@ class ActiviteAccueil : ComponentActivity() {
         val marques = MarquesPages.de(applicationContext)
         setContent {
             val posture by remember { postures }.collectAsStateWithLifecycle(Posture(pliable))
-            CompositionLocalProvider(LocalVitrine provides vitrine, LocalPosture provides posture, LocalMarquesPages provides marques) {
+            CompositionLocalProvider(
+                LocalVitrine provides vitrine,
+                LocalPosture provides posture,
+                LocalMarquesPages provides marques,
+                LocalRaccourcisClavier provides raccourcis,
+            ) {
                 NavigationEntree(apparence, parcours)
             }
         }
         // Un lien suivi une fois : pas de nouveau après une rotation.
         if (savedInstanceState == null) suivre(intent)
+    }
+
+    /** Ctrl+touche que l'écran n'a pas prise (#69) : un raccourci qu'il offre. */
+    override fun onKeyShortcut(keyCode: Int, event: KeyEvent): Boolean {
+        val autres = event.metaState and (KeyEvent.META_SHIFT_MASK or KeyEvent.META_ALT_MASK or KeyEvent.META_META_MASK) != 0
+        return raccourcis.declencher(keyCode, event.isCtrlPressed, autres) || super.onKeyShortcut(keyCode, event)
+    }
+
+    /** La liste des raccourcis du système (Meta + /) : ceux que l'écran affiché offre. */
+    override fun onProvideKeyboardShortcuts(data: MutableList<KeyboardShortcutGroup>, menu: Menu?, deviceId: Int) {
+        super.onProvideKeyboardShortcuts(data, menu, deviceId)
+        val offerts = raccourcis.offerts().map { KeyboardShortcutInfo(getString(it.libelle), it.touche, KeyEvent.META_CTRL_ON) }
+        if (offerts.isNotEmpty()) data += KeyboardShortcutGroup(getString(R.string.nom_app), offerts)
     }
 
     override fun onNewIntent(intent: Intent) {

@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -28,7 +27,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -46,6 +44,8 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
+import fr.coprofirst.app.charte.largeurDeLecture
+import fr.coprofirst.app.commun.Actualisable
 import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.Libelle
@@ -86,7 +86,7 @@ internal fun FicheAffaire(id: Int, ctx: ContexteFiche) {
         // Le numéro de l'affaire en titre de la barre, comme l'iOS (`.navigationTitle`).
         ctx.barre?.let { TitreDeBarre(it, affaire.numero) }
         Column(Modifier.fillMaxSize()) {
-            PullToRefreshBox(isRefreshing = false, onRefresh = recharger, modifier = Modifier.weight(1f)) {
+            Actualisable(enCours = false, actualiser = recharger, modifier = Modifier.weight(1f)) {
                 ContenuAffaire(affaire, ctx.session, choix, choixMessage::choisir)
             }
             BandeauAffaire(affaire, ctx.conseil, ctx.service, ctx.lienSite(affaire.id), ctx.avis, recharger, moderation = moderation)
@@ -121,7 +121,7 @@ private fun ContenuAffaire(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Column(Modifier.widthIn(max = 720.dp).fillMaxWidth().padding(horizontal = Mise.marge).padding(top = 16.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
+        Column(Modifier.largeurDeLecture().fillMaxWidth().padding(horizontal = Mise.marge).padding(top = 16.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
             EnTeteAffaire(affaire)
             FilAffaire(affaire, session, gestesSuite)
             // Pas de messages sur une actualité : elle informe, on n'y répond pas.

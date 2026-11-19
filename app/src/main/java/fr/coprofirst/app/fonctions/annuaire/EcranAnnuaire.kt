@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
@@ -29,7 +28,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -50,6 +48,8 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
+import fr.coprofirst.app.charte.largeurDeLecture
+import fr.coprofirst.app.commun.Actualisable
 import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.PageHorsLigne
@@ -86,7 +86,7 @@ fun EcranAnnuaire(service: ServiceAnnuaire, session: SessionOuverte?, ancre: Anc
     var relecture by rememberSaveable { mutableIntStateOf(0) }
     val syndic = remember { BringIntoViewRequester() }
     val site = session?.installation?.nom.orEmpty()
-    PullToRefreshBox(isRefreshing = false, onRefresh = { relecture++ }, modifier = Modifier.fillMaxSize()) {
+    Actualisable(enCours = false, actualiser = { relecture++ }, modifier = Modifier.fillMaxSize()) {
         Column(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -106,7 +106,7 @@ fun EcranAnnuaire(service: ServiceAnnuaire, session: SessionOuverte?, ancre: Anc
 @Composable
 private fun Contenu(annuaire: Annuaire, site: String, session: SessionOuverte?, ancreSyndic: BringIntoViewRequester?) {
     Column(
-        Modifier.widthIn(max = 720.dp).fillMaxWidth().padding(horizontal = Mise.marge, vertical = 16.dp),
+        Modifier.largeurDeLecture().fillMaxWidth().padding(horizontal = Mise.marge, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(28.dp),
     ) {
         Text(stringResource(R.string.annuaire_descriptif), style = MaterialTheme.typography.bodyMedium, color = LocalCouleurs.current.textMuted)

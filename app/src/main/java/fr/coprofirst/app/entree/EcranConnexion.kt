@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -57,11 +56,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
+import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.charte.largeurDeLecture
 import fr.coprofirst.app.commun.BandeauInstallationSuspendue
 import fr.coprofirst.app.commun.LogoResidence
 import fr.coprofirst.app.commun.MessageErreur
-import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.entree.vitrine.ContenuVitrine
 import fr.coprofirst.app.session.Installation
 
@@ -78,7 +78,7 @@ fun EcranConnexion(etat: EtatEntree, parcours: ActionsEntree) {
                 .padding(marges)
                 .verticalScroll(rememberScrollState())
                 .padding(24.dp)
-                .widthIn(max = 480.dp),
+                .largeurDeLecture(Mise.formulaire),
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             Text(

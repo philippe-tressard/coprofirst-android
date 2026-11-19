@@ -53,6 +53,7 @@ import fr.coprofirst.app.commun.audience.LocalMesureAudience
 import fr.coprofirst.app.commun.audience.PageVue
 import fr.coprofirst.app.commun.miseenpage.ColonneDeFiche
 import fr.coprofirst.app.commun.miseenpage.LocalColonneDeFiche
+import fr.coprofirst.app.commun.miseenpage.LocalFicheParDessus
 import fr.coprofirst.app.commun.miseenpage.LocalJourDuCarnet
 import fr.coprofirst.app.commun.miseenpage.PageEtColonneDeFiche
 import fr.coprofirst.app.commun.miseenpage.ficheLocale
@@ -94,6 +95,9 @@ fun EcranResidence(
     // La fiche ouverte par la porte : sa nature et son identifiant (`Destination.Element`).
     var ficheNature by rememberSaveable { mutableStateOf<String?>(null) }
     var ficheId by rememberSaveable { mutableStateOf<String?>(null) }
+    // La fiche s'est ouverte depuis une liste : en paysage, elle se tient à côté d'elle — même
+    // poussée en portrait puis la tablette tournée (#69, l'écran reconstruit en garde la trace).
+    var ficheDUneListe by rememberSaveable { mutableStateOf(false) }
     // Le jour du Fil ouvert dans le carnet (#242) : gardé avec la page et dans le marque-page.
     val jourDuCarnet = rememberSaveable { mutableStateOf<String?>(null) }
     val barreDuHaut = remember { BarreDuHaut() }
@@ -129,6 +133,7 @@ fun EcranResidence(
     fun fermerFiche() {
         ficheNature = null
         ficheId = null
+        ficheDUneListe = false
     }
 
     fun aller(id: String) {
@@ -147,6 +152,7 @@ fun EcranResidence(
                 pageDePlus = aiguillage.id
             }
             is Aiguillage.Fiche -> {
+                ficheDUneListe = colonne.occupee
                 ficheNature = aiguillage.element.nature
                 ficheId = aiguillage.element.id
             }
@@ -194,9 +200,12 @@ fun EcranResidence(
         val laterale = presentation == PresentationNavigation.Laterale
         val carnet = presentation == PresentationNavigation.Carnet
         val large = laterale || carnet
+        // En paysage (et dans le carnet), la fiche d'une liste se tient à côté d'elle ; en portrait,
+        // elle se pousse par-dessus, la barre latérale gardée (#69, coprofirst-ios#308).
+        val aCote = presentation.ficheACote(maxWidth, maxHeight)
         // Une liste occupe la colonne de fiche : sa page et la fiche qu'elle ouvre côte à côte (#69) ;
         // dans le carnet, la page de gauche et celle de droite, de part et d'autre du pli (#242).
-        val enColonne = large && colonne.occupee && ouverte != null
+        val enColonne = aCote && colonne.occupee && ouverte != null
         SideEffect { colonne.ouverte = if (enColonne && fiche != null) ficheNature.orEmpty() to ficheId.orEmpty() else null }
         // Une seule fiche dans la colonne : celle du registre (la porte) ou celle qu'une liste tient (#69).
         LaunchedEffect(ficheNature, ficheId) { if (ficheNature != null) colonne.locale?.fermer?.invoke() }
@@ -255,10 +264,15 @@ fun EcranResidence(
                 }
                 // Une fiche hors colonne (téléphone, ou page sans liste) : la barre de la page est la sienne.
                 val ficheSeule = contexteDeFiche(barreDuHaut)
-                CompositionLocalProvider(LocalColonneDeFiche provides colonne.takeIf { large }, LocalJourDuCarnet provides jourDuCarnet.takeIf { carnet }) {
+                CompositionLocalProvider(
+                    LocalColonneDeFiche provides colonne.takeIf { large },
+                    LocalFicheParDessus provides !aCote,
+                    LocalJourDuCarnet provides jourDuCarnet.takeIf { carnet },
+                ) {
                     when {
-                        // Fenêtre large : la page garde sa place ; une liste qui l'occupe ouvre la colonne de fiche.
-                        large && ouverte != null && (fiche == null || enColonne || colonne.retenueALaReconstruction) -> PageEtColonneDeFiche(
+                        // Fenêtre large : la page garde sa place ; en paysage, une liste qui l'occupe ouvre la
+                        // colonne de fiche ; en portrait, une fiche ouverte se pousse (la branche suivante).
+                        large && ouverte != null && (fiche == null || aCote && (enColonne || colonne.retenueALaReconstruction || ficheDUneListe)) -> PageEtColonneDeFiche(
                             enColonne,
                             page = { RegistreDesMenus.Ecran(contexteDePage(ouverte)) },
                             fiche = if (fiche != null && id != null) ({

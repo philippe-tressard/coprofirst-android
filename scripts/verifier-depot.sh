@@ -29,6 +29,8 @@
 #   7 duodecies. chaque module inclus a son build.gradle.kts suivi par git ;
 #   7 terdecies. aucun « /* » dans un commentaire Kotlin : il en ouvre un imbriqué (#293) ;
 #   8. un seul bouton plein, `BoutonPlein` (commun/Boutons.kt) ;
+#   8 bis. un seul écran à tirer, `Actualisable` (Ctrl+R compris), et aucune largeur de
+#      lecture écrite à la main : `largeurDeLecture()` (#69) ;
 #   9. les générateurs du build passent leurs tests (scripts/test_*.py) ;
 #  10. aucun chemin de .claude/worktrees/ suivi.
 #
@@ -175,6 +177,19 @@ interdire "$REQUETE_MAIN" "requête ou route écrite à la main — passer par l
 BOUTON_PLEIN='(^|[^A-Za-z])Button\('
 autotest_motif "bouton plein" "$BOUTON_PLEIN" '    Button(onClick = f) { Text("x") }' '    TextButton(onClick = f) { Text("x") }'
 interdire "$BOUTON_PLEIN" "bouton plein écrit à la main — passer par BoutonPlein ou BoutonPleinDestructif" '^app/src/main/java/fr/coprofirst/app/commun/Boutons\.kt$'
+
+# Tirer pour actualiser s'écrit une fois, `Actualisable` (commun/Actualisable.kt), qui offre
+# aussi Ctrl+R au clavier d'une tablette (⌘R de l'iOS, #69) : un `PullToRefreshBox` nu en
+# priverait son écran — le `.refreshable` nu que refuse l'iOS.
+TIRER_NU='PullToRefreshBox\('
+autotest_motif "tirer pour actualiser nu" "$TIRER_NU" '    PullToRefreshBox(isRefreshing = false, onRefresh = f) {' '    Actualisable(enCours = false, actualiser = f) {'
+interdire "$TIRER_NU" "PullToRefreshBox nu — passer par Actualisable (Ctrl+R)" '^app/src/main/java/fr/coprofirst/app/commun/Actualisable\.kt$'
+# La largeur de lecture (`Mise.lecture`, `Mise.formulaire`) se pose par `largeurDeLecture()`,
+# qui suit la taille du texte (#69) : treize `widthIn(max = …)` recopiés divergeaient
+# déjà (480, 640, 720). Une petite borne de composant (moins de 400 dp) n'est pas une lecture.
+LECTURE_MAIN='widthIn\(max = ([4-9][0-9]{2}|[0-9]{4,})\.dp'
+autotest_motif "largeur de lecture à la main" "$LECTURE_MAIN" '    Column(Modifier.widthIn(max = 720.dp)) {' '    Text(t, Modifier.widthIn(max = 120.dp))'
+interdire "$LECTURE_MAIN" "largeur de lecture écrite à la main — passer par largeurDeLecture() (charte/Mise.kt)"
 
 # Le libellé en capitales (`.styleLibelle()` de l'iOS) s'écrit une fois, `Libelle` de
 # commun/Fiche.kt : recopié à la main dans une vingtaine d'écrans, il divergeait déjà —

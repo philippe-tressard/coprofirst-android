@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -19,12 +18,11 @@ import androidx.compose.material.icons.outlined.AddCircleOutline
 import androidx.compose.material.icons.outlined.Verified
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -41,6 +39,8 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.charte.largeurDeLecture
+import fr.coprofirst.app.commun.Actualisable
 import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.commun.AvisEphemere
 import fr.coprofirst.app.commun.Carte
@@ -102,7 +102,7 @@ internal fun EcranMonLot(service: ServiceMonLot, barre: BarreDuHaut, droitsConnu
     }
 
     AvisEphemere(avis, Modifier.fillMaxSize()) {
-        PullToRefreshBox(isRefreshing = false, onRefresh = { relecture++ }, modifier = Modifier.fillMaxSize()) {
+        Actualisable(enCours = false, actualiser = { relecture++ }, modifier = Modifier.fillMaxSize()) {
             Chargement(
                 charger = { DonneesMonLot.lire(service, droitsConnus) },
                 cle = relecture,
@@ -116,7 +116,7 @@ internal fun EcranMonLot(service: ServiceMonLot, barre: BarreDuHaut, droitsConnu
                 ) {
                     BarreOnglets(donnees.onglets, ouvert, marges = PaddingValues(horizontal = Mise.marge)) { onglet = it }
                     Column(
-                        Modifier.widthIn(max = 720.dp).fillMaxWidth().padding(horizontal = Mise.marge, vertical = 16.dp),
+                        Modifier.largeurDeLecture().fillMaxWidth().padding(horizontal = Mise.marge, vertical = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(Mise.ecart),
                     ) {
                         Page(ouvert, donnees, service, versionAcces, annoncer, barre) { feuille = it }

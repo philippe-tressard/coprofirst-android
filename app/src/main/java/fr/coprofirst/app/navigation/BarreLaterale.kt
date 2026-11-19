@@ -47,6 +47,20 @@ enum class PresentationNavigation {
             else -> Barre
         }
     }
+
+    /**
+     * La fiche d'une liste s'ouvre-t-elle À CÔTÉ d'elle ? (#69, coprofirst-ios#308) Le carnet,
+     * toujours (une page de chaque côté du pli) ; la barre latérale, en PAYSAGE seulement — en
+     * portrait (fenêtre plus haute que large), elle se pousse par-dessus la liste, la barre
+     * latérale gardée ; la barre du bas, jamais. Décidé sur la forme de la fenêtre, jamais sur
+     * l'appareil. La mesure est celle de la résidence, que le clavier ne réduit pas (aucun
+     * `imePadding` au-dessus d'elle) : une saisie en portrait ne fait pas basculer la page.
+     */
+    fun ficheACote(largeur: Dp, hauteur: Dp): Boolean = when (this) {
+        Carnet -> true
+        Laterale -> largeur >= hauteur
+        Barre -> false
+    }
 }
 
 /**
