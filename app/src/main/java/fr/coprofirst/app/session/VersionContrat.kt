@@ -36,5 +36,14 @@ data class VersionContrat(val majeure: Int, val mineure: Int, val correctif: Int
          * le plancher l'atteint — la porte est morte, on la retire.
          */
         val MODERATION = VersionContrat(2, 9, 0)
+
+        /**
+         * Les notifications push d'Android (#280, coprofirst#2789) : l'installation relaie un
+         * appareil `fcm` (v3.119.0). POST /appareils et sa `plateforme` sont déjà au plancher ;
+         * la PORTE dit seulement à qui l'app confie son jeton FCM — une installation plus
+         * ancienne l'accepterait sans jamais avertir le téléphone. Morte au plancher qui
+         * l'atteint, comme `MODERATION`.
+         */
+        val PUSH = VersionContrat(2, 10, 0)
     }
 }

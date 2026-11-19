@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+-->
+<!-- Les notifications sur le téléphone (#280) : l'offre, les textes de l'iOS (`TextesPush`) ;
+     le canal d'Android (Réglages › Notifications), qui n'a pas d'équivalent iOS. -->
+<resources>
+    <string name="push_titre">Être averti sur ce téléphone</string>
+    <string name="push_explication">Quand une alerte arrive, votre téléphone vous prévient. Le message ne dit rien de son contenu : vous le lisez ici.</string>
+    <string name="push_activer">Activer</string>
+    <string name="push_plus_tard">Plus tard</string>
+    <string name="push_canal">Alertes de la résidence</string>
+    <string name="push_canal_description">Les alertes urgentes publiées par le conseil syndical ou l\'administration. Le message ne dit rien de son contenu : vous le lisez dans l\'app.</string>
+    <!-- Si le relais n'a pas donné son texte (il le donne toujours) : rien de l'alerte. -->
+    <string name="push_texte">Une alerte vous attend dans la cloche de votre résidence.</string>
+</resources>

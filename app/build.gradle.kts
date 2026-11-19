@@ -9,14 +9,47 @@ plugins {
 }
 
 /**
+ * La configuration Firebase des notifications push (#280) : `google-services.json`, gardé
+ * HORS de ce dépôt public — au poste, `~/Secrets/CoproFirst/google-services.json`, ou le
+ * chemin que donne la propriété Gradle `coprofirst.firebase`. Ses quatre valeurs entrent en
+ * ressources, sous les noms que lit `FirebaseOptions.fromResource` (`ConfigFirebase`), et
+ * seulement celles de l'app `fr.coprofirst.app`. Absente (la CI, un contributeur) : l'app se
+ * construit sans push. Pas de plugin google-services : il exige le fichier dans le dépôt.
+ * Lu par `providers.fileContents` : le cache de configuration suit le fichier.
+ */
+val configFirebase: Map<String, String>? = run {
+    val chemin = providers.gradleProperty("coprofirst.firebase")
+        .orElse(providers.systemProperty("user.home").map { "$it/Secrets/CoproFirst/google-services.json" })
+        .get()
+    val texte = providers.fileContents(layout.projectDirectory.file(chemin)).asText.orNull ?: return@run null
+    val json = groovy.json.JsonSlurper().parseText(texte) as Map<*, *>
+    val projet = json["project_info"] as Map<*, *>
+    val client = (json["client"] as List<*>).map { it as Map<*, *> }.firstOrNull { c ->
+        ((c["client_info"] as Map<*, *>)["android_client_info"] as Map<*, *>)["package_name"] == "fr.coprofirst.app"
+    } ?: error("$chemin : aucune app Android fr.coprofirst.app")
+    mapOf(
+        "google_app_id" to (client["client_info"] as Map<*, *>)["mobilesdk_app_id"],
+        "google_api_key" to ((client["api_key"] as List<*>).first() as Map<*, *>)["current_key"],
+        "gcm_defaultSenderId" to projet["project_number"],
+        "project_id" to projet["project_id"],
+    ).mapValues { (nom, valeur) -> (valeur as? String)?.takeIf { it.isNotBlank() } ?: error("$chemin : $nom absent") }
+}
+
+/**
  * Version, signature, SDK, Java, lint : communs au téléphone et à la montre, écrits une
  * fois dans le build racine (`build.gradle.kts`). Ici, le seul propre au téléphone.
  */
 android {
     namespace = "fr.coprofirst.app"
 
+    // La configuration Firebase entre en ressources générées (`configFirebase`).
+    buildFeatures { resValues = true }
+    // Une dispense nommée (`project_id`, lu par Firebase par son nom) : app/lint.xml.
+    lint.lintConfig = file("lint.xml")
+
     defaultConfig {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        configFirebase?.forEach { (nom, valeur) -> resValue("string", nom, valeur) }
     }
 }
 
@@ -126,6 +159,9 @@ dependencies {
     // La liaison à la montre Wear OS (#207) : le Data Layer, propriétaire, permis par la licence
     // (point 4, décision de Philippe du 16/11/2026, #213). Éteinte tant que LiaisonMontre.ACTIF l'est.
     implementation(libs.play.services.wearable)
+    // Les notifications push (#280) : Firebase Cloud Messaging, permis par la licence (point 4,
+    // rouvert le 18/11/2026, voie A) ; éteint tant que RelaisPush.ACTIF l'est.
+    implementation(libs.firebase.messaging)
     debugImplementation(libs.compose.ui.tooling)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

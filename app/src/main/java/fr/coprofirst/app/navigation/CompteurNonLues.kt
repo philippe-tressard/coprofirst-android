@@ -8,12 +8,16 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.res.pluralStringResource
 import fr.coprofirst.app.R
 import fr.coprofirst.app.session.ErreurService
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 /**
  * Le nombre de non lues de chaque résidence, que la cloche affiche — comme `CompteurNonLues`
  * de l'iOS. Aucune route du contrat ne sert ce nombre seul : il se COMPTE sur la liste
  * (GET /notifications). La page des notifications le note à chaque lecture et à chaque geste
- * (`noter`) ; la résidence le relit à son ouverture (`relire`). Une résidence, une entrée —
+ * (`noter`) ; la résidence le relit à son ouverture (`relire`), et quand une notification push
+ * arrive pour elle app ouverte (`demanderRelecture`, #280). Une résidence, une entrée —
  * l'adresse de l'installation (`Installation.url`) : le nombre de l'une ne passe jamais à
  * une autre.
  *
@@ -24,6 +28,16 @@ class CompteurNonLues {
 
     /** Le nombre noté pour cette résidence ; 0 tant qu'aucune lecture n'a abouti. */
     fun nombre(residence: String): Int = parResidence[residence] ?: 0
+
+    private val _relectures = MutableSharedFlow<String>(extraBufferCapacity = 8)
+
+    /** Les résidences dont le nombre est à relire : l'écran de la résidence ouverte l'écoute. */
+    val relectures: SharedFlow<String> = _relectures.asSharedFlow()
+
+    /** Une notification push est arrivée pour cette résidence : son nombre est à relire. */
+    fun demanderRelecture(residence: String) {
+        _relectures.tryEmit(residence)
+    }
 
     /** Note le nombre de la liste qu'on vient de lire ou de changer ; 0 éteint le point. */
     fun noter(residence: String, nombre: Int) {

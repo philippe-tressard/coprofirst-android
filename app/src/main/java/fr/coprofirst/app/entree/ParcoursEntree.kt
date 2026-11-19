@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import fr.coprofirst.app.commun.GestesDeSortie
 import fr.coprofirst.app.commun.ResidenceConnue
 import fr.coprofirst.app.commun.pieces.PiecesLocales
-import fr.coprofirst.app.navigation.LienDuSite
 import fr.coprofirst.app.session.AbonnesSession
 import fr.coprofirst.app.session.AdresseInstallation
 import fr.coprofirst.app.session.Connexion
@@ -135,20 +134,21 @@ class ParcoursEntree(
         AdresseInstallation.normaliser(texte)?.let { recevoir(it, OrigineAdresse.Scan) }
     }
 
+    /** Un lien d'application (#7) : `Sollicitation.deLien`. */
+    fun suivreLien(lien: String) = Sollicitation.deLien(lien)?.let(::suivre)
+
+    /** Une notification push touchée (#280), `residence` retrouvée par son abonnement : `Sollicitation.deNotification`. */
+    fun suivreNotification(residence: String) = Sollicitation.deNotification(residence, connues.liste)?.let(::suivre)
+
     /**
-     * Un lien d'application (#7), comme `Parcours.suivre` de l'iOS. Vers la résidence
-     * ouverte : elle reste. Vers une autre : la connexion, à son adresse — la session
-     * ouverte est quittée sans être fermée (`changer` de l'iOS). Une résidence connue s'y
-     * reprend comme d'habitude ; un hôte jamais vu se découvre puis se confirme TOUJOURS
-     * avant le premier mot de passe (`OrigineAdresse.Lien`). Rien ne part de plus.
-     *
-     * L'écran que le lien vise (une affaire, une page — `LienDuSite`) attend que sa
-     * résidence soit ouverte, puis la porte le pose (#147) ; dans la résidence ouverte, tout
-     * de suite. `/auth/connexion` ne vise que la connexion.
+     * Vers la résidence ouverte : elle reste, et l'écran visé se pose tout de suite. Vers une
+     * autre : la connexion, à son adresse — la session ouverte est quittée sans être fermée
+     * (`changer` de l'iOS) ; une résidence connue s'y reprend comme d'habitude, un hôte jamais
+     * vu se découvre (`recevoir`). L'écran visé attend que sa résidence soit ouverte, puis la
+     * porte le pose (#147). Rien ne part de plus.
      */
-    fun suivreLien(lien: String) {
-        val adresse = LienDApplication.adresse(lien) ?: return
-        val enAttente = LienDuSite.destination(LienDApplication.chemin(lien))?.let { LienEnAttente(adresse, it) }
+    private fun suivre(sollicitation: Sollicitation) {
+        val (adresse, enAttente) = sollicitation
         val etat = _etat.value
         if (etat.ouverte?.adresse == adresse ||
             (etat.ecran == EcranEntree.Connexion && etat.reconnue?.adresse == adresse)

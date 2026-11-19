@@ -31,6 +31,9 @@ wear-protolayout = "1.4.2"
 wear-remote-interactions = "1.2.0"
 # Le Data Layer de Wear OS : propriétaire, permis par la licence (point 4, #213).
 play-services-wearable = "19.0.0"
+# Firebase Cloud Messaging (#280, voie A) : Apache-2.0, et des interfaces propriétaires de
+# Google qu'il tire — permis par la licence (point 4, rouvert le 18/11/2026).
+firebase-messaging = "26.0.2"
 concurrent-futures = "1.3.0"
 androidx-test-services = "1.6.0"
 
@@ -72,6 +75,7 @@ wear-complications-data-source = { module = "androidx.wear.watchface:watchface-c
 wear-protolayout-material3 = { module = "androidx.wear.protolayout:protolayout-material3", version.ref = "wear-protolayout" }
 wear-remote-interactions = { module = "androidx.wear:wear-remote-interactions", version.ref = "wear-remote-interactions" }
 play-services-wearable = { module = "com.google.android.gms:play-services-wearable", version.ref = "play-services-wearable" }
+firebase-messaging = { module = "com.google.firebase:firebase-messaging", version.ref = "firebase-messaging" }
 androidx-concurrent-futures = { module = "androidx.concurrent:concurrent-futures", version.ref = "concurrent-futures" }
 wear-tiles-renderer = { module = "androidx.wear.tiles:tiles-renderer", version.ref = "wear-tiles" }
 androidx-test-services-storage = { module = "androidx.test.services:storage", version.ref = "androidx-test-services" }

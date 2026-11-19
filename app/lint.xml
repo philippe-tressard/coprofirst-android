@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+-->
+<!-- Une seule dispense, nommée : `project_id`, posé en ressource par `configFirebase`
+     (app/build.gradle.kts, #280) et lu par Firebase par son NOM (FirebaseOptions.fromResource) —
+     lint ne voit pas cette lecture. Toute autre ressource inutilisée reste une erreur. -->
+<lint>
+    <issue id="UnusedResources">
+        <ignore regexp="R\.string\.project_id`? appears to be unused" />
+    </issue>
+</lint>

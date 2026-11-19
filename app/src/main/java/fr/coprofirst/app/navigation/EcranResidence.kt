@@ -109,6 +109,8 @@ fun EcranResidence(
     val residence = session.installation.url
     // Le nombre de non lues de la cloche se relit à l'ouverture de la résidence.
     LaunchedEffect(parcours) { parcours.relireNonLues() }
+    // Et à l'arrivée d'une notification push pour elle, app ouverte (#280, `presentation` de l'iOS).
+    LaunchedEffect(parcours) { CompteurNonLues.partage.relectures.collect { if (it == residence) parcours.relireNonLues() } }
     // La mesure d'audience (#144) suit la résidence ouverte et le choix relu du compte.
     val mesure = LocalMesureAudience.current
     DisposableEffect(mesure, parcours) {

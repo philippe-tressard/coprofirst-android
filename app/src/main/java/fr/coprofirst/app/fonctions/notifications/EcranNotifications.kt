@@ -27,6 +27,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -43,9 +44,12 @@ import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.EtatVide
 import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.MessageErreur
+import fr.coprofirst.app.fonctions.notifications.push.NotificationsPush
+import fr.coprofirst.app.fonctions.notifications.push.OffrePush
 import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.navigation.CompteurNonLues
 import fr.coprofirst.app.navigation.ContexteDeMenu
+import fr.coprofirst.app.session.Installation
 import java.time.Instant
 
 /**
@@ -63,8 +67,8 @@ import java.time.Instant
  * site le dit (« Notifications lues supprimées », `AvisEphemere`), comme l'iOS. La cloche,
  * qui ouvre cet écran en feuille avec « OK », est commune (`navigation/Cloche.kt`) : la page
  * lui note le nombre de non lues à chaque lecture et à chaque geste (`CompteurNonLues`).
- * Aucune notification push : elles sont abandonnées (décision de Philippe, 17/11/2026, #269),
- * la cloche reste.
+ * En tête, l'offre des notifications sur le téléphone (`OffrePush`, #280), tant que le relais
+ * le permet et que la résidence sert le contrat 2.10.0 (`NotificationsPush.offreDue`).
  */
 @Composable
 fun EcranNotifications(contexte: ContexteDeMenu) {
@@ -76,19 +80,20 @@ fun EcranNotifications(contexte: ContexteDeMenu) {
             initializer { ParcoursNotifications(ServiceNotificationsApi(session)) { CompteurNonLues.partage.noter(residence, it) } }
         },
     )
-    EcranNotifications(parcours, contexte.barre)
+    EcranNotifications(parcours, contexte.barre, session.installation)
 }
 
+/** `installation` : la résidence, pour l'offre des notifications push ; `null` (tests) : jamais d'offre. */
 @Composable
-fun EcranNotifications(parcours: ParcoursNotifications, barre: BarreDuHaut) {
+fun EcranNotifications(parcours: ParcoursNotifications, barre: BarreDuHaut, installation: Installation? = null) {
     Chargement(charger = { parcours.charger() }, squelette = { SqueletteNotifications() }) { _, _ ->
-        ListeNotifications(parcours, barre)
+        ListeNotifications(parcours, barre, installation)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ListeNotifications(parcours: ParcoursNotifications, barre: BarreDuHaut) {
+private fun ListeNotifications(parcours: ParcoursNotifications, barre: BarreDuHaut, installation: Installation?) {
     val etat by parcours.etat.collectAsStateWithLifecycle()
     var enEdition by rememberSaveable { mutableStateOf(false) }
     var selection by remember { mutableStateOf(emptySet<Int>()) }
@@ -100,6 +105,9 @@ private fun ListeNotifications(parcours: ParcoursNotifications, barre: BarreDuHa
     // Le dernier « Supprimer les lues » déjà dit : un écran recomposé (rotation, retour
     // sur la page) ne redit pas un avis passé.
     var avisDits by rememberSaveable { mutableIntStateOf(etat.luesSupprimees) }
+    val push = NotificationsPush.de(LocalContext.current)
+    val etatPush by push.etat.collectAsStateWithLifecycle()
+    LaunchedEffect(push) { if (push.relaisActif) push.lireAutorisation() }
 
     // Une alerte partie ne reste pas choisie ; une liste vide n'a plus rien à modifier.
     LaunchedEffect(etat.liste) {
@@ -141,6 +149,9 @@ private fun ListeNotifications(parcours: ParcoursNotifications, barre: BarreDuHa
                     contentPadding = PaddingValues(horizontal = Mise.marge, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(Mise.ecart),
                 ) {
+                    if (installation != null && push.offreDue(installation, etatPush) && !enEdition) {
+                        item(key = "push") { OffrePush(push, Modifier.animateItem()) }
+                    }
                     echec?.let { phrase ->
                         item(key = "echec") { MessageErreur(phrase, Modifier.testTag("notifications.echec")) }
                     }
