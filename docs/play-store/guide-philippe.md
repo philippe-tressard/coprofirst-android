@@ -87,8 +87,16 @@ C'est la condition des nouveaux comptes personnels pour obtenir la production.
    testeurs Android ») : chaque copropriétaire le rejoint lui-même, et la liste se tient
    sans retaper d'adresses. Sinon, une liste d'adresses e-mail saisie dans la console.
    Dans tous les cas, l'adresse est celle du **compte Google du téléphone** du testeur.
+   Réglages du groupe : **Qui peut voir le groupe** = « Tous les internautes » — sur
+   « Membres du groupe », un nouveau venu ne voit que « Contenu indisponible » et ne peut pas
+   rejoindre (constaté le 20/11/2026) ; **Qui peut rejoindre** = « Tous les internautes
+   peuvent rejoindre le groupe » (aucune approbation à donner) ; conversations, publication
+   et membres : « Gestionnaires de groupe », pour que personne ne voie les adresses des autres.
 3. **Le lien d'inscription** (« Rejoindre sur le Web ») est donné par la piste : c'est lui
    qu'on envoie, avec le message prêt à copier de `docs/play-store/invitation-testeurs.md`.
+   On y joint le **lien de la fiche** (`https://play.google.com/store/apps/details?id=` suivi
+   de l'identifiant de l'app) : en test fermé, l'app n'apparaît **jamais dans la recherche**
+   du Play Store, elle ne s'ouvre que par ce lien (constaté le 20/11/2026).
 4. Envoyer la version en examen (la première passe par l'examen de Google, quelques
    jours).
 
@@ -101,6 +109,19 @@ C'est la condition des nouveaux comptes personnels pour obtenir la production.
 - les testeurs doivent **installer** l'app par le lien et s'en **servir** : Google le
   demande dans la candidature à la production ;
 - noter les retours (ce qui marche, ce qui manque) : la candidature les demande.
+
+**Si un testeur bloque** :
+
+- « Contenu indisponible » sur la page du groupe : le réglage « Qui peut voir le groupe »
+  ci-dessus ; à défaut, l'ajouter soi-même (Membres › Ajouter des membres › « Ajouter
+  directement »).
+- « Élément introuvable » sur la fiche : dans le Play Store, le compte actif (pastille en
+  haut à droite) n'est pas celui qui s'est inscrit ; ou le pays de son compte Play n'est pas
+  dans les pays de la piste ; ou l'inscription est trop récente (réessayer une à deux heures
+  plus tard, après avoir vidé le cache du Play Store).
+- Le compte CoproFirst n'est pas validé : la validation des inscriptions sur une résidence
+  reste manuelle (Espace CS › Comptes en attente) — elle ne compte pas pour Google. Un
+  testeur hors de la résidence passe par la démo.
 
 ## 5. La production
 

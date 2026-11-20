@@ -7,8 +7,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 
 Le message que **Philippe** envoie (courriel ou annonce de la résidence) pour recruter les
 testeurs du test fermé (`docs/play-store/guide-philippe.md` §4). Ce dépôt est public :
-aucune adresse ni aucun nom réel ici. Remplacer les deux liens entre crochets, puis
-copier.
+aucune adresse ni aucun nom réel ici. Remplacer les trois liens entre crochets (d'où ils
+viennent : le guide, §4), puis copier.
 
 ---
 
@@ -26,8 +26,12 @@ sortie dans le Play Store, Google demande qu'une douzaine de personnes l'essaien
    [lien du groupe Google]
 2. Ouvrir le lien d'inscription au test, depuis ce même compte, et accepter :
    [lien d'inscription du test fermé]
-3. Installer CoproFirst depuis le Play Store (le lien d'inscription y mène), puis vous
-   connecter avec vos identifiants habituels du site de la résidence.
+3. Installer CoproFirst depuis ce lien, avec le même compte Google dans le Play Store :
+   [lien de la fiche du Play Store]
+   L'application n'apparaît pas dans la recherche du Play Store pendant le test : passez
+   par ce lien. S'il répond « Élément introuvable », vérifiez le compte choisi dans le Play
+   Store (la pastille en haut à droite), ou réessayez une heure plus tard.
+4. Vous connecter avec vos identifiants habituels du site de la résidence.
 
 **Ce qu'on vous demande**
 
