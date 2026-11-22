@@ -9,7 +9,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/** #69, coprofirst-ios#223 : Ctrl+N et Ctrl+R au clavier d'une tablette, offerts par l'écran affiché. */
+/** #69, coprofirst-ios#223 : Ctrl+N, Ctrl+R et Ctrl+F au clavier d'une tablette, offerts par l'écran affiché. */
 class RaccourcisClavierTest {
     @Test
     fun ctrlDeclencheCeQueLEcranOffre() {
@@ -40,6 +40,20 @@ class RaccourcisClavierTest {
         retirerListe()
         assertFalse(raccourcis.declencher(KeyEvent.KEYCODE_R, ctrl = true))
         assertEquals(emptyList<Raccourci>(), raccourcis.offerts())
+    }
+
+    /** Ctrl+F (coprofirst-ios#223) : la dernière recherche inscrite seule, puis celle d'avant à son départ. */
+    @Test
+    fun ctrlFNOuvreQueLaDerniereRecherche() {
+        val raccourcis = RaccourcisClavier()
+        val ouvertes = mutableListOf<String>()
+        raccourcis.inscrire(Raccourci.Rechercher) { ouvertes += "liste" }
+        val retirerFiche = raccourcis.inscrire(Raccourci.Rechercher) { ouvertes += "fiche" }
+        assertTrue(raccourcis.declencher(KeyEvent.KEYCODE_F, ctrl = true))
+        assertEquals(listOf("fiche"), ouvertes)
+        retirerFiche()
+        assertTrue(raccourcis.declencher(KeyEvent.KEYCODE_F, ctrl = true))
+        assertEquals(listOf("fiche", "liste"), ouvertes)
     }
 
     @Test
