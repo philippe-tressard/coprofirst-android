@@ -24,11 +24,12 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenu
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -216,7 +217,7 @@ private fun ChoixLieu(choisi: String?, perimetres: List<Perimetre>, reperes: Rep
             perimetres.firstOrNull { it.code == choisi }?.libelle ?: nonPrecise, {}, readOnly = true, enabled = actif,
             label = { Text(stringResource(R.string.nouvelle_lieu)) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(ouvert) },
-            modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable).testTag(reperes.lieu),
+            modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable).testTag(reperes.lieu),
         )
         ExposedDropdownMenu(ouvert, { ouvert = false }) {
             DropdownMenuItem(text = { Text(nonPrecise) }, onClick = { ouvert = false; choisir(null) })
