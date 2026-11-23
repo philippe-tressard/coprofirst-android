@@ -25,25 +25,12 @@ data class VersionContrat(val majeure: Int, val mineure: Int, val correctif: Int
             return runCatching { VersionContrat(a.toInt(), b.toInt(), c.toInt()) }.getOrNull()
         }
 
-        /** Le contrat sur lequel le client est généré : le plancher (client-api). */
+        /**
+         * Le contrat sur lequel le client est généré : le plancher (client-api). Une PORTE de
+         * version (une constante ici, lue par `Installation.sert`) ne vit qu'au-dessus de lui :
+         * le plancher qui l'atteint la rend morte, on la retire. La modération (2.9.0) et le
+         * relais des push (2.10.0) y sont depuis v3.121.2 (#311) : `Installation.sertLePlancher`.
+         */
         val PLANCHER: VersionContrat = requireNotNull(lire(VERSION_CONTRAT_PLANCHER))
-
-        /**
-         * La modération du contenu (#282, coprofirst#2861) : `/masquages`, greffé au-dessus du
-         * plancher (`GREFFES` de contrat/plancher.env), et les cibles `affaire`, `suite`,
-         * `question_reglement` de POST /signalements. Une PORTE : l'app n'offre ces gestes qu'à
-         * une installation qui sert ce contrat (`Installation.sert`). Un test la refuse dès que
-         * le plancher l'atteint — la porte est morte, on la retire.
-         */
-        val MODERATION = VersionContrat(2, 9, 0)
-
-        /**
-         * Les notifications push d'Android (#280, coprofirst#2789) : l'installation relaie un
-         * appareil `fcm` (v3.119.0). POST /appareils et sa `plateforme` sont déjà au plancher ;
-         * la PORTE dit seulement à qui l'app confie son jeton FCM — une installation plus
-         * ancienne l'accepterait sans jamais avertir le téléphone. Morte au plancher qui
-         * l'atteint, comme `MODERATION`.
-         */
-        val PUSH = VersionContrat(2, 10, 0)
     }
 }

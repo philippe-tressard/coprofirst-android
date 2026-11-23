@@ -49,10 +49,10 @@ data class EtatPush(val autorisation: AutorisationPush = AutorisationPush.INCONN
  * - arrivée app ouverte, sur la résidence à l'écran : la cloche se relit, sans bruit
  *   (`arrivee`) ; pour une autre, l'avertissement sonne (`AvertissementPush`).
  *
- * Seule une résidence au contrat 2.10.0 reçoit le jeton (`VersionContrat.PUSH`) : une plus
- * ancienne l'accepterait sans jamais avertir le téléphone. Tant que `relaisActif` est faux
- * (`RelaisPush`, ou pas de configuration Firebase), rien de tout cela ne se fait : ni
- * offre, ni jeton, ni requête. Rien de ce qui passe ici ne s'écrit dans un journal.
+ * Seule une résidence qui dit servir le plancher reçoit le jeton (`Installation.sertLePlancher`) :
+ * le plancher relaie FCM (contrat 2.10.0, #311) ; un contrat absent ou illisible, rien. Tant
+ * que `relaisActif` est faux (`RelaisPush`, ou pas de configuration Firebase), rien de tout
+ * cela ne se fait : ni offre, ni jeton, ni requête. Rien de ce qui passe ici ne s'écrit dans un journal.
  */
 class NotificationsPush(
     private val centre: CentreNotifications,
@@ -77,11 +77,11 @@ class NotificationsPush(
     // L'autorisation, au bon moment
 
     /**
-     * L'offre s'affiche dans la cloche de cette résidence : relais actif, contrat 2.10.0 servi,
+     * L'offre s'affiche dans la cloche de cette résidence : relais actif, plancher servi,
      * autorisation jamais demandée, pas de « Plus tard » récent.
      */
     fun offreDue(installation: Installation, etat: EtatPush = _etat.value): Boolean {
-        if (!relaisActif || !installation.sert(VersionContrat.PUSH)) return false
+        if (!relaisActif || !installation.sertLePlancher) return false
         if (etat.autorisation != AutorisationPush.NON_DEMANDEE) return false
         val reportee = etat.reporteeLe ?: return true
         return Duration.between(reportee, maintenant()) > REPORT
@@ -122,7 +122,7 @@ class NotificationsPush(
     override suspend fun residenceOuverte(session: SessionOuverte) {
         if (!relaisActif) return
         ouverte = session
-        if (!session.installation.sert(VersionContrat.PUSH)) return
+        if (!session.installation.sertLePlancher) return
         lireAutorisation()
         if (_etat.value.autorisation != AutorisationPush.ACCORDEE) return
         enregistrer(session)
@@ -133,7 +133,7 @@ class NotificationsPush(
     private suspend fun enregistrer(session: SessionOuverte) {
         val residence = session.installation.url
         val jeton = jeton ?: return
-        if (!relaisActif || !session.installation.sert(VersionContrat.PUSH) || residence in enregistrees) return
+        if (!relaisActif || !session.installation.sertLePlancher || residence in enregistrees) return
         enregistrees += residence
         try {
             service.enregistrer(AppareilPush(jeton, environnement, abonnements.abonnement(residence)), session)

@@ -17,8 +17,8 @@ data class CibleSignalement(val type: String, val id: Int) {
         /** Une réponse d'une idée, d'une annonce, ou le commentaire d'un sondage. */
         fun commentaire(id: Int) = CibleSignalement("commentaire", id)
 
-        // Au-dessus du plancher, derrière la porte `VersionContrat.MODERATION` (coprofirst#2861,
-        // #282) : les types que le site envoie. Un contenu que le lecteur ne voit pas répond 404.
+        // La modération (coprofirst#2861, #282), au plancher depuis #311 et offerte à
+        // l'installation qui le sert (`Installation.sertLePlancher`) : les types que le site envoie. Un contenu que le lecteur ne voit pas répond 404.
 
         /** Une affaire. */
         fun affaire(id: Int) = CibleSignalement("affaire", id)

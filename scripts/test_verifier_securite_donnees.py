@@ -4,8 +4,10 @@
 """Tests du contrôle de la section « Sécurité des données » :
 `python3 -I scripts/test_verifier_securite_donnees.py`."""
 
+import json
 import pathlib
 import sys
+import tempfile
 import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
@@ -65,10 +67,24 @@ class SecuriteDesDonnees(unittest.TestCase):
             v.verifier(DECLARATION.replace("<!-- table:envois -->", ""), ECRITURES, SOURCE, MANIFESTE)
 
     def test_les_ecritures_greffees_au_dessus_du_plancher_se_declarent(self):
-        # #282 : le contrôle ne lisait que le contrat du plancher ; postMasquages passait sans ligne.
-        greffees = v.ecritures_du_contrat(v.greffees(RACINE))
-        self.assertIn("postMasquages", greffees)
-        self.assertIn("deleteMasquagesAuteurId", greffees)
+        # #282 : le contrôle ne lisait que le contrat du plancher ; une écriture greffée passait
+        # sans ligne. Aucune greffe depuis #311 : un dépôt fictif éprouve la lecture.
+        with tempfile.TemporaryDirectory() as dossier:
+            racine = pathlib.Path(dossier)
+            (racine / "contrat/au-dessus").mkdir(parents=True)
+            (racine / "contrat/plancher.env").write_text('AU_DESSUS=v9.9.9\nGREFFES="/masquages"\n', encoding="utf-8")
+            haut = {"paths": {"/masquages": {"get": {"operationId": "get_masquages"}, "post": {"operationId": "post_masquages"}},
+                              "/autre": {"post": {"operationId": "post_autre"}}}}
+            (racine / "contrat/au-dessus/openapi.json").write_text(json.dumps(haut), encoding="utf-8")
+            self.assertEqual(v.ecritures_du_contrat(v.greffees(racine)), {"postMasquages"})
+
+    def test_les_masquages_sont_au_plancher(self):
+        # #311 : /masquages est au plancher (v3.121.2) ; ses écritures se déclarent comme les autres.
+        contrat = json.loads((RACINE / "contrat/openapi.json").read_text(encoding="utf-8"))
+        ecritures = v.ecritures_du_contrat(contrat)
+        self.assertIn("postMasquages", ecritures)
+        self.assertIn("deleteMasquagesAuteurId", ecritures)
+        self.assertEqual(v.greffees(RACINE), {"paths": {}})
 
     def test_le_depot_est_conforme(self):
         self.assertEqual(v.main(["x", str(RACINE)]), 0)

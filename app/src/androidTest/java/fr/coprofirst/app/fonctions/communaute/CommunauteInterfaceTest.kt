@@ -38,6 +38,7 @@ import fr.coprofirst.app.commun.attendreTag
 import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.miseenpage.EnFenetreLarge
 import fr.coprofirst.app.commun.onglets.ReperesOnglets
+import fr.coprofirst.app.commun.residenceSimulee
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.navigation.ActionsDeclarees
 import fr.coprofirst.app.navigation.BarreDuHaut
@@ -45,7 +46,6 @@ import fr.coprofirst.app.navigation.ContexteDeMenu
 import fr.coprofirst.app.navigation.DroitsOnglet
 import fr.coprofirst.app.navigation.PagesParDefaut
 import fr.coprofirst.app.navigation.fermerLaFiche
-import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsParHote
 import java.time.OffsetDateTime
@@ -62,7 +62,8 @@ import org.junit.runner.RunWith
 private class CommunauteSimulee(
     val motif: String? = null,
     val peutCreer: Boolean = true,
-    override val moderation: Boolean = false,
+    /** Au plancher, la modération est servie (#311) : comme la résidence simulée. */
+    override val moderation: Boolean = true,
 ) : ServiceCommunaute {
     /** Les auteurs masqués (#282), comme le serveur : idempotent. */
     val masquesPoses = mutableListOf<AuteurAMasquer>()
@@ -147,7 +148,7 @@ class CommunauteInterfaceTest {
         val barre = BarreDuHaut()
         val contexte = ContexteDeMenu(
             page = PagesParDefaut.toutes.first { it.id == "communaute" },
-            session = SessionOuverte(Installation("https://residence.test", "Les Glycines"), SessionsParHote()),
+            session = SessionOuverte(residenceSimulee("https://residence.test", "Les Glycines"), SessionsParHote()),
             droits = DroitsOnglet.depuis(listOf("résident"), null, "copropriétaire_résident", false),
             sortie = object : GestesDeSortie {
                 override fun deconnecter() = Unit

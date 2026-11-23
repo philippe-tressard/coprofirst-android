@@ -13,8 +13,8 @@ import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.commun.AvisEphemere
 import fr.coprofirst.app.commun.attendreTag
 import fr.coprofirst.app.commun.attendreTexte
+import fr.coprofirst.app.commun.residenceSimulee
 import fr.coprofirst.app.commun.toucher
-import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsParHote
 import org.junit.Assert.assertEquals
@@ -28,7 +28,7 @@ class MessagesAffaireInterfaceTest {
     @get:Rule
     val ecran = createComposeRule()
 
-    private val session = SessionOuverte(Installation("https://residence.exemple.test", "Les Glycines"), SessionsParHote())
+    private val session = SessionOuverte(residenceSimulee("https://residence.exemple.test", "Les Glycines"), SessionsParHote())
 
     private fun ouvrirFiche(id: Int): AffairesSimulees {
         val service = AffairesSimulees()

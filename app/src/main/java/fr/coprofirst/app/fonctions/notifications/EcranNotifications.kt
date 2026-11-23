@@ -68,7 +68,7 @@ import java.time.Instant
  * qui ouvre cet écran en feuille avec « OK », est commune (`navigation/Cloche.kt`) : la page
  * lui note le nombre de non lues à chaque lecture et à chaque geste (`CompteurNonLues`).
  * En tête, l'offre des notifications sur le téléphone (`OffrePush`, #280), tant que le relais
- * le permet et que la résidence sert le contrat 2.10.0 (`NotificationsPush.offreDue`).
+ * le permet et que la résidence sert le plancher (`NotificationsPush.offreDue`).
  */
 @Composable
 fun EcranNotifications(contexte: ContexteDeMenu) {

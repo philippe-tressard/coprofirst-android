@@ -20,10 +20,10 @@ import kotlinx.coroutines.coroutineScope
  * Ce que la fiche d'un sondage demande à la résidence, comme l'iOS (`ServiceSondage`). Le fil
  * et la Communauté l'ouvrent : un composant commun, son service avec lui. Signaler un
  * commentaire : le signalement commun (`ServiceSignalements`) ; masquer son auteur : les
- * masquages communs (`ServiceMasquages`, #297), derrière la porte `moderation`.
+ * masquages communs (`ServiceMasquages`, #297), si l'installation les sert (`moderation`).
  */
 interface ServiceSondage : ServiceSignalements, ServiceMasquages {
-    /** L'installation sert-elle la modération (`VersionContrat.MODERATION`, #282) ? */
+    /** L'installation sert-elle la modération (`Installation.sertLePlancher`, #311) ? */
     val moderation: Boolean
 
     /** GET /sondages/{id}, et GET /auth/me pour l'identifiant du compte. */
@@ -44,7 +44,7 @@ class ServiceSondageApi(private val session: SessionOuverte) :
     ServiceSondage,
     ServiceSignalements by ServiceSignalementsApi(session),
     ServiceMasquages by ServiceMasquagesApi(session) {
-    override val moderation: Boolean get() = session.installation.sert(VersionContrat.MODERATION)
+    override val moderation: Boolean get() = session.installation.sertLePlancher
 
 
     override suspend fun sondage(id: Int): DetailSondage = coroutineScope {

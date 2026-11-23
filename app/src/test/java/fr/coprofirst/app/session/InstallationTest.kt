@@ -3,6 +3,7 @@
 
 package fr.coprofirst.app.session
 
+import fr.coprofirst.api.VERSION_CONTRAT_PLANCHER
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -72,23 +73,34 @@ class InstallationTest {
         Installation.depuisConfig(adresse, mapOf("site_nom" to "Récente", "version_contrat" to "99.0.0"))
     }
 
-    /** #282 : une porte au-dessus du plancher s'ouvre au contrat servi qui l'atteint, jamais sans contrat lisible. */
+    private fun servi(v: String?) = Installation("https://glycines.exemple.test", "Les Glycines", versionContrat = v)
+
+    /**
+     * #282 : une porte au-dessus du plancher s'ouvre au contrat servi qui l'atteint, jamais sans
+     * contrat lisible. Aucune n'est ouverte depuis #311 : une porte fictive éprouve le mécanisme.
+     */
     @Test
     fun unePorteSOuvreAuContratQuiLAtteint() {
-        fun servi(v: String?) = Installation("https://glycines.exemple.test", "Les Glycines", versionContrat = v)
-        assertTrue(servi("2.9.0").sert(VersionContrat.MODERATION))
-        assertTrue(servi("2.10.0").sert(VersionContrat.MODERATION))
-        assertFalse(servi("2.8.0").sert(VersionContrat.MODERATION))
-        assertFalse(servi(null).sert(VersionContrat.MODERATION))
-        assertTrue(servi("2.10.0").sert(VersionContrat.PUSH))
-        assertFalse(servi("2.9.0").sert(VersionContrat.PUSH))
+        val porte = VersionContrat(plancher.majeure, plancher.mineure + 1, 0)
+        assertTrue(servi(porte.toString()).sert(porte))
+        assertTrue(servi(VersionContrat(plancher.majeure + 1, 0, 0).toString()).sert(porte))
+        assertFalse(servi(plancher.toString()).sert(porte))
+        assertFalse(servi(null).sert(porte))
     }
 
-    /** Une porte que le plancher atteint est MORTE : elle se retire, avec la greffe de `GREFFES`. */
+    /**
+     * #311 : la modération (contrat 2.9.0, coprofirst#2861) et le relais des push (2.10.0,
+     * coprofirst#2789) sont AU PLANCHER — offerts sans porte à toute installation qui dit son
+     * contrat ; un contrat absent ou illisible n'ouvre rien, comme l'iOS.
+     */
     @Test
-    fun aucunePorteSousLePlancher() {
-        assertTrue("porte morte : le plancher sert la modération — retirer MODERATION et la greffe", plancher < VersionContrat.MODERATION)
-        assertTrue("porte morte : le plancher relaie FCM — retirer PUSH", plancher < VersionContrat.PUSH)
+    fun laModerationEtLeRelaisSontOffertsAuPlancher() {
+        assertTrue("le plancher ne sert plus la modération : lui remettre une porte", plancher >= VersionContrat(2, 9, 0))
+        assertTrue("le plancher ne relaie plus FCM : lui remettre une porte", plancher >= VersionContrat(2, 10, 0))
+        assertTrue(servi(VERSION_CONTRAT_PLANCHER).sertLePlancher)
+        assertTrue(servi("99.0.0").sertLePlancher)
+        assertFalse("contrat absent", servi(null).sertLePlancher)
+        assertFalse("contrat illisible", servi("2.10").sertLePlancher)
     }
 
     /** #233 : `installation_suspendue` est une CHAÎNE ; « 1 » seul suspend ; absente, rien. */

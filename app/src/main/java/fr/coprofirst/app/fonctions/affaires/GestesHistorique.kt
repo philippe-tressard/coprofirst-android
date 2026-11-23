@@ -85,9 +85,9 @@ internal fun rememberGesteAnnonce(avis: AvisDuGeste, recharger: () -> Unit): Ges
 @Stable
 internal class ChoixDeSuite(
     /** Le compte (`DroitsOnglet.compte`) : on ne signale ni ne masque ce qu'on a écrit. */
-    private val moi: Int? = null,
-    /** L'installation sert-elle la modération (`VersionContrat.MODERATION`, #282) ? */
-    private val moderation: Boolean = false,
+    private val moi: Int?,
+    /** L'installation sert-elle la modération (`Installation.sertLePlancher`, #311) ? */
+    private val moderation: Boolean,
 ) {
     var aCorriger by mutableStateOf<SuiteAffaire?>(null)
     var aSupprimer by mutableStateOf<SuiteAffaire?>(null)

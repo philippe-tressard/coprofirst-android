@@ -33,12 +33,12 @@ import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.onglets.CadreAOnglets
 import fr.coprofirst.app.commun.onglets.OngletsSurLeSite
 import fr.coprofirst.app.commun.onglets.ReperesOnglets
+import fr.coprofirst.app.commun.residenceSimulee
 import fr.coprofirst.app.commun.toucher
 import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.navigation.ContexteDeMenu
 import fr.coprofirst.app.navigation.DroitsOnglet
 import fr.coprofirst.app.navigation.PagesParDefaut
-import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsParHote
 import java.time.Instant
@@ -67,7 +67,7 @@ class AdminInterfaceTest {
     private fun ouvrir(droits: DroitsOnglet) {
         val contexte = ContexteDeMenu(
             page = PagesParDefaut.toutes.first { it.id == OngletsAdmin.PAGE },
-            session = SessionOuverte(Installation("https://residence.exemple.test", "Les Glycines"), SessionsParHote()),
+            session = SessionOuverte(residenceSimulee("https://residence.exemple.test", "Les Glycines"), SessionsParHote()),
             droits = droits,
             sortie = object : GestesDeSortie {
                 override fun deconnecter() = Unit

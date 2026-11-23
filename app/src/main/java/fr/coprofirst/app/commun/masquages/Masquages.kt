@@ -29,9 +29,8 @@ data class AuteurAMasquer(val id: Int, val nom: String) {
 }
 
 /**
- * GET, POST /masquages et DELETE /masquages/{auteur_id} — au-dessus du plancher (greffés,
- * `GREFFES`), appelés derrière la porte `VersionContrat.MODERATION`
- * (`Installation.sert`). Le serveur refuse en 422, avec sa phrase, ce qui ne se masque pas
+ * GET, POST /masquages et DELETE /masquages/{auteur_id} — au plancher depuis v3.121.2 (#311),
+ * offerts à l'installation qui le sert (`Installation.sertLePlancher`). Le serveur refuse en 422, avec sa phrase, ce qui ne se masque pas
  * (soi-même, le conseil syndical, l'administration, un modérateur qui masquerait) : l'app ne
  * redit pas la règle.
  */

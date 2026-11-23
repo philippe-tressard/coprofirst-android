@@ -40,7 +40,7 @@ du conseil syndical ou de l'administration part vers un téléphone (coprofirst 
 Après « Activer » dans la cloche, et seulement alors, le téléphone obtient de Google un
 identifiant d'installation Firebase et un jeton d'appareil (le jeton FCM), et envoie le
 jeton à la résidence avec un **abonnement** aléatoire tiré par l'app (`postAppareils`), si
-elle sert le contrat 2.10.0. Le relais de CoproFirst rend le jeton à Google pour acheminer
+elle dit servir le plancher de l'app, le contrat 2.10.0 (`Installation.sertLePlancher`). Le relais de CoproFirst rend le jeton à Google pour acheminer
 chaque notification, qui ne porte qu'un texte fixe et l'abonnement, jamais de donnée
 personnelle : le détail se lit ensuite par l'API (garde-fou du projet). À la déconnexion,
 l'app retire l'appareil (`deleteAppareilsAbonnement`). Firebase ne s'initialise jamais au

@@ -48,15 +48,16 @@ class SaisieAffaireTest {
     @Test
     fun lesGestesSuiventLesDroitsServis() {
         val tout = DroitsServisAffaire(repondre = true, changerEtat = true, archiver = true, corriger = true)
-        // 🚩 n'est pas un droit servi : il suit la porte de la modération (ModerationTest).
-        assertEquals(GesteAffaire.entries - GesteAffaire.Signaler, GesteAffaire.offerts(fiche(tout), conseil = false))
+        // 🚩 n'est pas un droit servi : offert au plancher (#311) à qui ne corrige pas (ModerationTest).
+        assertEquals(GesteAffaire.entries - GesteAffaire.Signaler, GesteAffaire.offerts(fiche(tout), conseil = false, moderation = true))
         // Le conseil suit par la Suite, il ne répond pas.
-        assertFalse(GesteAffaire.Repondre in GesteAffaire.offerts(fiche(tout), conseil = true))
+        assertFalse(GesteAffaire.Repondre in GesteAffaire.offerts(fiche(tout), conseil = true, moderation = true))
         // Ni réponse sur une actualité ni sur une affaire fusionnée ; pas d'archivage d'une archivée.
-        assertFalse(GesteAffaire.Repondre in GesteAffaire.offerts(fiche(tout, categorie = "actualite"), conseil = false))
-        assertFalse(GesteAffaire.Repondre in GesteAffaire.offerts(fiche(tout, fusionnee = true), conseil = false))
-        assertFalse(GesteAffaire.Archiver in GesteAffaire.offerts(fiche(tout, archivee = true), conseil = false))
-        assertEquals(listOf(GesteAffaire.Lien), GesteAffaire.offerts(fiche(DroitsServisAffaire()), conseil = false))
+        assertFalse(GesteAffaire.Repondre in GesteAffaire.offerts(fiche(tout, categorie = "actualite"), conseil = false, moderation = true))
+        assertFalse(GesteAffaire.Repondre in GesteAffaire.offerts(fiche(tout, fusionnee = true), conseil = false, moderation = true))
+        assertFalse(GesteAffaire.Archiver in GesteAffaire.offerts(fiche(tout, archivee = true), conseil = false, moderation = true))
+        // Sans aucun droit, l'affaire d'un autre se signale (#311) : avant, la porte fermée le cachait.
+        assertEquals(listOf(GesteAffaire.Lien, GesteAffaire.Signaler), GesteAffaire.offerts(fiche(DroitsServisAffaire()), conseil = false, moderation = true))
     }
 
     @Test
@@ -121,8 +122,8 @@ class SaisieAffaireTest {
 
     @Test
     fun lesGestesDUneEntreeSontServis() {
-        assertEquals(listOf(GesteSuite.Supprimer), GesteSuite.offerts(SuiteAffaire(1, "etat", Instant.EPOCH, peutSupprimer = true)))
-        assertEquals(emptyList<GesteSuite>(), GesteSuite.offerts(SuiteAffaire(1, "etat", Instant.EPOCH)))
+        assertEquals(listOf(GesteSuite.Supprimer), GesteSuite.offerts(SuiteAffaire(1, "etat", Instant.EPOCH, peutSupprimer = true), moi = 7, moderation = true))
+        assertEquals(emptyList<GesteSuite>(), GesteSuite.offerts(SuiteAffaire(1, "etat", Instant.EPOCH), moi = 7, moderation = true))
     }
 
     @Test

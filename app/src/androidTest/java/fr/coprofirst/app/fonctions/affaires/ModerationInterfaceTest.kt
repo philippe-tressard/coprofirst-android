@@ -13,24 +13,26 @@ import fr.coprofirst.app.commun.AvisEphemere
 import fr.coprofirst.app.commun.attendreTag
 import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.masquages.ReperesMasquage
+import fr.coprofirst.app.commun.residenceSimulee
 import fr.coprofirst.app.commun.toucher
-import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsParHote
-import fr.coprofirst.app.session.VersionContrat
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-/** #282 : masquer ce que publie l'auteur d'une suite, comme l'iOS (`ModerationUITests`), sur une installation qui le sert. */
+/**
+ * #282, #311 : masquer ce que publie l'auteur d'une suite, comme l'iOS (`ModerationUITests`) —
+ * offert PAR DÉFAUT à la résidence qui sert le plancher : aucune porte à passer.
+ */
 @RunWith(AndroidJUnit4::class)
 class ModerationInterfaceTest {
     @get:Rule
     val ecran = createComposeRule()
 
     private val session = SessionOuverte(
-        Installation("https://residence.exemple.test", "Les Glycines", versionContrat = VersionContrat.MODERATION.toString()),
+        residenceSimulee("https://residence.exemple.test", "Les Glycines"),
         SessionsParHote(),
     )
 

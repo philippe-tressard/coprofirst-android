@@ -15,13 +15,13 @@ import androidx.test.platform.app.InstrumentationRegistry
 import fr.coprofirst.app.commun.REPERE_BANDEAU
 import fr.coprofirst.app.commun.amenerTag
 import fr.coprofirst.app.commun.attendreTexte
+import fr.coprofirst.app.commun.residenceSimulee
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.commun.toucherTexte
 import fr.coprofirst.app.fonctions.profil.FixturesProfil
 import fr.coprofirst.app.fonctions.profil.ReperesSaisie
 import fr.coprofirst.app.navigation.ouvrirLaPageDePlus
 import fr.coprofirst.app.session.ChiffrementAesGcm
-import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.LecturesGardees
 import fr.coprofirst.app.session.SessionsGardeesEnMemoire
 import org.junit.After
@@ -41,7 +41,7 @@ class HorsLigneInterfaceTest {
     @get:Rule
     val ecran = createComposeRule()
     private val serveur = ServeurDeTest()
-    private val residence = Installation("https://residence.exemple.test", "Les Glycines")
+    private val residence = residenceSimulee("https://residence.exemple.test", "Les Glycines")
     private val dossier = File(InstrumentationRegistry.getInstrumentation().targetContext.cacheDir, "lectures-test")
 
     @After

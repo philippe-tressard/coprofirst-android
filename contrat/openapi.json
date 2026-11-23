@@ -3,7 +3,7 @@
  "info": {
   "title": "CoproFirst API",
   "description": "API de gestion de copropriétés",
-  "version": "2.8.0"
+  "version": "2.10.0"
  },
  "paths": {
   "/auth/batiments": {
@@ -22440,6 +22440,167 @@
     }
    }
   },
+  "/masquages": {
+   "get": {
+    "tags": [
+     "masquages"
+    ],
+    "summary": "Lister Masquages",
+    "operationId": "get_masquages",
+    "parameters": [
+     {
+      "name": "access_token",
+      "in": "cookie",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Access Token"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/MasquageRead"
+         },
+         "title": "Response Get Masquages"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "masquages"
+    ],
+    "summary": "Masquer",
+    "operationId": "post_masquages",
+    "parameters": [
+     {
+      "name": "access_token",
+      "in": "cookie",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Access Token"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/MasquageCreate"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/MasquageRead"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/masquages/{auteur_id}": {
+   "delete": {
+    "tags": [
+     "masquages"
+    ],
+    "summary": "Demasquer",
+    "operationId": "delete_masquages_auteur_id",
+    "parameters": [
+     {
+      "name": "auteur_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Auteur Id"
+      }
+     },
+     {
+      "name": "access_token",
+      "in": "cookie",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Access Token"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/perimetres": {
    "get": {
     "tags": [
@@ -25651,6 +25812,28 @@
       "content": {
        "application/json": {
         "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/plateforme/notifications": {
+   "post": {
+    "tags": [
+     "plateforme"
+    ],
+    "summary": "Relayer",
+    "description": "Avertit UN appareil d'une installation au bail cru — la charge est composée ici.",
+    "operationId": "post_plateforme_notifications",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ReponseNotification"
+        }
        }
       }
      }
@@ -38882,6 +39065,43 @@
     "title": "LotRead",
     "description": "Un lot — et sa désignation du règlement (#2212), héritée de `Designation`."
    },
+   "MasquageCreate": {
+    "properties": {
+     "auteur_id": {
+      "type": "integer",
+      "title": "Auteur Id"
+     }
+    },
+    "type": "object",
+    "required": [
+     "auteur_id"
+    ],
+    "title": "MasquageCreate"
+   },
+   "MasquageRead": {
+    "properties": {
+     "auteur_id": {
+      "type": "integer",
+      "title": "Auteur Id"
+     },
+     "auteur": {
+      "type": "string",
+      "title": "Auteur"
+     },
+     "cree_le": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Cree Le"
+     }
+    },
+    "type": "object",
+    "required": [
+     "auteur_id",
+     "auteur",
+     "cree_le"
+    ],
+    "title": "MasquageRead"
+   },
    "MeUpdate": {
     "properties": {
      "prenom": {
@@ -44422,6 +44642,33 @@
     ],
     "title": "ReponseInscription",
     "description": "Ce que la référence répond : l'identifiant qu'elle attribue, et l'état de l'inscription."
+   },
+   "ReponseNotification": {
+    "properties": {
+     "statut": {
+      "type": "string",
+      "enum": [
+       "envoye",
+       "jeton_perime",
+       "refuse"
+      ],
+      "title": "Statut",
+      "description": "retirer l'appareil sur `jeton_perime`, journaliser le reste"
+     },
+     "motif": {
+      "type": "string",
+      "title": "Motif",
+      "description": "dire en clair pourquoi rien n'est parti",
+      "default": ""
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "statut"
+    ],
+    "title": "ReponseNotification",
+    "description": "Ce que le relais répond — sans rien répéter de la demande (§4)."
    },
    "RepriseRead": {
     "properties": {

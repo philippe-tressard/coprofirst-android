@@ -19,13 +19,13 @@ import fr.coprofirst.app.commun.REPERE_LOGO_MARQUE
 import fr.coprofirst.app.commun.REPERE_LOGO_SERVI
 import fr.coprofirst.app.commun.attendre
 import fr.coprofirst.app.commun.attendreTexte
+import fr.coprofirst.app.commun.residenceSimulee
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.entree.NavigationEntree
 import fr.coprofirst.app.entree.Reperes
 import fr.coprofirst.app.entree.ServeurDeTest
 import fr.coprofirst.app.entree.entrerDansLaResidence
 import fr.coprofirst.app.fonctions.profil.FixturesProfil
-import fr.coprofirst.app.session.Installation
 import mockwebserver3.Dispatcher
 import mockwebserver3.MockResponse
 import mockwebserver3.RecordedRequest
@@ -45,7 +45,7 @@ class ResidencesInterfaceTest {
     @get:Rule
     val ecran = createComposeRule()
     private val serveur = ServeurDeTest()
-    private val tilleuls = Installation("https://tilleuls.exemple.test", "Les Tilleuls")
+    private val tilleuls = residenceSimulee("https://tilleuls.exemple.test", "Les Tilleuls")
     private val sorties = mutableListOf<String>()
 
     /** Les logos demandés (#137) : l'adresse que l'app calcule, servie ici par une image de test. */

@@ -28,8 +28,8 @@ import fr.coprofirst.app.commun.attendreDisparitionTag
 import fr.coprofirst.app.commun.attendreTag
 import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.reponses.ReperesReponses
+import fr.coprofirst.app.commun.residenceSimulee
 import fr.coprofirst.app.commun.toucherTag
-import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsParHote
 import org.junit.Assert.assertEquals
@@ -51,7 +51,7 @@ class FicheSondageInterfaceTest {
 
     /** La fiche `id`, en clair ou en sombre, au texte normal ou très grand (`echelle`). */
     private fun ouvrir(id: Int = 12, sombre: Boolean = false, echelle: Float = 1f, service: SondageSimule = serveur) {
-        val session = SessionOuverte(Installation("https://residence.example.test", "Les Glycines"), SessionsParHote())
+        val session = SessionOuverte(residenceSimulee("https://residence.example.test", "Les Glycines"), SessionsParHote())
         val avis = AvisDuGeste()
         ecran.setContent {
             val densite = LocalDensity.current
@@ -158,10 +158,10 @@ class FicheSondageInterfaceTest {
         const val DELAI_MS = 10_000L
     }
 
-    /** #297 : sur une installation qui le sert, masquer l'auteur d'un commentaire (le conseil ne se masque pas : ReponsesTest). */
+    /** #297, #311 : au plancher, masquer l'auteur d'un commentaire (le conseil ne se masque pas : ReponsesTest). */
     @Test
     fun lAuteurDUnCommentaireSeMasque() {
-        val moderee = SondageSimule(moderation = true)
+        val moderee = SondageSimule()
         ouvrir(service = moderee)
         ecran.toucherTag(ReperesReponses.actions(32))
         ecran.toucherTag(ReperesReponses.masquer(32))

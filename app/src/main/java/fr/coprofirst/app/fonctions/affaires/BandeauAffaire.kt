@@ -84,8 +84,8 @@ internal fun BandeauAffaire(
     avis: AvisDuGeste,
     recharger: () -> Unit,
     modifier: Modifier = Modifier,
-    /** L'installation sert-elle la modération (`VersionContrat.MODERATION`, #282) : 🚩. */
-    moderation: Boolean = false,
+    /** L'installation sert-elle la modération (`Installation.sertLePlancher`, #311) : 🚩. */
+    moderation: Boolean,
 ) {
     val c = LocalCouleurs.current
     val ressources = LocalResources.current

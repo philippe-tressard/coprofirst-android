@@ -128,10 +128,10 @@ enum class GesteAffaire {
          * ajoute aucun, elle en retire : 💬 jamais au conseil syndical (il suit par 🔄), ni sur
          * une actualité ou une affaire fusionnée ; 📦 tant que l'affaire n'est pas aux Archives ;
          * 🚩 à qui la lit sans pouvoir la corriger, hors des Archives — son auteur, le conseil et
-         * l'administration ont d'autres gestes —, si l'installation le sert (`moderation` : la
-         * porte `VersionContrat.MODERATION`, coprofirst#2861, #282).
+         * l'administration ont d'autres gestes —, si l'installation le sert (`moderation` :
+         * `Installation.sertLePlancher`, coprofirst#2861, #311).
          */
-        fun offerts(affaire: DetailAffaire, conseil: Boolean, moderation: Boolean = false): List<GesteAffaire> = entries.filter { geste ->
+        fun offerts(affaire: DetailAffaire, conseil: Boolean, moderation: Boolean): List<GesteAffaire> = entries.filter { geste ->
             when (geste) {
                 Lien -> true
                 Signaler -> moderation && !affaire.droits.corriger && !affaire.archivee
@@ -158,7 +158,7 @@ enum class GesteSuite {
          * comme l'iOS : une entrée qui porte un texte, écrite par un autre — `moi` connu, sinon
          * rien —, et l'installation qui le sert (`moderation`) ; masquer exige un auteur nommé.
          */
-        fun offerts(suite: SuiteAffaire, moi: Int? = null, moderation: Boolean = false): List<GesteSuite> {
+        fun offerts(suite: SuiteAffaire, moi: Int?, moderation: Boolean): List<GesteSuite> {
             val signalable = moderation && !suite.contenu.isNullOrEmpty() && moi != null &&
                 suite.auteurId != null && suite.auteurId != moi
             return entries.filter {

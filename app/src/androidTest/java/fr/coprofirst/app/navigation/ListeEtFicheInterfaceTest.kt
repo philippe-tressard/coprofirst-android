@@ -34,11 +34,11 @@ import fr.coprofirst.app.commun.attendreDisparitionTag
 import fr.coprofirst.app.commun.attendreTag
 import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.miseenpage.REPERE_COLONNE
+import fr.coprofirst.app.commun.residenceSimulee
 import fr.coprofirst.app.commun.toucherDescription
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.entree.ServeurDeTest
 import fr.coprofirst.app.fonctions.fil.FilInterfaceTest
-import fr.coprofirst.app.session.Installation
 import org.junit.After
 import org.junit.Rule
 import org.junit.Test
@@ -90,7 +90,7 @@ class ListeEtFicheInterfaceTest {
     private fun ouvrir(largeur: Dp, hauteur: Dp = PAYSAGE) {
         taille = DpSize(largeur, hauteur)
         serveur.flux = FilInterfaceTest.fil(Instant.now())
-        val session = serveur.session(Installation("https://residence.exemple.test", "Les Glycines"))
+        val session = serveur.session(residenceSimulee("https://residence.exemple.test", "Les Glycines"))
         ecran.setContent {
             if (affiche) {
                 val actuel = remember { SaveableStateRegistry(sauve) { true }.also { registre = it } }

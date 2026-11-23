@@ -16,9 +16,10 @@ import java.time.ZoneOffset
  * La fiche d'un sondage côté SERVEUR, pour les tests et les aperçus, comme l'API simulée de
  * l'iOS (`ServiceSimule: ServiceSondage`) : les fiches de `FixturesSondage`, que les gestes
  * changent comme le serveur (`participation.py`) — le vote compte, sa précision rejoint les
- * réponses libres, son commentaire rejoint les commentaires.
+ * réponses libres, son commentaire rejoint les commentaires. Il sert la modération, comme
+ * toute installation au plancher (#311).
  */
-class SondageSimule(private val attente: Long = 150, override val moderation: Boolean = false) : ServiceSondage {
+class SondageSimule(private val attente: Long = 150, override val moderation: Boolean = true) : ServiceSondage {
     /** Les auteurs masqués (#297), comme le serveur : idempotent. */
     val masquesPoses = mutableListOf<AuteurAMasquer>()
 

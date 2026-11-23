@@ -36,11 +36,11 @@ import fr.coprofirst.app.commun.clavier.LocalRaccourcisClavier
 import fr.coprofirst.app.commun.clavier.Raccourci
 import fr.coprofirst.app.commun.clavier.RaccourcisClavier
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.residenceSimulee
 import fr.coprofirst.app.commun.toucher
 import fr.coprofirst.app.navigation.ActionsDeclarees
 import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.navigation.DroitsOnglet
-import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsParHote
 import org.junit.Assert.assertEquals
@@ -59,7 +59,7 @@ class AffairesInterfaceTest {
 
     /** Les fiches que les cartes ont demandées à la porte. */
     private val fiches = mutableListOf<Int>()
-    private val session = SessionOuverte(Installation("https://residence.exemple.test", "Les Glycines"), SessionsParHote())
+    private val session = SessionOuverte(residenceSimulee("https://residence.exemple.test", "Les Glycines"), SessionsParHote())
 
     /** Les raccourcis du clavier, comme l'activité les tient (#69). */
     private val raccourcis = RaccourcisClavier()

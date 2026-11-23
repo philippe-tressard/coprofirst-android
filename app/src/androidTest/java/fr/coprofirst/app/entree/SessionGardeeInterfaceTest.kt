@@ -8,8 +8,8 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.commun.attendreTexte
+import fr.coprofirst.app.commun.residenceSimulee
 import fr.coprofirst.app.commun.toucherTag
-import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.ProtectionSession
 import fr.coprofirst.app.session.SessionsGardeesEnMemoire
 import mockwebserver3.MockResponse
@@ -30,7 +30,7 @@ class SessionGardeeInterfaceTest {
     @get:Rule
     val ecran = createComposeRule()
     private val serveur = ServeurDeTest()
-    private val residence = Installation("https://residence.exemple.test", "Les Glycines")
+    private val residence = residenceSimulee("https://residence.exemple.test", "Les Glycines")
 
     @After
     fun fermer() = serveur.close()
