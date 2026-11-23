@@ -30,57 +30,59 @@ RACINE = pathlib.Path(__file__).resolve().parent.parent
 
 ROLES = r"(admin|operateur|conseil_syndical|syndic|mandataire|aidant|externe|locataire|propri[eé]taire|copropri[eé]taire\w*|r[eé]sident)"
 
-#: (motif, ce qu'on lit à la place).
-RETIREES: list[tuple[re.Pattern[str], str]] = [
+#: (nom, motif, ce qu'on lit à la place). Une dispense nomme les motifs dont elle dispense.
+RETIREES: list[tuple[str, re.Pattern[str], str]] = [
     # Un rôle ou un statut LITTÉRAL comparé pour décider d'un geste.
-    (re.compile(rf"\b(roles?|statut|portes)\b[^\n]*(==|!=|\.contains\() *\"{ROLES}\""),
+    ("rôle littéral", re.compile(rf"\b(roles?|statut|portes)\b[^\n]*(==|!=|\.contains\() *\"{ROLES}\""),
      "`est_moderateur` ou un `peut_*` servi ; à défaut, les populations générées (`OngletsDuSite.roles…`, `statuts…`)"),
-    (re.compile(rf"\"{ROLES}\" *!?in +[\w.?]*\b(roles|portes)\b"),
+    ("rôle littéral", re.compile(rf"\"{ROLES}\" *!?in +[\w.?]*\b(roles|portes)\b"),
      "`est_moderateur` ou un `peut_*` servi ; à défaut, les populations générées (`OngletsDuSite.roles…`)"),
     # La même chose par une constante de l'app.
-    (re.compile(r"\bROLE_[A-Z_]+\b *!?in\b|(==|!=) *[\w.]*\bROLE_[A-Z_]+\b"),
+    ("constante de rôle", re.compile(r"\bROLE_[A-Z_]+\b *!?in\b|(==|!=) *[\w.]*\bROLE_[A-Z_]+\b"),
      "`est_moderateur` ou un `peut_*` servi — une constante de rôle ne décide que d'une donnée affichée (dispensée)"),
     # « CS ou admin » déduit des rôles (`est_moderateur`, contrat 1.25.0, coprofirst-ios#136).
-    (re.compile(r"\b(cs|estConseil|conseil|moderateur|estModerateur)\b *[:=][^=\n][^\n]*\b(roles|portes|role)\b"),
+    ("CS déduit", re.compile(r"\b(cs|estConseil|conseil|moderateur|estModerateur)\b *[:=][^=\n][^\n]*\b(roles|portes|role)\b"),
      "`est_moderateur` servi (`DroitsOnglet.cs`)"),
     # Un `peut_*` recalculé depuis ce que le compte est.
-    (re.compile(r"\bpeut[A-Z]\w*\s*(:\s*Boolean\s*)?(get\(\)\s*)?=[^=\n][^\n]*\b(roles?|statut|estModerateur|cs|outilDuConseil|administrateur)\b"),
+    ("peut recalculé", re.compile(r"\bpeut[A-Z]\w*\s*(:\s*Boolean\s*)?(get\(\)\s*)?=[^=\n][^\n]*\b(roles?|statut|estModerateur|cs|outilDuConseil|administrateur)\b"),
      "le `peut_*` servi par l'objet ou ses gestes (`GET …/gestes`)"),
     # « Prénom NOM » est SERVI (`nom_affiche`…, contrat 1.25.0) : jamais accolé dans l'app.
-    (re.compile(r"\$\{?[\w.?]*\b[pP]renom\w*\}?[^\"\n]{0,3}\$\{?[\w.?]*\b[nN]om\b|\b[pP]renom\w*\s*\+\s*\" \""),
+    ("nom accolé", re.compile(r"\$\{?[\w.?]*\b[pP]renom\w*\}?[^\"\n]{0,3}\$\{?[\w.?]*\b[nN]om\b|\b[pP]renom\w*\s*\+\s*\" \""),
      "le nom servi (`nom_affiche`…) par `FormatsDuSite.nom`, seul repli permis"),
     # Le lieu d'un contenu est SERVI (`perimetre_libelle`, contrat 1.24.0) : la règle des chemins « › » ne se recopie pas.
-    (re.compile(r"\" › \""),
+    ("lieu recomposé", re.compile(r"\" › \""),
      "le lieu servi (`perimetre_libelle`) par `LieuServi.lieu`"),
     # « Le mien » est SERVI (`est_auteur`, contrat 1.26.0).
-    (re.compile(r"\bauteurId\s*==|==\s*[\w.?]*\bauteurId\b"),
+    ("le mien", re.compile(r"\bauteurId\s*==|==\s*[\w.?]*\bauteurId\b"),
      "`est_auteur` servi"),
     # L'état d'une moyenne se lit par les seuils GÉNÉRÉS du site.
-    (re.compile(r"\bmoyenne\w*\s*[<>]=?\s*[0-9]"),
+    ("seuil de moyenne", re.compile(r"\bmoyenne\w*\s*[<>]=?\s*[0-9]"),
      "les seuils générés des notations (tables-clients.json)"),
     # La colonne d'une carte et la clôture d'une affaire sont SERVIES (`colonne_kanban`, `close`, référentiels).
-    (re.compile(r"\b(colonneParStatut|statutParColonne|statutsClos|COLONNE_PAR_STATUT_TICKET|STATUTS_TICKET_CLOS)\b"),
+    ("Kanban", re.compile(r"\b(colonneParStatut|statutParColonne|statutsClos|COLONNE_PAR_STATUT_TICKET|STATUTS_TICKET_CLOS)\b"),
      "la colonne et la clôture servies (`colonne_kanban`, `close`, `GET /tickets/referentiels`)"),
     # Qui voit quelle page : la règle du menu du site, écrite à la main (une branche qui
     # ouvre un identifiant de page selon ce que le compte est).
-    (re.compile(r"^\s*\"[a-z-]+\"(\s*,\s*\"[a-z-]+\")*\s*->[^\n]*\bdroits\."),
+    ("menu recopié", re.compile(r"^\s*\"[a-z-]+\"(\s*,\s*\"[a-z-]+\")*\s*->[^\n]*\bdroits\."),
      "la règle du menu servie ou publiée par coprofirst"),
 ]
 
-#: chemin → raison.
-DISPENSES: dict[str, str] = {
-    "app/src/main/java/fr/coprofirst/app/fonctions/admin/ModelesUtilisateurs.kt":
-        "les rôles d'un compte LISTÉ dans l'écran des utilisateurs : une donnée affichée, pas un droit du lecteur",
-    "app/src/main/java/fr/coprofirst/app/fonctions/admin/EtatUtilisateurs.kt":
-        "l'abréviation « CS » d'un rôle affiché dans la liste des comptes",
-    "app/src/main/java/fr/coprofirst/app/commun/perimetres/ArbreDesPerimetres.kt":
+#: chemin → (les motifs dispensés, par leur nom ; la raison). Une dispense ne couvre QUE ses
+#: motifs : un autre motif reste refusé dans le fichier dispensé.
+DISPENSES: dict[str, tuple[frozenset[str], str]] = {
+    "app/src/main/java/fr/coprofirst/app/fonctions/admin/ModelesUtilisateurs.kt": (frozenset({"constante de rôle"}),
+        "les rôles d'un compte LISTÉ dans l'écran des utilisateurs : une donnée affichée, pas un droit du lecteur"),
+    "app/src/main/java/fr/coprofirst/app/fonctions/admin/EtatUtilisateurs.kt": (frozenset({"constante de rôle"}),
+        "l'abréviation « CS » d'un rôle affiché dans la liste des comptes"),
+    "app/src/main/java/fr/coprofirst/app/commun/perimetres/ArbreDesPerimetres.kt": (frozenset({"lieu recomposé"}),
         "le libellé du CHOIX en cours dans le sélecteur de périmètres (« Bâtiment 1 › Hall ») : "
-        "une sélection locale, que rien ne sert — le lieu d'un contenu, lui, se lit (`LieuServi`)",
-    "app/src/main/java/fr/coprofirst/app/fonctions/admin/FicheUtilisateur.kt":
-        "la teinte d'un rôle affiché sur la fiche d'un compte",
+        "une sélection locale, que rien ne sert — le lieu d'un contenu, lui, se lit (`LieuServi`)"),
+    "app/src/main/java/fr/coprofirst/app/fonctions/admin/FicheUtilisateur.kt": (frozenset({"constante de rôle"}),
+        "la teinte d'un rôle affiché sur la fiche d'un compte"),
     # Étape : la règle du menu n'est ni servie ni publiée ; la copie est partielle (#333).
-    "app/src/main/java/fr/coprofirst/app/navigation/Droits.kt":
-        "`PagesOuvertes` recopie le menu du site faute de règle servie — étape, levée par #333",
+    # Le menu SEUL : `est_moderateur` y reste servi, jamais déduit des rôles.
+    "app/src/main/java/fr/coprofirst/app/navigation/Droits.kt": (frozenset({"menu recopié"}),
+        "`PagesOuvertes` recopie le menu du site faute de règle servie — étape, levée par #333"),
 }
 
 
@@ -95,19 +97,20 @@ def juges(racine: pathlib.Path) -> list[str]:
     return [f for f in suivis if code.search(f)]
 
 
-def juger(racine: pathlib.Path, fichiers: list[str], dispenses: dict[str, str]) -> list[str]:
+def juger(racine: pathlib.Path, fichiers: list[str], dispenses: dict[str, tuple[frozenset[str], str]]) -> list[str]:
     refus, utiles = [], set()
     for chemin in fichiers:
         for n, ligne in enumerate((racine / chemin).read_text(encoding="utf-8").splitlines(), 1):
-            for motif, remede in RETIREES:
+            for nom, motif, remede in RETIREES:
                 m = motif.search(ligne)
                 if not m:
                     continue
-                if chemin in dispenses:
-                    utiles.add(chemin)
+                if nom in dispenses.get(chemin, (frozenset(), ""))[0]:
+                    utiles.add((chemin, nom))
                     continue
-                refus.append(f"{chemin}:{n} : règle servie recopiée ({m.group(0)}) — lire {remede}")
-    refus += [f"{c} : dispensé sans plus rien couvrir — retirer la dispense" for c in sorted(set(dispenses) - utiles)]
+                refus.append(f"{chemin}:{n} : règle servie recopiée ({nom} : {m.group(0)}) — lire {remede}")
+    refus += [f"{c} : dispensé de « {nom} » sans plus rien couvrir — retirer la dispense"
+              for c, (noms, _) in sorted(dispenses.items()) for nom in sorted(noms) if (c, nom) not in utiles]
     return refus
 
 
@@ -154,11 +157,11 @@ SAINS = [
 
 class ReglesServies(unittest.TestCase):
     def test_autotest_refuse_les_copies(self):
-        rates = [f for f in FAUTIFS if not any(m.search(f) for m, _ in RETIREES)]
+        rates = [f for f in FAUTIFS if not any(m.search(f) for _, m, _ in RETIREES)]
         self.assertEqual(rates, [], "copies non refusées")
 
     def test_autotest_accepte_les_lectures_servies(self):
-        refuses = [s for s in SAINS if any(m.search(s) for m, _ in RETIREES)]
+        refuses = [s for s in SAINS if any(m.search(s) for _, m, _ in RETIREES)]
         self.assertEqual(refuses, [], "lectures servies refusées")
 
     def test_autotest_dispense_sans_objet(self):
@@ -166,8 +169,10 @@ class ReglesServies(unittest.TestCase):
             racine = pathlib.Path(d)
             (racine / "a.kt").write_text("val x = 1\n", encoding="utf-8")
             (racine / "b.kt").write_text('val c = roles.contains("admin")\n', encoding="utf-8")
-            self.assertEqual(len(juger(racine, ["a.kt", "b.kt"], {"a.kt": "raison"})), 2)
-            self.assertEqual(juger(racine, ["a.kt", "b.kt"], {"b.kt": "raison"}), [])
+            self.assertEqual(len(juger(racine, ["a.kt", "b.kt"], {"a.kt": (frozenset({"rôle littéral"}), "r")})), 2)
+            self.assertEqual(juger(racine, ["a.kt", "b.kt"], {"b.kt": (frozenset({"rôle littéral"}), "r")}), [])
+            # Une dispense ne couvre que ses motifs : le menu dispensé ne couvre pas un rôle littéral.
+            self.assertEqual(len(juger(racine, ["a.kt", "b.kt"], {"b.kt": (frozenset({"menu recopié"}), "r")})), 2)
 
     def test_le_depot(self):
         fichiers = juges(RACINE)
