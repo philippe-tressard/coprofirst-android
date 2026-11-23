@@ -58,10 +58,6 @@ val genererTables = generation("genererTables", "contrat/tables-clients.json", "
 // Les mesures du site (#2) : les jetons de longueur, que `MesuresTest` confronte à `Mise`.
 val genererMesures = generation("genererMesures", "contrat/tables-clients.json", "scripts/generer_mesures.py")
 
-// Les natures du fil nomment leurs teintes par les jetons de `Couleurs` : generer_tables.py
-// les lit dans generer_charte.py (`propriete`, jetons portés), qu'il charge par son chemin.
-genererTables.configure { inputs.file(rootProject.layout.projectDirectory.file("scripts/generer_charte.py")) }
-
 // Les tables d'un MENU se découvrent par convention (#109) : chaque
 // `scripts/generer_tables_<menu>.py` a sa tâche, `genererTables<Menu>`. Un écran qui ajoute
 // ses tables n'ajoute qu'un script, et ne touche jamais ce fichier.
