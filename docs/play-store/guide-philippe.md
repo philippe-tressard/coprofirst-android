@@ -60,7 +60,14 @@ Compte validé le 17/11/2026.
 ## Avant CHAQUE envoi d'un AAB : le contrôle de cohérence (#4)
 
 Sur le commit exact à soumettre, poussé sur `main`, dans le clone, et non sur une
-copie de travail :
+copie de travail, construire d'abord les AAB (rien n'est envoyé ; le script refuse une
+permission du manifeste fusionné que « Sécurité des données » ne nomme pas, #327) :
+
+```bash
+bash scripts/construire-release.sh
+```
+
+puis le contrôle, qui rejuge ce même build :
 
 ```bash
 python3 -I scripts/controle_avant_soumission.py --taguer --rapport build/controle-soumission.md
@@ -68,10 +75,10 @@ python3 -I scripts/controle_avant_soumission.py --taguer --rapport build/control
 
 Il refuse au moindre rouge : CI complète verte sur ce commit (tests d'interface et
 parcours sombre au plus grand texte compris), contrat servi en production, fiche,
-« Sécurité des données », notes de version (`docs/play-store/notes/<base>.txt`, `0.8.txt`),
-aucun ticket `bloque-soumission` ouvert. Tout vert, il pose et pousse le tag
-`v<version>`. Seulement alors : `bash scripts/construire-release.sh` sur ce même commit,
-et l'envoi. Le rapport se colle dans la note de publication.
+« Sécurité des données », permissions du manifeste fusionné de cette version, notes de
+version (`docs/play-store/notes/<base>.txt`, `0.8.txt`), aucun ticket `bloque-soumission`
+ouvert. Tout vert, il pose et pousse le tag `v<version>`. Seulement alors, l'envoi des AAB
+construits. Le rapport se colle dans la note de publication.
 
 ## 3. D'abord pour soi : le test interne (facultatif, sans attente)
 

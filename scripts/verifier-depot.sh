@@ -332,6 +332,10 @@ done < <(grep -E '^scripts/test_[a-z_]+\.py$' <<< "$FICHIERS")
 
 # La section « Sécurité des données » de Google Play dit ce que le code envoie (#32) :
 # chaque écriture du client généré et chaque permission y sont classées.
+# Celles du manifeste FUSIONNÉ se jugent après le build de la release (construire-release.sh,
+# #327) : ici, l'autotest du juge seulement.
+python3 -I scripts/verifier_manifeste_fusionne.py --autotest >/dev/null \
+  || echec "verifier_manifeste_fusionne.py : autotest en échec"
 python3 -I scripts/verifier_securite_donnees.py \
   || echec "docs/play-store/securite-des-donnees.md ne dit pas ce que l'app envoie (python3 -I scripts/verifier_securite_donnees.py)"
 
