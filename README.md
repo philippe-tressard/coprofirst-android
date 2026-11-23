@@ -220,8 +220,10 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
 - **À propos** (Plus) : la résidence et la mention de son pied de page (©, texte libre,
   version de l'app) ; ses mentions légales et sa politique de confidentialité, lues dans
   l'app (« Logiciel libre » sous les mentions) ; le site de CoproFirst, le code du serveur
-  et celui de l'app (AGPL §13) ; chaque composant tiers embarqué et sa licence entière —
-  la liste est confrontée au build à ce que l'app embarque vraiment.
+  et celui de l'app (AGPL §13) ; chaque composant tiers embarqué, par le téléphone ou par la
+  montre, et sa licence entière — la liste est confrontée au build de chacune des deux à ce
+  qu'elle embarque vraiment, et la montre emporte les mêmes textes dans chaque copie, sans
+  écran pour les lire (comme l'Apple Watch).
 - **Écran** : portrait au téléphone ; sur tablette, pliable déplié ou fenêtre de bureau,
   toutes les orientations et le multi-fenêtre (comme l'iPad). Dès que la fenêtre est large
   (600 dp, quel que soit l'appareil), une barre latérale liste toutes les pages, puis
@@ -303,5 +305,7 @@ services, nommées, et elles seules — Firebase Cloud Messaging (notifications)
 (lien avec la montre), décision du 16/11/2026, restreinte le 17/11/2026 au retrait du client
 push, rouverte à Firebase Cloud Messaging le 18/11/2026 (« voie A », #280).
 Voir `LICENSE` et `LICENSES/` ;
-`scripts/verifier_dependances_google.py` refuse toute autre bibliothèque de ces familles.
+`scripts/verifier_dependances_google.py` refuse toute autre bibliothèque de ces familles
+déclarée, et le build (`scripts/generer_composants_tiers.py`) toute bibliothèque embarquée
+que ces deux-là ne requièrent pas.
 Conformité [REUSE](https://reuse.software) : `reuse lint`.

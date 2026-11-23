@@ -21,8 +21,8 @@ def composant(nom="OkHttp", modules=("com.squareup.okhttp3:*",), licences=("Apac
             "textes": list(textes)}
 
 
-def verifier(*composants, modules=("com.squareup.okhttp3:okhttp",), existe=lambda t: True):
-    return g.verifier({"composants": list(composants)}, list(modules), existe)
+def verifier(*composants, modules=("com.squareup.okhttp3:okhttp",), existe=lambda t: True, autres=()):
+    return g.verifier({"composants": list(composants)}, list(modules), existe, list(autres))
 
 
 class ComposantsTiers(unittest.TestCase):
@@ -65,6 +65,39 @@ class ComposantsTiers(unittest.TestCase):
         with self.assertRaises(g.DeclarationInvalide, msg="incomplet"):
             verifier({"nom": "X"})
 
+    def test_le_graphe_se_lit_avec_ou_sans_requis(self):
+        lignes = ["a:x\tb:y c:z", "b:y\t", "c:z", "d:w-bom\ta:x", ""]
+        self.assertEqual(g.graphe(lignes), {"a:x": {"b:y", "c:z"}, "b:y": set(), "c:z": set(), "d:w-bom": {"a:x"}})
+        self.assertEqual(g.embarques(lignes), ["a:x", "b:y", "c:z"])
+
+    def test_un_motif_ne_meurt_que_s_il_ne_sert_a_aucune_des_deux_apps(self):
+        """#317 : la déclaration est commune ; ZXing n'est que dans le téléphone."""
+        zxing = composant("ZXing", modules=("com.google.zxing:core",))
+        okhttp, zx = verifier(composant(), zxing, autres=("com.google.zxing:core",))  # la montre
+        self.assertEqual(zx["modules"], ["com.google.zxing:core"])
+        with self.assertRaises(g.DeclarationInvalide):
+            verifier(composant(), zxing)  # aucune app ne l'embarque plus
+        with self.assertRaises(g.DeclarationInvalide, msg="l'autre app ne couvre pas un module de celle-ci"):
+            verifier(composant(), modules=("com.squareup.okhttp3:okhttp", "org.inconnu:x"), autres=("org.inconnu:x",))
+
+    def test_une_bibliotheque_google_hors_licence_se_voit(self):
+        """#320 : atteinte depuis les deux permises, ou refusée."""
+        permises = {"com.google.firebase:firebase-messaging", "com.google.android.gms:play-services-wearable"}
+        sain = g.graphe([
+            "androidx.wear:wear-remote-interactions\tcom.google.android.gms:play-services-wearable",
+            "com.google.android.gms:play-services-wearable\tcom.google.android.gms:play-services-basement",
+            "com.google.android.gms:play-services-basement\t",
+            "com.google.firebase:firebase-messaging\tcom.google.firebase:firebase-common",
+            "com.google.firebase:firebase-common\t",
+        ])
+        self.assertEqual(g.google_non_permises(sain, permises), [])
+        fautif = {**sain, "com.exemple:sdk": {"com.google.android.gms:play-services-ads"},
+                  "com.google.android.gms:play-services-ads": {"com.google.android.gms:play-services-basement"}}
+        self.assertEqual(g.google_non_permises(fautif, permises), ["com.google.android.gms:play-services-ads"])
+        # La licence RÉELLE se lit (point 4) : ses deux bibliothèques.
+        reelles = g.GOOGLE.autorisees(g.GOOGLE.LICENCE.read_text(encoding="utf-8"))
+        self.assertEqual(reelles, permises)
+
     def test_la_declaration_du_depot_est_complete(self):
         """Chaque motif, licence et texte de la déclaration versionnée tient (hors Gradle)."""
         declaration = json.loads((RACINE / "app/src/main/tiers/composants.json").read_text(encoding="utf-8"))
@@ -73,6 +106,10 @@ class ComposantsTiers(unittest.TestCase):
                 self.assertTrue((RACINE / t).is_file(), t)
             for licence in c["licences"]:
                 self.assertTrue(set(g.textes_de_licence(licence)) & set(c["textes"]), c["nom"])
+            # #320 : aucun joker sur une famille Google, chaque module se nomme.
+            for motif in c.get("modules", []):
+                self.assertFalse(motif.startswith(("com.google.android.gms:", "com.google.firebase:")) and "*" in motif,
+                                 motif)
 
 
 if __name__ == "__main__":
