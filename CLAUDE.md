@@ -99,9 +99,11 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   le refuse, sauf dans les dispenses nommées de `DISPENSES_REQUETE` : `PreuveHote.kt` (le
   fichier d'association n'est pas une route de l'API), `commun/pieces/FichierProtege.kt`
   (les fichiers de `/uploads/`, servis derrière la session hors du contrat ; l'hôte de la
-  session seul) et `entree/vitrine/VitrineDuSite.kt` (le contenu public de la vitrine,
-  relu à chaque lancement, sans cookie, à une adresse constante) — `scripts/test_claude_md.py`
-  tient cette liste égale à celle du script.
+  session seul), `entree/vitrine/VitrineDuSite.kt` (le contenu public de la vitrine,
+  relu à chaque lancement, sans cookie, à une adresse constante) et `NulsExplicites.kt` (le
+  décorateur du client généré qui envoie un champ à `null`, #209) — `scripts/test_claude_md.py`
+  tient cette liste égale à celle du script. Ces règles lisent `src/main` et `src/debug` de
+  chaque module, `:client-api` compris (#319).
 - **Mot de passe** : un seul chemin, la garde de l'hôte (`GardeHote`, comme l'iOS) —
   un hôte jamais vu se confirme avant tout envoi. Le plancher du contrat (`VERSION_CONTRAT_PLANCHER`)
   est généré depuis `contrat/openapi.json` ; une installation qui sert un contrat plus

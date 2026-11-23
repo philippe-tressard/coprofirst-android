@@ -63,11 +63,12 @@ FICHIERS=$(git ls-files --cached)
 [ -n "$FICHIERS" ] || { echo "❓ INCONNU : git ne connaît aucun fichier (rien d'indexé ?)"; exit 2; }
 
 # Les modules du build, lus dans settings.gradle.kts — la seule liste (#206) : un module
-# ajouté entre d'office dans le périmètre des règles. `:client-api` est GÉNÉRÉ (rien de
-# versionné sous src/), hors périmètre.
+# ajouté entre d'office dans le périmètre des règles. `:client-api` compris (#319) : son code
+# généré vit sous build/, que git ne suit pas, donc que les règles ne lisent pas ; ce qui est
+# écrit à la main sous src/ est jugé comme le reste.
 modules=$(grep -oE '":[a-z-]+"' settings.gradle.kts | tr -d '":')
 [ -n "$modules" ] || { echo "❓ INCONNU : settings.gradle.kts, aucun module lu (include)"; exit 2; }
-MODULES_CODE=$(grep -vx 'client-api' <<< "$modules" | paste -sd '|' -)
+MODULES_CODE=$(paste -sd '|' - <<< "$modules")
 
 # Dispensés de la limite de longueur : produits par un outil ou textes de licence,
 # jamais écrits à la main. Toute autre exception se discute, elle ne s'ajoute pas.
@@ -122,10 +123,12 @@ autotest_motif() {
 }
 # $1 : motif ; $2 : message ; $3 (facultatif) : les fichiers DISPENSÉS, nommément (ERE
 # sur le chemin) ; $4 (facultatif) : les fichiers jugés (ERE), par défaut le code et les
-# ressources de chaque module (settings.gradle.kts) et ressources-communes/. Une dispense qui ne couvre plus aucun motif échoue : une
-# exception sans objet se retire.
+# ressources de chaque module (settings.gradle.kts) — `src/main` et `src/debug`, l'API simulée
+# de l'app de débogage, qu'on lance et qu'on montre (#319) — et ressources-communes/. Les tests
+# ont leurs motifs à eux ; buildSrc n'est pas du code de l'app. Une dispense qui ne couvre plus
+# aucun motif échoue : une exception sans objet se retire.
 interdire() {
-  local f motif dispense=${3:-} perimetre=${4:-"^(($MODULES_CODE)/src/main|ressources-communes)/.*\\.(kt|xml)$"}
+  local f motif dispense=${3:-} perimetre=${4:-"^(($MODULES_CODE)/src/(main|debug)|ressources-communes)/.*\\.(kt|xml)$"}
   while IFS= read -r f; do
     [ -f "$f" ] || continue
     motif=$(premier_motif "$1" "$f")
@@ -158,7 +161,7 @@ interdire "$SIGNATURE_EN_CI" "la signature n'entre pas en CI (#33)" '' '^\.githu
 REQUETE_MAIN='Request\.Builder|HttpURLConnection|openConnection\(|\.newCall\(|"/api/|/api/[a-z]'
 autotest_motif "requêtes à la main" "$REQUETE_MAIN" 'val r = Request.Builder().url(u).build()' 'ConfigApi(base, client).getConfig()'
 autotest_motif "routes en dur" "$REQUETE_MAIN" 'val u = "https://" + hote + "/api/config"' 'val base = "https://$hote/api"'
-# Deux exceptions, nommées, chacune dans SON fichier et lui seul :
+# Les exceptions, nommées, chacune dans SON fichier et lui seul :
 # - la preuve qu'un hôte est une installation de CoproFirst se lit dans un fichier qui
 #   n'est pas une route de l'API (/.well-known/…, hors contrat) — comme l'iOS
 #   (PreuveAASA.swift) ;
@@ -168,8 +171,11 @@ autotest_motif "routes en dur" "$REQUETE_MAIN" 'val u = "https://" + hote + "/ap
 #   dont le client généré type l'image en JSON (adresse tirée de sa configuration, #137) ;
 # - le contenu public de la vitrine, coprofirst.fr/contenu.json, relu une fois par
 #   lancement, sans cookie ni donnée de l'utilisateur — comme l'iOS (Vitrine.actualiser,
-#   #153) : son adresse est une constante, jamais une saisie (entree/vitrine/VitrineDuSite.kt).
-DISPENSES_REQUETE='^app/src/main/java/fr/coprofirst/app/(session/PreuveHote|commun/pieces/FichierProtege|entree/vitrine/VitrineDuSite)\.kt$'
+#   #153) : son adresse est une constante, jamais une saisie (entree/vitrine/VitrineDuSite.kt) ;
+# - le décorateur du client généré qui envoie un champ à `null` pour l'effacer (#209) : il
+#   rejoue la requête que le client généré a construite, sans route ni hôte à lui
+#   (client-api/src/main/kotlin/fr/coprofirst/api/NulsExplicites.kt).
+DISPENSES_REQUETE='^(app/src/main/java/fr/coprofirst/app/(session/PreuveHote|commun/pieces/FichierProtege|entree/vitrine/VitrineDuSite)|client-api/src/main/kotlin/fr/coprofirst/api/NulsExplicites)\.kt$'
 interdire "$REQUETE_MAIN" "requête ou route écrite à la main — passer par le client généré (client-api)" "$DISPENSES_REQUETE"
 
 # Le bouton plein (texte `surPlein` sur un fond plein de la charte, comme le `.plein` de
