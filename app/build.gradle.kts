@@ -54,28 +54,6 @@ android {
 }
 
 
-/**
- * Les modules tiers que l'app EMBARQUE — ceux de la variante publiée (`release`), sans
- * les modules du dépôt —, un `groupe:module` par ligne, pour « À propos » (#27).
- */
-abstract class ListerModulesEmbarques : DefaultTask() {
-    @get:Input abstract val racine: Property<ResolvedComponentResult>
-    @get:OutputFile abstract val sortie: RegularFileProperty
-
-    @TaskAction
-    fun lister() {
-        val vus = mutableSetOf<ResolvedComponentResult>()
-        val aVoir = ArrayDeque(listOf(racine.get()))
-        while (aVoir.isNotEmpty()) {
-            aVoir.removeFirst().dependencies.filterIsInstance<ResolvedDependencyResult>()
-                .map { it.selected }.filter(vus::add).forEach(aVoir::addLast)
-        }
-        val modules = vus.mapNotNull { (it.id as? ModuleComponentIdentifier)?.let { m -> "${m.group}:${m.module}" } }
-        sortie.get().asFile.writeText(modules.distinct().sorted().joinToString("\n", postfix = "\n"))
-    }
-}
-
-
 val genererTables = generation("genererTables", "contrat/tables-clients.json", "scripts/generer_tables.py")
 // Les mesures du site (#2) : les jetons de longueur, que `MesuresTest` confronte à `Mise`.
 val genererMesures = generation("genererMesures", "contrat/tables-clients.json", "scripts/generer_mesures.py")
@@ -95,23 +73,10 @@ val genererTablesDesMenus = rootProject.layout.projectDirectory.dir("scripts").a
         generation(nom.replaceFirstChar(Char::lowercase), "contrat/tables-clients.json", "scripts/${script.name}")
     }
 
-// Les composants tiers (#27) : la déclaration (app/src/main/tiers/composants.json),
-// confrontée aux modules que la variante publiée embarque — le build s'arrête sur un
-// module non déclaré (scripts/generer_composants_tiers.py) —, puis copiée avec ses textes
-// dans les ressources de l'app, que « À propos » lit.
-val listerModulesEmbarques = tasks.register<ListerModulesEmbarques>("listerModulesEmbarques") {
-    racine.set(provider { configurations.getByName("releaseRuntimeClasspath") }.flatMap { it.incoming.resolutionResult.rootComponent })
-    sortie.set(layout.buildDirectory.file("modules-embarques.txt"))
-}
-val genererComposantsTiers = generation(
-    "genererComposantsTiers", "app/src/main/tiers/composants.json", "scripts/generer_composants_tiers.py",
-    lus = listOf("app/src/main/tiers", "LICENSES"),
-)
-genererComposantsTiers.configure {
-    val liste = listerModulesEmbarques.flatMap { it.sortie }
-    lus.from(liste)
-    arguments.add(liste.map { it.asFile.path })
-}
+// Les composants tiers (#27) : la déclaration commune aux deux apps, confrontée au build à ce
+// que la variante publiée embarque, puis copiée dans les ressources que « À propos » lit
+// (buildSrc, ComposantsTiers.kt). La montre en fait autant (#317).
+val genererComposantsTiers = composantsTiers(autreApp = ":montre")
 
 // Le registre des menus : les inscriptions des écrans (`fonctions/<menu>/Inscription.kt`).
 val fonctions = "app/src/main/java/fr/coprofirst/app/fonctions"
