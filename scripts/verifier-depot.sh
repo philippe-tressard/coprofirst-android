@@ -34,6 +34,7 @@
 #      lecture écrite à la main : `largeurDeLecture()` (#69) ;
 #   9. les générateurs du build passent leurs tests (scripts/test_*.py) ;
 #  10. aucun chemin de .claude/worktrees/ suivi.
+#  11. aucun nom de personne hors des noms inventés déclarés (liste blanche, #326).
 #
 # Il juge les fichiers que git connaît (index compris) : un fichier ignoré n'est
 # pas livré, il n'a pas à passer.
@@ -338,6 +339,14 @@ python3 -I scripts/verifier_securite_donnees.py \
 # chacune déclare son schéma, jugé contre le contrat au plancher.
 python3 -I scripts/verifier_fixtures.py \
   || echec "une réponse simulée ne dit pas ce que le serveur sert (python3 -I scripts/verifier_fixtures.py)"
+
+# Aucun nom de personne réelle dans ce dépôt public (standards/14 §9, #326) : une LISTE
+# BLANCHE de noms inventés (prénom + nom-étiquette, « Camille EXEMPLE »), jamais une liste
+# noire, qui republierait les vrais noms.
+python3 -I scripts/verifier_identites.py --autotest >/dev/null \
+  || echec "verifier_identites.py : autotest en échec"
+python3 -I scripts/verifier_identites.py \
+  || echec "un nom de personne n'est pas un nom inventé déclaré (python3 -I scripts/verifier_identites.py)"
 
 # Aucune bibliothèque Google Play services ni Firebase que la permission additionnelle ne
 # nomme (point 4 de LicenseRef-CoproFirst-Magasins, décision du 16/11/2026) : la liste se
