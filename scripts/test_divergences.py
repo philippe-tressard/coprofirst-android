@@ -135,10 +135,14 @@ def etat(cle: str) -> str | None:
 
 
 def juger_tickets() -> int:
-    cites = tickets_cites(fichiers_juges())
-    if not cites:
-        print("❓ INCONNU : aucun ticket cité par une divergence ou une attente — le motif ne lit plus rien")
+    textes = fichiers_juges()
+    if len(textes) < 100 or fautes(textes)[1] < 20:
+        print("❓ INCONNU : trop peu de fichiers ou de divergences lus — le motif ne lit plus rien")
         return 2
+    cites = tickets_cites(textes)
+    if not cites:
+        print("✅ aucun ticket attendu par une divergence d'étape ou un commentaire d'attente")
+        return 0
     clos, inconnus = [], []
     for cle, lieux in sorted(cites.items()):
         e = etat(cle)
