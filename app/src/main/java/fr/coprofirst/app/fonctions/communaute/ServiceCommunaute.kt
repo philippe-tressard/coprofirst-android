@@ -43,7 +43,7 @@ import java.math.BigDecimal
  * (`ServiceSignalements`), dont il hérite.
  */
 interface ServiceCommunaute : ServiceSignalements, ServiceMasquages {
-    /** L'installation sert-elle la modération (`VersionContrat.MODERATION`, #282) : « Masquer ce que publie… ». */
+    /** L'installation sert-elle la modération (`Installation.sertLePlancher`, #311) : « Masquer ce que publie… ». */
     val moderation: Boolean
 
     /** GET /auth/me : qui regarde, et la conclusion du serveur sur son accès. */
@@ -82,7 +82,7 @@ class ServiceCommunauteApi(private val session: SessionOuverte) :
     ServiceCommunaute,
     ServiceSignalements by ServiceSignalementsApi(session),
     ServiceMasquages by ServiceMasquagesApi(session) {
-    override val moderation: Boolean get() = session.installation.sert(VersionContrat.MODERATION)
+    override val moderation: Boolean get() = session.installation.sertLePlancher
 
     override suspend fun moi() = session.appeler { b, c ->
         val moi = AuthApi(b, c).getAuthMe()

@@ -15,6 +15,7 @@ import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.commun.GestesDeSortie
 import fr.coprofirst.app.commun.StockageApparence
+import fr.coprofirst.app.commun.residenceSimulee
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.navigation.ContexteDeMenu
@@ -22,7 +23,6 @@ import fr.coprofirst.app.navigation.DroitsOnglet
 import fr.coprofirst.app.navigation.OngletsDuSite
 import fr.coprofirst.app.navigation.PagesParDefaut
 import fr.coprofirst.app.navigation.ouverts
-import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsParHote
 import org.junit.Rule
@@ -51,7 +51,7 @@ class CadreAOngletsInterfaceTest {
 
     private fun contexte(droits: DroitsOnglet) = ContexteDeMenu(
         page = PagesParDefaut.toutes.first { it.id == "espace-cs" },
-        session = SessionOuverte(Installation("https://residence.example.test", "Résidence"), SessionsParHote()),
+        session = SessionOuverte(residenceSimulee("https://residence.example.test", "Résidence"), SessionsParHote()),
         droits = droits,
         sortie = object : GestesDeSortie {
             override fun deconnecter() = Unit

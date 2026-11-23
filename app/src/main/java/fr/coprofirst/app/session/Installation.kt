@@ -43,6 +43,14 @@ data class Installation(
     /** Sert-elle ce contrat (une porte au-dessus du plancher) ? Un contrat illisible : non. */
     fun sert(version: VersionContrat): Boolean = contrat?.let { it >= version } ?: false
 
+    /**
+     * Dit-elle servir le plancher ? Ce qu'il porte s'offre alors sans porte : la modération —
+     * signaler, masquer (coprofirst#2861) — et le relais des push (coprofirst#2789), au plancher
+     * depuis v3.121.2 (#311). Une installation plus ancienne ne s'ouvre pas (`depuisConfig`) ;
+     * un contrat absent ou illisible n'ouvre rien, comme l'iOS (`sert(.plancher)`).
+     */
+    val sertLePlancher: Boolean get() = sert(VersionContrat.PLANCHER)
+
     /** La barre de cette résidence : ses pages, dans son ordre, avec ses libellés. */
     val pages: List<PageDeNavigation>
         get() = OrdrePages.ordonner(PagesParDefaut.toutes, ordrePages, surchargesPages)

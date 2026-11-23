@@ -14,8 +14,8 @@ import fr.coprofirst.app.commun.REPERE_BANDEAU_SUSPENDUE
 import fr.coprofirst.app.commun.attendreDisparition
 import fr.coprofirst.app.commun.attendreTag
 import fr.coprofirst.app.commun.attendreTexte
+import fr.coprofirst.app.commun.residenceSimulee
 import fr.coprofirst.app.entree.ServeurDeTest
-import fr.coprofirst.app.session.Installation
 import org.junit.After
 import org.junit.Rule
 import org.junit.Test
@@ -37,7 +37,7 @@ class BandeauInstallationInterfaceTest {
     }
 
     private fun ouvrir(suspendue: Boolean) {
-        val session = serveur.session(Installation("https://residence.exemple.test", "Les Glycines", suspendue = suspendue))
+        val session = serveur.session(residenceSimulee("https://residence.exemple.test", "Les Glycines", suspendue = suspendue))
         ecran.setContent {
             ThemeCoproFirst(Palettes.pour(null), sombre = false) { EcranResidence(session, sortie, serveur.apparence()) }
         }

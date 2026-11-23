@@ -19,7 +19,13 @@ package fr.coprofirst.app.fonctions.notifications.push
  * Il s'allume quand Philippe a allumé le relais — le compte de service FCM posé sur la
  * référence, le service `notifications_push` ouvert —, et pas avant. Même allumé, rien ne
  * se fait sans la configuration Firebase injectée à la construction (`ConfigFirebase`), ni
- * auprès d'une résidence qui ne sert pas le contrat 2.10.0 (`VersionContrat.PUSH`).
+ * auprès d'une résidence qui ne dit pas servir le plancher (`Installation.sertLePlancher`).
+ *
+ * ⚠️ Réserve à relire le jour où il s'allume (#311, comme l'iOS) : le relais FCM part du
+ * plancher, contrat 2.10.0 — que v3.119.0 sert déjà, SANS le filtre « seule l'alerte urgente
+ * part vers un téléphone », arrivé en v3.120.0. Une installation en v3.119.0 ferait sonner
+ * toute la cloche. Aucune installation connue ne la sert (23/11/2026 : toutes en v3.120.0 ou
+ * plus).
  */
 object RelaisPush {
     const val ACTIF: Boolean = false

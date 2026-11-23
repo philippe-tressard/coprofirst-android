@@ -19,6 +19,7 @@ import fr.coprofirst.app.commun.attendreDisparitionTag
 import fr.coprofirst.app.commun.attendreTag
 import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.onglets.ReperesOnglets
+import fr.coprofirst.app.commun.residenceSimulee
 import fr.coprofirst.app.commun.toucher
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.commun.validations.ReperesValidations
@@ -27,7 +28,6 @@ import fr.coprofirst.app.navigation.ContexteDeMenu
 import fr.coprofirst.app.navigation.DroitsOnglet
 import fr.coprofirst.app.navigation.PagesParDefaut
 import fr.coprofirst.app.session.ClientHttp
-import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsParHote
 import mockwebserver3.Dispatcher
@@ -71,7 +71,7 @@ class EspaceCSInterfaceTest {
     fun ouvrir() {
         val confiance = HandshakeCertificates.Builder().addTrustedCertificate(certificat.certificate).build()
         val client = ClientHttp.partage.newBuilder().sslSocketFactory(confiance.sslSocketFactory(), confiance.trustManager).build()
-        val session = SessionOuverte(Installation("https://residence.test", "Les Glycines"), SessionsParHote(client)) {
+        val session = SessionOuverte(residenceSimulee("https://residence.test", "Les Glycines"), SessionsParHote(client)) {
             serveur.url("/api").toString()
         }
         val contexte = ContexteDeMenu(

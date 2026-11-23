@@ -61,7 +61,6 @@ import fr.coprofirst.app.commun.texte.TexteRiche
 import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.navigation.TitreDeBarre
 import fr.coprofirst.app.session.SessionOuverte
-import fr.coprofirst.app.session.VersionContrat
 import java.time.Instant
 
 /**
@@ -80,7 +79,7 @@ internal fun FicheAffaire(id: Int, ctx: ContexteFiche) {
         cle = id,
         squelette = { ContenuAffaire(SQUELETTE, ctx.session) },
     ) { affaire, recharger ->
-        val moderation = ctx.session.installation.sert(VersionContrat.MODERATION)
+        val moderation = ctx.session.installation.sertLePlancher
         val choix = remember(affaire.id, ctx.moi, moderation) { ChoixDeSuite(ctx.moi, moderation) }
         val choixMessage = remember(affaire.id) { ChoixDeMessage() }
         // Le numéro de l'affaire en titre de la barre, comme l'iOS (`.navigationTitle`).

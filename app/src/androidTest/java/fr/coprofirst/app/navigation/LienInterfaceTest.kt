@@ -15,8 +15,8 @@ import fr.coprofirst.app.ThemeCoproFirst
 import fr.coprofirst.app.charte.Palettes
 import fr.coprofirst.app.commun.GestesDeSortie
 import fr.coprofirst.app.commun.attendreTexte
+import fr.coprofirst.app.commun.residenceSimulee
 import fr.coprofirst.app.entree.ServeurDeTest
-import fr.coprofirst.app.session.Installation
 import org.junit.After
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -42,7 +42,7 @@ class LienInterfaceTest {
     }
 
     private fun ouvrir() {
-        val session = serveur.session(Installation("https://residence.exemple.test", "Les Glycines"))
+        val session = serveur.session(residenceSimulee("https://residence.exemple.test", "Les Glycines"))
         ecran.setContent {
             ThemeCoproFirst(Palettes.pour(null), sombre = false) {
                 EcranResidence(session, sortie, serveur.apparence(), lien) {

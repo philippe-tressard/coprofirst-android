@@ -34,13 +34,13 @@ import fr.coprofirst.app.commun.attendreTag
 import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.miseenpage.REPERE_COLONNE
+import fr.coprofirst.app.commun.residenceSimulee
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.entree.ServeurDeTest
 import fr.coprofirst.app.fonctions.fil.FilInterfaceTest
 import fr.coprofirst.app.fonctions.fil.REPERE_EPHEMERIDE
 import fr.coprofirst.app.fonctions.fil.REPERE_JOUR
 import fr.coprofirst.app.fonctions.fil.REPERE_SEMAINE
-import fr.coprofirst.app.session.Installation
 import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -96,7 +96,7 @@ class CarnetInterfaceTest {
 
     private fun ouvrir(flux: String = FilInterfaceTest.fil(Instant.now())) {
         serveur.flux = flux
-        val session = serveur.session(Installation(RESIDENCE, "Les Glycines"))
+        val session = serveur.session(residenceSimulee(RESIDENCE, "Les Glycines"))
         ecran.setContent {
             CompositionLocalProvider(LocalPosture provides posture, LocalMarquesPages provides marques) {
                 ThemeCoproFirst(Palettes.pour(null), sombre = false) {

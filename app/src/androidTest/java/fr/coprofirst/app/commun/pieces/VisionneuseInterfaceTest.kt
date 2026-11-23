@@ -17,8 +17,8 @@ import fr.coprofirst.app.commun.attendreTag
 import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.miseenpage.EnFenetreLarge
 import fr.coprofirst.app.commun.miseenpage.OccuperLaColonneDeFiche
+import fr.coprofirst.app.commun.residenceSimulee
 import fr.coprofirst.app.commun.toucherTag
-import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsParHote
 import kotlinx.coroutines.MainScope
@@ -43,7 +43,7 @@ class VisionneuseInterfaceTest {
     private val contexte = InstrumentationRegistry.getInstrumentation().targetContext
     private val ouverture = Ouverture(
         contexte,
-        SessionOuverte(Installation("https://residence.test", "Les Glycines"), SessionsParHote()),
+        SessionOuverte(residenceSimulee("https://residence.test", "Les Glycines"), SessionsParHote()),
         MainScope(),
     ) {}
 

@@ -55,7 +55,6 @@ import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.gesteEnLigne
 import fr.coprofirst.app.navigation.ContexteDeMenu
 import fr.coprofirst.app.session.Installation
-import fr.coprofirst.app.session.VersionContrat
 
 /** Plus › Profil : l'écran du registre (`RegistreDesMenus`). */
 @Composable
@@ -63,7 +62,7 @@ fun EcranProfil(contexte: ContexteDeMenu) {
     val service = remember(contexte.session) { ServiceProfilApi(contexte.session) }
     // Personnes masquées (#282) : seulement si l'installation sert la modération.
     val masquages = remember(contexte.session) {
-        ServiceMasquagesApi(contexte.session).takeIf { contexte.session.installation.sert(VersionContrat.MODERATION) }
+        ServiceMasquagesApi(contexte.session).takeIf { contexte.session.installation.sertLePlancher }
     }
     PageHorsLigne {
         EcranProfil(service, contexte.session.installation, contexte.sortie, contexte.apparence, contexte.relireDroits, masquages)

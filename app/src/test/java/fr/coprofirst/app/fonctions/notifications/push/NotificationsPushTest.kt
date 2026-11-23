@@ -3,12 +3,12 @@
 
 package fr.coprofirst.app.fonctions.notifications.push
 
+import fr.coprofirst.api.VERSION_CONTRAT_PLANCHER
 import fr.coprofirst.app.commun.ReglagesEnMemoire
 import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsParHote
-import fr.coprofirst.app.session.VersionContrat
 import kotlinx.coroutines.test.runTest
 import okhttp3.OkHttpClient
 import org.junit.Assert.assertEquals
@@ -20,14 +20,14 @@ import org.junit.Test
 import java.time.Duration
 import java.time.Instant
 
-/** Les notifications push : drapeau éteint = rien ; porte 2.10.0 ; offre au bon moment ; enregistrer, retirer, retrouver. */
+/** Les notifications push : drapeau éteint = rien ; plancher servi (#311) ; offre au bon moment ; enregistrer, retirer, retrouver. */
 class NotificationsPushTest {
     private val sessions = SessionsParHote(OkHttpClient())
     private val glycines = session("glycines.exemple.test")
     private val tilleuls = session("tilleuls.exemple.test")
 
-    private fun session(hote: String, contrat: VersionContrat = VersionContrat.PUSH) =
-        SessionOuverte(Installation("https://$hote", "Résidence", versionContrat = contrat.toString()), sessions)
+    private fun session(hote: String, contrat: String? = VERSION_CONTRAT_PLANCHER) =
+        SessionOuverte(Installation("https://$hote", "Résidence", versionContrat = contrat), sessions)
 
     private class Centre(var autorisation: AutorisationPush) : CentreNotifications {
         var inscriptions = 0
@@ -106,10 +106,13 @@ class NotificationsPushTest {
         }
     }
 
-    /** #280 : une résidence sous le contrat 2.10.0 n'avertirait jamais le téléphone — ni offre, ni jeton. */
+    /**
+     * #280, #311 : le relais part du plancher, plus d'une porte ; une résidence qui ne dit pas son
+     * contrat n'a ni offre, ni jeton — comme l'iOS.
+     */
     @Test
-    fun sousLaPorteNiOffreNiJeton() = runTest {
-        val ancienne = session("ancienne.exemple.test", VersionContrat(2, 9, 0))
+    fun sansContratLisibleNiOffreNiJeton() = runTest {
+        val ancienne = session("ancienne.exemple.test", contrat = null)
         centre.autorisation = AutorisationPush.NON_DEMANDEE
         val p = push()
         p.lireAutorisation()

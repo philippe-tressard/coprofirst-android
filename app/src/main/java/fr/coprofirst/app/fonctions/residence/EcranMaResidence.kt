@@ -56,7 +56,6 @@ import fr.coprofirst.app.navigation.OngletsDuSite
 import fr.coprofirst.app.navigation.ouverts
 import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.SessionOuverte
-import fr.coprofirst.app.session.VersionContrat
 
 /** Les repères des tests d'interface : les identifiants d'accessibilité de l'iOS. */
 object ReperesResidence {
@@ -150,7 +149,7 @@ internal fun EcranMaResidence(
     val ouverture = session?.let { rememberOuverture(it) }
     // 🚩 la réponse de l'assistant (#282) : seulement si l'installation sert la modération.
     val signalements = remember(session) {
-        session?.takeIf { it.installation.sert(VersionContrat.MODERATION) }?.let { ServiceSignalementsApi(it) }
+        session?.takeIf { it.installation.sertLePlancher }?.let { ServiceSignalementsApi(it) }
     }
     val ouvrir = OuvrirFiche(
         document = { ouverture?.document(it.id, it.fichier, it.titre) },

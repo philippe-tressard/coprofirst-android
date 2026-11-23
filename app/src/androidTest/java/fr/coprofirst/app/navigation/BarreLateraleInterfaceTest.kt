@@ -26,9 +26,9 @@ import fr.coprofirst.app.commun.attendre
 import fr.coprofirst.app.commun.attendreDisparition
 import fr.coprofirst.app.commun.attendreTag
 import fr.coprofirst.app.commun.attendreTexte
+import fr.coprofirst.app.commun.residenceSimulee
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.entree.ServeurDeTest
-import fr.coprofirst.app.session.Installation
 import org.junit.After
 import org.junit.Rule
 import org.junit.Test
@@ -54,7 +54,7 @@ class BarreLateraleInterfaceTest {
 
     private fun ouvrir(debut: Dp) {
         largeur = debut
-        val session = serveur.session(Installation("https://residence.exemple.test", "Les Glycines"))
+        val session = serveur.session(residenceSimulee("https://residence.exemple.test", "Les Glycines"))
         ecran.setContent {
             ThemeCoproFirst(Palettes.pour(null), sombre = false) {
                 // Calé en haut à gauche : plus large que l'écran du téléphone, le cadre en déborde à droite,

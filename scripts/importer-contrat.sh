@@ -70,6 +70,11 @@ if [ -n "${AU_DESSUS:-}" ]; then
   mkdir -p contrat/au-dessus && cp "$TMP/au-dessus/openapi.json" contrat/au-dessus/openapi.json
 fi
 for licence in "${LICENCES[@]}"; do cp "$TMP/$licence.txt" "LICENSES/$licence.txt"; done
+if [ -n "${AU_DESSUS:-}" ]; then
+  GREFFE="\`au-dessus/openapi.json\` : la pièce de $AU_DESSUS ; seuls ses chemins \`$GREFFES\` (et leurs schémas) sont greffés au client, derrière une porte de version"
+else
+  GREFFE="aucune greffe : \`AU_DESSUS\` et \`GREFFES\` vides (\`plancher.env\`)"
+fi
 cat > contrat/PROVENANCE.md <<FIN
 <!--
 SPDX-FileCopyrightText: 2026 Philippe TRESSARD
@@ -89,7 +94,7 @@ GÉNÉRÉ par scripts/importer-contrat.sh — NE PAS MODIFIER À LA MAIN.
 | Charte | \`tables-clients.json\` : jetons de la charte et des palettes, d'où \`scripts/generer_charte.py\` tire \`Palette\` au build |
 | Constantes | \`constantes-clients.json\` : ce que le serveur applique sans le dire dans le contrat (longueur du mot de passe, schémas de lien…) |
 | Icônes | \`icones-svg.json\` : les tracés Lucide du site (ISC, MIT pour la part issue de Feather), le logo WhatsApp de Simple Icons (CC0-1.0) ; leurs textes dans \`LICENSES/\` |
-| Au-dessus du plancher | \`au-dessus/openapi.json\` : la pièce de ${AU_DESSUS:-aucune release} ; seuls ses chemins \`${GREFFES:-—}\` (et leurs schémas) sont greffés au client, derrière une porte de version |
+| Au-dessus du plancher | $GREFFE |
 | Normalisation | aucune : chaque fichier est la pièce jointe, à l'octet |
 FIN
 echo "✅ contrat/{${PIECES[*]}} = $DEPOT $PLANCHER (contrat $CONTRAT)"

@@ -89,7 +89,7 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   supprimer les siens (confirmé), signaler ceux des autres au conseil syndical (motif
   obligatoire). Tirer la liste la relit ; un fil vide le dit.
 - **Profil** (Plus › Profil) : la résidence, le statut et les rôles du compte ; les
-  personnes masquées et « Ne plus masquer » (installation au contrat 2.9.0) ; les
+  personnes masquées et « Ne plus masquer » ; les
   informations personnelles (le nom tel qu'il sera affiché se lit sous la saisie ; une
   nouvelle adresse demande le mot de passe et ne vaut qu'une fois confirmée) ; le mot de passe ; une demande de changement de profil ou de
   bâtiment au conseil syndical ; vos droits RGPD (politique de confidentialité, refus,
@@ -112,7 +112,7 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   nombre, au lecteur d'écran). Les notifications sur le téléphone (#280) : l'offre « Être averti sur ce
   téléphone » en tête de la cloche, puis l'alerte d'une actualité ⚡ urgente du conseil syndical sonne,
   sans rien dire de son contenu ; la toucher ouvre la cloche de sa résidence. Éteintes tant que le relais
-  ne l'est pas (`RelaisPush`), et seulement auprès d'une résidence au contrat 2.10.0.
+  ne l'est pas (`RelaisPush`), et seulement auprès d'une résidence qui dit servir le plancher (contrat 2.10.0).
 - **FAQ** : les questions de la résidence par catégorie, une réponse dépliée à la fois ;
   « Partager le lien » d'une question ; « Créer une affaire » et le Manuel utilisateur. La rédaction reste au site,
   et l'écran ne le dit qu'à qui le serveur l'ouvre.
@@ -149,8 +149,7 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   partent), épingler ou marquer urgente, archiver.
   Chaque entrée de la suite se corrige ou se supprime (« ⋯ »), si le serveur le permet ;
   son propre message aussi, tant que l'affaire n'est pas close (un texte mis en forme sur
-  le site se modifie depuis le site). Sur une installation qui le sert (contrat 2.9.0) :
-  🚩 signale l'affaire au conseil syndical à qui la lit sans pouvoir la corriger ; le
+  le site se modifie depuis le site). 🚩 signale l'affaire au conseil syndical à qui la lit sans pouvoir la corriger ; le
   « ⋯ » d'une suite écrite par un autre la signale, ou masque ce que publie son auteur.
   « Nouvelle affaire » (le « + » du haut) : catégorie, titre, description, lieu, urgence —
   les photos et ce que le conseil désigne se règlent sur le site. « Modifier » règle aussi
@@ -165,7 +164,7 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   propriétaires et au conseil, le Carnet d'entretien (par équipement, visites en retard
   en tête, « À venir » sur un contrat qui n'a pas commencé, filtre par périmètre) et le Règlement (poser une question à l'assistant, lire
   son avis, ses fondements et les extraits qu'il cite ; « Signaler la réponse de
-  l'assistant » au conseil syndical, installation au contrat 2.9.0). Le bilan de l'exercice se lit
+  l'assistant » au conseil syndical). Le bilan de l'exercice se lit
   encore sur le site.
 - **Annuaire** : le conseil syndical (par bâtiment, président et gestionnaire mis en
   avant, groupe WhatsApp) et le syndic (espace client, contacts) — un toucher appelle ou
@@ -181,8 +180,7 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   l'application : filtre par note, réponse de l'équipe ; donner son avis, le corriger,
   l'archiver ou le restaurer. Une idée ou une annonce ouverte porte le fil des réponses
   (répondre, supprimer la sienne, signaler celles des autres) et « Signaler » au conseil
-  syndical ; chaque contenu dit qui le lit et où. Sur une installation au contrat 2.9.0,
-  « Masquer ce que publie… » l'auteur d'une annonce, d'une réponse ou d'un commentaire de
+  syndical ; chaque contenu dit qui le lit et où. « Masquer ce que publie… » l'auteur d'une annonce, d'une réponse ou d'un commentaire de
   sondage (un résident nommé,
   hors du conseil) ; ce qu'il publie ne se voit plus, et se rétablit au Profil.
 - **Espace CS** (conseil syndical) : les onglets que le serveur ouvre au compte.

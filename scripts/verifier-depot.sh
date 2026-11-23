@@ -292,6 +292,13 @@ autotest_motif "contrat écrit" "$CONTRAT_ECRIT" '    """{"site_nom": "G", "vers
 autotest_motif "contrat écrit (Installation)" "$CONTRAT_ECRIT" '    Installation(a, "G", versionContrat = "2.1.0")' '    mapOf("version_contrat" to "99.0.0")'
 interdire "$CONTRAT_ECRIT" "version de contrat écrite à la main — VERSION_CONTRAT_PLANCHER" "" '^app/src/(test|androidTest|debug)/.*\.kt$'
 
+# La résidence simulée des tests d'interface SERT LE PLANCHER (#311, leçon de coprofirst-ios#333) :
+# une `Installation(` sans contrat y cache ce que le plancher offre par défaut (signaler,
+# masquer), et un test affirme l'absence d'un geste que la vraie app montre. `residenceSimulee`.
+INSTALLATION_NUE='(^|[^[:alnum:]_])Installation\('
+autotest_motif "installation simulée" "$INSTALLATION_NUE" '    SessionOuverte(Installation("https://r.test", "G"), s)' '    SessionOuverte(residenceSimulee("https://r.test", "G"), s)'
+interdire "$INSTALLATION_NUE" "Installation construite à la main dans un test d'interface — residenceSimulee (elle sert le plancher)" '/commun/ResidenceSimulee\.kt$' '^app/src/androidTest/.*\.kt$'
+
 # UN client HTTP pour le téléphone ET la montre (#206) : `ClientHttp.partage`, qui ne suit
 # aucune redirection. Un client construit ailleurs échapperait à ces réglages.
 CLIENT_NEUF='OkHttpClient[[:space:]]*\([[:space:]]*\)|OkHttpClient\.Builder[[:space:]]*\('

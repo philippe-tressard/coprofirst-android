@@ -94,7 +94,7 @@ class ServiceAffairesApi(private val session: SessionOuverte) :
     ServiceAffaires,
     ServicePerimetres by ServicePerimetresApi(session),
     ServiceLectures by ServiceLecturesApi(session),
-    // 🚩 et 🙈 (#282) : derrière la porte `VersionContrat.MODERATION`, que l'écran lit.
+    // 🚩 et 🙈 (#282) : offerts si l'installation les sert (`Installation.sertLePlancher`), que l'écran lit.
     ServiceSignalements by ServiceSignalementsApi(session),
     ServiceMasquages by ServiceMasquagesApi(session) {
     private suspend fun <R> tickets(requete: TicketsApi.() -> R): R =

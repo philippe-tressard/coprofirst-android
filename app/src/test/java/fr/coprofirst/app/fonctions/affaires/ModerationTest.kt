@@ -3,8 +3,15 @@
 
 package fr.coprofirst.app.fonctions.affaires
 
+import fr.coprofirst.api.VERSION_CONTRAT_PLANCHER
+import fr.coprofirst.app.commun.detail.sondage.ServiceSondageApi
 import fr.coprofirst.app.commun.masquages.AuteurAMasquer
+import fr.coprofirst.app.fonctions.communaute.ServiceCommunauteApi
+import fr.coprofirst.app.session.Installation
+import fr.coprofirst.app.session.SessionOuverte
+import fr.coprofirst.app.session.SessionsParHote
 import java.time.Instant
+import okhttp3.OkHttpClient
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -22,9 +29,9 @@ class ModerationTest {
         SuiteAffaire(11, "commentaire", Instant.EPOCH, auteur = auteur, contenu = contenu, auteurId = auteurId)
 
     @Test
-    fun leDrapeauSOffreAQuiLitSansCorrigerHorsArchivesEtSeulementDerriereLaPorte() {
+    fun leDrapeauSOffreAQuiLitSansCorrigerHorsArchivesSiLInstallationLeSert() {
         assertTrue(GesteAffaire.Signaler in GesteAffaire.offerts(fiche(), conseil = false, moderation = true))
-        assertFalse("sans la porte", GesteAffaire.Signaler in GesteAffaire.offerts(fiche(), conseil = false))
+        assertFalse("contrat absent ou illisible", GesteAffaire.Signaler in GesteAffaire.offerts(fiche(), conseil = false, moderation = false))
         assertFalse("qui corrige a d'autres gestes", GesteAffaire.Signaler in GesteAffaire.offerts(fiche(corriger = true), conseil = false, moderation = true))
         assertFalse("pas aux Archives", GesteAffaire.Signaler in GesteAffaire.offerts(fiche(archivee = true), conseil = false, moderation = true))
     }
@@ -35,7 +42,7 @@ class ModerationTest {
     }
 
     @Test
-    fun niSaSuiteNiUneSuiteSansTexteNiSansLaPorteNiSansCompteConnu() {
+    fun niSaSuiteNiUneSuiteSansTexteNiSansContratNiSansCompteConnu() {
         assertEquals(emptyList<GesteSuite>(), GesteSuite.offerts(suite(auteurId = 7), moi = 7, moderation = true))
         assertEquals(emptyList<GesteSuite>(), GesteSuite.offerts(suite(contenu = null), moi = 7, moderation = true))
         assertEquals(emptyList<GesteSuite>(), GesteSuite.offerts(suite(), moi = 7, moderation = false))
@@ -63,6 +70,23 @@ class ModerationTest {
         assertNull(AuteurAMasquer.de(null, "X", moi = 7))
         assertNull(AuteurAMasquer.de(31, " ", moi = 7))
         assertEquals(AuteurAMasquer(31, "X"), AuteurAMasquer.de(31, "X", moi = 7))
+    }
+
+    /**
+     * #311 : au PLANCHER, la modération est offerte par défaut — sans porte. Le câblage lit
+     * l'installation (`sertLePlancher`) : une installation au plancher ouvre 🚩 et 🙈 sur ce
+     * qu'un autre a écrit, dans les fiches d'affaire, de sondage et la Communauté.
+     */
+    @Test
+    fun auPlancherLaModerationEstOfferteParDefaut() {
+        val installation = Installation("https://glycines.exemple.test", "Les Glycines", versionContrat = VERSION_CONTRAT_PLANCHER)
+        val session = SessionOuverte(installation, SessionsParHote(OkHttpClient()))
+        assertTrue("installation au plancher", installation.sertLePlancher)
+        assertTrue("fiche d'un sondage", ServiceSondageApi(session).moderation)
+        assertTrue("Communauté", ServiceCommunauteApi(session).moderation)
+        val moderation = installation.sertLePlancher
+        assertTrue(GesteAffaire.Signaler in GesteAffaire.offerts(fiche(), conseil = false, moderation = moderation))
+        assertEquals(listOf(GesteSuite.Signaler, GesteSuite.Masquer), GesteSuite.offerts(suite(), moi = 7, moderation = moderation))
     }
 
     /** Le « ⋯ » d'un message garde ses deux gestes (#281) : ni signaler ni masquer n'y entrent. */

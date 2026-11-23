@@ -6,6 +6,7 @@ package fr.coprofirst.app.fonctions.prestataires
 import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.hasContentDescription
 import fr.coprofirst.app.commun.attendreTexte
+import fr.coprofirst.app.commun.residenceSimulee
 import org.junit.Assert.assertTrue
 import org.junit.Assert.assertEquals
 import androidx.compose.ui.unit.Density
@@ -30,7 +31,6 @@ import fr.coprofirst.app.navigation.ContexteDeMenu
 import fr.coprofirst.app.navigation.DroitsOnglet
 import fr.coprofirst.app.navigation.PagesParDefaut
 import fr.coprofirst.app.session.ClientHttp
-import fr.coprofirst.app.session.Installation
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsParHote
 import mockwebserver3.Dispatcher
@@ -73,7 +73,7 @@ class EcranPrestatairesInterfaceTest {
     fun ouvrir() {
         val confiance = HandshakeCertificates.Builder().addTrustedCertificate(certificat.certificate).build()
         val client = ClientHttp.partage.newBuilder().sslSocketFactory(confiance.sslSocketFactory(), confiance.trustManager).build()
-        val session = SessionOuverte(Installation("https://residence.test", "Les Glycines"), SessionsParHote(client)) {
+        val session = SessionOuverte(residenceSimulee("https://residence.test", "Les Glycines"), SessionsParHote(client)) {
             serveur.url("/api").toString()
         }
         val contexte = ContexteDeMenu(
