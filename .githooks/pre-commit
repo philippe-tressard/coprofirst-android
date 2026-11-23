@@ -18,9 +18,4 @@ if git rev-parse --verify -q "origin/$BRANCHE" >/dev/null; then
 fi
 
 bash scripts/verifier-depot.sh
-if command -v reuse >/dev/null; then
-  reuse lint --quiet || { echo "❌ reuse lint" >&2; exit 1; }
-else
-  echo "❓ reuse absent : conformité REUSE INCONNUE (pipx install reuse)" >&2
-  exit 1
-fi
+bash scripts/reuse-au-poste.sh
