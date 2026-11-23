@@ -13,5 +13,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     l'identique (scripts/importer-logo.sh), ni redessiné ni recoloré
   • une notification, un SDK, une collecte, un droit → standards/14 §1 et §3 bis ;
     la section « Sécurité des données » de Google Play suit le code
-  • signature, Play Console, fiche du magasin   → rien sans demande explicite de Philippe
+  • signature, Play Console, fiche du magasin   → rien sans demande explicite de Philippe ;
+    la marche : docs/play-store/guide-philippe.md (« Avant CHAQUE envoi » : construire-release.sh
+    finit par le contrôle et l'étiquette v<version>), docs/signature-android.md ;
+    l'état publié : git tag -l 'v*'
 ────────────────────────────────────────────────────────────────────────────
