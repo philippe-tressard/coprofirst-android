@@ -28,7 +28,10 @@ JAVA=$(/usr/libexec/java_home -v 21 2>/dev/null || brew --prefix openjdk@21 2>/d
 SDK=${ANDROID_HOME:-$(brew --prefix 2>/dev/null)/share/android-commandlinetools}
 [ -d "$SDK/platforms" ] \
   && echo "  SDK Android   : $(ls "$SDK/platforms" | sort -V | tail -1)" \
-  || echo "  SDK Android   : 🔴 absent — README, « Outillage »"
+  || echo "  SDK Android   : 🔴 absent — README, « Construire »"
+[ -x "$SDK/emulator/emulator" ] && "$SDK/emulator/emulator" -list-avds 2>/dev/null | grep -qx coprofirst \
+  && echo "  Émulateur     : coprofirst (tests d'interface)" \
+  || echo "  Émulateur     : 🔴 AVD « coprofirst » absent — README, « Construire »"
 echo "  Contrat d'API : $(sed -n 's/^| Commit | `\([0-9a-f]\{9\}\).*/coprofirst@\1/p' contrat/PROVENANCE.md 2>/dev/null)"
 if [ -z "$ATTENDU" ]; then
   echo "  Répertoire attendu : ❓ INCONNU (registre ~/.claude/projets.json illisible)"

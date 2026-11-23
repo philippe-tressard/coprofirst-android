@@ -269,12 +269,23 @@ Ce qui reste à faire se lit dans les issues ouvertes du dépôt.
 
 ## Construire
 
-Prérequis : JDK 21, SDK Android avec la plateforme 37.2.
+Prérequis : JDK 21, SDK Android avec la plateforme 37.2, Python 3 (chaque build génère
+palettes, tables et constantes par `python3 -I scripts/generer_*.py`), et `reuse` (le
+pre-commit et le pipeline jugent la conformité REUSE ; sans lui, INCONNU).
 
 ```bash
-brew install openjdk@21
+brew install openjdk@21 python3 pipx
 brew install --cask android-commandlinetools
 sdkmanager "platform-tools" "platforms;android-37.2"
+pipx install reuse
+```
+
+Un clone **complet** : la version se déduit de l'historique (nombre de commits) — un clone
+superficiel (`--depth`) arrête le build, la version n'y étant pas connue. Puis armer le hook, une
+fois par clone :
+
+```bash
+git config core.hooksPath .githooks
 ```
 
 ```bash
@@ -284,9 +295,22 @@ bash scripts/pipeline.sh   # sous le verrou commun du poste
 `JAVA_HOME` et `ANDROID_HOME` (ou `local.properties`, `sdk.dir=…`) doivent désigner
 le JDK 21 et le SDK.
 
+Les tests d'interface au poste (`bash scripts/tests-interface.sh`, et les captures du magasin,
+`scripts/captures-play.sh`) tournent sur l'émulateur `coprofirst`, un Pixel 8 sous Android 37
+(image `google_apis`, `arm64-v8a` sur un Mac à puce Apple) — à créer une fois :
+
+```bash
+sdkmanager "emulator" "system-images;android-37.0;google_apis;arm64-v8a"
+avdmanager create avd -n coprofirst -k "system-images;android-37.0;google_apis;arm64-v8a" -d pixel_8
+```
+
+Le rapport d'environnement de début de session (`.claude/env-report.sh`) dit ce qui manque.
+
 La release pour Google Play (les AAB du téléphone et de la montre, signés par la clé de téléversement, au poste seulement,
-jamais en CI) : `bash scripts/construire-release.sh` — la clé, son rangement et Play
-App Signing sont dans `docs/signature-android.md`.
+jamais en CI) : `bash scripts/construire-release.sh`, qui finit par le contrôle avant soumission
+et l'étiquette `v<version>` (sans elle, les AAB sont retirés) — la marche à suivre est dans
+`docs/play-store/guide-philippe.md` (« Avant CHAQUE envoi »), la clé, son rangement et Play
+App Signing dans `docs/signature-android.md`.
 
 ## Contrat d'API
 
