@@ -10,6 +10,9 @@
 # Il refuse de construire ce qui ne serait pas `main` tel que publié : une branche,
 # un arbre modifié, ou un `main` local décalé d'origin. La version se déduit au build
 # (versionCode = nombre de commits, build racine ; la montre se place au-dessus).
+# Le contrôle avant CHAQUE envoi est sa dernière étape, pas une consigne du guide (#322) :
+# il rejuge ce build (`controle_avant_soumission.py --taguer`, #4), qui pose l'étiquette
+# `v<version>` si tout est vert ; sans elle, les AAB sont retirés (`pret-a-envoyer.sh`).
 #   --verifier : contrôle les prérequis (clé, mot de passe, arbre) sans construire.
 # Un prérequis illisible rend INCONNU (sortie 2), jamais OK.
 set -uo pipefail
@@ -75,3 +78,13 @@ for AAB in app/build/outputs/bundle/release/app-release.aab montre/build/outputs
   echo "$EMPREINTE" | sed 's/^[[:space:]]*/   /'
   shasum -a 256 "$AAB" | sed 's/^/   fichier : /'
 done
+
+# Le contrôle avant soumission, sur ce commit et ce build (#4) : tout vert, il pose et pousse
+# `v<version>`. Son verdict ne suffit pas à lui seul : la porte relit l'étiquette, et retire
+# les AAB si elle manque — un AAB non contrôlé ne reste jamais prêt à téléverser (#322).
+python3 -I scripts/controle_avant_soumission.py --taguer --rapport build/controle-soumission.md
+CONTROLE=$?
+bash scripts/pret-a-envoyer.sh "$VERSION" app/build/outputs/bundle/release/app-release.aab \
+  montre/build/outputs/bundle/release/montre-release.aab || exit $?
+[ "$CONTROLE" = 0 ] || inconnu "contrôle avant soumission en sortie $CONTROLE, étiquette pourtant posée : relire build/controle-soumission.md"
+echo "   rapport à coller dans la note de publication : build/controle-soumission.md"
