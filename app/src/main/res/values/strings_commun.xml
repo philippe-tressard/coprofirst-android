@@ -78,4 +78,5 @@ ceux de l'iOS (`OngletSurLeSite`, `TextesFeuille`, `ChampRecherche`, `feuilleNot
     <string name="masquage_depuis">depuis le %1$s</string>
     <!-- Ctrl+R au clavier d'une tablette (⌘R de l'iOS, #69) : la liste des raccourcis du système. -->
     <string name="raccourci_actualiser">Actualiser</string>
+    <string name="raccourci_rechercher">Rechercher</string>
 </resources>

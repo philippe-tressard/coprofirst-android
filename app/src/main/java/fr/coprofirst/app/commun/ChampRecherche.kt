@@ -16,7 +16,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -24,13 +27,16 @@ import androidx.compose.ui.text.input.ImeAction
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.commun.clavier.Raccourci
+import fr.coprofirst.app.commun.clavier.RaccourciClavier
 
 /**
  * Le champ de recherche d'une liste, DANS la page (il ne vaut que pour l'onglet qui le
  * porte), comme `ChampRecherche` de l'iOS : la loupe, l'`indication` de ce que l'on peut
  * y chercher (« Nom, métier, équipement… »), la croix qui l'efface. La règle de recherche
  * est `Recherche.contientTousLesMots(champs, texte)` (`commun/texte`), jamais une autre.
- * `repere` : l'identifiant du champ pour les tests d'interface.
+ * `repere` : l'identifiant du champ pour les tests d'interface. Ctrl+F au clavier d'une tablette
+ * y place le curseur (`Raccourci.Rechercher`, coprofirst-ios#223).
  */
 @Composable
 fun ChampRecherche(
@@ -42,6 +48,8 @@ fun ChampRecherche(
 ) {
     val couleurs = LocalCouleurs.current
     val clavier = LocalSoftwareKeyboardController.current
+    val focus = remember { FocusRequester() }
+    RaccourciClavier(Raccourci.Rechercher) { focus.requestFocus() }
     OutlinedTextField(
         value = texte,
         onValueChange = changer,
@@ -63,6 +71,6 @@ fun ChampRecherche(
         ),
         keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, imeAction = ImeAction.Search),
         keyboardActions = KeyboardActions(onSearch = { clavier?.hide() }),
-        modifier = modifier.fillMaxWidth().testTag(repere),
+        modifier = modifier.fillMaxWidth().focusRequester(focus).testTag(repere),
     )
 }

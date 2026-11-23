@@ -11,6 +11,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.assertIsNotFocused
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
@@ -213,10 +215,20 @@ class AffairesInterfaceTest {
         ouvrir()
         ecran.attendreTag(ReperesNouvelle.NOUVELLE, useUnmergedTree = true)
         ecran.runOnIdle {
-            assertEquals(listOf(Raccourci.NouvelleAffaire, Raccourci.Actualiser), raccourcis.offerts())
+            assertEquals(listOf(Raccourci.NouvelleAffaire, Raccourci.Actualiser, Raccourci.Rechercher), raccourcis.offerts())
             assertTrue(raccourcis.declencher(KeyEvent.KEYCODE_N, ctrl = true))
         }
         ecran.attendreTag(ReperesChamps.NOUVELLE.categorie("panne"), useUnmergedTree = true)
+    }
+
+    /** coprofirst-ios#223 : Ctrl+F place le curseur dans la recherche de Mes affaires. */
+    @Test
+    fun ctrlFOuvreLaRecherche() {
+        ouvrir()
+        ecran.attendreTag(ReperesAffaires.RECHERCHE, useUnmergedTree = true)
+        ecran.onNodeWithTag(ReperesAffaires.RECHERCHE, useUnmergedTree = true).assertIsNotFocused()
+        ecran.runOnIdle { assertTrue(raccourcis.declencher(KeyEvent.KEYCODE_F, ctrl = true)) }
+        ecran.onNodeWithTag(ReperesAffaires.RECHERCHE, useUnmergedTree = true).assertIsFocused()
     }
 
     /**
