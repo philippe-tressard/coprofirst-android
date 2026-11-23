@@ -13,7 +13,9 @@ caractères) : ne pas changer leur forme.
 
 Ce qui diffère de l'App Store, et pourquoi : la biométrie d'Android au lieu de Face ID ;
 la mesure d'audience de la résidence, dite et refusable (la fiche iOS 1.0 dit encore
-« aucune mesure d'audience ») ; aucune mention d'un appareil Apple.
+« aucune mesure d'audience ») ; aucune mention d'un appareil Apple ; la puce Affaires, qui
+ne promet plus de joindre photos et documents (#318) — la fiche de l'App Store porte encore
+l'ancienne phrase, jusqu'à coprofirst-ios#343.
 
 ## Nom de l'app
 
