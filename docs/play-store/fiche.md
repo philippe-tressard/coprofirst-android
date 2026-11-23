@@ -36,7 +36,7 @@ L'application de votre résidence : affaires, accès, communauté et conseil.
 CoproFirst est l'application de votre résidence. Elle se connecte au site de votre copropriété, installé par elle ou hébergé pour elle, et montre à chacun ce qui le concerne, et rien de plus.
 
 • Fil d'activité : ce qui se passe dans votre résidence, en un coup d'œil.
-• Affaires : signalez une panne, suivez-la jusqu'à sa résolution, avec photos et documents.
+• Affaires : signalez une panne et suivez-la jusqu'à sa résolution ; consultez ses photos et ses documents.
 • Résidence : le carnet d'entretien, le règlement, les informations utiles.
 • Accès : vos lots, badges et télécommandes.
 • Communauté : annonces entre voisins, idées, sondages.
