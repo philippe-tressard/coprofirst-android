@@ -33,7 +33,7 @@ class ServiceNomsApi(private val session: SessionOuverte) : ServiceNoms {
 
 /**
  * La ligne « Nom affiché » d'une feuille d'édition, comme l'iOS (`NomDeLaSaisie`) : ce que le
- * serveur rendra de la saisie (« jean-baptiste », « fort » → « Jean-Baptiste FORT »), par
+ * serveur rendra de la saisie (« jean-baptiste », « exemple » → « Jean-Baptiste EXEMPLE »), par
  * `ApercuServi` (une rafale = une demande ; la dernière valeur tient tant qu'il n'a pas
  * répondu). `connu` : le nom déjà servi pour la saisie d'ORIGINE (le prénom et le nom du premier
  * affichage) — il ne se redemande pas tant que la saisie n'a pas changé, et ne vaut plus ensuite.

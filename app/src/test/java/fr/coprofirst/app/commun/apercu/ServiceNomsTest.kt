@@ -32,19 +32,19 @@ class ServiceNomsTest {
     fun leNomVientDuServeur() = runTest {
         serveur.enqueue(
             MockResponse.Builder().code(200).addHeader("Content-Type", "application/json")
-                .body("""{"nom_affiche": "Jean-Baptiste FORT"}""").build(),
+                .body("""{"nom_affiche": "Jean-Baptiste EXEMPLE"}""").build(),
         )
-        assertEquals("Jean-Baptiste FORT", service.nomAffiche("jean-baptiste", "fort"))
+        assertEquals("Jean-Baptiste EXEMPLE", service.nomAffiche("jean-baptiste", "exemple"))
         val requete = serveur.takeRequest()
         assertEquals("POST", requete.method)
         assertEquals("/api/noms/affiche", requete.url.encodedPath)
-        assertEquals("""{"prenom":"jean-baptiste","nom":"fort"}""", requete.body?.utf8())
+        assertEquals("""{"prenom":"jean-baptiste","nom":"exemple"}""", requete.body?.utf8())
     }
 
     @Test
     fun unChampVideNePartPas() = runTest {
-        serveur.enqueue(MockResponse.Builder().code(200).addHeader("Content-Type", "application/json").body("""{"nom_affiche": "FORT"}""").build())
-        assertEquals("FORT", service.nomAffiche(null, "fort"))
-        assertEquals("""{"nom":"fort"}""", serveur.takeRequest().body?.utf8())
+        serveur.enqueue(MockResponse.Builder().code(200).addHeader("Content-Type", "application/json").body("""{"nom_affiche": "EXEMPLE"}""").build())
+        assertEquals("EXEMPLE", service.nomAffiche(null, "exemple"))
+        assertEquals("""{"nom":"exemple"}""", serveur.takeRequest().body?.utf8())
     }
 }
