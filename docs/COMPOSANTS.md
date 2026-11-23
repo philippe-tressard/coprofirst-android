@@ -20,8 +20,8 @@ Ce document porte les règles et le socle (navigation, session, écran, charte).
 - [`composants/presentation.md`](composants/presentation.md) — avis éphémère, pages à
   onglets, cloche, formats, texte du site, pièces jointes, feuille pleine ;
 - [`composants/contenus.md`](composants/contenus.md) — qui la lit et où, périmètres, aperçu
-  servi, personnes de l'annuaire, fil des réponses, signalement, fiche d'un sondage, accès,
-  file des validations.
+  servi, personnes de l'annuaire, fil des réponses, signalement, masquage d'un auteur, fiche
+  d'un sondage, accès, file des validations.
 
 Un chapitre neuf va dans le fichier de son thème ; aucun ne dépasse 500 lignes
 (`verifier-depot.sh`).
@@ -46,8 +46,9 @@ Un chapitre neuf va dans le fichier de son thème ; aucun ne dépasse 500 lignes
 4. **Ce que l'iOS laisse au site reste au site**, et l'écran le dit.
 5. **Pas de version dans une PR** : elle se déduit au build (`CLAUDE.md`, « Version »).
 6. **Fusion** : la PR s'arme en fusion automatique dès qu'elle est ouverte —
-   `gh pr merge <n> --auto --squash` ; elle fusionne seule quand les checks requis sont
-   verts (Dépôt, Build, Interface), et sa branche se supprime. Une CI rouge se corrige
+   `gh pr merge <n> --auto --squash` ; elle fusionne seule quand les checks requis de
+   `main` sont verts (leur liste se lit dans la protection de `main`, `CLAUDE.md`), et sa
+   branche se supprime. Une CI rouge se corrige
    dans la PR ; on ne désarme pas pour fusionner autrement.
 
 ## Un écran de menu, de bout en bout
@@ -107,7 +108,7 @@ inscription :
 | `RegistreDesMenus` | `RegistreDesMenus` | id de page → écran ; « Bientôt » sinon. COMPOSÉ des inscriptions (`RegistreGenere`, généré) : une page ou une fiche inscrite deux fois arrête l'app — et `RegistreTest` avant elle. |
 | `InscriptionDeMenu`, `EcranDeMenu` | — | Ce qu'un menu inscrit depuis son paquet (`fonctions/<menu>/Inscription.kt`) : `ecrans`, `fiches`. |
 | `ContexteDeMenu` | `ContexteDeMenu` | Ce qu'un écran reçoit. |
-| `DroitsOnglet`, `PagesOuvertes`, `OngletsDuSite.ouverts(page, droits)` | idem | Qui voit quelle page, quel onglet (tables générées). |
+| `DroitsOnglet`, `PagesOuvertes`, `OngletsDuSite.ouverts(page, droits)`, `OngletDuSite` | idem | Qui voit quelle page, quel onglet (tables générées) ; `OngletDuSite` : un onglet ouvert (`id`, `libelle`, sa réserve). `PagesOuvertes` recopie en partie le menu du site, faute de règle servie (#333). |
 | `PagesParDefaut`, `OrdrePages`, `Installation.pages` | idem | La barre : ordre servi (`pages_order`), libellés (`page_config_*`). `PagesParDefaut.horsMenu` : les pages sans entrée de menu (profil, notifications). |
 | `OngletsDuSite.descriptifs[page]`, `OngletsDuSite.routes[page]` | `Tables<Menu>.descriptifs`, `.routes` | Le descriptif et l'adresse sur le site de chaque onglet (générés). |
 | `EcranResidence` | `OngletsView` | La barre (4 pages + « Plus ») ; en haut, la cloche. En fenêtre large (≥ 600 dp, `PresentationNavigation.pour(largeur)`, jamais l'appareil), la barre latérale (`BarreLaterale`, repères `barre.<id>`) : toutes les pages, puis Profil et À propos (#69). Un pliable déplié EN LIVRE (`LocalPosture`, pli vertical) : le carnet — les intercalaires sur la tranche (`Intercalaires`, repères `carnet.<id>`, ceux de l'iOS), et le marque-page (`LocalMarquesPages`, pliable seul) qui rouvre la résidence où on l'avait refermée (#242). |
@@ -120,6 +121,7 @@ inscription :
 | `LocalJourDuCarnet` (`commun.miseenpage`) | — | Le jour ouvert dans le carnet d'un pliable (#242), `null` hors du carnet : le Fil y montre une journée par double page ; pincée, sa semaine (#286). Fourni par la résidence, gardé avec la page et dans le marque-page. |
 | `LocalPageDuCarnet` (`commun.miseenpage`) | `SelectionGardable` | La page de « Ma résidence » ouverte en face de son sommaire, dans le carnet (#287) : sa clé (`rubrique.plans`, `onglet.carnet`), `null` hors du carnet (les onglets). Fournie par la résidence, gardée avec la page et dans le marque-page, par son nom. |
 | `DoublePage(coupe?, gauche, droite?)` (`commun.miseenpage`) | `ListeEtFiche` | Deux pages côte à côte : à la largeur d'une liste puis un filet, ou de part et d'autre du pli (`coupe`) ; `droite == null`, la gauche prend tout, à la même place dans l'arbre. `PageEtColonneDeFiche` et la semaine du Fil (#286) s'y posent. |
+| `BarreDuHaut` (`contexte.barre`) | `.toolbar` | Ce que l'écran affiché déclare dans la barre du haut : titre, sous-titre, actions — une déclaration de chaque à la fois, retirée quand l'écran se quitte. Un écran le passe aux trois appels ci-dessous, il ne l'écrit pas. |
 | `ActionsDeBarre(contexte) { … }` | `.toolbar` | Les actions de la barre du haut, déclarées par l'écran affiché. |
 | `TitreDeBarre(contexte.barre, titre)` | `.navigationTitle` | Le titre de la barre du haut, posé par l'écran affiché (le numéro d'une affaire poussée) ; retiré quand il le quitte. |
 | `SousTitreDeBarre(contexte.barre, texte?)` | `.navigationSubtitle` | Le sous-titre, sous le titre (« 12 non lues ») ; `null` : aucun. Posé par l'écran affiché, retiré quand il le quitte — dans la barre de la résidence comme dans celle d'une `FeuillePleine` (repère `barre.sousTitre`). |
@@ -134,6 +136,7 @@ inscription :
 | `SessionOuverte.appeler { base, client -> … }` | LA porte des requêtes d'une résidence ouverte : le client généré, sur la session HTTP de l'hôte (cookies), hors du fil principal ; toute erreur en sort en `ErreurService`. |
 | `ErreurService` (`ErreurService`) | `SessionExpiree`, `Introuvable`, `TropDEssais`, `Injoignable`, `Refus(phraseServie, statut)` (la phrase `detail` du serveur), `Inattendue`… `ErreurService.depuis(e)` ramène toute erreur à un cas. |
 | `Installation` | La résidence : `nom`, `adresse`, `versionContrat`, `codePalette`. |
+| `VersionContrat`, `VersionContrat.PLANCHER`, `Installation.sert(version)` | La version du contrat servie, comparable ; le plancher est celui du client généré. Un geste plus récent que le plancher s'offre derrière une PORTE (une constante `VersionContrat` lue par `Installation.sert`) ; une porte que le plancher atteint est refusée (`InstallationTest`). |
 | `Renouvellement` (`Renouvellement`) | LA porte du renouvellement (#13) : un 401 dans `appeler` (client généré, ou fichier protégé) renouvelle la session — un seul POST /auth/refresh à la fois par hôte — puis rejoue la requête une fois. Un écran n'a rien à faire : un renouvellement refusé sort en `SessionExpiree`. |
 | `LecturesGardees`, `GarderLesLectures` (`LecturesGardees`, `GarderLesLectures`) | La consultation hors ligne (#28) : la porte, dans le client de chaque hôte, garde les lectures de la liste blanche (`LectureGardee`) et, en consultation, les sert et refuse tout le reste avant qu'il parte — `ErreurService.HorsLigne`. Un écran n'a rien à faire pour être relu hors ligne. |
 | `CoffreDuCompte`, `SessionsGardees` (`CoffreDuCompte`, `Trousseau`) | Le courriel retenu (chiffré, Keystore) et la session gardée sous la biométrie : propres à l'entrée (`ParcoursEntree`) ; un écran de menu ne les emploie pas. |
@@ -158,6 +161,7 @@ class ServiceProfilApi(private val session: SessionOuverte) : ServiceProfil {
 | `MessageErreur(erreur, reessayer?)` | `MessageErreur` | Une erreur en une phrase (celle du serveur s'il en donne une), sur `dangerFond`, annoncée au lecteur d'écran. |
 | `MessageErreur(texte, reessayer?)` | `MessageErreur(texte:)` | La même, pour une phrase que l'écran compose (« 500 notifications sur 1200 ont été supprimées ; … » puis la raison) : même mise en forme, même « Réessayer ». La version `erreur` passe par elle. |
 | `ErreurService.phrase()` | `.phrase` | La phrase d'une erreur, en `@Composable`. |
+| `Modifier.cliquable(action, onClick)` | — | Une rangée qui s'ouvre d'un toucher : rôle de bouton, et ce qu'elle fait dit au lecteur d'écran (« Ouvrir la fiche »). Un `clickable` nu ne le dit pas. |
 | `EtatVide(titre, icone?, explication?)` | `ContentUnavailableView` | Une liste vide, dite. |
 | `commun.texte.Separateur` : `point`, `tiret`, `fleche` | `Separateur` | Les séparateurs du site (` · `, ` — `, ` → `), GÉNÉRÉS depuis `separateurs` : une espace sécable avant, insécable après — la ligne se coupe devant, jamais après (#117). Jamais recopiés : `joinToString(Separateur.point)`, `"$a${Separateur.tiret}$b"`. Une ressource ne lit pas une constante : elle écrit ` ·\u00A0`, et `verifier_separateurs.py` la confronte à la table (divergence d'Android). |
 | `commun.fil` : `CarteDuFil(element, session?)`, `ElementDuFil`, `MetaDuFil`, `TextesFil`, `ApercuDuFil.elements()` | `CarteDuFil`, `Apercu.fil` | La carte d'un élément du fil et son modèle, hors du menu Fil (#153) : le fil la pose, et « En savoir plus » montre trois cartes du fil inventé (`ApercuDuFil`), sans session ni toucher. |
@@ -247,14 +251,3 @@ plus lents, en regard du délai commun (`DELAI_GESTE_MS`, 10 s). Au poste :
 | `NaturesDuFil.parType`, `NatureDuFil.de(type)`, `NatureDuFil.inconnue` | **Générée** (`naturesDuFil`) : ce que le fil montre d'un type d'élément — `libelle`, `couleur` et `fond` (des JETONS de `Couleurs` : `nature.couleur(LocalCouleurs.current)`), `icone`. Un type inconnu : neutre. |
 | `NaturesAffaire.toutes`, `NatureAffaire` | **Générée** (`naturesAffaire`, `teinteNature`) : les natures d'une affaire dans l'ordre du site — `code`, `libelle`, `icone`, `badge` (pour `PastilleTeinte`). |
 | `Mouvement.sortie` | La courbe d'entrée (ease-out marquée) : passage d'un écran, apparition d'une rangée, fondu d'un aperçu. |
-
-## À venir dans la couche commune
-
-Tables de libellés — 15b ; la cloche
-qui rouvre une notification touchée — #23. Composants de l'iOS employés par UN seul menu
-pour l'heure, à monter ici dès qu'un deuxième les emploie : `ChampSaisie` (Espace CS),
-`FlowEtiquettes` (Communauté) ; et la pastille « où suis-je » (`PastilleOuSuisJe` : logo et
-nom de la résidence dans la barre du haut, changer de résidence). Demandés par le fil
-(#11) : un geste de `ContexteDeMenu` qui ouvre une autre page de la barre — et un élément
-précis — depuis un écran (fait : la porte, #85) ; le jour et le mois en toutes lettres
-dans `FormatsDuSite` (l'en-tête d'un jour du fil). Le suivi : #15, #11.

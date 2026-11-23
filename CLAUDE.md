@@ -88,7 +88,8 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   constantes du serveur générées ; son `R` : `fr.coprofirst.app.partage.R`). SDK, Java et lint de tout module
   Android : `reglagesCommuns` du build racine ; le périmètre de `verifier-depot.sh` se lit
   dans `settings.gradle.kts`.
-- **Composants communs** : leur API est `docs/COMPOSANTS.md` — le contrat des écrans ;
+- **Composants communs** : leur API est `docs/COMPOSANTS.md` — le contrat des écrans, confronté au code par
+  `scripts/test_composants.py` (#321 : identifiants cités, partagés nommés, aucun « à venir ») ;
   un écran la consomme sans la modifier, un besoin devient un ticket. Un écran = un
   paquet `fonctions/<menu>` qui s'inscrit lui-même (`Inscription.kt`, ses tables par
   `scripts/generer_tables_<menu>.py`) : il ne touche ni la navigation ni le build (#109).
@@ -99,9 +100,11 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   le refuse, sauf dans les dispenses nommées de `DISPENSES_REQUETE` : `PreuveHote.kt` (le
   fichier d'association n'est pas une route de l'API), `commun/pieces/FichierProtege.kt`
   (les fichiers de `/uploads/`, servis derrière la session hors du contrat ; l'hôte de la
-  session seul) et `entree/vitrine/VitrineDuSite.kt` (le contenu public de la vitrine,
-  relu à chaque lancement, sans cookie, à une adresse constante) — `scripts/test_claude_md.py`
-  tient cette liste égale à celle du script.
+  session seul), `entree/vitrine/VitrineDuSite.kt` (le contenu public de la vitrine,
+  relu à chaque lancement, sans cookie, à une adresse constante) et `NulsExplicites.kt` (le
+  décorateur du client généré qui envoie un champ à `null`, #209) — `scripts/test_claude_md.py`
+  tient cette liste égale à celle du script. Ces règles lisent `src/main` et `src/debug` de
+  chaque module, `:client-api` compris (#319).
 - **Mot de passe** : un seul chemin, la garde de l'hôte (`GardeHote`, comme l'iOS) —
   un hôte jamais vu se confirme avant tout envoi. Le plancher du contrat (`VERSION_CONTRAT_PLANCHER`)
   est généré depuis `contrat/openapi.json` ; une installation qui sert un contrat plus
@@ -109,7 +112,8 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
 - **Sauvegarde** : rien ne quitte l'appareil (`ressources-communes/xml/regles_extraction.xml`,
   `regles_sauvegarde.xml`, communes au téléphone et à la montre) — la session se relit par l'API.
 - **Contrôles** : `bash scripts/verifier-depot.sh` (500 lignes, encodage, modes,
-  syntaxe, LICENSE, couleurs et requêtes écrites à la main) et `reuse lint`, rejoués par le hook
+  syntaxe, LICENSE, couleurs et requêtes écrites à la main, règles servies recopiées — `scripts/test_regles_servies.py`, #334,
+  pendant de celui de l'iOS) et `reuse lint`, rejoués par le hook
   pre-commit (armé par `git config core.hooksPath .githooks`) et par la CI ;
   `bash scripts/pipeline.sh` (la CI hors émulateur, lint en erreurs ; `pipeline.sh <tâches>` pour une partie) —
   **au poste, aucun `./gradlew` lourd en direct** : il passe par `pipeline.sh`, sous le verrou commun ; tests d'interface (`app/src/androidTest`, serveur local en HTTPS,

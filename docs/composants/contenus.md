@@ -117,6 +117,18 @@ SignalementAuConseil(signale, envoyer = { r, motif ->
 }, fermer = { signale = null })
 ```
 
+## Masquer un auteur — `fr.coprofirst.app.commun.masquages`
+
+Masquer, pour soi seul, ce que publie un résident (#282) : rien n'est supprimé, il n'en est
+pas averti, et le filtre est au serveur — l'app ne le refait pas, ni ne redit qui ne se
+masque pas (le refus du serveur porte sa phrase).
+
+| API | Pendant iOS | Usage |
+|---|---|---|
+| `AuteurAMasquer.de(id, nom, moi)` | `AuteurAMasquer` | L'auteur qu'un geste propose de masquer ; `null` sans identifiant ni nom servis, ou pour soi : le geste ne s'offre pas. |
+| `ConfirmationMasquage(auteur, masquer, fermer)` | `ConfirmationMasquage` | La question du site (« Masquer ce que publie… ») : paraît tant que `auteur` n'est pas `null` ; « Masquer » ferme et rend l'auteur à l'écran, qui envoie, dit l'avis et relit sa liste. Repères `ReperesMasquage`. |
+| `ServiceMasquages`, `ServiceMasquagesApi(session)` | `ServiceMasquages` | `masques()`, `masquer(auteur)`, `demasquer(auteurId)` — GET, POST, DELETE /masquages par le client généré. |
+
 ## Fiche d'un sondage — `fr.coprofirst.app.commun.detail.sondage`
 
 | API | Pendant iOS | Usage |
