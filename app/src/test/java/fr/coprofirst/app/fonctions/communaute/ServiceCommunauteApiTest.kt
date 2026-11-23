@@ -54,10 +54,10 @@ class ServiceCommunauteApiTest {
     fun leMotifDeRefusEstCeluiDuServeur() = runTest {
         repondre(
             200,
-            """{"id": 3, "nom": "Durand", "prenom": "Camille", "email": "c@residence.exemple.test", "statut": "copropriétaire_résident",
+            """{"id": 3, "nom": "Exemple", "prenom": "Camille", "email": "c@residence.exemple.test", "statut": "copropriétaire_résident",
                "role": "résident", "actif": true, "onboarding_complete": true, "onboarding_etape": 0,
                "preferences_notifications": "{}", "cree_le": "2026-01-01T00:00:00Z",
-               "nom_affiche": "Camille Durand", "nom_aide_affiche": "", "communaute_motif_refus": "Suspendu jusqu'au 20/11."}""",
+               "nom_affiche": "Camille Exemple", "nom_aide_affiche": "", "communaute_motif_refus": "Suspendu jusqu'au 20/11."}""",
         )
         val moi = service.moi()
         assertEquals("GET /api/auth/me", requete().first)
