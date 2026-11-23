@@ -80,11 +80,9 @@ for AAB in app/build/outputs/bundle/release/app-release.aab montre/build/outputs
 done
 
 # Le contrôle avant soumission, sur ce commit et ce build (#4) : tout vert, il pose et pousse
-# `v<version>`. Son verdict ne suffit pas à lui seul : la porte relit l'étiquette, et retire
-# les AAB si elle manque — un AAB non contrôlé ne reste jamais prêt à téléverser (#322).
+# `v<version>`. La porte juge son verdict ET relit l'étiquette ; hors du vert, elle retire les
+# AAB — un AAB non contrôlé ne reste jamais prêt à téléverser (#322).
 python3 -I scripts/controle_avant_soumission.py --taguer --rapport build/controle-soumission.md
-CONTROLE=$?
-bash scripts/pret-a-envoyer.sh "$VERSION" app/build/outputs/bundle/release/app-release.aab \
+bash scripts/pret-a-envoyer.sh "$?" "$VERSION" app/build/outputs/bundle/release/app-release.aab \
   montre/build/outputs/bundle/release/montre-release.aab || exit $?
-[ "$CONTROLE" = 0 ] || inconnu "contrôle avant soumission en sortie $CONTROLE, étiquette pourtant posée : relire build/controle-soumission.md"
 echo "   rapport à coller dans la note de publication : build/controle-soumission.md"

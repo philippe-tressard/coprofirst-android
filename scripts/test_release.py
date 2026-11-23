@@ -45,22 +45,33 @@ class PorteDEnvoi(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.dossier)
 
-    def porte(self) -> subprocess.CompletedProcess:
-        return subprocess.run(["bash", str(PORTE), "0.8.9", str(self.aab)], cwd=self.dossier,
+    def porte(self, controle: str = "0") -> subprocess.CompletedProcess:
+        return subprocess.run(["bash", str(PORTE), controle, "0.8.9", str(self.aab)], cwd=self.dossier,
                               capture_output=True, text=True, env=SANS_GIT)
 
-    def test_sans_etiquette_les_aab_sont_retires(self):
+    def test_vert_sans_etiquette_les_aab_sont_retires(self):
         self.assertEqual(self.porte().returncode, 1)
         self.assertFalse(self.aab.exists())
 
-    def test_une_autre_etiquette_ne_suffit_pas(self):
+    def test_vert_avec_une_autre_etiquette_ne_suffit_pas(self):
         git(self.dossier, "tag", "v0.8.8")
         self.assertEqual(self.porte().returncode, 1)
         self.assertFalse(self.aab.exists())
 
-    def test_avec_l_etiquette_les_aab_restent(self):
+    def test_rouge_avec_l_etiquette_les_aab_sont_retires(self):
+        # Une relance sur un commit déjà étiqueté : « existe déjà », le contrôle sort rouge.
         git(self.dossier, "tag", "-a", "v0.8.9", "-m", "soumise")
-        self.assertEqual(self.porte().returncode, 0)
+        self.assertEqual(self.porte("1").returncode, 1)
+        self.assertFalse(self.aab.exists())
+
+    def test_inconnu_les_aab_sont_retires(self):
+        git(self.dossier, "tag", "-a", "v0.8.9", "-m", "soumise")
+        self.assertEqual(self.porte("2").returncode, 2)
+        self.assertFalse(self.aab.exists())
+
+    def test_vert_avec_l_etiquette_les_aab_restent(self):
+        git(self.dossier, "tag", "-a", "v0.8.9", "-m", "soumise")
+        self.assertEqual(self.porte("0").returncode, 0)
         self.assertTrue(self.aab.exists())
 
 

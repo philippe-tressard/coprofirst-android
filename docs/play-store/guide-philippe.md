@@ -73,8 +73,9 @@ verte sur ce commit (tests d'interface et parcours sombre au plus grand texte co
 contrat servi en production, fiche, « Sécurité des données », permissions du manifeste
 fusionné de cette version, notes de version (`docs/play-store/notes/<base>.txt`, `0.8.txt`),
 aucun ticket `bloque-soumission` ouvert. Tout vert, il pose et pousse le tag `v<version>` ;
-sinon les AAB sont retirés (`scripts/pret-a-envoyer.sh`, #322) : n'existent à la fin que des
-AAB contrôlés, à envoyer. Le rapport (`build/controle-soumission.md`) se colle dans la note
+sinon — rouge, ou INCONNU (réseau, `gh`) — les AAB sont retirés (`scripts/pret-a-envoyer.sh`,
+#322) : n'existent à la fin que des AAB contrôlés, à envoyer. Lever la cause, puis relancer la
+commande. Un tag posé mais pas poussé (le rapport le dit) : `git tag -d v<version>`, puis relancer. Le rapport (`build/controle-soumission.md`) se colle dans la note
 de publication.
 
 L'état publié se lit dans les étiquettes : `git tag -l 'v*'` (chacune posée par un contrôle
