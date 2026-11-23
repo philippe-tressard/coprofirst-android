@@ -52,8 +52,15 @@ unset MDP
 # Les permissions du manifeste FUSIONNÉ (téléphone, montre) : celles que la déclaration de la
 # section « Sécurité des données » nomme, et elles seules (#327). Une bibliothèque montée de
 # version peut en ajouter une sans toucher au dépôt.
-python3 -I scripts/verifier_manifeste_fusionne.py \
-  || echec "permission du manifeste fusionné absente de docs/play-store/securite-des-donnees.md (#327)"
+# Le manifeste jugé est celui de CE build : sa version (base + nombre de commits, build racine)
+# est exigée ; un manifeste d'un autre build, ou illisible, rend INCONNU.
+VERSION="$(sed -n 's/^coprofirst\.version\.base=//p' gradle.properties).$(git rev-list --count HEAD)"
+python3 -I scripts/verifier_manifeste_fusionne.py --version "$VERSION"
+case $? in
+  0) ;;
+  1) echec "permission du manifeste fusionné absente de docs/play-store/securite-des-donnees.md (#327)" ;;
+  *) inconnu "manifeste fusionné de $VERSION illisible (#327)" ;;
+esac
 
 # Le téléphone et la montre (#207) : une même app Google Play, deux artefacts, une clé.
 for AAB in app/build/outputs/bundle/release/app-release.aab montre/build/outputs/bundle/release/montre-release.aab; do
