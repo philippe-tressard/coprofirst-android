@@ -45,6 +45,8 @@ SPDX-License-Identifier = "AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 # Les tracés des icônes du site (#183), joints à la release de coprofirst et recopiés à
 # l'octet par scripts/importer-contrat.sh : Lucide (ISC ; MIT pour la part issue de
 # Feather), le logo WhatsApp de Simple Icons (CC0-1.0), l'icône `stairs` du projet.
+# La part AGPL (l'icône du projet) n'a pas la permission magasins : décision attendue de
+# l'auteur (#337), nommée comme exception par scripts/test_spdx_permission.py.
 [[annotations]]
 path = "contrat/icones-svg.json"
 precedence = "override"
