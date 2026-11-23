@@ -24,7 +24,7 @@ class PreuveHoteTest {
         assertEquals(PreuveHote.Declaree, PreuveHote.juger(200, """{"applinks":{"details":[{"appIDs":["$app"]}]}}"""))
         assertEquals(PreuveHote.Declaree, PreuveHote.juger(200, """{"applinks":{"details":[{"appID":"$app"}]}}"""))
         assertEquals(PreuveHote.Declaree, PreuveHote.juger(200, """{"webcredentials":{"apps":["$app"]}}"""))
-        assertEquals(PreuveHote.SansLApp, PreuveHote.juger(200, """{"applinks":{"details":[{"appIDs":["AUTRE.app"]}]}}"""))
+        assertEquals(PreuveHote.SansLApp, PreuveHote.juger(200, """{"applinks":{"details":[{"appIDs":["AUTRE1234.fr.coprofirst.autre"]}]}}"""))
         assertEquals(PreuveHote.Absente, PreuveHote.juger(404, """{"webcredentials":{"apps":["$app"]}}"""))
         assertEquals(PreuveHote.Absente, PreuveHote.juger(200, "<html>"))
         assertEquals(PreuveHote.Absente, PreuveHote.juger(200, "x".repeat(PreuveHote.PLAFOND + 1)))
