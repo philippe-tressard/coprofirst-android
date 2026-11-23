@@ -21,10 +21,7 @@ RACINE = pathlib.Path(__file__).resolve().parent.parent
 PERMISSION = "AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins"
 #: chemin (annotation de REUSE.toml ou fichier) → raison. Une décision de l'auteur, seul
 #: titulaire des droits, à prendre : elle se retire quand elle est prise.
-EXCEPTIONS = {
-    "contrat/icones-svg.json": "décision attendue de Philippe (#337) : la part AGPL de cette pièce "
-                               "jointe du serveur (l'icône `stairs`) porte-t-elle la permission magasins ?",
-}
+EXCEPTIONS: dict[str, str] = {}
 #: La balise s'écrit en deux morceaux : écrite d'un bloc, REUSE lirait ce motif comme une déclaration.
 BALISE = "SPDX-License-" + "Identifier"
 EN_TETE = re.compile(BALISE + r":\s*(.+?)\s*(?:-->|\*/|$)", re.M)
