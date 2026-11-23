@@ -42,6 +42,12 @@ JUGES = re.compile(r"\.(kt|kts|xml|md|sh|py|yml|properties)$")
 PROPRIETAIRE = "philippe-tressard"
 DEPOT = "coprofirst-android"
 PLAFOND = 12
+#: Un marqueur entre guillemets (« d'ici là ») CITE la règle, il n'attend rien : il ne compte pas.
+CITATION = re.compile(r"«[^»\n]*»")
+
+
+def sans_citations(texte: str) -> str:
+    return CITATION.sub("", texte)
 
 
 def passage(lignes: list[str], i: int, debut: int) -> str:
@@ -86,7 +92,7 @@ def fautes(textes: dict[str, str]) -> tuple[list[str], int]:
                 continue
             mentions += 1
             lu = passage(lignes, i, m.start())
-            etape = ETAPE.search(lu)
+            etape = ETAPE.search(sans_citations(lu))
             if etape and not TICKET.search(lu):
                 refus.append(f"{chemin}:{i + 1} : divergence d'étape (« {etape.group(0)} ») sans le ticket qui la lève")
     return refus, mentions
@@ -102,9 +108,9 @@ def tickets_cites(textes: dict[str, str]) -> dict[str, list[str]]:
         for i, ligne in enumerate(lignes):
             if MENTION.search(ligne):
                 lu = passage(lignes, i, MENTION.search(ligne).start())
-                if not ETAPE.search(lu):
+                if not ETAPE.search(sans_citations(lu)):
                     continue          # définitive : ses tickets disent d'où elle vient
-            elif ATTENTE.search(ligne):
+            elif ATTENTE.search(sans_citations(ligne)):
                 debut = debut_du_bloc(lignes, i)
                 lu = "\n".join(lignes[debut:i]) + "\n" + passage(lignes, i, 0)
             else:
@@ -178,6 +184,10 @@ class Divergences(unittest.TestCase):
             "b.kt": "/**\n * ⚠️ Divergence déclarée : un toucher n'ouvre pas encore son élément (#23).\n */\nval y = 2 // #98\n",
             "d.kt": "// Divergence déclarée : l'iOS ouvre le navigateur ; ici le fil, comme le demande #147.\n",
             "c.kt": "// la ligne d'une liste pas encore composée (#119)\n// Le mien (#138) : servi.\n",
+            # La règle elle-même cite ses marqueurs entre guillemets : elle n'attend rien.
+            "CLAUDE.md": "- Une divergence se déclare (« Divergence déclarée ») : d'étape (« pas encore »,\n"
+                         "  « d'ici là »), avec son ticket — test_divergences.py (#336, #338).\n",
+            "c.yml": "      - name: Tickets attendus (un « d'ici là » qui cite un ticket clos, #338)\n",
         })
         self.assertEqual(sorted(cites), ["coprofirst-android#23", "coprofirst-android#40", "coprofirst-ios#213"])
 
