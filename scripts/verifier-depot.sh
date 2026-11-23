@@ -18,7 +18,8 @@
 #   7 bis. aucun format de date ou de nombre hors de FormatsDuSite ;
 #   7 ter. aucun HTML rendu par une vue web ou le lecteur HTML d'Android : TexteDuSite ;
 #   7 quater. aucune version écrite à la main (elle se déduit de git) ;
-#   7 quinquies. aucun hôte fictif sur un vrai domaine (exemple.fr…), libellés et API simulée (debug) compris ;
+#   7 quinquies. aucun hôte hors des noms réservés et des vrais domaines déclarés (liste
+#      blanche, verifier_hotes.py), libellés, tests et API simulée compris ;
 #   7 sexies. aucun `performClick` dans les tests d'interface hors du geste commun, ni
 #      d'attente recopiée hors des attentes communes (#139) ;
 #   7 septies. la règle des tests d'interface est la v2 (junit4.v2), jamais la v1 ;
@@ -313,17 +314,14 @@ for m in $modules; do
 done
 
 # Les hôtes FICTIFS sont des noms réservés (RFC 2606/6761 : `.test`, `.invalid`,
-# `example.com`), jamais `exemple.fr` ni `exemple.org`, qui sont de VRAIS domaines : un
-# test qui partirait vers eux enverrait des cookies de test à un tiers (constaté, #57),
-# et un libellé d'aide AFFICHÉ se recopie (standards/03 §8 quater) : aucune dispense.
-HOTE_REEL='[Ee][Xx][Ee][Mm][Pp][Ll][Ee]\.([Ff][Rr]|[Oo][Rr][Gg]|[Cc][Oo][Mm])\b'
-autotest_motif "hôtes fictifs" "$HOTE_REEL" 'val a = "residence.exemple.fr"' 'val a = "residence.exemple.test"'
-autotest_motif "hôtes fictifs (casse)" "$HOTE_REEL" 'url("  Residence.Exemple.FR ")' 'url("  Residence.Exemple.TEST ")'
-while IFS= read -r f; do
-  [ -f "$f" ] || continue
-  motif=$(premier_motif "$HOTE_REEL" "$f")
-  [ -z "$motif" ] || echec "$f : hôte fictif sur un VRAI domaine ($motif) — un nom réservé (.test, .invalid)"
-done < <(grep -E '^((app|montre)/src/(main|debug|test|androidTest)|client-api/src/test)/.*\.(kt|xml)$' <<< "$FICHIERS")
+# `example.com`), jamais `exemple.fr` ni `x.fr`, enregistrables : un test qui partirait vers
+# eux enverrait des cookies de test à un tiers (constaté, #57), et un libellé d'aide AFFICHÉ
+# se recopie (standards/03 §8 quater). Une LISTE BLANCHE (#325) : noms réservés et vrais
+# domaines déclarés, sur le périmètre de settings.gradle.kts — scripts/verifier_hotes.py.
+python3 -I scripts/verifier_hotes.py --autotest >/dev/null \
+  || echec "verifier_hotes.py : autotest en échec"
+python3 -I scripts/verifier_hotes.py \
+  || echec "un hôte n'est ni réservé ni déclaré (python3 -I scripts/verifier_hotes.py)"
 
 # Les générateurs du build (palettes, logo) : leurs tests, dont la génération des
 # fichiers recopiés. Chaque `scripts/test_*.py` versionné est joué.

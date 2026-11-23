@@ -96,7 +96,7 @@ class AnnuaireSimuleCS {
 
         /** GET /admin/annuaire/cs → `CompositionConseil`. */
         const val CONSEIL = """
-            {"ag_annee": 2026, "ag_date": "2026-06-12", "whatsapp_url": "https://chat.whatsapp.com/exemple",
+            {"ag_annee": 2026, "ag_date": "2026-06-12", "whatsapp_url": "https://chat.whatsapp.example/exemple",
              "membres": [
                {"id": 1, "genre": "Mme", "prenom": "Camille", "nom": "Exemple", "nom_affiche": "Camille EXEMPLE",
                 "batiment_id": 1, "batiment_nom": "A", "etage": 2, "etage_libelle": "2ème étage",

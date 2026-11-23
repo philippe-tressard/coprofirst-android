@@ -37,7 +37,7 @@ class AnnuaireSimule : ServiceAnnuaire {
                     ),
                 ),
             ),
-            whatsappUrl = "https://chat.whatsapp.com/exemple",
+            whatsappUrl = "https://chat.whatsapp.example/exemple",
         )
     }
 }

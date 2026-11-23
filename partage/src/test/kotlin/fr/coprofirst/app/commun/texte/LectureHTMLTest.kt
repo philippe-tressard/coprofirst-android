@@ -23,13 +23,13 @@ class LectureHTMLTest {
             listOf(
                 JetonHTML.Ouvrante("p", emptyMap()),
                 JetonHTML.Texte("a < b"),
-                JetonHTML.Ouvrante("a", mapOf("href" to "https://x.fr/?a=1&b=2", "title" to "un > deux", "disabled" to "")),
+                JetonHTML.Ouvrante("a", mapOf("href" to "https://x.exemple.test/?a=1&b=2", "title" to "un > deux", "disabled" to "")),
                 JetonHTML.Texte("lien"),
                 JetonHTML.Fermante("a"),
                 JetonHTML.Ouvrante("br", emptyMap()),
                 JetonHTML.Fermante("p"),
             ),
-            LectureHTML.jetons("<P>a < b<A HREF=\"https://x.fr/?a=1&amp;b=2\" title='un > deux' disabled>lien</a><br/></p>"),
+            LectureHTML.jetons("<P>a < b<A HREF=\"https://x.exemple.test/?a=1&amp;b=2\" title='un > deux' disabled>lien</a><br/></p>"),
         )
     }
 
