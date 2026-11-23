@@ -13,7 +13,8 @@ import fr.coprofirst.app.session.SessionOuverte
  * qui choisit un lieu le reçoit ; son service de menu peut aussi le réaliser par délégation.
  *
  * ⚠️ Divergence déclarée : l'iOS range `lieu` dans `ServiceApercus`, avec « qui la lira » et
- * « Nom affiché », que l'Android ne porte pas encore — il vit ici, près de son seul usage.
+ * « Nom affiché » ; l'Android donne à chacun son service (`ServicePerimetres`, `ServiceLectures`,
+ * `ServiceNoms`), près de son usage.
  */
 interface ServicePerimetres {
     /** GET /perimetres : les périmètres ACTIFS, dans l'ordre de l'arbre servi. */

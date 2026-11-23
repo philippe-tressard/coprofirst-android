@@ -18,8 +18,8 @@ package fr.coprofirst.app.navigation
  * | tout autre chemin | le fil |
  *
  * ⚠️ Divergence déclarée : l'iOS ouvre un chemin inconnu dans le navigateur (`.navigateur`) ;
- * l'Android revient au fil, comme le demande #147 — et l'ancre d'un message (`#msg-N`) n'est
- * pas suivie, la fiche d'une affaire ne sachant pas encore s'y placer.
+ * l'Android revient au fil, comme le demande #147. L'ancre d'un message (`#msg-N`) n'est pas
+ * suivie, comme l'iOS, qui la lit sans faire défiler la fiche jusqu'à lui.
  */
 object LienDuSite {
     /** Le fil : là où revient un lien qui ne vise rien que l'app porte. */

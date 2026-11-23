@@ -29,10 +29,11 @@ enum class PreuveHote {
 
     companion object {
         /**
-         * L'app telle que les installations la déclarent. Chaque installation sert
-         * `/.well-known/apple-app-site-association` depuis coprofirst#2459 ; la preuve
-         * propre à Android (`assetlinks.json`) viendra avec les liens d'application (#7).
-         * D'ici là, la même preuve que l'iOS : elle dit qu'un hôte est une installation.
+         * L'app telle que les installations la déclarent, dans le fichier que chacune sert
+         * (`/.well-known/apple-app-site-association`) : la preuve de l'iOS, gardée par l'Android
+         * pour dire qu'un hôte est une installation — une seule lecture pour les deux apps.
+         * `assetlinks.json`, lui, ne sert qu'à Android, qui le lit seul pour vérifier les liens
+         * d'application (le manifeste, `autoVerify`).
          */
         const val IDENTIFIANT_APP = "GUX8KASNTG.fr.coprofirst.app"
 

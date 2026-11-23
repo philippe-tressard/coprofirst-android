@@ -6,7 +6,6 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 <resources xmlns:tools="http://schemas.android.com/tools" tools:locale="fr">
     <string name="nom_app">CoproFirst</string>
     <string name="retour">Retour</string>
-    <!-- L'installation suspendue (Registre R6, #233) — non publié par le site : divergence déclarée (Bandeau.kt). -->
     <!-- La colonne de fiche d'une fenêtre large, vide (#69, comme l'iPad). -->
     <string name="colonne_aucune_selection">Aucune sélection</string>
     <string name="reessayer">Réessayer</string>

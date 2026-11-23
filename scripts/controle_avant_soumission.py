@@ -93,7 +93,7 @@ def verdict_ci(executions: list[dict], requis: list[str]) -> tuple[int, list[str
 def cle_des_notes(version: str) -> str | None:
     """La clé des notes d'une version : sa BASE (`0.8` pour `0.8.512`), seule partie connue
     avant le commit soumis (#272). Le dernier nombre est le nombre de commits de `main`
-    (`app/build.gradle.kts`) : le commit qui écrit les notes le change lui-même. La base ne
+    (build racine, `build.gradle.kts`) : le commit qui écrit les notes le change lui-même. La base ne
     bouge que sur une décision de sortie (`coprofirst.version.base`) : une sortie, des notes."""
     m = re.fullmatch(r"(\d+\.\d+)\.\d+", version)
     return m.group(1) if m else None

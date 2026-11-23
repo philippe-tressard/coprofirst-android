@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 #
 # importer-contrat.sh — recopie depuis la release de coprofirst au PLANCHER
-# (contrat/plancher.env) les pièces jointes dont l'app se génère, et en écrit la
-# provenance : openapi.json (le client d'API), tables-clients.json (la charte, les
-# tables du site) et constantes-clients.json (les constantes de l'API, depuis v3.102.0).
+# (contrat/plancher.env) les pièces jointes dont l'app se génère (la liste : `PIECES`,
+# plus bas — le client d'API, la charte et les tables du site, les constantes de l'API, les
+# tracés des icônes) et leurs textes de licence (`LICENCES`), et en écrit la provenance.
 #   --verifier : n'écrit rien ; échoue si le contrat versionné diffère de la release
 #                (la CI le rejoue : rien de généré ne se retouche à la main).
 # Une release illisible rend INCONNU (sortie 2), jamais OK.
