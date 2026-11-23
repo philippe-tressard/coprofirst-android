@@ -111,7 +111,8 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
 - **Sauvegarde** : rien ne quitte l'appareil (`ressources-communes/xml/regles_extraction.xml`,
   `regles_sauvegarde.xml`, communes au téléphone et à la montre) — la session se relit par l'API.
 - **Contrôles** : `bash scripts/verifier-depot.sh` (500 lignes, encodage, modes,
-  syntaxe, LICENSE, couleurs et requêtes écrites à la main) et `reuse lint`, rejoués par le hook
+  syntaxe, LICENSE, couleurs et requêtes écrites à la main, règles servies recopiées — `scripts/test_regles_servies.py`, #334,
+  pendant de celui de l'iOS) et `reuse lint`, rejoués par le hook
   pre-commit (armé par `git config core.hooksPath .githooks`) et par la CI ;
   `bash scripts/pipeline.sh` (la CI hors émulateur, lint en erreurs ; `pipeline.sh <tâches>` pour une partie) —
   **au poste, aucun `./gradlew` lourd en direct** : il passe par `pipeline.sh`, sous le verrou commun ; tests d'interface (`app/src/androidTest`, serveur local en HTTPS,
