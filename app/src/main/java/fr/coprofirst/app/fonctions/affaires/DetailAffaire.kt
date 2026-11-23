@@ -18,8 +18,8 @@ import java.time.Instant
  * fiche la montre (GET /tickets/{id}, ses suites, ses messages), comme l'iOS
  * (`DetailAffaire`). Les gestes permis sont SERVIS (`peut_*`) : jamais déduits du profil.
  *
- * ⚠️ Pour l'heure dans le paquet des affaires (la fiche se déclare à la porte : `"affaire"`) : l'Espace CS (#24) la réclamera par un
- * ticket `commun` quand il ouvrira une affaire à son tour.
+ * Elle vit dans le paquet des affaires et se déclare à la porte (`"affaire"`) : un autre menu
+ * l'ouvre par elle, sans la déplacer — l'Espace CS (`PorteAffaire.kt`).
  */
 data class DetailAffaire(
     val id: Int,

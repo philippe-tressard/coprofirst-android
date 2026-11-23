@@ -51,8 +51,8 @@ Chargement(charger = { ArbreDesPerimetres(service.perimetres()) }, squelette = {
 }
 ```
 
-⚠️ Divergence déclarée : l'iOS range `lieu` dans `ServiceApercus` (avec « qui la lira » et
-« Nom affiché », pas encore portés) ; ici, il vit dans `ServicePerimetres`.
+⚠️ Divergence déclarée : l'iOS range `lieu` dans `ServiceApercus`, avec « qui la lira » et
+« Nom affiché » ; ici, chacun a son service (`ServicePerimetres`, `ServiceLectures`, `ServiceNoms`).
 
 ## Aperçu servi — `fr.coprofirst.app.commun.apercu`
 
@@ -65,8 +65,8 @@ une fois.
 | `ApercuServi(entree, demander, connue?) { valeur -> … }` | `ApercuServi` | `valeur` : celle que le serveur a rendue pour `entree`, ou la dernière tant qu'il n'a pas répondu ; `null` avant la première. Fondu court (aucun sous « Supprimer les animations »). Le contenu réserve sa place. |
 | `EtatApercu(connue?, pause?)` : `saisie(entree, portee, demander)`, `valeur`, `abandonner()` | `EtatApercu` | Délai de 150 ms (`DELAI_MS`, une rafale = une demande), réponse périmée ignorée, valeur déjà servie jamais redemandée, échec tu. |
 
-⚠️ Divergence déclarée : l'iOS ne fait pas partir la demande hors ligne ni en consultation ;
-l'Android n'a pas encore ces états — la demande part, échoue, et se tait.
+Hors ligne et en consultation, rien ne part, comme l'iOS (#158) ; la demande attend le retour du
+réseau.
 
 ## Personnes de l'annuaire — `fr.coprofirst.app.commun.annuaire`
 

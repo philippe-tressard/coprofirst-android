@@ -24,12 +24,6 @@ ADB=$SDK/platform-tools/adb
 export ANDROID_HOME=$SDK
 export JAVA_HOME=${JAVA_HOME:-$(brew --prefix openjdk@21 2>/dev/null)/libexec/openjdk.jdk/Contents/Home}
 
-# Une suite iOS ne prend pas encore le verrou commun (coprofirst-ios#213) : on la regarde
-# encore ici. À retirer quand elle passera par lui.
-if pgrep -x xcodebuild >/dev/null; then
-  echo "⏸  une suite iOS (xcodebuild) tourne : une seule tâche lourde au poste — relancer à sa fin" >&2
-  exit 3
-fi
 # Les émulateurs par leur EXÉCUTABLE (ps comm), pas par le texte des commandes : `pgrep -f`
 # trouvait aussi la ligne de commande de qui lance ce script, si elle nommait l'émulateur.
 emulateurs() { ps -axo comm=,args= | awk '$1 ~ /qemu-system/'; }

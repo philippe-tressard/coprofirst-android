@@ -8,8 +8,8 @@
  * Android ni ressources — comme `:client-api`, dont l'alerte lit le modèle.
  *
  * Les pièces gardent leur paquet d'origine (`fr.coprofirst.app.…`) : les déplacer ne renomme
- * aucun de leurs appelants. Les palettes, le logo et les libellés du hors ligne viennent au
- * lot suivant (ressources et génération).
+ * aucun de leurs appelants. Ce qui demande Android (palettes, logo, libellés du hors ligne,
+ * tracés des icônes) vit à côté, dans `:partage-android`.
  */
 plugins {
     alias(libs.plugins.kotlin.jvm)

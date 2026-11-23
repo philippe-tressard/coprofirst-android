@@ -17,7 +17,8 @@ Deux verdicts, jamais confondus :
    jamais un rouge. Le rapport dit ce que monter le plancher demanderait : la version du
    contrat, les routes que l'app appelle et qui disparaîtraient, les fichiers générés
    qui changeraient, les clés des tables et des constantes publiées au-dessus du plancher
-   (que les générateurs liront quand il montera ; d'ici là, leurs valeurs tenues, #169) ;
+   (que les générateurs liront quand il montera ; jusqu'à sa montée, ils tiennent leurs
+   valeurs : la règle de #169) ;
    et si les installations connues servent déjà ce contrat. Sortie 0
    si la dernière release EST le plancher.
 
@@ -227,7 +228,7 @@ def verdict_montee(release: str | None = None) -> tuple[int, list[str]]:
               f"{'.'.join(map(str, cible)) if cible else 'illisible'}.", "",
               "**Routes appelées par l'app qui disparaîtraient ou changeraient de paramètres** :", *(f"- {d}" for d in disparues or ["aucune"]), "",
               "**Fichiers générés qui changeraient** :", *(f"- `{c}`" for c in changes or ["aucun"]), "",
-              "**Clés publiées au-dessus du plancher** (lues dès qu'il montera ; valeurs tenues d'ici là, #169) :",
+              "**Clés publiées au-dessus du plancher** (lues dès qu'il montera ; jusque-là, les générateurs tiennent leurs valeurs : la règle de #169) :",
               *(f"- {n}" for n in neuves or ["aucune"]), "",
               "**Contrat servi par les installations connues** :"]
     lignes += [f"- {h} : {'.'.join(map(str, v)) if v else 'illisible'}" for h, v in servis.items()]

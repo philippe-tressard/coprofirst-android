@@ -35,8 +35,11 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   l'Android tend vers elle — mêmes écrans, mêmes parcours, mêmes libellés, mêmes choix
   (`philippe-tressard/coprofirst-ios`, `Parite/PARITE.md`). Une question technique se
   tranche par le choix que l'iOS a fait ; on en reprend le comportement, jamais le code.
-  Une divergence (contrainte d'Android, étape intermédiaire) se **déclare** dans le
-  commentaire du code et dans la PR, avec le ticket qui la résorbe.
+  Une divergence se **déclare** (« Divergence déclarée ») dans le commentaire du code et dans
+  la PR : **définitive** (une contrainte d'Android), avec sa raison et sans ticket ; **d'étape**
+  (« pas encore », « d'ici là »…), avec le ticket OUVERT qui la résorbe — `scripts/test_divergences.py`
+  refuse une étape sans `#N`, et la concordance quotidienne un ticket clos encore attendu (#336,
+  #338). La liste : `git grep -n -i "divergence déclarée"`.
 - **Version** : elle se DÉDUIT au build racine (`build.gradle.kts`, `versionDeGit`, commune au
   téléphone et à la montre) — code = nombre de
   commits, nom = `coprofirst.version.base` (gradle.properties) + `.` + code. **Aucune PR

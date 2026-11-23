@@ -78,8 +78,6 @@ import java.time.LocalDate
  * En tête, le logement de l'utilisateur, qui ouvre « Mes lots & accès » (`LogementDuFil`).
  *
  * Dans le carnet d'un pliable déplié (#242), une journée par double page (`FilEnCarnet.kt`).
- *
- * ⚠️ Divergence déclarée : une notification touchée n'ouvre pas encore son élément (#23).
  */
 @Composable
 fun EcranFil(contexte: ContexteDeMenu) {
