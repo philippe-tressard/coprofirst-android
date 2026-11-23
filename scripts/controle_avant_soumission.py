@@ -16,6 +16,8 @@ rouge. Un point qu'elle ne peut pas établir rend INCONNU, jamais OK.
 4. Les mentions du magasin sont à jour :
    - la fiche tient dans les limites (`test_fiche_play.py`) ;
    - « Sécurité des données » dit ce que le code envoie (`verifier_securite_donnees.py`) ;
+   - les permissions du manifeste fusionné de la release de CETTE version sont déclarées
+     (`verifier_manifeste_fusionne.py --version`, #327) : `construire-release.sh` d'abord ;
    - les notes de cette version sont écrites (`docs/play-store/notes/<base>.txt` : `0.8.txt`
      pour la version 0.8.512 ; 500 caractères au plus). La base, et non la version
      complète, dont le dernier nombre ne se connaît qu'après le commit (#272).
@@ -179,6 +181,9 @@ def controler() -> tuple[int, list[str], str, str | None]:
     noter("Contrat servi en production", verdict_script(sys.executable, "-I", "scripts/concordance.py", "--plancher"))
     noter("Fiche du magasin", verdict_script(sys.executable, "-I", "scripts/test_fiche_play.py"))
     noter("Sécurité des données", verdict_script(sys.executable, "-I", "scripts/verifier_securite_donnees.py"))
+    noter("Manifeste fusionné de la release",
+          verdict_script(sys.executable, "-I", "scripts/verifier_manifeste_fusionne.py", "--version", nom)
+          if nom else (INCONNU, ["version inconnue"]))
     noter("Notes de version", verdict_notes(nom) if nom else (INCONNU, ["version inconnue"]))
     noter("Tickets bloquants", tickets_bloquants())
     return total, lignes, sha, nom

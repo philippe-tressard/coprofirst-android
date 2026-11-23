@@ -49,6 +49,12 @@ COPROFIRST_SIGNATURE_MDP="$MDP" ./gradlew -q --no-configuration-cache --max-work
   || echec "build de la release"
 unset MDP
 
+# Les permissions du manifeste FUSIONNÉ (téléphone, montre) : celles que la déclaration de la
+# section « Sécurité des données » nomme, et elles seules (#327). Une bibliothèque montée de
+# version peut en ajouter une sans toucher au dépôt.
+python3 -I scripts/verifier_manifeste_fusionne.py \
+  || echec "permission du manifeste fusionné absente de docs/play-store/securite-des-donnees.md (#327)"
+
 # Le téléphone et la montre (#207) : une même app Google Play, deux artefacts, une clé.
 for AAB in app/build/outputs/bundle/release/app-release.aab montre/build/outputs/bundle/release/montre-release.aab; do
   [ -f "$AAB" ] || inconnu "$AAB introuvable après le build"
