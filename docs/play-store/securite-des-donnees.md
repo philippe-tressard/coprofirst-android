@@ -86,12 +86,23 @@ lecture l'emporte, ce fichier et la saisie changent ensemble.
 | `android.permission.POST_NOTIFICATIONS` | avertir le téléphone de l'alerte d'une actualité urgente (#280) ; demandée après « Activer » dans la cloche, jamais au lancement |
 
 Aucune autre : ni localisation, ni contacts, ni stockage partagé. « à venir (#N) » : la permission que le ticket ajoute, refusée
-dès qu'elle est demandée — la PR qui l'apporte retire la marque. Le contrôle lit le manifeste du dépôt ; ce
-que les bibliothèques ajouteraient au manifeste fusionné se relit au build de la release
-(§6). Relevé le 19/11/2026 (#280) : Firebase Messaging y ajoute
-`com.google.android.c2dm.permission.RECEIVE` (recevoir ses messages) et
-`android.permission.WAKE_LOCK` (les traiter écran éteint) ; aucune donnée de plus. Son
-fournisseur d'initialisation (`FirebaseInitProvider`) en est retiré.
+dès qu'elle est demandée — la PR qui l'apporte retire la marque. Ce tableau-là se confronte
+au manifeste du dépôt (`verifier_securite_donnees.py`).
+
+Les bibliothèques en ajoutent au manifeste **fusionné** de la release, que
+`scripts/verifier_manifeste_fusionne.py` lit après chaque build de la release
+(`construire-release.sh`, puis le contrôle avant soumission) : toute permission qui n'est
+ni ci-dessus ni ci-dessous y est refusée (#327). Relevé au build du 23/11/2026 :
+
+<!-- table:permissions-bibliotheques -->
+| Permission (manifeste fusionné) | Qui l'ajoute, et pourquoi |
+|---|---|
+| `android.permission.WAKE_LOCK` | Firebase Messaging (téléphone) : traiter un message reçu écran éteint ; aucune donnée de plus |
+| `com.google.android.c2dm.permission.RECEIVE` | Firebase Messaging (téléphone) : recevoir ses messages ; aucune donnée de plus |
+| `fr.coprofirst.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` | AndroidX Core (téléphone et montre) : une permission interne à l'app, de niveau signature, qui protège ses récepteurs ; elle ne donne accès à rien |
+
+Le fournisseur d'initialisation de Firebase (`FirebaseInitProvider`) est retiré du manifeste
+fusionné (#280).
 
 ## 3. Les données, dans la grille de Google
 
@@ -233,7 +244,7 @@ Puis Contenu de l'app › **Règles de confidentialité** :
 Le contrôle ne le voit pas (INCONNU, jamais conforme) :
 
 - ce que chaque résidence garde et journalise : son code et sa politique ;
-- ce que le manifeste **fusionné** ajoute par les bibliothèques : à relire au build de la
-  release (Android Studio › Merged Manifest, ou `aapt2 dump permissions` sur l'AAB) ;
+- le manifeste **fusionné** hors d'un build de la release : `verifier_manifeste_fusionne.py`
+  le juge après `construire-release.sh` ; sans ce build, INCONNU ;
 - un champ neuf dans un envoi **déjà classé** : la table classe l'envoi, pas ses champs ;
 - ce qui est saisi dans la Play Console.
