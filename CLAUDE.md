@@ -48,6 +48,10 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   (Play Console, piste de test ouverte) sans demande explicite de Philippe.
 - **Dépôt** : `philippe-tressard/coprofirst-android`, public, branche `main`. Je
   fusionne mes PR moi-même (champ `fusion` du registre), CI verte, puis compte rendu.
+  Protection de `main` (elle se lit par `gh api repos/philippe-tressard/coprofirst-android/branches/main/protection`) :
+  les checks requis, sans exiger d'être à jour ; aucune file de fusion — le filet est la CI de
+  chaque commit de `main` (`standards/09` §8 bis, `scripts/verifier_ci.py`). Les administrateurs
+  soumis aux checks comme les autres dépôts du projet : geste de Philippe, #328.
   Les commits portent l'adresse *noreply* de GitHub, réglée dans la configuration
   **locale** du clone.
 
@@ -115,7 +119,8 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   syntaxe, LICENSE, couleurs et requêtes écrites à la main, règles servies recopiées — `scripts/test_regles_servies.py`, #334,
   pendant de celui de l'iOS) et `reuse lint`, rejoués par le hook
   pre-commit (armé par `git config core.hooksPath .githooks`) et par la CI ;
-  `bash scripts/pipeline.sh` (la CI hors émulateur, lint en erreurs ; `pipeline.sh <tâches>` pour une partie) —
+  `bash scripts/pipeline.sh` (la CI hors émulateur : le job « Dépôt », puis les tâches du job « Build » et la compilation
+  des tests d'interface des deux apps, lint en erreurs — `scripts/verifier_ci.py` le tient égal à `ci.yml` ; `pipeline.sh <tâches>` pour une partie) —
   **au poste, aucun `./gradlew` lourd en direct** : il passe par `pipeline.sh`, sous le verrou commun ; tests d'interface (`app/src/androidTest`, serveur local en HTTPS,
   repères = identifiants d'accessibilité de l'iOS ; tout toucher passe par `toucher`,
   `tests-interface-communs/…/commun/Gestes.kt`, commun au téléphone et à la montre (#216), qui amène l'élément à l'écran avant de toucher — un

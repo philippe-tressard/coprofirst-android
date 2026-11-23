@@ -10,9 +10,6 @@ on:
   push:
     branches: [main]
   pull_request:
-  # La file de fusion : chaque PR est rejugée sur main + les PR devant elle, avant de
-  # fusionner — main ne peut plus rougir par combinaison de deux PR vertes chacune.
-  merge_group:
 permissions:
   contents: read
 # L'architecture des émulateurs ; chaque job d'émulateur nomme son image (IMAGE_API,
@@ -21,9 +18,11 @@ permissions:
 env:
   IMAGE_ARCH: x86_64
 # Une PR : sa nouvelle poussée annule l'exécution précédente (seule la dernière tête
-# compte). main et la file de fusion (`merge_group`) : CHAQUE commit est jugé, sans
-# annulation — un groupe par commit, car GitHub ne garde qu'UNE exécution en attente par
-# groupe : un groupe commun évincerait les fusions ou les candidats rapprochés.
+# compte). main : CHAQUE commit est jugé, sans annulation — c'est le filet, car la
+# protection exige les checks sans exiger d'être à jour (strict désactivé le 15/11 ; aucune
+# file de fusion, #328) et un main rouge passe avant tout autre lot (standards/09 §8 bis).
+# Un groupe par commit : GitHub ne garde qu'UNE exécution en attente par groupe, un groupe
+# commun évincerait des fusions rapprochées. `scripts/verifier_ci.py` refuse `merge_group`.
 concurrency:
   group: ci-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -60,7 +59,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # Tout l'historique et les étiquettes : la version se déduit de git (app/build.gradle.kts).
+          # Tout l'historique et les étiquettes : la version se déduit de git (build racine).
           fetch-depth: 0
       - uses: ./.github/actions/preparer-android
       - name: Build (debug et release non signée), lint strict, tests — téléphone et montre (#207)
@@ -75,7 +74,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # Tout l'historique et les étiquettes : la version se déduit de git (app/build.gradle.kts).
+          # Tout l'historique et les étiquettes : la version se déduit de git (build racine).
           fetch-depth: 0
       - uses: ./.github/actions/preparer-android
         with:
@@ -120,7 +119,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # Tout l'historique et les étiquettes : la version se déduit de git (app/build.gradle.kts).
+          # Tout l'historique et les étiquettes : la version se déduit de git (build racine).
           fetch-depth: 0
       - uses: ./.github/actions/preparer-android
         with:
