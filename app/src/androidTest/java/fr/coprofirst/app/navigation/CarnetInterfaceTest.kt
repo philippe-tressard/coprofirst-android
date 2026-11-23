@@ -213,7 +213,7 @@ class CarnetInterfaceTest {
         ecran.toucherTag("$REPERE_SEMAINE.precedente")
         ecran.attendreTag(AVANT)
         ecran.onNodeWithTag("$REPERE_SEMAINE.precedente").assertIsNotEnabled()
-        ecran.toucherTag("$REPERE_SEMAINE.${FormatsDuSite.jourIso(maintenant.minus(Duration.ofDays(8)))}")
+        ecran.toucherTag("$REPERE_SEMAINE.${FormatsDuSite.jourIso(semainePrecedente(maintenant))}")
         ecran.attendreTag(REPERE_EPHEMERIDE)
         ecran.attendreTag(AVANT)
         ecran.attendreDisparitionTag(CARTE)
@@ -237,9 +237,16 @@ class CarnetInterfaceTest {
         }
     }
 
-    /** L'affaire d'aujourd'hui (41) et le sondage de huit jours avant (3), chacun à son jour SERVI. */
+    /**
+     * Le même jour, une semaine plus tôt : toujours dans la semaine d'avant, quel que soit le jour.
+     * Huit jours tombaient, un lundi, deux semaines plus tôt (les semaines partent du lundi,
+     * `SemaineDuFil.lundi`) : le test échouait chaque lundi, sur main aussi (23/11/2026).
+     */
+    private fun semainePrecedente(maintenant: Instant): Instant = maintenant.minus(Duration.ofDays(7))
+
+    /** L'affaire d'aujourd'hui (41) et le sondage d'une semaine avant (3), chacun à son jour SERVI. */
     private fun semaineEtAvant(maintenant: Instant): String {
-        val avant = maintenant.minus(Duration.ofDays(8))
+        val avant = semainePrecedente(maintenant)
         return """{"delai_recent_jours": 7, "items": [
         {"type": "ticket_ouvert", "id": "41", "date": "${maintenant.minusSeconds(60)}", "titre": "Fuite d'eau au plafond du parking",
          "jour": "${FormatsDuSite.jourIso(maintenant)}", "meta": {"ticket_id": 41, "affaire": {"natures": ["activite"]}}},
