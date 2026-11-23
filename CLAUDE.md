@@ -88,7 +88,8 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   constantes du serveur générées ; son `R` : `fr.coprofirst.app.partage.R`). SDK, Java et lint de tout module
   Android : `reglagesCommuns` du build racine ; le périmètre de `verifier-depot.sh` se lit
   dans `settings.gradle.kts`.
-- **Composants communs** : leur API est `docs/COMPOSANTS.md` — le contrat des écrans ;
+- **Composants communs** : leur API est `docs/COMPOSANTS.md` — le contrat des écrans, confronté au code par
+  `scripts/test_composants.py` (#321 : identifiants cités, partagés nommés, aucun « à venir ») ;
   un écran la consomme sans la modifier, un besoin devient un ticket. Un écran = un
   paquet `fonctions/<menu>` qui s'inscrit lui-même (`Inscription.kt`, ses tables par
   `scripts/generer_tables_<menu>.py`) : il ne touche ni la navigation ni le build (#109).
