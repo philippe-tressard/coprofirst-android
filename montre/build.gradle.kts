@@ -31,6 +31,18 @@ android {
     }
 }
 
+// Les composants tiers que la montre embarque (#317) : la déclaration commune, confrontée à SA
+// variante publiée — le build s'arrête sur un module non déclaré —, et ses textes de licence
+// copiés dans ses ressources, avec chaque copie. Ils se lisent dans « À propos » du téléphone
+// (même app Google Play, même déclaration) : la montre n'a pas d'écran de licences, comme
+// l'Apple Watch (écran rond ; buildSrc, ComposantsTiers.kt).
+val genererComposantsTiers = composantsTiers(autreApp = ":app")
+androidComponents {
+    onVariants { variante ->
+        variante.sources.assets?.addGeneratedSourceDirectory(genererComposantsTiers, GenererDepuisPython::sortie)
+    }
+}
+
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

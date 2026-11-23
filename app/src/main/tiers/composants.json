@@ -88,7 +88,16 @@
       "nom": "Google Play services (Wearable, Cloud Messaging)",
       "licences": ["LicenseRef-Android-SDK"],
       "role": "Le lien entre le téléphone et la montre Wear OS (Data Layer), et la réception des notifications. Bibliothèques propriétaires de Google, permises par le point 4 de la licence de l'app.",
-      "modules": ["com.google.android.gms:*", "com.google.firebase:firebase-iid-interop", "com.google.firebase:firebase-measurement-connector"],
+      "modules": [
+        "com.google.android.gms:play-services-wearable",
+        "com.google.android.gms:play-services-cloud-messaging",
+        "com.google.android.gms:play-services-base",
+        "com.google.android.gms:play-services-basement",
+        "com.google.android.gms:play-services-stats",
+        "com.google.android.gms:play-services-tasks",
+        "com.google.firebase:firebase-iid-interop",
+        "com.google.firebase:firebase-measurement-connector"
+      ],
       "textes": ["app/src/main/tiers/LICENSE-LicenseRef-Android-SDK.txt"]
     },
     {

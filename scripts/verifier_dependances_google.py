@@ -12,8 +12,10 @@ violerait sa propre licence.
 
 La liste autorisée se LIT dans le texte de la licence, jamais recopiée ici : le droit
 et le contrôle ne peuvent pas diverger. Sont jugées les dépendances DÉCLARÉES par le
-dépôt (`gradle/libs.versions.toml` et chaque `build.gradle.kts`) ; ce que la
-bibliothèque permise tire elle-même est couvert par la permission.
+dépôt (`gradle/libs.versions.toml` et chaque `build.gradle.kts` suivi par git). Ce que
+l'app EMBARQUE se juge au build (#320) : `generer_composants_tiers.py` refuse toute
+bibliothèque de ces familles que les deux permises ne requièrent pas, de proche en proche,
+dans le graphe de la variante publiée de chaque app — il lit ce juge (`autorisees`).
 
 Sortie : 0 conforme, 1 refus, 2 INCONNU. `--autotest` prouve que le juge départage.
 """
@@ -22,6 +24,7 @@ from __future__ import annotations
 
 import pathlib
 import re
+import subprocess
 import sys
 import tempfile
 
@@ -57,10 +60,17 @@ def declarees(chemin: str, texte: str) -> tuple[set[str], list[str]]:
 
 
 def juger(racine: pathlib.Path, permises: set[str]) -> list[str]:
-    fichiers = [racine / "gradle" / "libs.versions.toml", *sorted(racine.rglob("build.gradle.kts"))]
+    # Les fichiers que git CONNAÎT (#320) : au poste, les copies de .claude/worktrees/ des
+    # autres sessions ne se jugent pas ici. Hors d'un dépôt git (l'autotest), l'arbre.
+    suivis = subprocess.run(["git", "ls-files", "--cached"], cwd=racine, capture_output=True, text=True)
+    if suivis.returncode == 0:
+        builds = sorted(racine / f for f in suivis.stdout.splitlines() if f.endswith("build.gradle.kts"))
+    else:
+        builds = sorted(racine.rglob("build.gradle.kts"))
+    fichiers = [racine / "gradle" / "libs.versions.toml", *builds]
     fautes = []
     for f in fichiers:
-        if not f.is_file() or "/build/" in f.as_posix():
+        if not f.is_file() or "/build/" in f.relative_to(racine).as_posix():
             continue
         chemin = f.relative_to(racine).as_posix()
         trouvees, illisibles = declarees(chemin, f.read_text(encoding="utf-8"))
