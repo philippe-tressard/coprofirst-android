@@ -27,7 +27,7 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   `--verifier`. Rien de généré n'est versionné. Les chemins s'entendent sous `/api`.
   **Au-dessus du plancher** (#282, comme l'iOS) : `AU_DESSUS` et `GREFFES` de
   `contrat/plancher.env` greffent au client des chemins nommés d'une release plus récente
-  (`contrat/au-dessus/`), appelés derrière une porte (`VersionContrat`, `Installation.sert`) ;
+  (recopiée dans contrat/au-dessus/, qui n'existe que tant que `AU_DESSUS` est posé), appelés derrière une porte (`VersionContrat`, `Installation.sert`) ;
   une greffe ou une porte que le plancher atteint est refusée (build, `InstallationTest`).
 - **État** : il se lit dans `README.md` (« Ce que fait l'app ») et les issues
   ouvertes.
@@ -37,7 +37,8 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   tranche par le choix que l'iOS a fait ; on en reprend le comportement, jamais le code.
   Une divergence (contrainte d'Android, étape intermédiaire) se **déclare** dans le
   commentaire du code et dans la PR, avec le ticket qui la résorbe.
-- **Version** : elle se DÉDUIT au build (`app/build.gradle.kts`) — code = nombre de
+- **Version** : elle se DÉDUIT au build racine (`build.gradle.kts`, `versionDeGit`, commune au
+  téléphone et à la montre) — code = nombre de
   commits, nom = `coprofirst.version.base` (gradle.properties) + `.` + code. **Aucune PR
   ne la touche** (pas de commit « Version x.y.z ») : plusieurs sessions en parallèle se
   la disputaient. La base ne change que sur une décision de sortie ; `verifier-depot.sh`
@@ -64,10 +65,12 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   et la licence sont recopiés à l'identique (`scripts/importer-logo.sh`, vérifié en
   CI) ; le format d'Android en est généré au build (`scripts/generer_logo.py`, qui
   refuse tout élément qu'il ne sait pas rendre) — jamais redessiné ni recoloré.
-- **Ce dépôt et coprofirst ne partagent que ce que coprofirst publie** avec chaque
-  release : le contrat (`openapi.json`), les tables pour les clients
-  (`tables-clients.json`) et les constantes (`constantes-clients.json`, depuis v3.102.0),
-  recopiés à l'octet dans `contrat/` — jamais le source de coprofirst. Les **palettes** se
+- **Ce dépôt ne recopie de coprofirst que des pièces publiées, à l'octet, vérifiées en CI** —
+  jamais son code : les pièces jointes à la release du plancher et leurs textes de licence
+  (la liste : `PIECES` et `LICENCES` de `scripts/importer-contrat.sh`, dans `contrat/` et
+  `LICENSES/`), le logo et sa licence lus à l'étiquette `LOGO` (`COPIES` de
+  `scripts/importer-logo.sh`, ci-dessous) ; et de coprofirst-site, le contenu de la vitrine
+  à un commit nommé (`scripts/importer-vitrine.sh`). Les **palettes** se
   génèrent au build (`scripts/generer_charte.py`, testé par `verifier-depot.sh`) : la
   charte `seine`, celle de la résidence dès qu'elle est reconnue (`site_palette`), clair
   et sombre — `ThemeCoproFirst` les donne à Material, `LocalCouleurs` pour le reste.
@@ -91,9 +94,12 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   partage aussi, #206 ; `verifier-depot.sh` refuse tout autre client) (aucune redirection
   suivie, clair refusé par le manifeste), décliné par hôte avec ses cookies en mémoire
   (`SessionsParHote`) ; aucune requête ni route écrite à la main — `verifier-depot.sh`
-  le refuse, sauf dans `PreuveHote.kt` (le fichier d'association n'est pas une route de
-  l'API) et `commun/pieces/FichierProtege.kt` (les fichiers de `/uploads/`, servis
-  derrière la session hors du contrat ; l'hôte de la session seul) — dispenses nommées.
+  le refuse, sauf dans les dispenses nommées de `DISPENSES_REQUETE` : `PreuveHote.kt` (le
+  fichier d'association n'est pas une route de l'API), `commun/pieces/FichierProtege.kt`
+  (les fichiers de `/uploads/`, servis derrière la session hors du contrat ; l'hôte de la
+  session seul) et `entree/vitrine/VitrineDuSite.kt` (le contenu public de la vitrine,
+  relu à chaque lancement, sans cookie, à une adresse constante) — `scripts/test_claude_md.py`
+  tient cette liste égale à celle du script.
 - **Mot de passe** : un seul chemin, la garde de l'hôte (`GardeHote`, comme l'iOS) —
   un hôte jamais vu se confirme avant tout envoi. Le plancher du contrat (`VERSION_CONTRAT_PLANCHER`)
   est généré depuis `contrat/openapi.json` ; une installation qui sert un contrat plus
