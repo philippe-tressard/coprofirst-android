@@ -35,6 +35,12 @@ abstract class GenererDepuisPython : DefaultTask() {
     /** Le chemin passé au script (le fichier, ou le dossier). */
     @get:Input abstract val entree: Property<String>
     @get:InputFile abstract val generateur: RegularFileProperty
+    /**
+     * Les modules Python voisins que le script peut importer (`generer_tables`, `tables_communes`…) :
+     * tout script Python de `scripts/`, hors tests (#330). Les déclarer un à un en oubliait — une fonction
+     * commune changée laissait la tâche « à jour » au poste, sur un Kotlin généré périmé.
+     */
+    @get:InputFiles @get:PathSensitive(PathSensitivity.RELATIVE) abstract val voisins: ConfigurableFileCollection
     @get:OutputDirectory abstract val sortie: DirectoryProperty
     /** Ce que le script reçoit après l'entrée et la sortie (la liste des modules embarqués). */
     @get:Input abstract val arguments: ListProperty<String>
@@ -51,8 +57,8 @@ abstract class GenererDepuisPython : DefaultTask() {
 
 /**
  * Une génération du module : `entree` (chemin depuis la racine du dépôt) passe au script
- * `generateur`, qui écrit dans `build/generated/<nom>`. `lus` : ce dont le script dépend, s'il
- * lit plus que son entrée.
+ * `generateur`, qui écrit dans `build/generated/<nom>`. `lus` : les DONNÉES dont le script
+ * dépend, s'il lit plus que son entrée ; le code qu'il importe est déjà suivi (`voisins`).
  */
 fun Project.generation(nom: String, entree: String, generateur: String, lus: Any = entree): TaskProvider<GenererDepuisPython> {
     val racine = rootProject.layout.projectDirectory
@@ -61,6 +67,7 @@ fun Project.generation(nom: String, entree: String, generateur: String, lus: Any
         this.lus.from(racine.files(lus))
         this.entree.set(racine.file(entree).asFile.path)
         this.generateur.set(racine.file(generateur))
+        voisins.from(rootProject.fileTree(racine.dir("scripts")) { include("*.py"); exclude("test_*.py") })
         sortie.set(construction.dir("generated/$nom"))
         arguments.convention(emptyList())
     }

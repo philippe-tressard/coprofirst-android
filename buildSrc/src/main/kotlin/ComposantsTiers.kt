@@ -55,7 +55,7 @@ fun Project.composantsTiers(autreApp: String): TaskProvider<GenererDepuisPython>
     val autre = rootProject.project(autreApp).layout.buildDirectory.file("modules-embarques.txt")
     val generation = generation(
         "genererComposantsTiers", "app/src/main/tiers/composants.json", "scripts/generer_composants_tiers.py",
-        lus = listOf("app/src/main/tiers", "LICENSES", "scripts/verifier_dependances_google.py"),
+        lus = listOf("app/src/main/tiers", "LICENSES"),
     )
     generation.configure {
         val propre = lister.flatMap { it.sortie }

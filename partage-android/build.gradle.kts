@@ -44,11 +44,9 @@ val genererTraces = generation(
     "genererTraces", "contrat/icones-svg.json", "scripts/generer_traces.py",
     lus = listOf("contrat/icones-svg.json", "contrat/tables-clients.json"),
 )
-// La liste blanche du texte riche ; sa forme s'écrit dans generer_tables.py, qu'il charge.
-val genererBalises = generation(
-    "genererBalises", "contrat/tables-clients.json", "scripts/generer_balises.py",
-    lus = listOf("contrat/tables-clients.json", "scripts/generer_tables.py"),
-)
+// La liste blanche du texte riche ; sa forme s'écrit dans generer_tables.py, qu'il charge
+// (un module voisin : entrée de toute génération, #330).
+val genererBalises = generation("genererBalises", "contrat/tables-clients.json", "scripts/generer_balises.py")
 
 androidComponents {
     onVariants { variante ->
