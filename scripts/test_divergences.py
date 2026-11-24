@@ -50,11 +50,16 @@ def sans_citations(texte: str) -> str:
     return CITATION.sub("", texte)
 
 
+#: La fin d'un commentaire : `*/`, ou celle d'un commentaire HTML — `-->`, et `--!>`, que le
+#: HTML ferme aussi (alerte CodeQL py/bad-tag-filter, #341).
+FIN = re.compile(r"\*/|--!?>")
+
+
 def passage(lignes: list[str], i: int, debut: int) -> str:
     """De `debut` sur la ligne `i` à la fin de son commentaire (`*/`, `-->`, fin des `//` ou des `#`)
     ou de son paragraphe ; une ligne de code qui suit n'en est pas."""
     premiere = lignes[i][debut:]
-    if re.search(r"\*/|-->", premiere):
+    if FIN.search(premiere):
         return premiere
     marque = re.match(r"\s*(//|#|\*|<!--)?", lignes[i]).group(1)
     morceau = [premiere]
@@ -67,7 +72,7 @@ def passage(lignes: list[str], i: int, debut: int) -> str:
         if marque == "*" and not nue.startswith("*"):
             break
         morceau.append(ligne)
-        if "*/" in ligne or "-->" in ligne or nue == "*":
+        if FIN.search(ligne) or nue == "*":
             break
     return "\n".join(morceau)
 
@@ -176,10 +181,11 @@ class Divergences(unittest.TestCase):
             "ligne.kt": "// Divergence déclarée : en attendant le site.\nval x = 1 // #12\n",
             "doc.md": "⚠️ Divergence déclarée : l'iOS teinte d'un aplat vert ;\nici, deux contours.\n\n#12 plus loin\n",
             "res.xml": "<!-- Divergence déclarée : d'ici là, le libellé local. -->\n<string>#4</string>\n",
+            "bang.xml": "<!-- Divergence déclarée : d'ici là, le libellé local. --!>\n<string>#5</string>\n",
         }
         refus, mentions = fautes(cas)
-        self.assertEqual(mentions, 6)
-        self.assertEqual(sorted(r.split(":")[0] for r in refus), ["etape.kt", "ligne.kt", "res.xml"])
+        self.assertEqual(mentions, 7)
+        self.assertEqual(sorted(r.split(":")[0] for r in refus), ["bang.xml", "etape.kt", "ligne.kt", "res.xml"])
 
     def test_autotest_tickets_cites(self):
         cites = tickets_cites({

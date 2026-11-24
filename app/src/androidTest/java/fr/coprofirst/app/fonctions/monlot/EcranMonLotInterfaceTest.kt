@@ -17,18 +17,13 @@ import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.residenceSimulee
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.commun.toucherTexte
+import fr.coprofirst.app.entree.ServeurDeTest
 import fr.coprofirst.app.navigation.ActionsDeclarees
 import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.navigation.DroitsOnglet
-import fr.coprofirst.app.session.ClientHttp
-import fr.coprofirst.app.session.SessionOuverte
-import fr.coprofirst.app.session.SessionsParHote
 import mockwebserver3.Dispatcher
 import mockwebserver3.MockResponse
-import mockwebserver3.MockWebServer
 import mockwebserver3.RecordedRequest
-import okhttp3.tls.HandshakeCertificates
-import okhttp3.tls.HeldCertificate
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -45,25 +40,18 @@ class EcranMonLotInterfaceTest {
     @get:Rule
     val ecran = createComposeRule()
     private val residence = ResidenceSimulee()
-    private val certificat = HeldCertificate.Builder().addSubjectAlternativeName("localhost").build()
-    private val serveur = MockWebServer().apply {
-        useHttps(HandshakeCertificates.Builder().heldCertificate(certificat).build().sslSocketFactory())
-        dispatcher = object : Dispatcher() {
+    private val serveur = ServeurDeTest().apply {
+        serveur.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 val (code, corps) = residence.repondre(request.method, request.url.encodedPath, request.body?.utf8().orEmpty())
                 return MockResponse.Builder().code(code).addHeader("Content-Type", "application/json").body(corps).build()
             }
         }
-        start()
     }
 
     @Before
     fun ouvrir() {
-        val confiance = HandshakeCertificates.Builder().addTrustedCertificate(certificat.certificate).build()
-        val client = ClientHttp.partage.newBuilder().sslSocketFactory(confiance.sslSocketFactory(), confiance.trustManager).build()
-        val session = SessionOuverte(residenceSimulee("https://residence.test", "Les Glycines"), SessionsParHote(client)) {
-            serveur.url("/api").toString()
-        }
+        val session = serveur.session(residenceSimulee("https://residence.test", "Les Glycines"))
         val barre = BarreDuHaut()
         ecran.setContent {
             ThemeCoproFirst {

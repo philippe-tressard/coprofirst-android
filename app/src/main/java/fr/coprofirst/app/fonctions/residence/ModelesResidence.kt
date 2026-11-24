@@ -10,6 +10,7 @@ import fr.coprofirst.api.modeles.DocumentRead
 import fr.coprofirst.api.modeles.EntreeCarnetLue
 import fr.coprofirst.api.modeles.RegleResidenceLue
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.session.audience.CheminDuSite
 import java.time.Instant
 
 // Les modèles de « Ma résidence », comme l'iOS (`ModelesResidence`, `LectureResidence`) :
@@ -135,12 +136,11 @@ data class EntreeCarnet(
 
     /** L'identifiant de l'affaire d'une entrée « affaire » (`/tickets/29` → « 29 »), comme l'iOS. */
     val affaire: String?
-        get() = lien?.takeIf { origine == "affaire" && it.startsWith(CHEMIN_AFFAIRE) }
-            ?.removePrefix(CHEMIN_AFFAIRE)?.takeWhile { it.isDigit() }?.takeIf { it.isNotEmpty() }
-
-    private companion object {
-        const val CHEMIN_AFFAIRE = "/tickets/"
-    }
+        get() {
+            val prefixe = CheminDuSite.affaires?.let { "$it/" } ?: return null
+            return lien?.takeIf { origine == "affaire" && it.startsWith(prefixe) }
+                ?.removePrefix(prefixe)?.takeWhile { it.isDigit() }?.takeIf { it.isNotEmpty() }
+        }
     val jour: Instant? get() = FormatsDuSite.lire(date)
 }
 

@@ -32,8 +32,11 @@ object CheminDuSite {
     /** Un onglet d'une page : `/admin#telemetry`, comme `trackTabView` du site. */
     fun onglet(onglet: String, route: String): String = "$route#$onglet"
 
+    /** La page des affaires : `/tickets` (générée) ; une affaire y est `/tickets/123`. */
+    val affaires: String? get() = page(PAGE_AFFAIRES)
+
     /** Une affaire : `/tickets/123` (`routes/(app)/tickets/[id]`). */
-    fun affaire(id: Int): String? = page(PAGE_AFFAIRES)?.let { "$it/$id" }
+    fun affaire(id: Int): String? = affaires?.let { "$it/$id" }
 
     /** Un sondage : `/sondages/12` (`routes/(app)/sondages/[id]`). */
     fun sondage(id: Int): String? = page(PAGE_SONDAGES)?.let { "$it/$id" }

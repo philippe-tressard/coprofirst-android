@@ -46,6 +46,7 @@ import fr.coprofirst.app.navigation.DroitsOnglet
 import fr.coprofirst.app.navigation.OngletsDuSite
 import fr.coprofirst.app.navigation.ouverts
 import fr.coprofirst.app.session.ErreurService
+import fr.coprofirst.app.session.audience.CheminDuSite
 
 /** Les repères des tests d'interface : les identifiants d'accessibilité de l'iOS. */
 object ReperesAffaires {
@@ -99,11 +100,14 @@ fun EcranAffaires(contexte: ContexteDeMenu) {
     val service = remember(contexte.session) { ServiceAffairesApi(contexte.session) }
     val adresse = contexte.session.installation.url
     PageHorsLigne {
-        EcranAffaires(service, contexte.barre, contexte.droits, { id -> OngletsSurLeSite.lien("/tickets/$id", adresse) }) { id ->
+        EcranAffaires(service, contexte.barre, contexte.droits, { id -> lienAffaire(id, adresse) }) { id ->
             contexte.ouvrir(Destination.Element(NATURE_AFFAIRE, id.toString()))
         }
     }
 }
+
+/** La page de l'affaire sur le site, sous l'adresse de la résidence (la route générée). */
+private fun lienAffaire(id: Int, adresse: String): String? = CheminDuSite.affaire(id)?.let { OngletsSurLeSite.lien(it, adresse) }
 
 /**
  * La fiche d'une affaire, déclarée à la porte (`RegistreDesMenus.fiches`, nature `affaire`) :
@@ -118,7 +122,7 @@ fun EcranFicheAffaire(contexte: ContexteDeMenu, id: String) {
             val numero = id.toIntOrNull()
             val adresse = contexte.session.installation.url
             val fiche = remember(service, contexte.droits, contexte.barre, avis) {
-                ContexteFiche(service, contexte.session, contexte.droits.cs, avis, contexte.barre, moi = contexte.droits.compte) { OngletsSurLeSite.lien("/tickets/$it", adresse) }
+                ContexteFiche(service, contexte.session, contexte.droits.cs, avis, contexte.barre, moi = contexte.droits.compte) { lienAffaire(it, adresse) }
             }
             if (numero == null) MessageErreur(ErreurService.Introuvable, Modifier.padding(Mise.marge)) else FicheAffaire(numero, fiche)
         }

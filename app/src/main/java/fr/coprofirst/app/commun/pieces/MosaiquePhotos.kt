@@ -4,7 +4,6 @@
 package fr.coprofirst.app.commun.pieces
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,7 +28,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontWeight
@@ -38,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.session.SessionOuverte
 
 /** L'écart entre deux tuiles : un filet, comme Messages. */
@@ -103,7 +102,7 @@ private fun Tuile(
     }
     Box(
         modifier
-            .clickable(onClickLabel = stringResource(R.string.pieces_ouvrir_photo), role = Role.Button, onClick = ouvrir)
+            .cliquable(stringResource(R.string.pieces_ouvrir_photo), ouvrir)
             .clearAndSetSemantics { contentDescription = libelle }
             .testTag("pieces.photo.$rang"),
         contentAlignment = Alignment.Center,

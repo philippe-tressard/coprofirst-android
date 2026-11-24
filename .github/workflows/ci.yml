@@ -5,6 +5,10 @@
 # tests d'interface sur émulateur (job « Interface »).
 # Actions épinglées par SHA de commit : une étiquette se déplace, un SHA non.
 # Aucune signature ni secret Google en CI : l'app se signe au poste.
+# Chaque job finit par l'ALERTE (#345) : un rouge de main ouvre ou complète « CI rouge : CI »
+# (scripts/signaler_ci.py) ; une PR, jamais — la garde du pas l'exclut, le script aussi.
+# Chaque émulateur s'arrête en temps borné, kill forcé en repli (#315, scripts/arreter_emulateur.py).
+# scripts/verifier_ci.py refuse un job sans l'un ou l'autre.
 name: CI
 on:
   push:
@@ -12,6 +16,7 @@ on:
   pull_request:
 permissions:
   contents: read
+  issues: write # pour l'alerte seule (scripts/signaler_ci.py), dont le pas ne joue jamais sur une PR
 # L'architecture des émulateurs ; chaque job d'émulateur nomme son image (IMAGE_API,
 # IMAGE_CIBLE), lue À LA FOIS par l'émulateur et par la préparation commune, qui la tient
 # en cache et la télécharge avec un réessai borné (#232, scripts/verifier_ci.py).
@@ -52,6 +57,11 @@ jobs:
           python3 -m venv "$RUNNER_TEMP/reuse"
           "$RUNNER_TEMP/reuse/bin/pip" install --quiet --disable-pip-version-check "reuse[charset-normalizer]==6.2.0"
           "$RUNNER_TEMP/reuse/bin/reuse" lint
+      - name: Alerte (un rouge de main ouvre ou complète un ticket, #345)
+        if: ${{ (failure() || cancelled()) && github.event_name != 'pull_request' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -I scripts/signaler_ci.py --signaler --etat "${{ job.status }}"
   build:
     name: Build, lint et tests
     runs-on: ubuntu-latest
@@ -64,6 +74,11 @@ jobs:
       - uses: ./.github/actions/preparer-android
       - name: Build (debug et release non signée), lint strict, tests — téléphone et montre (#207)
         run: ./gradlew --no-daemon --max-workers=4 :app:assembleDebug :app:assembleRelease :app:lintDebug :app:testDebugUnitTest :client-api:test :partage:test :partage-android:lintDebug :partage-android:testDebugUnitTest :montre:assembleDebug :montre:assembleRelease :montre:lintDebug :montre:testDebugUnitTest
+      - name: Alerte (un rouge de main ouvre ou complète un ticket, #345)
+        if: ${{ (failure() || cancelled()) && github.event_name != 'pull_request' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -I scripts/signaler_ci.py --signaler --etat "${{ job.status }}"
   interface:
     name: Interface (émulateur)
     runs-on: ubuntu-latest
@@ -86,7 +101,7 @@ jobs:
           target: ${{ env.IMAGE_CIBLE }}
           arch: ${{ env.IMAGE_ARCH }}
           disable-animations: true
-          script: ./gradlew --no-daemon --max-workers=4 :app:connectedDebugAndroidTest
+          script: python3 -I scripts/arreter_emulateur.py -- ./gradlew --no-daemon --max-workers=4 :app:connectedDebugAndroidTest
       - name: Rapport des tests d'interface (sur échec)
         # Le journal ne nomme pas le test en cause : le rapport le dit (#65).
         if: failure()
@@ -105,6 +120,11 @@ jobs:
         # Au résumé ET au journal : le résumé ne se lit que connecté à GitHub, le journal
         # se lit par `gh run view --log` (les sessions, la coordination).
         run: python3 -I scripts/bilan_tests_interface.py app/build/outputs/androidTest-results | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Alerte (un rouge de main ouvre ou complète un ticket, #345)
+        if: ${{ (failure() || cancelled()) && github.event_name != 'pull_request' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -I scripts/signaler_ci.py --signaler --etat "${{ job.status }}"
 
   interface-tablette:
     # Un ÉCHANTILLON sur tablette (pixel_tablet), comme l'échantillon iPad de l'iOS
@@ -132,7 +152,7 @@ jobs:
           arch: ${{ env.IMAGE_ARCH }}
           profile: pixel_tablet
           disable-animations: true
-          script: ./gradlew --no-daemon --max-workers=4 :app:connectedDebugAndroidTest "-Pandroid.testInstrumentationRunnerArguments.class=fr.coprofirst.app.entree.ParcoursEntreeInterfaceTest,fr.coprofirst.app.fonctions.fil.FilInterfaceTest,fr.coprofirst.app.fonctions.profil.ProfilInterfaceTest"
+          script: python3 -I scripts/arreter_emulateur.py -- ./gradlew --no-daemon --max-workers=4 :app:connectedDebugAndroidTest "-Pandroid.testInstrumentationRunnerArguments.class=fr.coprofirst.app.entree.ParcoursEntreeInterfaceTest,fr.coprofirst.app.fonctions.fil.FilInterfaceTest,fr.coprofirst.app.fonctions.profil.ProfilInterfaceTest"
       - name: Rapport des tests d'interface (sur échec)
         # Le journal ne nomme pas le test en cause : le rapport le dit (#65).
         if: failure()
@@ -151,6 +171,11 @@ jobs:
         # Au résumé ET au journal : le résumé ne se lit que connecté à GitHub, le journal
         # se lit par `gh run view --log` (les sessions, la coordination).
         run: python3 -I scripts/bilan_tests_interface.py app/build/outputs/androidTest-results | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Alerte (un rouge de main ouvre ou complète un ticket, #345)
+        if: ${{ (failure() || cancelled()) && github.event_name != 'pull_request' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -I scripts/signaler_ci.py --signaler --etat "${{ job.status }}"
 
   interface-montre:
     # La montre Wear OS (#207) sur SON émulateur (écran rond) : la cloche, « Déjà lues », le
@@ -177,7 +202,7 @@ jobs:
           arch: ${{ env.IMAGE_ARCH }}
           profile: wearos_large_round
           disable-animations: true
-          script: ./gradlew --no-daemon --max-workers=4 :montre:connectedDebugAndroidTest
+          script: python3 -I scripts/arreter_emulateur.py -- ./gradlew --no-daemon --max-workers=4 :montre:connectedDebugAndroidTest
       - name: Aperçu de la tuile (rendu par le test, à versionner tel quel)
         if: success()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -196,3 +221,8 @@ jobs:
             montre/build/outputs/androidTest-results/
           retention-days: 7
           if-no-files-found: ignore
+      - name: Alerte (un rouge de main ouvre ou complète un ticket, #345)
+        if: ${{ (failure() || cancelled()) && github.event_name != 'pull_request' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -I scripts/signaler_ci.py --signaler --etat "${{ job.status }}"

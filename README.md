@@ -8,6 +8,10 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 Application Android native de [CoproFirst](https://github.com/philippe-tressard/coprofirst),
 le logiciel libre de gestion de copropriété — Kotlin et Jetpack Compose.
 
+Licence : AGPL-3.0-or-later, avec des permissions additionnelles pour les magasins Android
+et deux bibliothèques de Google nommées (« Licence », en fin de page). GitHub l'affiche
+« Other » : il ne reconnaît pas l'AGPL quand `LICENSE` porte aussi les permissions.
+
 ## Ce que fait l'app
 
 L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-tressard/coprofirst-ios), aux couleurs de la charte de CoproFirst — celles de la résidence dès qu'elle est reconnue, au clair comme au sombre.
@@ -311,6 +315,9 @@ jamais en CI) : `bash scripts/construire-release.sh`, qui finit par le contrôle
 et l'étiquette `v<version>` (sans elle, les AAB sont retirés) — la marche à suivre est dans
 `docs/play-store/guide-philippe.md` (« Avant CHAQUE envoi »), la clé, son rangement et Play
 App Signing dans `docs/signature-android.md`.
+Les étiquettes `v<version>` sont les versions soumises, les seules que ces scripts lisent ;
+les `archive/*` gardent les copies de travail des sessions archivées (essais compris) —
+gardées, jamais construites ni soumises (#340).
 
 ## Contrat d'API
 
@@ -319,7 +326,16 @@ App Signing dans `docs/signature-android.md`.
 réimporter : `bash scripts/importer-contrat.sh` (`gh` authentifié). Chaque jour, le
 workflow « Concordance avec CoproFirst » (`scripts/concordance.py`) vérifie l'écart au
 plancher — pièces identiques, contrat servi par chaque installation connue
-(`INSTALLATIONS`) — et dit si une release plus récente permettrait de le monter.
+(`INSTALLATIONS`) — et dit si une release plus récente permettrait de le monter. Chaque
+verdict a son ticket (`scripts/signaler_ci.py`) : un écart au plancher ouvre ou complète le
+sien, que le retour au vert ferme ; une montée possible est une information, jamais un rouge,
+tenue dans **un** ticket `a-monter` (comme l'iOS), qui se ferme à la main quand le plancher
+monte ; un INCONNU rougit le workflow. Le résumé compte aussi les branches distantes sans PR
+ouverte.
+
+Un rouge de `main` ou d'un passage planifié, dans n'importe quel workflow, ouvre ou complète
+un ticket « CI rouge : <workflow> » — le dernier pas de chaque job ; une PR, jamais
+(`scripts/signaler_ci.py`, tenu par `scripts/verifier_ci.py`).
 
 ## Licence
 

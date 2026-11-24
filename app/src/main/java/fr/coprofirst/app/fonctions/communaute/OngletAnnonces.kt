@@ -169,10 +169,9 @@ fun EtiquettesAnnonce(annonce: AnnonceRead) {
     }
 }
 
-/** L'auteur tel que le serveur l'affiche ; rien s'il n'est pas servi. */
+/** L'auteur tel que le serveur l'affiche (`auteur_affiche`) ; rien s'il n'est pas servi. */
 fun auteurAnnonce(annonce: AnnonceRead): String? =
-    FormatsDuSite.nom(annonce.auteurAffiche, annonce.auteurPrenom, annonce.auteurNom)
-        .takeIf { annonce.auteurAffiche.orEmpty().isNotBlank() || annonce.auteurPrenom.orEmpty().isNotBlank() || annonce.auteurNom.orEmpty().isNotBlank() }
+    FormatsDuSite.nomServi(annonce.auteurAffiche).takeIf { it != FormatsDuSite.TIRET }
 
 private val SQUELETTE = AnnonceRead(
     id = 0,

@@ -324,6 +324,24 @@ CLIENT_NEUF='OkHttpClient[[:space:]]*\([[:space:]]*\)|OkHttpClient\.Builder[[:sp
 autotest_motif "client HTTP neuf" "$CLIENT_NEUF" '    val c = OkHttpClient.Builder().build()' '    val c = ClientHttp.partage.newBuilder().build()'
 interdire "$CLIENT_NEUF" "client HTTP construit hors de ClientHttp — passer par ClientHttp.partage" '^partage/src/main/kotlin/fr/coprofirst/app/session/ClientHttp\.kt$'
 
+# Les petits doublons (#335) : chacun a sa source, et sa copie se refuse. La route des affaires
+# se lit dans la table générée (CheminDuSite.affaires ; le manifeste : test_liens_application.py),
+# le toucher nommé est cliquable, l'empreinte celle des lectures gardées, le serveur TLS des tests
+# d'interface ServeurDeTest (récidive de #42).
+ROUTE_AFFAIRES='"/?tickets[/"]'
+autotest_motif "route des affaires" "$ROUTE_AFFAIRES" '    lien("/tickets/$id", adresse)' '    CheminDuSite.affaire(id)'
+interdire "$ROUTE_AFFAIRES" "route des affaires écrite à la main — CheminDuSite.affaires (table générée)" '' "^($MODULES_CODE)/src/main/.*\\.kt$"
+CLIC_NOMME='clickable\([[:space:]]*onClickLabel'
+autotest_motif "toucher nommé" "$CLIC_NOMME" '    .clickable(onClickLabel = a, role = Role.Button, onClick = f)' '    .cliquable(a, f)'
+interdire "$CLIC_NOMME" "toucher nommé écrit à la main — passer par Modifier.cliquable (commun/Cliquable.kt)" '^app/src/main/java/fr/coprofirst/app/commun/Cliquable\.kt$'
+EMPREINTE_MAIN='MessageDigest\.getInstance'
+autotest_motif "empreinte" "$EMPREINTE_MAIN" '    MessageDigest.getInstance("SHA-256")' '    LecturesGardees.empreinte(texte)'
+interdire "$EMPREINTE_MAIN" "empreinte écrite à la main — LecturesGardees.empreinte" '^partage-android/src/main/kotlin/fr/coprofirst/app/session/LecturesGardees\.kt$'
+TLS_DE_TEST='HeldCertificate\.Builder'
+autotest_motif "serveur TLS de test" "$TLS_DE_TEST" '    val c = HeldCertificate.Builder().build()' '    val serveur = ServeurDeTest()'
+interdire "$TLS_DE_TEST" "serveur TLS monté à la main dans un test d'interface — ServeurDeTest (session, dispatcher)" \
+  '^app/src/androidTest/java/fr/coprofirst/app/entree/ServeurDeTest\.kt$' '^((app|montre)/src/androidTest|tests-interface-communs)/.*\.kt$'
+
 # Un module inclus est un module SUIVI : la liste blanche du .gitignore doit l'ouvrir, sinon
 # ses fichiers neufs restent sur le poste, verts en local, absents de la PR (#211, #214).
 for m in $modules; do
@@ -378,11 +396,19 @@ python3 -I scripts/verifier_dependances_google.py \
   || echec "une dépendance Google n'est pas permise par la licence (python3 -I scripts/verifier_dependances_google.py)"
 
 # La CI prépare Android par UNE action commune, qui tient l'image de chaque émulateur en
-# cache et la télécharge avec un réessai borné (#232) : aucun job ne s'en passe.
+# cache et la télécharge avec un réessai borné (#232) : aucun job ne s'en passe. Chaque job
+# finit par l'alerte (#345), chaque émulateur s'arrête en temps borné (#315).
 python3 -I scripts/verifier_ci.py --autotest >/dev/null \
   || echec "verifier_ci.py : autotest en échec"
 python3 -I scripts/verifier_ci.py \
-  || echec "un job de la CI se prépare hors de l'action commune (python3 -I scripts/verifier_ci.py)"
+  || echec "un job de la CI se prépare hors de l'action commune, ou finit sans alerte (python3 -I scripts/verifier_ci.py)"
+
+# L'alerte et les tickets de la concordance (#345, #344), sur un dépôt simulé ; l'arrêt borné
+# de l'émulateur (#315), sur un arrêt qui pend simulé — un motif unique, jamais l'émulateur du poste.
+python3 -I scripts/signaler_ci.py --autotest >/dev/null \
+  || echec "signaler_ci.py : autotest en échec (python3 -I scripts/signaler_ci.py --autotest)"
+python3 -I scripts/arreter_emulateur.py --autotest >/dev/null \
+  || echec "arreter_emulateur.py : autotest en échec (python3 -I scripts/arreter_emulateur.py --autotest)"
 
 # Le contrôle avant soumission (#4) se prouve : il départage un vert, un rouge et un INCONNU.
 python3 -I scripts/controle_avant_soumission.py --autotest >/dev/null \
