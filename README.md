@@ -319,7 +319,16 @@ App Signing dans `docs/signature-android.md`.
 réimporter : `bash scripts/importer-contrat.sh` (`gh` authentifié). Chaque jour, le
 workflow « Concordance avec CoproFirst » (`scripts/concordance.py`) vérifie l'écart au
 plancher — pièces identiques, contrat servi par chaque installation connue
-(`INSTALLATIONS`) — et dit si une release plus récente permettrait de le monter.
+(`INSTALLATIONS`) — et dit si une release plus récente permettrait de le monter. Chaque
+verdict a son ticket (`scripts/signaler_ci.py`) : un écart au plancher ouvre ou complète le
+sien, que le retour au vert ferme ; une montée possible est une information, jamais un rouge,
+tenue dans **un** ticket `a-monter` (comme l'iOS), qui se ferme à la main quand le plancher
+monte ; un INCONNU rougit le workflow. Le résumé compte aussi les branches distantes sans PR
+ouverte.
+
+Un rouge de `main` ou d'un passage planifié, dans n'importe quel workflow, ouvre ou complète
+un ticket « CI rouge : <workflow> » — le dernier pas de chaque job ; une PR, jamais
+(`scripts/signaler_ci.py`, tenu par `scripts/verifier_ci.py`).
 
 ## Licence
 

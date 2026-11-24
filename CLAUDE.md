@@ -135,4 +135,7 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   démon commun aux worktrees (`gradle.properties`) — jamais `--no-daemon` au poste ;
   la CI relève la borne (`--max-workers=4`). Chaque job Gradle de la CI se prépare par
   `.github/actions/preparer-android` (image d'émulateur en cache, téléchargements réessayés,
-  #232 ; `scripts/verifier_ci.py` le tient).
+  #232 ; `scripts/verifier_ci.py` le tient). Chaque job de chaque workflow finit par l'alerte
+  (`scripts/signaler_ci.py --signaler` : un rouge de `main` ou d'un passage planifié ouvre ou complète
+  un ticket, une PR jamais, #345) et chaque émulateur s'arrête en temps borné
+  (`scripts/arreter_emulateur.py`, #315) — `scripts/verifier_ci.py` refuse un job sans l'un ou l'autre.
