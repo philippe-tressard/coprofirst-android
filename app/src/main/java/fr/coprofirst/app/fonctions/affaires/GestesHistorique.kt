@@ -34,18 +34,16 @@ import fr.coprofirst.app.commun.rememberEnvoi
 
 /**
  * Un geste sans feuille, comme l'iOS (`geste` du bandeau) : envoyé, annoncé par l'avis, puis
- * l'affaire relue ; un échec dit sa phrase (celle du serveur s'il en donne une). `enCours`
- * éteint les boutons le temps de l'envoi.
+ * l'affaire relue ; un échec dit sa phrase (celle du serveur s'il en donne une) — sur
+ * `Envoi`, dont `envoi.enCours` éteint les boutons le temps de l'envoi.
  */
 @Stable
 internal class GesteAnnonce(
-    private val envoi: Envoi,
+    val envoi: Envoi,
     private val avis: AvisDuGeste,
     private val ressources: Resources,
     private val recharger: () -> Unit,
 ) {
-    val enCours: Boolean get() = envoi.enCours
-
     fun lancer(phrase: String, action: suspend () -> Unit) =
         envoi.lancer(echec = { avis.dire(it.phrase(ressources), TonAvis.Erreur) }) {
             action()
