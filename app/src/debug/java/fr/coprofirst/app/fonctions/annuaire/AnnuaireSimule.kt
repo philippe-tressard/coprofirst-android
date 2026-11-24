@@ -29,11 +29,11 @@ class AnnuaireSimule : ServiceAnnuaire {
                 membres = listOf(
                     Annuaire.Membre(
                         10, "Mme", "Elsa", "Gestion", "Elsa GESTION", fonction = "Gestionnaire de copropriété",
-                        email = "gestion@syndic.exemple.test", telephones = listOf("01 00 00 00 01", "06 00 00 00 02"), estPrincipal = true,
+                        email = "gestion@syndic.exemple.test", telephones = listOf("01 99 00 00 61", "06 39 98 00 02"), estPrincipal = true,
                     ),
                     Annuaire.Membre(
                         11, "M.", "Firmin", "Compta", "Firmin COMPTA", fonction = "Comptabilité",
-                        email = "compta@syndic.exemple.test", telephones = listOf("01 00 00 00 03"),
+                        email = "compta@syndic.exemple.test", telephones = listOf("01 99 00 00 63"),
                     ),
                 ),
             ),

@@ -32,7 +32,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     <string name="profil_email">Adresse e-mail</string>
     <string name="profil_mot_de_passe_actuel">Mot de passe actuel</string>
     <string name="profil_changement_adresse">Un lien de confirmation partira à la nouvelle adresse et un avis à l’actuelle, qui reste celle de votre compte — connexion comprise — jusqu’à ce que vous cliquiez sur le lien.</string>
-    <string name="profil_exemple_telephone">+33 6 00 00 00 00</string>
+    <!-- Divergence déclarée : l'iOS montre encore un numéro d'exemple hors de la tranche ARCEP
+         des fictions ; d'ici là, l'Android la suit seul (coprofirst-ios#375, #348). -->
+    <string name="profil_exemple_telephone">+33 6 39 98 00 00</string>
     <string name="profil_exemple_societe">Ex : Agence Dupont, Cabinet ABC…</string>
     <string name="profil_exemple_fonction">Ex : Gestionnaire, Mandataire…</string>
     <string name="profil_lien_envoye">Un lien de confirmation a été envoyé à %1$s. Votre adresse actuelle reste celle du compte jusqu’à ce que vous cliquiez dessus.</string>

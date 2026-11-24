@@ -18,7 +18,7 @@ object FixturesProfil {
       "actif": true, "onboarding_complete": true, "onboarding_etape": 0,
       "preferences_notifications": "{\"autres_batiments_mail\": true}", "restreindre_a_mes_batiments": false,
       "cree_le": "2026-03-02T10:00:00", "nom_affiche": "Camille EXEMPLE", "nom_aide_affiche": "",
-      "telephone": "+33 6 00 00 00 00", "batiment_nom": "Bât. A", "libelle_logement": "Bât. A, T3, 2ème",
+      "telephone": "+33 6 39 98 00 00", "batiment_nom": "Bât. A", "libelle_logement": "Bât. A, T3, 2ème",
       "derniere_connexion": "2026-11-14T18:30:00", "opt_out_telemetrie": false, "est_moderateur": true
     }"""
 

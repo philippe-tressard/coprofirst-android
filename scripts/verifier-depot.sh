@@ -352,11 +352,12 @@ python3 -I scripts/verifier_fixtures.py \
 
 # Aucun nom de personne réelle dans ce dépôt public (standards/14 §9, #326) : une LISTE
 # BLANCHE de noms inventés (prénom + nom-étiquette, « Camille EXEMPLE »), jamais une liste
-# noire, qui republierait les vrais noms.
+# noire, qui republierait les vrais noms. Et aucun téléphone hors des racines que l'ARCEP
+# réserve aux fictions (décision n° 2018-0881, annexe 1, §2.5.12 ; #348).
 python3 -I scripts/verifier_identites.py --autotest >/dev/null \
   || echec "verifier_identites.py : autotest en échec"
 python3 -I scripts/verifier_identites.py \
-  || echec "un nom de personne n'est pas un nom inventé déclaré (python3 -I scripts/verifier_identites.py)"
+  || echec "un nom de personne n'est pas un nom inventé déclaré, ou un téléphone hors de la tranche des fictions (python3 -I scripts/verifier_identites.py)"
 
 # Aucune bibliothèque Google Play services ni Firebase que la permission additionnelle ne
 # nomme (point 4 de LicenseRef-CoproFirst-Magasins, décision du 16/11/2026) : la liste se
