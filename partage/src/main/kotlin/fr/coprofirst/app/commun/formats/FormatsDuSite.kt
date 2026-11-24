@@ -150,8 +150,19 @@ object FormatsDuSite {
     }
 
     /**
-     * Le nom d'une personne tel que le SERVEUR l'affiche (`nom_affiche`), jamais composé
-     * dans un écran ; non servi : prénom puis nom tels que servis, « — » sans l'un ni l'autre.
+     * Le nom d'une personne : « Prénom NOM » tel que le SERVEUR l'affiche (`nom_affiche`,
+     * `locataire_nom_affiche`, `bailleur_nom_affiche`, `nom_aide_affiche`, `auteur_affiche`),
+     * jamais composé dans un écran. Le plancher le sert partout ; vide, « — ». Aucun repli
+     * (`nom(servi:)` de l'iOS).
+     */
+    fun nomServi(servi: String?): String = servi?.trim()?.takeIf { it.isNotEmpty() } ?: TIRET
+
+    /**
+     * Le nom d'une fiche d'ANNUAIRE, qui peut manquer de nom servi : une fiche du conseil ou
+     * du syndic pas encore enregistrée, ou renommée (la feuille, elle, montre le nom que le
+     * serveur rend de la saisie, `POST /noms/affiche`). Non servi ou vide : prénom puis nom
+     * tels que servis ou saisis, « — » sans l'un ni l'autre. Ce repli vit ICI seulement, pour
+     * l'annuaire : `scripts/test_regles_servies.py` le refuse ailleurs (#356).
      */
     fun nom(affiche: String?, prenom: String?, nom: String?): String {
         affiche?.trim()?.takeIf { it.isNotEmpty() }?.let { return it }

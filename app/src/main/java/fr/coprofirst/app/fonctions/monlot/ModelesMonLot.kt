@@ -93,7 +93,7 @@ data class Bail(
     /** `bailEnCours`, `front/src/lib/bail.ts`. */
     val enCours: Boolean get() = statut == "actif" || statut == "en_cours_sortie"
     val termine: Boolean get() = statut == "termine"
-    val nomLocataire: String get() = FormatsDuSite.nom(locataireNomServi, locatairePrenom, locataireNom)
+    val nomLocataire: String get() = FormatsDuSite.nomServi(locataireNomServi)
 
     /** Le regroupement du site : un même locataire, ou ce bail seul (`ext_<id>`). */
     val cleLocataire: String get() = locataireId?.toString() ?: "ext_$id"
@@ -174,5 +174,5 @@ fun BailLocataireOut.lu() = BailDuLocataire(
     dateSortiePrevue = dateSortiePrevue?.toString(),
     bailleurEmail = bailleurEmail,
     bailleurTelephone = bailleurTelephone,
-    nomBailleur = FormatsDuSite.nom(bailleurNomAffiche, bailleurPrenom, bailleurNom),
+    nomBailleur = FormatsDuSite.nomServi(bailleurNomAffiche),
 )

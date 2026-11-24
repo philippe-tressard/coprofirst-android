@@ -75,12 +75,10 @@ class ServiceValidationsApi(private val session: SessionOuverte) : ServiceValida
 /** Un compte en attente de validation (`UserRead`, ce que la carte en montre). */
 data class CompteEnAttente(
     val id: Int,
-    val prenom: String,
-    val nom: String,
     val statut: String,
     /** Le bâtiment tel que le serveur le nomme. */
     val batimentNom: String? = null,
-    /** L'aidé, pour un compte d'aidant ou de mandataire. */
+    /** L'aidé, pour un compte d'aidant ou de mandataire : sa présence décide qu'on le nomme. */
     val prenomAide: String? = null,
     val nomAide: String? = null,
     val creeLe: Instant? = null,
@@ -88,11 +86,11 @@ data class CompteEnAttente(
     val nomServi: String? = null,
     val nomAideServi: String? = null,
 ) {
-    val nomAffiche: String get() = FormatsDuSite.nom(nomServi, prenom, nom)
+    val nomAffiche: String get() = FormatsDuSite.nomServi(nomServi)
 
     /** La personne aidée, nommée de même — `null` sans elle. */
     val nomAideAffiche: String?
-        get() = if (prenomAide == null && nomAide == null) null else FormatsDuSite.nom(nomAideServi, prenomAide, nomAide)
+        get() = if (prenomAide == null && nomAide == null) null else FormatsDuSite.nomServi(nomAideServi)
 }
 
 /** Une demande de badge ou de télécommande en attente (`CommandeAccesEnAttente`). */
@@ -118,7 +116,7 @@ fun codesSaisis(saisie: String): List<String> = saisie.split(',', ';', ' ', '\t'
 
 /** Un compte de la file servie — le MÊME branchement pour le service réel et les tests. */
 internal fun UserRead.lu() = CompteEnAttente(
-    id, prenom, nom, statut.value, batimentNom, prenomAide, nomAide, creeLe.toInstant(), nomAffiche, nomAideAffiche,
+    id, statut.value, batimentNom, prenomAide, nomAide, creeLe.toInstant(), nomAffiche, nomAideAffiche,
 )
 
 internal fun CommandeAccesEnAttente.lu() = CommandeEnAttente(id, type, quantite, demandeurNom, lot, batiment, creeLe.toInstant())
