@@ -169,6 +169,18 @@ class ResidenceInterfaceTest {
         assertEquals(listOf("Puis-je fermer mon balcon ?"), residence.posees)
     }
 
+    /** #324 : une question que l'assistant refuse : la phrase du serveur se dit, la question reste à reposer. */
+    @Test
+    fun uneQuestionRefuseeDitLaPhraseDuServeur() {
+        ouvrir()
+        ecran.toucherTag("onglet.reglement")
+        ecran.amenerTag(ReperesResidence.QUESTION).performTextInput("Une question de refus ?")
+        ecran.amenerTag(ReperesResidence.POSER).assertIsEnabled().toucher()
+        ecran.attendreTexte("L'assistant est momentanément indisponible.")
+        ecran.amenerTag(ReperesResidence.POSER).assertIsEnabled()
+        assertTrue("aucune question ajoutée", ecran.onAllNodes(hasTestTag(ReperesResidence.question(99))).fetchSemanticsNodes().isEmpty())
+    }
+
     @Test
     fun leLocataireNeVoitQueLaFiche() {
         ouvrir(DroitsOnglet(locataire = true))

@@ -14,6 +14,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import fr.coprofirst.app.commun.Roles
 import fr.coprofirst.app.commun.amenerTag
 import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.toucherTag
@@ -61,6 +62,10 @@ class ProfilInterfaceTest {
     private var logoutInjoignable = false
     private val nomsDemandes = mutableListOf<Int>()
 
+    /** #324 : l'export des statistiques refusé par le serveur, tant que ce drapeau est levé. */
+    @Volatile
+    private var exportRefuse = false
+
     private fun JsonObject.texte(cle: String) = (this[cle] as? JsonPrimitive)?.contentOrNull?.trim().orEmpty()
 
     private val residence = object : Dispatcher() {
@@ -71,9 +76,19 @@ class ProfilInterfaceTest {
                 chemin.endsWith("/auth/logout") && logoutInjoignable -> json(503, "{}")
                 chemin.endsWith("/auth/login") || chemin.endsWith("/auth/logout") -> json(200, "{}")
                 chemin.endsWith("/auth/me") -> {
-                    if (request.method == "PATCH") synchronized(saisies) { saisies += request.body?.utf8().orEmpty() }
-                    json(200, FixturesProfil.MOI)
+                    val corps = request.body?.utf8().orEmpty()
+                    if (request.method == "PATCH") synchronized(saisies) { saisies += corps }
+                    // #324 : un prénom que le serveur refuse, pour la phrase du refus.
+                    if ("Refusé" in corps) json(400, REFUS_IDENTITE) else json(200, FixturesProfil.MOI)
                 }
+                chemin.endsWith("/auth/change-password") -> if ("\"mauvais\"" in request.body?.utf8().orEmpty()) {
+                    json(400, REFUS_MOT_DE_PASSE)
+                } else {
+                    MockResponse.Builder().code(204).build()
+                }
+                chemin.endsWith("/auth/me/demande-modification") ->
+                    if ("refuse" in request.body?.utf8().orEmpty()) json(400, REFUS_DEMANDE) else json(201, DEMANDE_MODIFICATION)
+                chemin.endsWith("/auth/me/telemetrie") -> if (exportRefuse) json(400, REFUS_EXPORT) else json(200, """{"pages": []}""")
                 chemin.endsWith("/auth/demande-suppression") -> suppression(request)
                 chemin.endsWith("/noms/affiche") -> {
                     synchronized(nomsDemandes) { nomsDemandes += 1 }
@@ -216,6 +231,73 @@ class ProfilInterfaceTest {
         ecran.waitUntil(DELAI_MS) { ecran.onAllNodes(hasTestTag(REPERE_NOM) and hasText("Dominique EXEMPLE", substring = true)).fetchSemanticsNodes().isNotEmpty() }
     }
 
+    /**
+     * #324 : « Informations personnelles » : un refus du serveur dit sa phrase et garde la
+     * feuille ; enregistrées, la feuille se ferme et le profil le dit.
+     */
+    @Test
+    fun lIdentiteSEnregistreOuDitLeRefusDuServeur() {
+        ecran.toucherTag("profil.modifierIdentite")
+        val prenom = ecran.onNodeWithTag("profil.identite.prenom")
+        prenom.performTextClearance()
+        prenom.performTextInput("Refusé")
+        ecran.toucherTag("profil.identite.enregistrer")
+        ecran.attendreTexte("Ce prénom n'est pas accepté.")
+        prenom.performTextClearance()
+        prenom.performTextInput("Dominique")
+        ecran.toucherTag("profil.identite.enregistrer")
+        ecran.attendreTexte("Profil mis à jour")
+        assertTrue(synchronized(saisies) { saisies.any { "Dominique" in it } })
+    }
+
+    /** #324 : « Modifier le mot de passe » : le refus du serveur se dit, puis le changement réussi se confirme. */
+    @Test
+    fun leMotDePasseSeChangeOuDitLeRefusDuServeur() {
+        ecran.toucherTag("profil.motDePasse")
+        val actuel = ecran.onNodeWithTag("profil.motDePasse.actuel")
+        actuel.performTextInput("mauvais")
+        ecran.onNodeWithTag("profil.motDePasse.nouveau").performTextInput(NOUVEAU_MOT_DE_PASSE)
+        ecran.onNodeWithTag("profil.motDePasse.confirmation").performTextInput(NOUVEAU_MOT_DE_PASSE)
+        ecran.toucherTag("profil.motDePasse.modifier")
+        ecran.attendreTexte("Mot de passe actuel incorrect.")
+        actuel.performTextClearance()
+        actuel.performTextInput("ancien")
+        ecran.toucherTag("profil.motDePasse.modifier")
+        ecran.attendreTexte("Mot de passe modifié")
+    }
+
+    /**
+     * #324 : la demande de modification : le refus du serveur se dit sous le bouton ; la
+     * demande partie, il s'efface et la réussite se dit.
+     */
+    @Test
+    fun laDemandeDeModificationPartOuDitLeRefusDuServeur() {
+        ecran.toucherTag("profil.demandeModification")
+        ecran.toucherTag("profil.demande.statut")
+        ecran.toucherTexte(Roles.statut("locataire").libelle)
+        val motif = ecran.onNodeWithTag("profil.demande.motif")
+        motif.performTextInput("refuse")
+        ecran.toucherTag("profil.demande.envoyer")
+        ecran.attendreTexte("Une demande est déjà en attente.")
+        motif.performTextClearance()
+        motif.performTextInput("Changement de bail")
+        ecran.toucherTag("profil.demande.envoyer")
+        ecran.attendreTexte("Demande envoyée au conseil syndical")
+        ecran.onAllNodesWithText("Une demande est déjà en attente.").assertCountEquals(0)
+    }
+
+    /** #324 : l'export des statistiques : le refus du serveur se dit, puis l'export prêt se partage. */
+    @Test
+    fun lExportSePrepareOuDitLeRefusDuServeur() {
+        exportRefuse = true
+        ecran.toucherTag("profil.droits.exporter")
+        ecran.attendreTexte("L'export n'est pas disponible.")
+        exportRefuse = false
+        ecran.toucherTag("profil.droits.exporter")
+        ecran.attendreTexte("Export prêt.")
+        ecran.amenerTag("profil.droits.partager")
+    }
+
     /** #177 : une déconnexion sans réponse du serveur se dit sur la connexion, sans empêcher d'en sortir. */
     @Test
     fun uneDeconnexionSansReponseLeDitSurLaConnexion() {
@@ -228,6 +310,13 @@ class ProfilInterfaceTest {
 
     private companion object {
         const val REPERE_NOM = "profil.identite.nom-affiche"
+        const val NOUVEAU_MOT_DE_PASSE = "correct-cheval-pile-agrafe"
+        const val REFUS_IDENTITE = """{"detail": "Ce prénom n'est pas accepté."}"""
+        const val REFUS_MOT_DE_PASSE = """{"detail": "Mot de passe actuel incorrect."}"""
+        const val REFUS_DEMANDE = """{"detail": "Une demande est déjà en attente."}"""
+        const val REFUS_EXPORT = """{"detail": "L'export n'est pas disponible."}"""
+        const val DEMANDE_MODIFICATION =
+            """{"id": 3, "utilisateur_id": 7, "statut_souhaite": "locataire", "statut_demande": "en_attente", "cree_le": "2026-11-24T09:00:00"}"""
         const val DELAI_MS = 10_000L
     }
 }

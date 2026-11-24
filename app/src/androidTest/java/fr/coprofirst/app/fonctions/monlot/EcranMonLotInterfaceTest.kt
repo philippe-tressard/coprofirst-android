@@ -12,6 +12,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.coprofirst.app.ThemeCoproFirst
+import fr.coprofirst.app.commun.amenerTag
 import fr.coprofirst.app.commun.attendreTexte
 import fr.coprofirst.app.commun.residenceSimulee
 import fr.coprofirst.app.commun.toucherTag
@@ -111,6 +112,20 @@ class EcranMonLotInterfaceTest {
         ecran.attendreTexte("Accès enregistré")
         ecran.toucherTag(ReperesMonLot.onglet("telecommandes"))
         ecran.attendreTexte("TC-7777") // la liste est relue
+    }
+
+    /** #324 : un code déjà enregistré : le refus du serveur se dit dans la feuille, qui reste ouverte. */
+    @Test
+    fun unCodeDejaEnregistreDitLeRefusDuServeur() {
+        ecran.attendreTexte("Caractéristiques")
+        ecran.toucherTag(ReperesMonLot.onglet("badges"))
+        ecran.toucherTag(ReperesMonLot.GESTES)
+        ecran.toucherTag(ReperesMonLot.DECLARER)
+        ecran.toucherTag(ReperesMonLot.DECLARER_CODE)
+        ecran.onNodeWithTag(ReperesMonLot.DECLARER_CODE).performTextInput("TC-2048")
+        ecran.toucherTag(ReperesMonLot.ENREGISTRER)
+        ecran.attendreTexte("déjà enregistré sur votre compte")
+        ecran.amenerTag(ReperesMonLot.ENREGISTRER)
     }
 
     @Test

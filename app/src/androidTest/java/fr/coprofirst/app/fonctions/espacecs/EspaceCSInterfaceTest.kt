@@ -129,6 +129,17 @@ class EspaceCSInterfaceTest {
         assertTrue(residence.recues.any { it.contains("/admin/commandes-acces/71/traiter") && it.contains("\"4521\"") })
     }
 
+    /** #324 : un compte traité ailleurs entre-temps : la feuille dit la phrase du serveur et reste ouverte. */
+    @Test
+    fun unCompteDejaTraiteDitLeRefusDuServeur() {
+        ecran.attendreTag(ReperesValidations.compte(501))
+        residence.traiterAilleurs(501)
+        ecran.toucherTag("${ReperesValidations.compte(501)}.approuver")
+        ecran.toucherTag(ReperesValidations.VALIDATION_ENREGISTRER)
+        ecran.attendreTexte("Compte déjà traité")
+        ecran.attendreTag(ReperesValidations.VALIDATION_ENREGISTRER)
+    }
+
     @Test
     fun rejeterUnCompte() {
         ecran.toucherTag("${ReperesValidations.compte(503)}.rejeter")

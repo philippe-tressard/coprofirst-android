@@ -70,6 +70,12 @@ class ResidenceSimuleeCS {
         }
     }
 
+    /** Un compte qu'un autre membre du conseil a traité entre-temps : le traiter ici est refusé (409). */
+    @Synchronized
+    fun traiterAilleurs(id: Int) {
+        comptes.removeAll { it.id() == id }
+    }
+
     private fun traiterCompte(id: Int, corps: String): Pair<Int, String> {
         if (comptes.none { it.id() == id }) return 409 to """{"detail": "Compte déjà traité"}"""
         comptes.removeAll { it.id() == id }
