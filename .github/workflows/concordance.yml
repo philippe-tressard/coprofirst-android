@@ -84,7 +84,8 @@ jobs:
           if [ "$PLANCHER" = 1 ] && { [ "$MONTEE" = 0 ] || [ "$MONTEE" = 3 ]; }; then
             echo "tenu=oui" >> "$GITHUB_OUTPUT"
           fi
-          [ "$PLANCHER" = 0 ] && [ "$MONTEE" != 2 ]
+          # Un vert se prouve : plancher 0, montée 0 ou 3 ; un code vide ou inattendu est INCONNU.
+          [ "$PLANCHER" = 0 ] && { [ "$MONTEE" = 0 ] || [ "$MONTEE" = 3 ]; }
       - name: Tickets attendus encore ouverts (une divergence d'étape, un « d'ici là » qui cite un ticket clos, #338)
         id: attendus
         if: success() || failure()
