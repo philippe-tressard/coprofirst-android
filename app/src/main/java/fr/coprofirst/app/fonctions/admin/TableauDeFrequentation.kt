@@ -27,6 +27,7 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Carte
+import fr.coprofirst.app.commun.Intertitre
 import fr.coprofirst.app.commun.Roles
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.texte.Separateur
@@ -94,7 +95,7 @@ private fun CarteIndicateur(indicateur: Indicateur, modifier: Modifier) {
 private fun Pages(pages: List<TableauTelemetrie.PageVue>, accesParPage: Boolean) {
     val couleurs = LocalCouleurs.current
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        TitreSection(stringResource(R.string.admin_telemetrie_pages_vues))
+        Intertitre(stringResource(R.string.admin_telemetrie_pages_vues), ecartAuDessus = 0.dp)
         Carte {
             pages.forEachIndexed { rang, page ->
                 if (rang > 0) HorizontalDivider(color = couleurs.border)
@@ -131,7 +132,7 @@ private fun Pages(pages: List<TableauTelemetrie.PageVue>, accesParPage: Boolean)
 private fun Utilisateurs(utilisateurs: List<TableauTelemetrie.UtilisateurActif>) {
     val couleurs = LocalCouleurs.current
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        TitreSection(stringResource(R.string.admin_telemetrie_utilisateurs_actifs))
+        Intertitre(stringResource(R.string.admin_telemetrie_utilisateurs_actifs), ecartAuDessus = 0.dp)
         Carte {
             utilisateurs.forEachIndexed { rang, utilisateur ->
                 if (rang > 0) HorizontalDivider(color = couleurs.border)

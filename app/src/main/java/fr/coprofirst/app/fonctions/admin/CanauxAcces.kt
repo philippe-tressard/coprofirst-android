@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.commun.Carte
+import fr.coprofirst.app.commun.Intertitre
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 
 /**
@@ -38,7 +39,7 @@ internal fun CanauxAcces(canaux: List<TableauTelemetrie.PartCanal>) {
     // La colonne « Utilisateurs » du site : seulement si un canal en sert (Jour, Mois).
     val avecUtilisateurs = canaux.any { it.visiteurs != null }
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        TitreSection(stringResource(R.string.admin_telemetrie_acces))
+        Intertitre(stringResource(R.string.admin_telemetrie_acces), ecartAuDessus = 0.dp)
         Carte {
             canaux.forEachIndexed { rang, canal ->
                 if (rang > 0) HorizontalDivider(color = couleurs.border)

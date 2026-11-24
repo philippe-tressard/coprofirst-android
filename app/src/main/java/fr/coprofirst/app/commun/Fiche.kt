@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.charte.Typo
@@ -32,15 +33,38 @@ import fr.coprofirst.app.charte.Typo
  * `LigneFiche`, `NoteAcces`, `.styleLibelle()`.
  */
 
-/** Un intertitre de section, avec son compte déjà dans le texte (« 🏢 Lots possédés (3) »). */
+/**
+ * Le titre d'une section d'une fiche ou d'un onglet, en serif, son compte déjà dans le texte
+ * (« 🏢 Lots possédés (3) ») ; annoncé comme titre. Le seul (#323). `ecartAuDessus` : 8 dp
+ * sous la section qui précède, comme l'`Intertitre` de l'iOS ; 0 en tête d'un bloc que sa
+ * colonne espace déjà (Administration, Espace CS), où l'iOS écrit ce style sans écart.
+ */
 @Composable
-fun Intertitre(titre: String) {
+fun Intertitre(titre: String, modifier: Modifier = Modifier, ecartAuDessus: Dp = 8.dp) {
     Text(
         titre,
         style = Typo.titre(MaterialTheme.typography.titleLarge),
         color = LocalCouleurs.current.text,
-        modifier = Modifier.fillMaxWidth().padding(top = 8.dp).semantics { heading() },
+        modifier = modifier.fillMaxWidth().padding(top = ecartAuDessus).semantics { heading() },
     )
+}
+
+/**
+ * Le titre d'un bloc DANS une page, d'un cran sous l'intertitre (sans serif, `titleMedium`) —
+ * annoncé comme titre —, et son introduction en sourd : le second niveau de l'iOS
+ * (`.font(.headline)`, `.isHeader`), dans l'avis sur le règlement et les renouvellements (#323).
+ */
+@Composable
+fun TitreDeBloc(titre: String, modifier: Modifier = Modifier, intro: String? = null) {
+    val couleurs = LocalCouleurs.current
+    if (intro == null) {
+        Text(titre, style = MaterialTheme.typography.titleMedium, color = couleurs.text, modifier = modifier.semantics { heading() })
+        return
+    }
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(titre, style = MaterialTheme.typography.titleMedium, color = couleurs.text, modifier = Modifier.semantics { heading() })
+        Text(intro, style = MaterialTheme.typography.bodySmall, color = couleurs.textMuted)
+    }
 }
 
 /** Une ligne « libellé — valeur » d'une fiche (le `<dl>` du site) ; la valeur passe dessous quand la place manque. */

@@ -28,6 +28,7 @@ import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.Chargement
+import fr.coprofirst.app.commun.Intertitre
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.onglets.ContexteOnglet
@@ -58,7 +59,7 @@ fun OngletMaintenance(contexte: ContexteOnglet, service: ServiceAdmin) {
 @Composable
 private fun SectionSanteTaches(contexte: ContexteOnglet, service: ServiceAdmin) {
     Column(verticalArrangement = Arrangement.spacedBy(Mise.ecart)) {
-        TitreSection(stringResource(R.string.admin_maintenance_sante_titre))
+        Intertitre(stringResource(R.string.admin_maintenance_sante_titre), ecartAuDessus = 0.dp)
         Chargement(
             charger = { service.santeTaches() },
             cle = contexte.actualisation,
@@ -143,7 +144,7 @@ private fun Anomalies(sante: SanteTaches) {
 @Composable
 private fun SectionDernierExport(contexte: ContexteOnglet, service: ServiceAdmin) {
     Column(verticalArrangement = Arrangement.spacedBy(Mise.ecart)) {
-        TitreSection(stringResource(R.string.admin_maintenance_export_titre))
+        Intertitre(stringResource(R.string.admin_maintenance_export_titre), ecartAuDessus = 0.dp)
         Chargement(
             charger = { service.dernierExport() },
             cle = contexte.actualisation,

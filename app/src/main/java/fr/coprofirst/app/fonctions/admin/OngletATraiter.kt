@@ -37,6 +37,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
+import fr.coprofirst.app.commun.Intertitre
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.PhraseAvis
 import fr.coprofirst.app.commun.Roles
@@ -116,7 +117,7 @@ private fun FileDemandesProfil(contexte: ContexteOnglet, service: ServiceAdmin) 
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        TitreSection(stringResource(R.string.admin_demandes_titre))
+        Intertitre(stringResource(R.string.admin_demandes_titre), ecartAuDessus = 0.dp)
         val demandes = etat.demandes
         val erreur = etat.erreur
         when {

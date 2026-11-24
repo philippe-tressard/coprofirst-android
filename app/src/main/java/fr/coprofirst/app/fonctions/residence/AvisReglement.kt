@@ -52,6 +52,7 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.charte.Typo
+import fr.coprofirst.app.commun.TitreDeBloc
 import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.texte.TexteRiche
@@ -117,18 +118,11 @@ private fun AvisDAvant(question: QuestionReglement) {
 private fun Section(@StringRes titre: Int, html: String?) {
     if (html.isNullOrEmpty()) return
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        TitreSection(stringResource(titre))
+        TitreDeBloc(stringResource(titre))
         TexteRiche(html)
     }
 }
 
-@Composable
-private fun TitreSection(titre: String, modifier: Modifier = Modifier) {
-    Text(
-        titre, style = MaterialTheme.typography.titleMedium, color = LocalCouleurs.current.text,
-        modifier = modifier.semantics { heading() },
-    )
-}
 
 /**
  * L'avis à RENVOIS (`AvisReglement.svelte`) : la synthèse, puis « Ce qui fonde l'avis » —
@@ -164,7 +158,7 @@ private fun AvisARenvois(question: QuestionReglement) {
     TexteRiche(question.reponse)
     if (question.fondements.isNotEmpty()) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            TitreSection(stringResource(R.string.avis_fondements), Modifier.padding(bottom = 4.dp).testTag(ReperesResidence.FONDEMENTS))
+            TitreDeBloc(stringResource(R.string.avis_fondements), Modifier.padding(bottom = 4.dp).testTag(ReperesResidence.FONDEMENTS))
             question.fondements.forEach { LigneFondement(it) { aller(it) } }
             if (question.renvoisSansExtrait.isNotEmpty()) {
                 Text(
@@ -273,7 +267,7 @@ private fun Extraits(
     if (extraits.isEmpty()) return
     val couleurs = LocalCouleurs.current
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        titre?.let { TitreSection(stringResource(it)) }
+        titre?.let { TitreDeBloc(stringResource(it)) }
         extraits.forEach { extrait ->
             val vise = extrait.renvoi != null && extrait.renvoi == cible
             val signal by animateFloatAsState(if (vise) 1f else 0f, label = "signal")
