@@ -8,6 +8,10 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
 Application Android native de [CoproFirst](https://github.com/philippe-tressard/coprofirst),
 le logiciel libre de gestion de copropriété — Kotlin et Jetpack Compose.
 
+Licence : AGPL-3.0-or-later, avec des permissions additionnelles pour les magasins Android
+et deux bibliothèques de Google nommées (« Licence », en fin de page). GitHub l'affiche
+« Other » : il ne reconnaît pas l'AGPL quand `LICENSE` porte aussi les permissions.
+
 ## Ce que fait l'app
 
 L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-tressard/coprofirst-ios), aux couleurs de la charte de CoproFirst — celles de la résidence dès qu'elle est reconnue, au clair comme au sombre.
@@ -311,6 +315,9 @@ jamais en CI) : `bash scripts/construire-release.sh`, qui finit par le contrôle
 et l'étiquette `v<version>` (sans elle, les AAB sont retirés) — la marche à suivre est dans
 `docs/play-store/guide-philippe.md` (« Avant CHAQUE envoi »), la clé, son rangement et Play
 App Signing dans `docs/signature-android.md`.
+Les étiquettes `v<version>` sont les versions soumises, les seules que ces scripts lisent ;
+les `archive/*` gardent les copies de travail des sessions archivées (essais compris) —
+gardées, jamais construites ni soumises (#340).
 
 ## Contrat d'API
 
