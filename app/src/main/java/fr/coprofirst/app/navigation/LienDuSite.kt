@@ -3,6 +3,8 @@
 
 package fr.coprofirst.app.navigation
 
+import fr.coprofirst.app.session.audience.CheminDuSite
+
 /**
  * Le chemin d'un lien du site → l'écran qu'il vise dans la résidence (#147), comme
  * `LienUniversel` de l'iOS. L'hôte, la résidence et sa connexion sont l'affaire de l'entrée
@@ -25,17 +27,17 @@ object LienDuSite {
     /** Le fil : là où revient un lien qui ne vise rien que l'app porte. */
     val FIL = Destination.Page(LibellesBarre.ID_FIL)
 
-    /** La route des affaires sur le site — celle d'une affaire est `/tickets/<id>`. */
-    private const val ROUTE_AFFAIRES = "/tickets"
     private const val NATURE_AFFAIRE = "affaire"
 
     fun destination(chemin: String): Destination? {
         val segments = chemin.substringBefore('#').substringBefore('?').split('/').filter { it.isNotEmpty() }
+        // La route des affaires (`/tickets`, celle d'une affaire `/tickets/<id>`) : la table générée.
+        val affaires = CheminDuSite.affaires
         return when {
             segments.isEmpty() -> FIL
-            segments.first() == "tickets" && segments.size == 2 ->
+            affaires != null && segments.size == 2 && "/" + segments.first() == affaires ->
                 segments[1].toIntOrNull()?.let { Destination.Element(NATURE_AFFAIRE, it.toString()) } ?: FIL
-            segments.first() == "actualites" -> page(ROUTE_AFFAIRES) ?: FIL
+            segments.first() == "actualites" -> affaires?.let(::page) ?: FIL
             segments == listOf("auth", "connexion") -> null
             else -> page("/" + segments.joinToString("/")) ?: FIL
         }

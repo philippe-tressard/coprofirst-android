@@ -5,7 +5,6 @@ package fr.coprofirst.app.commun
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,7 +13,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.charte.Mise
@@ -38,7 +36,7 @@ fun Carte(
             .clip(forme)
             .background(couleurs.surface)
             .border(1.dp, couleurs.border, forme)
-            .then(if (ouvrir != null) Modifier.clickable(onClickLabel = action, role = Role.Button, onClick = ouvrir) else Modifier)
+            .then(if (ouvrir != null) Modifier.cliquable(action, ouvrir) else Modifier)
             .padding(16.dp),
         content = contenu,
     )

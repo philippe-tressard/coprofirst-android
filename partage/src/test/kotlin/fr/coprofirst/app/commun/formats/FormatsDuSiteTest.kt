@@ -73,6 +73,16 @@ class FormatsDuSiteTest {
         assertEquals("1,0 Mo", F.octets(1023L * 1024 + 900))
     }
 
+    /** Le nom servi seul : rogné, « — » vide ou absent — jamais de repli (#356). */
+    @Test
+    fun nomServiSeul() {
+        assertEquals("Camille EXEMPLE", F.nomServi("  Camille EXEMPLE "))
+        assertEquals(F.TIRET, F.nomServi(""))
+        assertEquals(F.TIRET, F.nomServi("   "))
+        assertEquals(F.TIRET, F.nomServi(null))
+    }
+
+    /** Le repli de l'annuaire : le nom servi d'abord, puis prénom et nom saisis. */
     @Test
     fun nomServiDabord() {
         assertEquals("Camille EXEMPLE", F.nom("Camille EXEMPLE", "x", "y"))

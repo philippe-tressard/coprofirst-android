@@ -22,12 +22,16 @@ Deux verdicts, jamais confondus :
    et si les installations connues servent déjà ce contrat. Sortie 0
    si la dernière release EST le plancher.
 
+3. `--branches` (#340) — les branches distantes de CE dépôt sans PR ouverte, hors `main` : une
+   branche oubliée après sa fusion (la suppression à la fusion n'agit que depuis son réglage).
+   Une information du résumé, jamais un rouge (sortie 0) ; une liste illisible, INCONNU.
+
 Une release, une pièce ou une installation illisible : INCONNU (sortie 2), jamais vert.
 
    `--release vX.Y.Z` vise une release précise plutôt que la dernière (une montée
    qui s'arrête sous la dernière, parce qu'une installation ne la sert pas encore).
 
-Usage : concordance.py [--plancher | --montee [--release vX.Y.Z] | --autotest]
+Usage : concordance.py [--plancher | --montee [--release vX.Y.Z] | --branches | --autotest]
                        [--rapport FICHIER.md] [--simuler-ecart]
 """
 
@@ -35,6 +39,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import pathlib
 import re
 import shlex
@@ -238,6 +243,33 @@ def verdict_montee(release: str | None = None) -> tuple[int, list[str]]:
     return INFORMATION, lignes
 
 
+# ── Les branches sans PR (#340) ────────────────────────────────────────────────────
+
+LIMITE_PR = 500
+
+
+def branches_sans_pr(branches: list[str], tetes: set[str]) -> list[str]:
+    """Les branches distantes, hors `main`, qu'aucune PR ouverte ne porte."""
+    return sorted(b for b in branches if b != "main" and b not in tetes)
+
+
+def verdict_branches(depot: str) -> tuple[int, list[str]]:
+    branches = subprocess.run(["gh", "api", "--paginate", f"repos/{depot}/branches?per_page=100", "-q", ".[].name"],
+                              capture_output=True, text=True)
+    prs = subprocess.run(["gh", "pr", "list", "-R", depot, "--state", "open", "--limit", str(LIMITE_PR),
+                          "--json", "headRefName", "-q", ".[].headRefName"], capture_output=True, text=True)
+    noms = branches.stdout.split()
+    # `main` absente de la liste : elle est illisible, jamais « aucune branche » (standards/04 §1).
+    if branches.returncode != 0 or prs.returncode != 0 or "main" not in noms:
+        raise Illisible("branches ou PR du dépôt illisibles (gh auth status ?)")
+    tetes = set(prs.stdout.split())
+    if len(prs.stdout.split()) >= LIMITE_PR:
+        raise Illisible(f"{LIMITE_PR} PR ouvertes ou plus : la liste est tronquée")
+    seules = branches_sans_pr(noms, tetes)
+    return 0, [f"{len(seules)} branche(s) distante(s) sans PR ouverte, hors `main` (information, jamais un rouge) :",
+               *(f"- `{b}`" for b in seules)]
+
+
 # ── Autotest : un écart posé exprès est vu, un cas zéro passe ───────────────────────
 
 
@@ -257,6 +289,8 @@ def autotest() -> int:
     assert version("v3.103.0") == (3, 103, 0) and version("x") is None
     assert cles_neuves({"tables": {"a": 1}}, {"tables": {"a": 1, "b": 2}}, "tables") == ["b"]
     assert cles_neuves({"tables": {"a": 1}}, {"tables": {"a": 1}}, "tables") == []
+    assert branches_sans_pr(["main", "x", "y"], {"y"}) == ["x"]
+    assert branches_sans_pr(["main"], set()) == []
     print("✅ autotest : un écart posé exprès est vu, un cas zéro passe")
     return 0
 
@@ -266,6 +300,7 @@ def main(argv: list[str]) -> int:
     mode = p.add_mutually_exclusive_group()
     mode.add_argument("--plancher", action="store_true")
     mode.add_argument("--montee", action="store_true")
+    mode.add_argument("--branches", action="store_true")
     mode.add_argument("--autotest", action="store_true")
     p.add_argument("--release", help="la release visée par --montee (défaut : la dernière)")
     p.add_argument("--rapport", type=pathlib.Path)
@@ -274,10 +309,14 @@ def main(argv: list[str]) -> int:
     if args.autotest:
         return autotest()
     try:
-        code, lignes = verdict_montee(args.release) if args.montee else verdict_plancher(args.simuler_ecart)
+        if args.branches:
+            code, lignes = verdict_branches(os.environ.get("GITHUB_REPOSITORY", "philippe-tressard/coprofirst-android"))
+        else:
+            code, lignes = verdict_montee(args.release) if args.montee else verdict_plancher(args.simuler_ecart)
     except (Illisible, OSError, ValueError, KeyError) as e:
         code, lignes = INCONNU, [f"❓ INCONNU : {e}"]
-    texte = "\n".join(["## " + ("Montée possible" if args.montee else "Écart au plancher"), "", *lignes, ""])
+    titre = "Branches sans PR ouverte" if args.branches else "Montée possible" if args.montee else "Écart au plancher"
+    texte = "\n".join(["## " + titre, "", *lignes, ""])
     print(texte)
     if args.rapport:
         args.rapport.write_text(texte, encoding="utf-8")

@@ -4,10 +4,17 @@
 # La concordance quotidienne avec coprofirst (#30), comme celle de l'iOS : ce que l'app
 # dérive du serveur se surveille chaque jour (standards/09 §8, règle 2). Elle ne lit que
 # ce que coprofirst publie (pièces de release, GET /config des installations connues).
-# Un écart au plancher ouvre un ticket (ou le complète) ; le retour au vert le ferme. La
-# montée possible ne s'affiche que dans le résumé : c'est une information, pas un rouge.
+# Chaque verdict a son destinataire, un ticket, par UNE écriture (scripts/signaler_ci.py) :
+# - un écart au plancher ouvre son ticket (ou le complète) ; le retour au vert le ferme ;
+# - une montée possible (sortie 3) est une information, jamais un rouge : elle ouvre UNE fois le
+#   ticket « a-monter », puis le tient à jour (#344, comme l'iOS) ; le job échoue si elle n'a ni
+#   produit ni trouvé ce ticket. Il se ferme à la main, quand le plancher monte ;
+# - un INCONNU, ou tout autre rouge, échoue le job : l'alerte, son dernier pas (#345), ouvre ou
+#   complète « CI rouge : Concordance avec CoproFirst ». Un écart au plancher seul ne la
+#   déclenche pas : il a déjà son ticket.
 # Elle juge aussi que les tickets qu'attend un commentaire du dépôt sont ouverts (#338) : un
 # commentaire qui attend un ticket clos renvoie au vide (scripts/test_divergences.py --tickets).
+# Et elle compte les branches distantes sans PR ouverte, au résumé, sans rougir (#340).
 name: Concordance avec CoproFirst
 
 on:
@@ -35,11 +42,12 @@ jobs:
     timeout-minutes: 10
     env:
       GH_TOKEN: ${{ github.token }}
-      TITRE: "Concordance avec CoproFirst : écart au plancher"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Autotest (un écart posé exprès est vu, un cas zéro passe)
-        run: python3 -I scripts/concordance.py --autotest
+      - name: Autotests (un écart posé exprès est vu, un cas zéro passe ; les tickets sur un dépôt simulé)
+        run: |
+          python3 -I scripts/concordance.py --autotest
+          python3 -I scripts/signaler_ci.py --autotest > /dev/null
       - name: Écart au plancher
         id: plancher
         env:
@@ -55,31 +63,35 @@ jobs:
           set +e
           python3 -I scripts/concordance.py --montee --rapport "$RUNNER_TEMP/montee.md"
           echo "code=$?" >> "$GITHUB_OUTPUT"
+      - name: Branches sans PR ouverte (une information, jamais un rouge ; illisible, INCONNU au résumé, #340)
+        run: python3 -I scripts/concordance.py --branches --rapport "$RUNNER_TEMP/branches.md" || true
       - name: Résumé
-        run: cat "$RUNNER_TEMP/plancher.md" "$RUNNER_TEMP/montee.md" >> "$GITHUB_STEP_SUMMARY"
-      - name: Ticket (un rouge l'ouvre ou le complète, le vert le ferme)
+        run: cat "$RUNNER_TEMP/plancher.md" "$RUNNER_TEMP/montee.md" "$RUNNER_TEMP/branches.md" >> "$GITHUB_STEP_SUMMARY"
+      - name: Tickets (écart au plancher ; montée possible, « a-monter »)
         if: ${{ !inputs.simuler_ecart }}
         env:
-          CODE: ${{ steps.plancher.outputs.code }}
-        run: |
-          OUVERT=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "in:title \"$TITRE\"" \
-            --json number,title -q ".[] | select(.title == env.TITRE) | .number" | head -1)
-          if [ "$CODE" = 1 ]; then
-            if [ -n "$OUVERT" ]; then
-              gh issue comment "$OUVERT" --repo "$GITHUB_REPOSITORY" --body-file "$RUNNER_TEMP/plancher.md"
-            else
-              gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITRE" --body-file "$RUNNER_TEMP/plancher.md"
-            fi
-          elif [ "$CODE" = 0 ] && [ -n "$OUVERT" ]; then
-            gh issue close "$OUVERT" --repo "$GITHUB_REPOSITORY" --comment "Retour au vert : $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-          fi
+          PLANCHER: ${{ steps.plancher.outputs.code }}
+          MONTEE: ${{ steps.montee.outputs.code }}
+        run: python3 -I scripts/signaler_ci.py --concordance "$PLANCHER" "$MONTEE" "$RUNNER_TEMP/plancher.md" "$RUNNER_TEMP/montee.md"
       - name: Verdict (rouge ou INCONNU font échouer le job ; la montée n'est qu'une information)
+        id: verdict
         env:
           PLANCHER: ${{ steps.plancher.outputs.code }}
           MONTEE: ${{ steps.montee.outputs.code }}
         run: |
           echo "plancher=$PLANCHER montee=$MONTEE"
-          [ "$PLANCHER" = 0 ] && [ "$MONTEE" != 2 ]
+          # Un écart au plancher SEUL a déjà son ticket (le pas précédent) : l'alerte ne le double pas.
+          if [ "$PLANCHER" = 1 ] && { [ "$MONTEE" = 0 ] || [ "$MONTEE" = 3 ]; }; then
+            echo "tenu=oui" >> "$GITHUB_OUTPUT"
+          fi
+          # Un vert se prouve : plancher 0, montée 0 ou 3 ; un code vide ou inattendu est INCONNU.
+          [ "$PLANCHER" = 0 ] && { [ "$MONTEE" = 0 ] || [ "$MONTEE" = 3 ]; }
       - name: Tickets attendus encore ouverts (une divergence d'étape, un « d'ici là » qui cite un ticket clos, #338)
+        id: attendus
         if: success() || failure()
         run: python3 -I scripts/test_divergences.py --tickets
+      - name: Alerte (un rouge sans ticket ouvre ou complète « CI rouge », #345)
+        if: ${{ (failure() || cancelled()) && github.event_name != 'pull_request' && !inputs.simuler_ecart && !(steps.verdict.outputs.tenu == 'oui' && steps.attendus.outcome == 'success') }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -I scripts/signaler_ci.py --signaler --etat "${{ job.status }}"

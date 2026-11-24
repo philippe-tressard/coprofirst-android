@@ -3,7 +3,6 @@
 
 package fr.coprofirst.app.fonctions.fil
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,7 +19,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -29,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
+import fr.coprofirst.app.commun.cliquable
 
 /**
  * Le logement de l'utilisateur, en tête du fil, comme l'en-tête de l'accueil du site et
@@ -48,7 +47,7 @@ internal fun LogementDuFil(logement: String?, ouvrirMesLots: () -> Unit) {
     val annonce = stringResource(R.string.fil_logement, logement)
     Row(
         Modifier.fillMaxWidth().heightIn(min = Mise.cible)
-            .clickable(onClickLabel = stringResource(R.string.fil_logement_ouvre), role = Role.Button, onClick = ouvrirMesLots)
+            .cliquable(stringResource(R.string.fil_logement_ouvre), ouvrirMesLots)
             .semantics { contentDescription = annonce }
             .padding(horizontal = Mise.marge)
             .testTag(REPERE_LOGEMENT),

@@ -5,6 +5,7 @@ package fr.coprofirst.app.commun.pieces
 
 import android.content.Context
 import fr.coprofirst.api.routes.DocumentsApi
+import fr.coprofirst.app.session.LecturesGardees
 import fr.coprofirst.app.session.SessionOuverte
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -12,7 +13,6 @@ import kotlinx.coroutines.withContext
 import okhttp3.Call
 import java.io.File
 import java.io.IOException
-import java.security.MessageDigest
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -45,7 +45,7 @@ class PiecesLocales(
      * @throws IOException si elle ne peut pas s'écrire.
      */
     suspend fun piece(chemin: String, session: SessionOuverte): File {
-        val cle = empreinte(session.installation.url + "\n" + chemin)
+        val cle = LecturesGardees.empreinte(session.installation.url + "\n" + chemin)
         lues[cle]?.takeIf { it.isFile }?.let { return it }
         val donnees = session.fichierProtege(chemin)
         val fichier = withContext(fond) {
@@ -128,11 +128,6 @@ class PiecesLocales(
             de(contexte).purger()
             PhotosEnMemoire.vider()
         }
-
-        internal fun empreinte(texte: String): String =
-            MessageDigest.getInstance("SHA-256").digest(texte.toByteArray()).joinToString("") {
-                (it.toInt() and 0xff).toString(16).padStart(2, '0')
-            }
 
         internal fun borner(nom: String): String {
             if (nom.length <= LONGUEUR_NOM) return nom

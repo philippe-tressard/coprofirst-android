@@ -61,7 +61,7 @@ package fr.coprofirst.app.fonctions.profil
 fun EcranProfil(contexte: ContexteDeMenu) {
     val service = remember(contexte.session) { ServiceProfilApi(contexte.session) }
     Chargement(charger = { service.moi() }, squelette = { Carte { Text("Prénom Nom") } }) { moi, _ ->
-        Carte { Text(FormatsDuSite.nom(moi.nomAffiche, moi.prenom, moi.nom)) }
+        Carte { Text(FormatsDuSite.nomServi(moi.nomAffiche)) }
     }
 }
 ```
@@ -140,6 +140,7 @@ inscription :
 | `Renouvellement` (`Renouvellement`) | LA porte du renouvellement (#13) : un 401 dans `appeler` (client généré, ou fichier protégé) renouvelle la session — un seul POST /auth/refresh à la fois par hôte — puis rejoue la requête une fois. Un écran n'a rien à faire : un renouvellement refusé sort en `SessionExpiree`. |
 | `LecturesGardees`, `GarderLesLectures` (`LecturesGardees`, `GarderLesLectures`) | La consultation hors ligne (#28) : la porte, dans le client de chaque hôte, garde les lectures de la liste blanche (`LectureGardee`) et, en consultation, les sert et refuse tout le reste avant qu'il parte — `ErreurService.HorsLigne`. Un écran n'a rien à faire pour être relu hors ligne. |
 | `CoffreDuCompte`, `SessionsGardees` (`CoffreDuCompte`, `Trousseau`) | Le courriel retenu (chiffré, Keystore) et la session gardée sous la biométrie : propres à l'entrée (`ParcoursEntree`) ; un écran de menu ne les emploie pas. |
+| `CheminDuSite.affaires`, `.affaire(id)`, `.sondage(id)`, `.page(id)` (`session.audience`, `CheminDuSite`) | Le chemin, sur le site, d'une page du menu, d'une affaire ou d'un sondage, lu dans la table GÉNÉRÉE (`PagesParDefaut`) : la mesure d'audience, le lien « Voir sur le site » d'une affaire, le lien d'une entrée du carnet. Jamais `"/tickets…"` écrit à la main (`verifier-depot.sh`, #335). |
 
 Un service :
 
@@ -161,7 +162,7 @@ class ServiceProfilApi(private val session: SessionOuverte) : ServiceProfil {
 | `MessageErreur(erreur, reessayer?)` | `MessageErreur` | Une erreur en une phrase (celle du serveur s'il en donne une), sur `dangerFond`, annoncée au lecteur d'écran. |
 | `MessageErreur(texte, reessayer?)` | `MessageErreur(texte:)` | La même, pour une phrase que l'écran compose (« 500 notifications sur 1200 ont été supprimées ; … » puis la raison) : même mise en forme, même « Réessayer ». La version `erreur` passe par elle. |
 | `ErreurService.phrase()` | `.phrase` | La phrase d'une erreur, en `@Composable`. |
-| `Modifier.cliquable(action, onClick)` | — | Une rangée qui s'ouvre d'un toucher : rôle de bouton, et ce qu'elle fait dit au lecteur d'écran (« Ouvrir la fiche »). Un `clickable` nu ne le dit pas. |
+| `Modifier.cliquable(action, onClick)` | — | Une rangée qui s'ouvre d'un toucher : rôle de bouton, et ce qu'elle fait dit au lecteur d'écran (« Ouvrir la fiche »). Un `clickable` nu ne le dit pas ; un `clickable(onClickLabel = …)` écrit ailleurs est refusé (`verifier-depot.sh`, #335). |
 | `EtatVide(titre, icone?, explication?)` | `ContentUnavailableView` | Une liste vide, dite. |
 | `commun.texte.Separateur` : `point`, `tiret`, `fleche` | `Separateur` | Les séparateurs du site (` · `, ` — `, ` → `), GÉNÉRÉS depuis `separateurs` : une espace sécable avant, insécable après — la ligne se coupe devant, jamais après (#117). Jamais recopiés : `joinToString(Separateur.point)`, `"$a${Separateur.tiret}$b"`. Une ressource ne lit pas une constante : elle écrit ` ·\u00A0`, et `verifier_separateurs.py` la confronte à la table (divergence d'Android). |
 | `commun.fil` : `CarteDuFil(element, session?)`, `ElementDuFil`, `MetaDuFil`, `TextesFil`, `ApercuDuFil.elements()` | `CarteDuFil`, `Apercu.fil` | La carte d'un élément du fil et son modèle, hors du menu Fil (#153) : le fil la pose, et « En savoir plus » montre trois cartes du fil inventé (`ApercuDuFil`), sans session ni toucher. |
@@ -207,7 +208,7 @@ fun EcranProfil(service: ServiceProfil) {
         charger = { service.moi() },
         squelette = { Carte { Text("Prénom Nom") } },
     ) { moi, recharger ->
-        Carte { Text(FormatsDuSite.nom(moi.nomAffiche, moi.prenom, moi.nom)) }
+        Carte { Text(FormatsDuSite.nomServi(moi.nomAffiche)) }
     }
 }
 ```
