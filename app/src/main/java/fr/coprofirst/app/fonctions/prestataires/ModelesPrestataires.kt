@@ -12,7 +12,7 @@ import fr.coprofirst.api.modeles.PrestataireRead
 import fr.coprofirst.api.modeles.ReleveRead
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 
-/** Un contact d'un prestataire ; `nomServi` : le `nom_affiche` servi. */
+/** Un contact d'un prestataire ; `nomServi` : le `nom_affiche` servi ; `prenom` et `nom` : la recherche. */
 data class ContactPrestataire(
     val prenom: String? = null,
     val nom: String? = null,
@@ -23,7 +23,7 @@ data class ContactPrestataire(
 ) {
     /** « Prénom NOM » servi ; `null` pour un contact sans nom. */
     val nomAffiche: String?
-        get() = FormatsDuSite.nom(nomServi, prenom, nom).takeIf { it != FormatsDuSite.TIRET }
+        get() = FormatsDuSite.nomServi(nomServi).takeIf { it != FormatsDuSite.TIRET }
 }
 
 /** Une fiche de prestataire (`PrestataireRead`). */

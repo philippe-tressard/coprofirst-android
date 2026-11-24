@@ -48,7 +48,12 @@ RETIREES: list[tuple[str, re.Pattern[str], str]] = [
      "le `peut_*` servi par l'objet ou ses gestes (`GET …/gestes`)"),
     # « Prénom NOM » est SERVI (`nom_affiche`…, contrat 1.25.0) : jamais accolé dans l'app.
     ("nom accolé", re.compile(r"\$\{?[\w.?]*\b[pP]renom\w*\}?[^\"\n]{0,3}\$\{?[\w.?]*\b[nN]om\b|\b[pP]renom\w*\s*\+\s*\" \""),
-     "le nom servi (`nom_affiche`…) par `FormatsDuSite.nom`, seul repli permis"),
+     "le nom servi (`nom_affiche`…) par `FormatsDuSite.nomServi`, jamais un prénom et un nom accolés"),
+    # Le plancher sert « Prénom NOM » partout (`nom_affiche`, `locataire_nom_affiche`, `bailleur_nom_affiche`,
+    # `nom_aide_affiche`, `auteur_affiche`) : le nom servi SEUL. Le repli prénom-nom de `FormatsDuSite.nom`
+    # n'est permis qu'à l'annuaire, comme l'iOS (`nom(affiche:prenom:nom:)`, #356).
+    ("repli du nom", re.compile(r"\bFormatsDuSite\.nom\("),
+     "le nom servi seul par `FormatsDuSite.nomServi` — le repli prénom-nom est réservé à l'annuaire (dispensé)"),
     # Le lieu d'un contenu est SERVI (`perimetre_libelle`, contrat 1.24.0) : la règle des chemins « › » ne se recopie pas.
     ("lieu recomposé", re.compile(r"\" › \""),
      "le lieu servi (`perimetre_libelle`) par `LieuServi.lieu`"),
@@ -72,6 +77,13 @@ RETIREES: list[tuple[str, re.Pattern[str], str]] = [
 DISPENSES: dict[str, tuple[frozenset[str], str]] = {
     "app/src/main/java/fr/coprofirst/app/fonctions/admin/ModelesUtilisateurs.kt": (frozenset({"constante de rôle"}),
         "les rôles d'un compte LISTÉ dans l'écran des utilisateurs : une donnée affichée, pas un droit du lecteur"),
+    # Les pendants des deux dispenses de l'iOS (`ServiceAnnuaire.swift`, `ServiceAnnuaireCS.swift`).
+    "app/src/main/java/fr/coprofirst/app/commun/annuaire/Annuaire.kt": (frozenset({"repli du nom"}),
+        "la carte de l'annuaire rend aussi la fiche du conseil ou du syndic pas encore enregistrée, ou "
+        "renommée (`enCarte`, le nom servi remis à `null` à la saisie) : sans nom servi, le prénom et le nom saisis"),
+    "app/src/main/java/fr/coprofirst/app/fonctions/espacecs/ServiceAnnuaireCS.kt": (frozenset({"repli du nom"}),
+        "une fiche du conseil ou du syndic pas encore enregistrée, ou renommée, n'a pas de nom servi : "
+        "le nom saisi (la feuille, elle, montre le nom que le serveur rend de la saisie, `POST /noms/affiche`)"),
     "app/src/main/java/fr/coprofirst/app/fonctions/admin/EtatUtilisateurs.kt": (frozenset({"constante de rôle"}),
         "l'abréviation « CS » d'un rôle affiché dans la liste des comptes"),
     "app/src/main/java/fr/coprofirst/app/commun/perimetres/ArbreDesPerimetres.kt": (frozenset({"lieu recomposé"}),
@@ -135,6 +147,8 @@ FAUTIFS = [
     '    STATUTS_TICKET_CLOS = table_simple(texte, "STATUTS_TICKET_CLOS")',
     '        "prestataires", "espace-cs" -> droits.outilDuConseil',
     '        "admin" -> droits.administrateur || droits.operateur',
+    '    val nomAffiche: String get() = FormatsDuSite.nom(nomServi, prenom, nom)',
+    '                FormatsDuSite.nom(compte.nomAffiche, compte.prenom, compte.nom),',
 ]
 SAINS = [
     '                cs = estModerateur == true,',
@@ -143,7 +157,8 @@ SAINS = [
     '        TablesCommunes.rolesMisEnAvant.filter { it in roles }.forEach { pastilles += role(it) }',
     '    val loue: Boolean get() = typeLien == "locataire"',
     '    val peutRepondre: Boolean get() = servi.peutRepondre ?: false',
-    '    val nomAffiche: String get() = FormatsDuSite.nom(nomServi, prenom, nom)',
+    '    val nomAffiche: String get() = FormatsDuSite.nomServi(nomServi)',
+    '    nomBailleur = FormatsDuSite.nomServi(bailleurNomAffiche),',
     '                lieu = LieuServi.lieu(affaire?.texte("perimetre_libelle")),',
     '        deMoi = message.estAuteur ?: false,',
     '    fun masque(auteurId: Int) = "masque.$auteurId"',

@@ -104,8 +104,10 @@ valeur absente. Dates : `date`, `dateCourte`, `dateLongue`, `dateHeure`,
 `dateHeureCourte`, `heure`, `jourCourt`, `jourIso` (envoyé), `moisAnnee`, `moisCourt`,
 `relatif` (« hier », « il y a 3 jours », comme `.relative(presentation: .named)` de l'iOS) —
 chacune prend un `Instant` ou la chaîne ISO servie (`lire` la lit comme le navigateur).
-Nombres : `nombre`, `montant`, `octets`. Personnes : `nom(affiche, prenom, nom)` — le
-`nom_affiche` servi d'abord, jamais composé dans un écran.
+Nombres : `nombre`, `montant`, `octets`. Personnes : `nomServi(servi)` — le « Prénom NOM »
+servi (`nom_affiche`, `locataire_nom_affiche`…), jamais composé dans un écran, sans repli ;
+`nom(affiche, prenom, nom)`, son repli prénom-nom, est réservé à l'annuaire (une fiche pas
+encore enregistrée n'a pas de nom servi) — `scripts/test_regles_servies.py` le refuse ailleurs (#356).
 
 ## Texte du site — `fr.coprofirst.app.commun.texte`
 

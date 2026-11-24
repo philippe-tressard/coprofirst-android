@@ -4,6 +4,7 @@
 package fr.coprofirst.app.fonctions.delegations
 
 import fr.coprofirst.app.commun.LibelleTeinte
+import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.session.AdresseInstallation
 import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.Installation
@@ -92,7 +93,8 @@ class ServiceDelegationsApiTest {
         val residents = service.residentsDelegables()
         assertEquals("GET /api/admin/utilisateurs", requete())
         assertEquals(ResidentDelegable(3, "Lucie EXEMPLE", "lucie@exemple.test", true), residents[0])
-        assertEquals("prénom puis nom quand le nom affiché manque", "Paul Fictif", residents[1].nomAffiche)
+        // Le plancher sert `nom_affiche` (requis) : vide, « — », jamais le prénom et le nom accolés (#356, comme l'iOS).
+        assertEquals("le nom servi seul, sans repli", FormatsDuSite.TIRET, residents[1].nomAffiche)
         assertEquals("seuls les comptes actifs se lient", listOf(3), residents.liables().map { it.id })
         assertEquals("Lucie EXEMPLE (lucie@exemple.test)", residents[0].choix)
     }

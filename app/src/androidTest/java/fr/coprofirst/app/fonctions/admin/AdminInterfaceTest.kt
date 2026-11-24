@@ -260,11 +260,12 @@ class AdminInterfaceTest {
                 UtilisateurAdmin(
                     11, "Camille", "Exemple", "camille@exemple.test", "copropriétaire_résident",
                     listOf("conseil_syndical", "admin"), actif = true, emailVerifie = true, aDesLots = true,
-                    gestesRoles = listOf(GesteDeRole("conseil_syndical", GesteRole.Retirer)),
+                    gestesRoles = listOf(GesteDeRole("conseil_syndical", GesteRole.Retirer)), nomServi = "Camille EXEMPLE",
                 ),
                 UtilisateurAdmin(
                     12, "Dominique", "Fictif", "dominique@exemple.test", "locataire", listOf("résident"),
                     actif = true, emailVerifie = true, aDesLots = true, gestesRoles = listOf(GesteDeRole("conseil_syndical", GesteRole.Ajouter)),
+                    nomServi = "Dominique FICTIF",
                 ),
             )
         }

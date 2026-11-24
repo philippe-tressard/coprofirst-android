@@ -39,8 +39,8 @@ data class UtilisateurAdmin(
     /** `nom_affiche` servi. */
     val nomServi: String? = null,
 ) {
-    /** « Prénom NOM » servi ; à défaut, le repli de `FormatsDuSite.nom`. */
-    val nomAffiche: String get() = FormatsDuSite.nom(nomServi, prenom, nom)
+    /** « Prénom NOM » servi (`prenom` et `nom` restent pour la recherche et le tri). */
+    val nomAffiche: String get() = FormatsDuSite.nomServi(nomServi)
 
     /**
      * « Opérateur désigné par l'exploitant » (`GestesRolesCompte.svelte`) : ce que l'écran

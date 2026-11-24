@@ -201,7 +201,7 @@ private fun SectionIdentite(compte: UserRead, modifier: () -> Unit) {
     Section(stringResource(R.string.profil_informations), note = stringResource(R.string.profil_photo_au_site)) {
         Column(Modifier.padding(vertical = 2.dp).semantics(mergeDescendants = true) {}) {
             Text(
-                FormatsDuSite.nom(compte.nomAffiche, compte.prenom, compte.nom),
+                FormatsDuSite.nomServi(compte.nomAffiche),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = couleurs.text,

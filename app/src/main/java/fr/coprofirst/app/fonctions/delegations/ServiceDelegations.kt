@@ -98,7 +98,7 @@ data class ResidentDelegable(val id: Int, val nomAffiche: String, val email: Str
 }
 
 internal fun UtilisateurAdminRead.lu() =
-    ResidentDelegable(id, FormatsDuSite.nom(nomAffiche, prenom, nom), email, actif)
+    ResidentDelegable(id, FormatsDuSite.nomServi(nomAffiche), email, actif)
 
 /** La saisie de « Nouvelle délégation » (`DelegationCreate`). */
 data class SaisieDelegation(

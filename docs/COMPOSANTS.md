@@ -61,7 +61,7 @@ package fr.coprofirst.app.fonctions.profil
 fun EcranProfil(contexte: ContexteDeMenu) {
     val service = remember(contexte.session) { ServiceProfilApi(contexte.session) }
     Chargement(charger = { service.moi() }, squelette = { Carte { Text("Prénom Nom") } }) { moi, _ ->
-        Carte { Text(FormatsDuSite.nom(moi.nomAffiche, moi.prenom, moi.nom)) }
+        Carte { Text(FormatsDuSite.nomServi(moi.nomAffiche)) }
     }
 }
 ```
@@ -208,7 +208,7 @@ fun EcranProfil(service: ServiceProfil) {
         charger = { service.moi() },
         squelette = { Carte { Text("Prénom Nom") } },
     ) { moi, recharger ->
-        Carte { Text(FormatsDuSite.nom(moi.nomAffiche, moi.prenom, moi.nom)) }
+        Carte { Text(FormatsDuSite.nomServi(moi.nomAffiche)) }
     }
 }
 ```
