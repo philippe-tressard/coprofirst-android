@@ -186,6 +186,17 @@ BOUTON_PLEIN='(^|[^A-Za-z])Button\('
 autotest_motif "bouton plein" "$BOUTON_PLEIN" '    Button(onClick = f) { Text("x") }' '    TextButton(onClick = f) { Text("x") }'
 interdire "$BOUTON_PLEIN" "bouton plein écrit à la main — passer par BoutonPlein ou BoutonPleinDestructif" '^app/src/main/java/fr/coprofirst/app/commun/Boutons\.kt$'
 
+# La machine d'envoi d'un geste (drapeau levé, appel, erreur gardée, drapeau rendu) s'écrit
+# une fois, `Envoi` (commun/Envoi.kt, #324) : recopiée dans vingt sites, elle divergeait déjà
+# (fermeture avant ou après le drapeau, double envoi gardé ou non). Deux lectures en sont
+# dispensées, nommément : elles ne sont pas des envois (une relecture que la suivante remplace,
+# une recherche à la frappe dont l'échec se tait).
+ENVOI_MAIN='^[[:space:]]*(envoi|enCours)[A-Za-z]* = true[[:space:]]*$|var (envoi|enCours)[A-Za-z]* by (remember \{ )?mutableStateOf\(false\)'
+autotest_motif "envoi recopié" "$ENVOI_MAIN" '                envoi = true' '    val envoi = rememberEnvoi()'
+autotest_motif "drapeau d'envoi recopié" "$ENVOI_MAIN" '    var enCours by remember { mutableStateOf(false) }' '            enCours = true,'
+interdire "$ENVOI_MAIN" "machine d'envoi recopiée — passer par Envoi (commun/Envoi.kt)" \
+  '^app/src/main/java/fr/coprofirst/app/(commun/Envoi|fonctions/admin/OngletTelemetrie|fonctions/prestataires/ChoixAffaireAvis)\.kt$'
+
 # Tirer pour actualiser s'écrit une fois, `Actualisable` (commun/Actualisable.kt), qui offre
 # aussi Ctrl+R au clavier d'une tablette (⌘R de l'iOS, #69) : un `PullToRefreshBox` nu en
 # priverait son écran — le `.refreshable` nu que refuse l'iOS.
