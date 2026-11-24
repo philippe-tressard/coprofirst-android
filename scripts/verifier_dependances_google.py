@@ -22,6 +22,7 @@ Sortie : 0 conforme, 1 refus, 2 INCONNU. `--autotest` prouve que le juge départ
 
 from __future__ import annotations
 
+import os
 import pathlib
 import re
 import subprocess
@@ -117,6 +118,33 @@ def autotest() -> bool:
         (racine / "gradle" / "libs.versions.toml").write_text(
             'wearable = { group = "com.google.android.gms", name = "play-services-wearable", version = "1" }\n', encoding="utf-8")
         ok &= len(juger(racine, reelles)) == 0
+    # Dans un dépôt git, seul ce que git connaît se juge (#320, #339) : le brouillon non suivi
+    # d'une autre session (un worktree rangé sous le dépôt) ne fait pas rougir ; suivi, si.
+    # Sous le pre-commit, GIT_DIR et GIT_INDEX_FILE désignent le vrai dépôt : écartés le temps
+    # de l'essai, sans quoi git lirait l'index du dépôt au lieu de celui du dossier d'essai.
+    du_depot = {k: os.environ.pop(k) for k in list(os.environ) if k.startswith("GIT_")}
+    try:
+        ok &= _autotest_suivis(permises)
+    finally:
+        os.environ.update(du_depot)
+    return ok
+
+
+def _autotest_suivis(permises: set[str]) -> bool:
+    ok = True
+    with tempfile.TemporaryDirectory() as d:
+        racine = pathlib.Path(d)
+        (racine / "gradle").mkdir()
+        (racine / "gradle" / "libs.versions.toml").write_text("", encoding="utf-8")
+        brouillon = racine / "brouillon" / "build.gradle.kts"
+        brouillon.parent.mkdir()
+        brouillon.write_text('implementation("com.google.android.gms:play-services-ads:1")\n', encoding="utf-8")
+        git = lambda *a: subprocess.run(["git", *a], cwd=racine, capture_output=True, check=True)
+        git("init", "-q")
+        git("add", "gradle/libs.versions.toml")
+        ok &= len(juger(racine, permises)) == 0
+        git("add", "brouillon/build.gradle.kts")
+        ok &= len(juger(racine, permises)) == 1
     return ok
 
 
