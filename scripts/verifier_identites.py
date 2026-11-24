@@ -26,8 +26,13 @@ lignes SPDX et `LICENSES/` n'y sont pas : l'attribution légale nomme l'auteur, 
 
 ⚠️ Ce qu'il ne voit pas : « Prénom Nom » à casse mixte sans civilité hors d'un champ de nom,
 un nom dans un identifiant, ni ce qui est public sans être un fichier — messages de commit,
-tickets, PR (`docs/play-store/invitation-testeurs.md` le rappelle). Les numéros de
-téléphone : aucune règle ici (#326 : une tranche à sourcer, ticket à part).
+tickets, PR (`docs/play-store/invitation-testeurs.md` le rappelle).
+
+Les numéros de téléphone (#348), sur la même portée : une LISTE BLANCHE de racines, celles
+que l'ARCEP réserve aux fictions — décision n° 2018-0881 du 24 juillet 2018 (plan national
+de numérotation, JORF n° 0174 du 31 juillet 2018), annexe 1, §2.5.12 « Numéros pour œuvres
+audiovisuelles » : jamais attribués, jamais appelables. Tout numéro français écrit (`01 99 00
+00 01`, `+33 6 39 98 00 00`, `0199000001`) doit commencer par l'une d'elles.
 
 Sortie : 0 conforme, 1 refus, 2 INCONNU. `--autotest` prouve qu'il refuse et accepte.
 """
@@ -65,6 +70,12 @@ PAS_DES_NOMS = frozenset("""
     REPARTITION RESIDENCE RETIRE RETIRER SA SANS SDK SECURITE SERVIE SES SEUL SEULS SIGNATURE
     SON STABLE TERMITES TILLEULS TRACE TRACES UN UNE VISIONNEUSE
 """.split())
+
+#: Les racines (format national) réservées aux œuvres audiovisuelles, telles que les écrit la
+#: décision ARCEP n° 2018-0881, annexe 1, §2.5.12 (texte du JORF du 31/07/2018, lu sur
+#: Légifrance le 24/11/2026 : JORFARTI000037263033).
+TRANCHES_FICTION = ("019900", "026191", "035301", "046571", "053649", "063998")
+TELEPHONE = re.compile(r"(?<![\w+])(?:\+33 ?|0)[1-9](?:[ .-]?[0-9]{2}){4}(?!\w)")
 
 _MAJ = "A-ZÀÂÄÇÉÈÊËÎÏÔÖÙÛÜ"
 _MIN = "a-zàâäçéèêëîïôöùûü"
@@ -107,9 +118,23 @@ def reperes(chemin: str, texte: str) -> list[tuple[int, str]]:
     return trouves
 
 
+def hors_tranche(texte: str) -> list[tuple[int, str]]:
+    """Les numéros de téléphone français écrits hors des racines réservées aux fictions."""
+    trouves = []
+    for n, ligne in enumerate(texte.splitlines(), 1):
+        for m in TELEPHONE.finditer(ligne):
+            chiffres = re.sub(r"\D", "", m.group(0))
+            national = "0" + chiffres[2:] if m.group(0).startswith("+") else chiffres
+            if not national.startswith(TRANCHES_FICTION):
+                trouves.append((n, m.group(0)))
+    return trouves
+
+
 def juger(fichiers: dict[str, str]) -> tuple[list[str], set[str]]:
     fautes, servis = [], set()
     for chemin, texte in fichiers.items():
+        for n, numero in hors_tranche(texte):
+            fautes.append(f"{chemin}:{n} : « {numero} » n'est pas dans une tranche réservée aux fictions (ARCEP)")
         for n, mot in reperes(chemin, texte):
             cle = norme(mot)
             if cle in FICTIFS or cle in PAS_DES_NOMS or cle in AUTEUR:
@@ -131,6 +156,10 @@ def autotest() -> bool:
         "docs/c.md": "Signalé par Mme Lefort.",
         "app/src/main/res/values/d.xml": "<string name=\"x\">Par exemple : Camille LEFORT</string>",
         "app/src/test/E.kt": 'assertEquals("Jean-Hervé Lefort", f("jean-hervé lefort"))',
+        "app/src/debug/F.kt": 'telephones = listOf("01 00 00 00 01")',
+        "app/src/main/res/values/g.xml": '<string name="t">+33 6 00 00 00 00</string>',
+        "docs/h.md": "Appeler le 0612345678.",
+        "app/src/test/I.kt": 'val t = "06 99 00 00 03"',
     }
     sains = {
         "app/src/test/A.kt": 'val p = Personne(nom = "Camille EXEMPLE", prenom = "Alix")',
@@ -138,6 +167,9 @@ def autotest() -> bool:
         "app/src/main/res/values/d.xml": "<string name=\"x\">Par exemple : Dominique ESSAI</string>",
         "app/src/main/java/F.kt": '// SPDX-FileCopyrightText: 2026 Prénom NOMREEL',
         "app/src/test/G.kt": 'val n = "Compte EXEMPLE"',
+        "app/src/debug/H.kt": 'telephones = listOf("01 99 00 00 01", "06 39 98 00 02", "+33 1 99 00 00 13", "+33199000013")',
+        "app/src/main/java/I.kt": 'private const val HEXA = "0123456789abcdefABCDEF" // "/x/0123456789abcdef0123456789abcdef_a"',
+        "docs/j.md": "Les racines : 02 61 91 00 00, 03 53 01 00 00, 04 65 71 00 00, 05 36 49 00 00.",
     }
     ok = all(juger({c: t})[0] for c, t in fautifs.items())
     ok = ok and not juger(sains)[0]

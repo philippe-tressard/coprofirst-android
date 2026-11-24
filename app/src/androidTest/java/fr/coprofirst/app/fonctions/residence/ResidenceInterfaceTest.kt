@@ -140,7 +140,7 @@ class ResidenceInterfaceTest {
         ecran.attendreTexte("Gestionnaire de copropriété")
         assertTrue(
             "le numéro du gestionnaire s'appelle d'un toucher",
-            ecran.onAllNodes(hasTestTag(ReperesContact.APPELER).and(hasText("01 00 00 00 01"))).fetchSemanticsNodes().isNotEmpty(),
+            ecran.onAllNodes(hasTestTag(ReperesContact.APPELER).and(hasText("01 99 00 00 61"))).fetchSemanticsNodes().isNotEmpty(),
         )
         ecran.toucherTag(ReperesResidence.FERMER)
         ecran.attendreTexte("AA0-000-000")

@@ -54,10 +54,10 @@ class ServiceAnnuaireCSTest {
     @Test
     fun lesNumerosPartentEnUnChamp() = runTest {
         val syndic = service.syndic()
-        val modifie = syndic.membres[1].copy(telephones = listOf(" 01 99 00 00 02 ", "", "06 99 00 00 03"))
+        val modifie = syndic.membres[1].copy(telephones = listOf(" 01 99 00 00 02 ", "", "06 39 98 00 03"))
         val retenu = service.enregistrer(syndic.copy(membres = listOf(syndic.membres[0], modifie)))
-        assertTrue(banc.residence.recues.any { it.contains("\"telephone\":\"01 99 00 00 02,06 99 00 00 03\"") })
-        assertEquals(listOf("01 99 00 00 02", "06 99 00 00 03"), retenu.membres[1].telephones)
+        assertTrue(banc.residence.recues.any { it.contains("\"telephone\":\"01 99 00 00 02,06 39 98 00 03\"") })
+        assertEquals(listOf("01 99 00 00 02", "06 39 98 00 03"), retenu.membres[1].telephones)
     }
 
     @Test
