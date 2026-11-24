@@ -97,7 +97,7 @@ internal fun BandeauAffaire(
     var options by remember { mutableStateOf(false) }
     var aSignaler by remember { mutableStateOf(false) }
     val annonce = rememberGesteAnnonce(avis, recharger)
-    val enCours = annonce.enCours
+    val enCours = annonce.envoi.enCours
     val gestes = GesteAffaire.offerts(affaire, conseil, moderation).filter { it != GesteAffaire.Lien || lien != null }
 
     Row(

@@ -24,7 +24,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -44,10 +43,10 @@ import fr.coprofirst.app.commun.Section
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.gesteEnLigne
 import fr.coprofirst.app.commun.phrase
+import fr.coprofirst.app.commun.rememberEnvoi
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 
 /**
  * « Demander une modification (profil / bâtiment) », comme l'iOS
@@ -85,10 +84,8 @@ private fun FormulaireDemande(service: ServiceProfil, batiments: List<BatimentPu
     var statut by remember { mutableStateOf<String?>(null) }
     var batiment by remember { mutableStateOf<Int?>(null) }
     var motif by remember { mutableStateOf("") }
-    var envoi by remember { mutableStateOf(false) }
+    val envoi = rememberEnvoi()
     var reussi by remember { mutableStateOf(false) }
-    var refus by remember { mutableStateOf<ErreurService?>(null) }
-    val portee = rememberCoroutineScope()
     val couleurs = LocalCouleurs.current
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Choix(
@@ -113,26 +110,17 @@ private fun FormulaireDemande(service: ServiceProfil, batiments: List<BatimentPu
             R.string.profil_envoyer_demande,
             geste.modifier.padding(horizontal = Mise.marge).testTag("profil.demande.envoyer"),
             actif = geste.actif,
-            enCours = envoi,
+            enCours = envoi.enCours,
         ) {
-            portee.launch {
-                envoi = true
-                try {
-                    service.demanderModification(statut, batiment, motif)
-                    refus = null
-                    reussi = true
-                    envoyee()
-                } catch (e: ErreurService) {
-                    refus = e
-                    reussi = false
-                } finally {
-                    envoi = false
-                }
+            envoi.lancer(echec = { reussi = false }) {
+                service.demanderModification(statut, batiment, motif)
+                reussi = true
+                envoyee()
             }
         }
         val marge = Modifier.padding(horizontal = Mise.marge + 4.dp)
         if (reussi) Note(stringResource(R.string.profil_demande_envoyee_cs), marge, couleurs.successTexte)
-        refus?.let { Note(it.phrase(), marge, couleurs.danger) }
+        envoi.erreur?.let { Note(it.phrase(), marge, couleurs.danger) }
     }
 }
 

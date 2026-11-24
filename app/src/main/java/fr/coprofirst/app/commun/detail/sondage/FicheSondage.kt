@@ -46,6 +46,7 @@ import fr.coprofirst.app.commun.SignalementAuConseil
 import fr.coprofirst.app.commun.TonAvis
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.phrase
+import fr.coprofirst.app.commun.rememberEnvoi
 import fr.coprofirst.app.commun.reponses.FilReponses
 import fr.coprofirst.app.commun.reponses.GestesReponses
 import fr.coprofirst.app.commun.texte.TexteDuSite
@@ -109,7 +110,7 @@ private fun ContenuSondage(sondage: DetailSondage, service: ServiceSondage?, avi
     val ressources = LocalResources.current
     val portee = rememberCoroutineScope()
     var vote by remember(sondage.id) { mutableStateOf(VoteSondage()) }
-    var envoi by remember { mutableStateOf(false) }
+    val envoi = rememberEnvoi()
     var signale by remember { mutableStateOf<ReponseCommunauteRead?>(null) }
     var aMasquer by remember { mutableStateOf<AuteurAMasquer?>(null) }
 
@@ -149,12 +150,11 @@ private fun ContenuSondage(sondage: DetailSondage, service: ServiceSondage?, avi
             if (sondage.resultatsAvantVote) ResultatsSondage(sondage)
             AnimatedContent(targetState = sondage.peutVoter, label = "vote") { ouvert ->
                 if (ouvert) {
-                    FormulaireVote(sondage, vote, { vote = it }, envoi) {
+                    FormulaireVote(sondage, vote, { vote = it }, envoi.enCours) {
                         val envoye = vote
-                        envoi = true
-                        portee.launch {
+                        // `geste` dit lui-même l'échec par l'avis : l'envoi n'en garde rien.
+                        envoi.lancer {
                             if (geste(R.string.sondage_vote_enregistre) { it.voter(envoye, sondage.id) }) vote = VoteSondage()
-                            envoi = false
                         }
                     }
                 } else {

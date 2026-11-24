@@ -81,6 +81,8 @@ internal fun ChoixAffaireAvis(
 ) {
     var recherche by rememberSaveable { mutableStateOf("") }
     var trouvees by remember { mutableStateOf<List<Int>>(emptyList()) }
+    // Dispensé d'`Envoi` (#324, nommé dans `verifier-depot.sh`) : une recherche à la frappe, qu'une
+    // frappe neuve annule, et dont l'échec se tait — pas un envoi.
     var enCours by remember { mutableStateOf(false) }
     val terme = ChoixAffaire.terme(recherche)
     val active = terme.length >= RECHERCHE_AFFAIRES_MINIMALE

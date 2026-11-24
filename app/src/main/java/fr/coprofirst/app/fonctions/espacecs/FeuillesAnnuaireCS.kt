@@ -35,7 +35,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -53,8 +52,7 @@ import fr.coprofirst.app.commun.BoutonsFeuille
 import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.formats.FormatsDuSite
-import fr.coprofirst.app.session.ErreurService
-import kotlinx.coroutines.launch
+import fr.coprofirst.app.commun.rememberEnvoi
 import java.time.Instant
 
 /**
@@ -73,9 +71,7 @@ internal fun FeuilleAnnuaire(
     champs: @Composable ColumnScope.() -> Unit,
 ) {
     val etat = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val portee = rememberCoroutineScope()
-    var envoi by remember { mutableStateOf(false) }
-    var erreur by remember { mutableStateOf<ErreurService?>(null) }
+    val envoi = rememberEnvoi()
     ModalBottomSheet(onDismissRequest = fermer, sheetState = etat) {
         Column(
             Modifier.verticalScroll(rememberScrollState()).padding(horizontal = Mise.marge).padding(bottom = 16.dp)
@@ -83,22 +79,13 @@ internal fun FeuilleAnnuaire(
             verticalArrangement = Arrangement.spacedBy(Mise.ecart),
         ) {
             Text(titre, style = Typo.titre(), color = LocalCouleurs.current.text)
-            erreur?.let { MessageErreur(it) }
+            envoi.erreur?.let { MessageErreur(it) }
             champs()
-            BoutonsFeuille(envoi = envoi, repere = "$repere.enregistrer", annuler = fermer, actif = complete) {
-                if (!envoi) {
-                    portee.launch {
-                        envoi = true
-                        try {
-                            envoyer()
-                            etat.hide()
-                            fermer()
-                        } catch (e: ErreurService) {
-                            erreur = e
-                        } finally {
-                            envoi = false
-                        }
-                    }
+            BoutonsFeuille(envoi = envoi.enCours, repere = "$repere.enregistrer", annuler = fermer, actif = complete) {
+                envoi.lancer {
+                    envoyer()
+                    etat.hide()
+                    fermer()
                 }
             }
         }

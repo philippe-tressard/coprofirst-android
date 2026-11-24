@@ -44,6 +44,7 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.Libelle
+import fr.coprofirst.app.commun.rememberEnvoi
 import kotlinx.coroutines.launch
 
 /** « 💬 Répondre », « 💬 1 réponse », « 💬 3 réponses » — le bouton du site, l'en-tête par défaut. */
@@ -118,9 +119,8 @@ fun FilReponses(
 private fun SaisieReponse(invite: String, publier: suspend (String) -> Boolean) {
     val couleurs = LocalCouleurs.current
     val focus = LocalFocusManager.current
-    val portee = rememberCoroutineScope()
     var texte by rememberSaveable { mutableStateOf("") }
-    var envoi by remember { mutableStateOf(false) }
+    val envoi = rememberEnvoi()
     val forme = RoundedCornerShape(Mise.rayon)
     Row(
         Modifier.fillMaxWidth().background(couleurs.surface, forme).border(1.dp, couleurs.border, forme).padding(8.dp),
@@ -143,22 +143,18 @@ private fun SaisieReponse(invite: String, publier: suspend (String) -> Boolean) 
         IconButton(
             onClick = {
                 val contenu = Reponses.aPublier(texte) ?: return@IconButton
-                envoi = true
-                portee.launch {
-                    try {
-                        if (publier(contenu)) {
-                            texte = ""
-                            focus.clearFocus()
-                        }
-                    } finally {
-                        envoi = false
+                // `publier` dit lui-même l'échec : l'envoi n'en garde rien.
+                envoi.lancer {
+                    if (publier(contenu)) {
+                        texte = ""
+                        focus.clearFocus()
                     }
                 }
             },
-            enabled = Reponses.aPublier(texte) != null && !envoi,
+            enabled = Reponses.aPublier(texte) != null && !envoi.enCours,
             modifier = Modifier.size(Mise.cible).testTag(ReperesReponses.ENVOYER),
         ) {
-            if (envoi) {
+            if (envoi.enCours) {
                 CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
             } else {
                 Icon(Icons.Filled.ArrowCircleUp, contentDescription = stringResource(R.string.reponses_repondre), Modifier.size(30.dp))

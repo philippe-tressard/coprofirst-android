@@ -20,7 +20,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,8 +45,7 @@ import fr.coprofirst.app.commun.masquages.Masquage
 import fr.coprofirst.app.commun.masquages.ReperesMasquage
 import fr.coprofirst.app.commun.masquages.ServiceMasquages
 import fr.coprofirst.app.commun.phrase
-import fr.coprofirst.app.session.ErreurService
-import kotlinx.coroutines.launch
+import fr.coprofirst.app.commun.rememberEnvoi
 import java.time.Instant
 
 /**
@@ -97,8 +95,7 @@ private fun ListeDesMasques(masques: List<Masquage>, service: ServiceMasquages, 
 private fun LigneMasque(masque: Masquage, service: ServiceMasquages, avis: AvisDuGeste, retire: () -> Unit) {
     val couleurs = LocalCouleurs.current
     val ressources = LocalResources.current
-    val portee = rememberCoroutineScope()
-    var envoi by remember { mutableStateOf(false) }
+    val envoi = rememberEnvoi()
     Row(Modifier.fillMaxWidth().testTag(ReperesMasquage.masque(masque.auteurId)), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f).padding(end = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(masque.auteur, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, color = couleurs.text)
@@ -107,21 +104,14 @@ private fun LigneMasque(masque: Masquage, service: ServiceMasquages, avis: AvisD
                 style = MaterialTheme.typography.bodySmall, color = couleurs.textMuted,
             )
         }
-        val geste = gesteEnLigne(!envoi)
+        val geste = gesteEnLigne(!envoi.enCours)
         val libelle = stringResource(R.string.masquage_ne_plus_masquer_qui, masque.auteur)
         OutlinedButton(
             onClick = {
-                portee.launch {
-                    envoi = true
-                    try {
-                        service.demasquer(masque.auteurId)
-                        retire()
-                        avis.dire(ressources.getString(R.string.masquage_demasque, masque.auteur))
-                    } catch (e: ErreurService) {
-                        avis.dire(e.phrase(ressources), TonAvis.Erreur)
-                    } finally {
-                        envoi = false
-                    }
+                envoi.lancer(echec = { avis.dire(it.phrase(ressources), TonAvis.Erreur) }) {
+                    service.demasquer(masque.auteurId)
+                    retire()
+                    avis.dire(ressources.getString(R.string.masquage_demasque, masque.auteur))
                 }
             },
             enabled = geste.actif,

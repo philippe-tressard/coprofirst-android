@@ -31,8 +31,6 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -53,8 +51,7 @@ import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.BoutonsFeuille
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.PhraseAvis
-import fr.coprofirst.app.session.ErreurService
-import kotlinx.coroutines.launch
+import fr.coprofirst.app.commun.rememberEnvoi
 
 /** Rejeter un compte ou une demande : la question, puis « Rejeter » (en rouge) ou « Annuler ». */
 @Composable
@@ -124,28 +121,17 @@ internal fun FeuilleValidationCompte(
     fait: (PhraseAvis?) -> Unit,
 ) {
     val etat = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val portee = rememberCoroutineScope()
     val c = LocalCouleurs.current
     var nouvelArrivant by rememberSaveable { mutableStateOf(false) }
     var batiment by rememberSaveable { mutableStateOf("") }
     var ancien by rememberSaveable { mutableStateOf("") }
-    var envoi by remember { mutableStateOf(false) }
-    var erreur by remember { mutableStateOf<ErreurService?>(null) }
+    val envoi = rememberEnvoi()
     val envoyer: () -> Unit = {
-        if (!envoi) {
-            portee.launch {
-                envoi = true
-                try {
-                    val annonce = valider(if (nouvelArrivant) AccueilArrivant(batiment, ancien) else null)
-                    fait(annonce)
-                    etat.hide()
-                    fermer()
-                } catch (e: ErreurService) {
-                    erreur = e
-                } finally {
-                    envoi = false
-                }
-            }
+        envoi.lancer {
+            val annonce = valider(if (nouvelArrivant) AccueilArrivant(batiment, ancien) else null)
+            fait(annonce)
+            etat.hide()
+            fermer()
         }
     }
     ModalBottomSheet(onDismissRequest = fermer, sheetState = etat) {
@@ -154,12 +140,12 @@ internal fun FeuilleValidationCompte(
             verticalArrangement = Arrangement.spacedBy(Mise.ecart),
         ) {
             Text(compte.nomAffiche, style = Typo.titre(), color = c.text)
-            erreur?.let { MessageErreur(it) }
+            envoi.erreur?.let { MessageErreur(it) }
             Row(
                 Modifier
                     .fillMaxWidth()
                     .heightIn(min = Mise.cible)
-                    .toggleable(nouvelArrivant, enabled = !envoi, role = Role.Switch) { nouvelArrivant = it }
+                    .toggleable(nouvelArrivant, enabled = !envoi.enCours, role = Role.Switch) { nouvelArrivant = it }
                     .testTag(ReperesValidations.NOUVEL_ARRIVANT),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -186,7 +172,7 @@ internal fun FeuilleValidationCompte(
                 }
             }
             BoutonsFeuille(
-                envoi = envoi,
+                envoi = envoi.enCours,
                 repere = ReperesValidations.VALIDATION_ENREGISTRER,
                 annuler = fermer,
                 libelle = R.string.espacecs_approuver,

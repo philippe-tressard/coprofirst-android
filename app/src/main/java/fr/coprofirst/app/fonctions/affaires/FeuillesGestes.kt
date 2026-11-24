@@ -50,8 +50,8 @@ import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.BoutonsFeuille
 import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.MessageErreur
+import fr.coprofirst.app.commun.rememberEnvoi
 import fr.coprofirst.app.commun.texte.TexteDuSite
-import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.launch
 
 /** Les repères des feuilles, ceux de l'iOS. */
@@ -83,8 +83,7 @@ internal fun FeuilleDeSaisie(
 ) {
     val etat = rememberModalBottomSheetState(skipPartiallyExpanded = true, confirmValueChange = { it != SheetValue.Hidden || !retenue })
     val portee = rememberCoroutineScope()
-    var envoi by remember { mutableStateOf(false) }
-    var erreur by remember { mutableStateOf<ErreurService?>(null) }
+    val envoi = rememberEnvoi()
     val annuler: () -> Unit = { if (retenue) demanderAbandon() else portee.launch { etat.hide(); fermer() } }
     ModalBottomSheet(onDismissRequest = annuler, sheetState = etat, containerColor = LocalCouleurs.current.bg) {
         Column(
@@ -93,22 +92,13 @@ internal fun FeuilleDeSaisie(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Text(stringResource(titre), Modifier.semantics { heading() }, style = Typo.titre(), color = LocalCouleurs.current.text)
-            erreur?.let { MessageErreur(it) }
+            envoi.erreur?.let { MessageErreur(it) }
             champs()
-            BoutonsFeuille(envoi, repere, annuler, libelle = verbe, actif = prete) {
-                if (!envoi) {
-                    portee.launch {
-                        envoi = true
-                        try {
-                            envoyer()
-                            etat.hide()
-                            fermer()
-                        } catch (e: ErreurService) {
-                            erreur = e
-                        } finally {
-                            envoi = false
-                        }
-                    }
+            BoutonsFeuille(envoi.enCours, repere, annuler, libelle = verbe, actif = prete) {
+                envoi.lancer {
+                    envoyer()
+                    etat.hide()
+                    fermer()
                 }
             }
         }

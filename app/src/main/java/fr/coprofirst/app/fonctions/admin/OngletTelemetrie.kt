@@ -86,7 +86,11 @@ class EtatTelemetrie(private val service: ServiceAdmin) {
     var erreur by mutableStateOf<ErreurService?>(null)
         private set
 
-    /** Une relecture : l'ancien tableau reste, atténué. */
+    /**
+     * Une relecture : l'ancien tableau reste, atténué. Dispensée d'`Envoi` (#324, nommée dans
+     * `verifier-depot.sh`) : une LECTURE que la suivante remplace (la vue change, l'effet
+     * repart), sans garde du double envoi ; un échec écarte le tableau.
+     */
     var enCours by mutableStateOf(false)
         private set
 

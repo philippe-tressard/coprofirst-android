@@ -3,16 +3,15 @@
 
 package fr.coprofirst.app.fonctions.affaires
 
+import android.content.res.Resources
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -23,6 +22,7 @@ import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.commun.CibleSignalement
+import fr.coprofirst.app.commun.Envoi
 import fr.coprofirst.app.commun.SignalementAuConseil
 import fr.coprofirst.app.commun.TonAvis
 import fr.coprofirst.app.commun.formats.FormatsDuSite
@@ -30,51 +30,34 @@ import fr.coprofirst.app.commun.gesteEnLigne
 import fr.coprofirst.app.commun.masquages.AuteurAMasquer
 import fr.coprofirst.app.commun.masquages.ConfirmationMasquage
 import fr.coprofirst.app.commun.phrase
-import fr.coprofirst.app.session.ErreurService
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
+import fr.coprofirst.app.commun.rememberEnvoi
 
 /**
  * Un geste sans feuille, comme l'iOS (`geste` du bandeau) : envoyé, annoncé par l'avis, puis
- * l'affaire relue ; un échec dit sa phrase (celle du serveur s'il en donne une). `enCours`
- * éteint les boutons le temps de l'envoi.
+ * l'affaire relue ; un échec dit sa phrase (celle du serveur s'il en donne une) — sur
+ * `Envoi`, dont `envoi.enCours` éteint les boutons le temps de l'envoi.
  */
 @Stable
-internal class GesteAnnonce(private val portee: CoroutineScope, private val avis: AvisDuGeste, private val recharger: () -> Unit) {
-    var enCours by mutableStateOf(false)
-        private set
-    internal var echec by mutableStateOf<ErreurService?>(null)
-
-    fun lancer(phrase: String, envoi: suspend () -> Unit) {
-        if (enCours) return
-        portee.launch {
-            enCours = true
-            try {
-                envoi()
-                avis.dire(phrase)
-                recharger()
-            } catch (e: ErreurService) {
-                echec = e
-            } finally {
-                enCours = false
-            }
+internal class GesteAnnonce(
+    val envoi: Envoi,
+    private val avis: AvisDuGeste,
+    private val ressources: Resources,
+    private val recharger: () -> Unit,
+) {
+    fun lancer(phrase: String, action: suspend () -> Unit) =
+        envoi.lancer(echec = { avis.dire(it.phrase(ressources), TonAvis.Erreur) }) {
+            action()
+            avis.dire(phrase)
+            recharger()
         }
-    }
 }
 
 @Composable
 internal fun rememberGesteAnnonce(avis: AvisDuGeste, recharger: () -> Unit): GesteAnnonce {
-    val portee = rememberCoroutineScope()
+    val envoi = rememberEnvoi()
+    val ressources = LocalResources.current
     val actuel by rememberUpdatedState(recharger)
-    val annonce = remember(avis) { GesteAnnonce(portee, avis) { actuel() } }
-    val phrase = annonce.echec?.phrase()
-    LaunchedEffect(phrase) {
-        if (phrase != null) {
-            avis.dire(phrase, TonAvis.Erreur)
-            annonce.echec = null
-        }
-    }
-    return annonce
+    return remember(envoi, avis, ressources) { GesteAnnonce(envoi, avis, ressources) { actuel() } }
 }
 
 /**

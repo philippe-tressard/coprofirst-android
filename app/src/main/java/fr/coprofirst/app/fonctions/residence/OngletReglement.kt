@@ -28,8 +28,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -53,9 +51,8 @@ import fr.coprofirst.app.commun.BoutonPlein
 import fr.coprofirst.app.commun.EtatVide
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.PastilleTeinte
+import fr.coprofirst.app.commun.rememberEnvoi
 import fr.coprofirst.app.commun.texte.TexteDuSite
-import fr.coprofirst.app.session.ErreurService
-import kotlinx.coroutines.launch
 
 /** La limite du champ, celle du site (`maxlength`). */
 const val LONGUEUR_QUESTION = 2000
@@ -124,11 +121,9 @@ private fun FormulaireQuestion(etat: EtatReglement, cs: Boolean, service: Servic
     val couleurs = LocalCouleurs.current
     val focus = LocalFocusManager.current
     val haptique = LocalHapticFeedback.current
-    val portee = rememberCoroutineScope()
     var question by rememberSaveable { mutableStateOf("") }
     // Pas gardé à la rotation : la requête en cours ne survit pas à l'écran qui l'a lancée.
-    var enCours by remember { mutableStateOf(false) }
-    var erreur by remember { mutableStateOf<ErreurService?>(null) }
+    val envoi = rememberEnvoi()
     val empechement = when {
         !etat.disponible -> if (cs) R.string.reglement_indisponible_cs else R.string.reglement_indisponible
         !etat.texteDisponible -> R.string.reglement_sans_texte
@@ -141,7 +136,7 @@ private fun FormulaireQuestion(etat: EtatReglement, cs: Boolean, service: Servic
             onValueChange = { question = it.take(LONGUEUR_QUESTION) },
             placeholder = { Text(stringResource(R.string.reglement_exemple)) },
             label = { Text(stringResource(R.string.reglement_votre_question)) },
-            enabled = !enCours && empechement == null,
+            enabled = !envoi.enCours && empechement == null,
             minLines = 3,
             maxLines = 8,
             colors = OutlinedTextFieldDefaults.colors(
@@ -153,30 +148,22 @@ private fun FormulaireQuestion(etat: EtatReglement, cs: Boolean, service: Servic
             modifier = Modifier.fillMaxWidth().testTag(ReperesResidence.QUESTION),
         )
         empechement?.let { Text(stringResource(it), style = MaterialTheme.typography.bodySmall, color = couleurs.textMuted) }
-        erreur?.let { MessageErreur(it) }
+        envoi.erreur?.let { MessageErreur(it) }
         BoutonPlein(
-            if (enCours) R.string.reglement_lecture else R.string.reglement_poser,
+            if (envoi.enCours) R.string.reglement_lecture else R.string.reglement_poser,
             Modifier.testTag(ReperesResidence.POSER),
             actif = question.isNotBlank() && empechement == null,
-            enCours = enCours,
+            enCours = envoi.enCours,
         ) {
             focus.clearFocus()
-            enCours = true
-            erreur = null
-            portee.launch {
-                try {
-                    val reponse = service.poser(question)
-                    question = ""
-                    haptique.performHapticFeedback(HapticFeedbackType.Confirm)
-                    posee(reponse)
-                } catch (e: ErreurService) {
-                    erreur = e
-                } finally {
-                    enCours = false
-                }
+            envoi.lancer(effacer = true) {
+                val reponse = service.poser(question)
+                question = ""
+                haptique.performHapticFeedback(HapticFeedbackType.Confirm)
+                posee(reponse)
             }
         }
-        if (enCours) Text(stringResource(R.string.reglement_patience), style = MaterialTheme.typography.bodySmall, color = couleurs.textMuted)
+        if (envoi.enCours) Text(stringResource(R.string.reglement_patience), style = MaterialTheme.typography.bodySmall, color = couleurs.textMuted)
     }
 }
 
