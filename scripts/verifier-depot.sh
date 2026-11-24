@@ -367,11 +367,19 @@ python3 -I scripts/verifier_dependances_google.py \
   || echec "une dépendance Google n'est pas permise par la licence (python3 -I scripts/verifier_dependances_google.py)"
 
 # La CI prépare Android par UNE action commune, qui tient l'image de chaque émulateur en
-# cache et la télécharge avec un réessai borné (#232) : aucun job ne s'en passe.
+# cache et la télécharge avec un réessai borné (#232) : aucun job ne s'en passe. Chaque job
+# finit par l'alerte (#345), chaque émulateur s'arrête en temps borné (#315).
 python3 -I scripts/verifier_ci.py --autotest >/dev/null \
   || echec "verifier_ci.py : autotest en échec"
 python3 -I scripts/verifier_ci.py \
-  || echec "un job de la CI se prépare hors de l'action commune (python3 -I scripts/verifier_ci.py)"
+  || echec "un job de la CI se prépare hors de l'action commune, ou finit sans alerte (python3 -I scripts/verifier_ci.py)"
+
+# L'alerte et les tickets de la concordance (#345, #344), sur un dépôt simulé ; l'arrêt borné
+# de l'émulateur (#315), sur un arrêt qui pend simulé — un motif unique, jamais l'émulateur du poste.
+python3 -I scripts/signaler_ci.py --autotest >/dev/null \
+  || echec "signaler_ci.py : autotest en échec (python3 -I scripts/signaler_ci.py --autotest)"
+python3 -I scripts/arreter_emulateur.py --autotest >/dev/null \
+  || echec "arreter_emulateur.py : autotest en échec (python3 -I scripts/arreter_emulateur.py --autotest)"
 
 # Le contrôle avant soumission (#4) se prouve : il départage un vert, un rouge et un INCONNU.
 python3 -I scripts/controle_avant_soumission.py --autotest >/dev/null \

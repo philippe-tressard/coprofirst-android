@@ -24,7 +24,14 @@ ne protège que les jobs qui l'appellent, et que l'image qu'on lui nomme. Ce jug
   sert plus est refusée) ; chaque tâche Gradle du job « Build » y figure ; chaque
   `:<module>:connectedDebugAndroidTest` d'un émulateur y est au moins compilé
   (`:<module>:assembleDebugAndroidTest`). Un pipeline vert au poste dit alors un « Dépôt »
-  et un « Build » verts.
+  et un « Build » verts ;
+- un job sans l'ALERTE pour dernier pas (#345, `standards/07` §1 bis) : chaque job de chaque
+  workflow finit par `python3 -I scripts/signaler_ci.py --signaler`, sous la garde
+  `GARDE_ALERTE` (un échec ou une annulation, jamais une PR — une condition de plus peut
+  suivre, après `&&`), avec son `GH_TOKEN` ; le workflow déclare `issues: write`. Sans ce
+  contrôle, le prochain job naîtrait muet ;
+- un émulateur dont le script ne passe pas par `ARRET` (#315) : l'action attend la fin de
+  l'émulateur sans délai, un arrêt qui pend tenait le job jusqu'à son `timeout-minutes`.
 
 Sortie : 0 conforme, 1 refus, 2 INCONNU. `--autotest` prouve que le juge départage.
 """
@@ -42,6 +49,12 @@ INTERDITS = ("actions/setup-java", "gradle/actions/setup-gradle", "sdkmanager")
 EMULATEUR = "reactivecircus/android-emulator-runner"
 IMAGE = {"api-level": "IMAGE_API", "target": "IMAGE_CIBLE", "arch": "IMAGE_ARCH"}
 CI = ".github/workflows/ci.yml"
+# Le dernier pas de chaque job : un rouge de main ou d'un passage planifié ouvre (ou complète) un
+# ticket (#345). La garde exclut la PR dans le pas lui-même ; le script la refuse aussi.
+SIGNALER = "python3 -I scripts/signaler_ci.py --signaler"
+GARDE_ALERTE = "(failure() || cancelled()) && github.event_name != 'pull_request'"
+# Le script de chaque émulateur : la commande, puis l'arrêt borné de l'émulateur (#315).
+ARRET = "python3 -I scripts/arreter_emulateur.py --"
 PIPELINE = "scripts/pipeline.sh"
 # Un pas du job « Dépôt » que le poste rejoue AUTREMENT : son nom → ce que pipeline.sh porte.
 EXCEPTIONS_POSTE = {
@@ -60,13 +73,41 @@ def jobs(texte: str) -> dict[str, str]:
     return dict(zip(morceaux[1::2], morceaux[2::2]))
 
 
+def pas_du_job(bloc: str) -> list[str]:
+    """Les pas d'un job, dans l'ordre (une entrée `- ` à six espaces sous `steps:`)."""
+    if "\n    steps:\n" not in bloc:
+        return []
+    return re.split(r"^      - ", bloc.split("\n    steps:\n", 1)[1], flags=re.M)[1:]
+
+
+def faute_alerte(nom: str, bloc: str) -> str | None:
+    """Le dernier pas du job est l'alerte, sous sa garde, avec son jeton (#345)."""
+    pas = pas_du_job(bloc)
+    if not pas:
+        return f"job « {nom} » : aucun pas lisible — son alerte ne se juge pas"
+    dernier = pas[-1]
+    garde = re.search(r"^\s+if: \$\{\{ (.+?) \}\}\s*$", dernier, re.M)
+    if SIGNALER not in dernier:
+        return f"job « {nom} » : son dernier pas n'est pas l'alerte « {SIGNALER} » (#345)"
+    if not garde or not (garde.group(1) == GARDE_ALERTE or garde.group(1).startswith(GARDE_ALERTE + " && ")):
+        return f"job « {nom} » : l'alerte n'a pas la garde « if: ${{{{ {GARDE_ALERTE} }}}} »"
+    if not re.search(r"^\s+GH_TOKEN: \$\{\{ github\.token \}\}\s*$", dernier, re.M):
+        return f"job « {nom} » : l'alerte sans GH_TOKEN"
+    return None
+
+
 def juger_workflow(chemin: str, texte: str) -> list[str]:
     fautes = [f"{chemin} : « {i} » écrit dans le workflow — il passe par {ACTION}"
               for i in INTERDITS if i in texte]
     blocs = jobs(texte)
     if not blocs:
         return fautes + [f"{chemin} : aucun job lisible"]
+    if not re.search(r"^permissions:\n(?:  .*\n)*  issues: write(?:\s+#.*)?$", texte, re.M):
+        fautes.append(f"{chemin} : « issues: write » absent des permissions du workflow — l'alerte ne pourrait rien ouvrir")
     for nom, bloc in blocs.items():
+        alerte = faute_alerte(nom, bloc)
+        if alerte:
+            fautes.append(f"{chemin} : {alerte}")
         prepare = "uses: ./.github/actions/preparer-android" in bloc
         if "./gradlew" in bloc and not prepare:
             fautes.append(f"{chemin} : job « {nom} » lance Gradle sans {ACTION}")
@@ -78,6 +119,9 @@ def juger_workflow(chemin: str, texte: str) -> list[str]:
             if not re.search(rf"^      {cle}: \S+\s*$", bloc, re.M):
                 fautes.append(f"{chemin} : job « {nom} » : {cle} absent de son environnement")
         emulateur = bloc.split(EMULATEUR, 1)[1]
+        script = re.search(r"^\s+script: (.+?)\s*$", emulateur, re.M)
+        if not script or not script.group(1).startswith(ARRET + " "):
+            fautes.append(f"{chemin} : job « {nom} » : le script de l'émulateur ne passe pas par « {ARRET} » (arrêt borné, #315)")
         for parametre, variable in IMAGE.items():
             m = re.search(rf"^\s+{parametre}: (.+?)\s*$", emulateur, re.M)
             if not m or m.group(1) != "${{ env.%s }}" % variable:
@@ -106,6 +150,8 @@ def juger_pipeline(texte_ci: str, pipeline: str) -> list[str]:
         return [f"{CI} : jobs « depot » et « build » attendus"]
     noms = set()
     for nom, run in pas_run(blocs["depot"]):
+        if run.startswith(SIGNALER):
+            continue  # l'alerte n'est pas un contrôle : rien à rejouer au poste
         noms.add(nom)
         if nom in EXCEPTIONS_POSTE:
             if EXCEPTIONS_POSTE[nom] not in pipeline:
@@ -144,7 +190,8 @@ def juger(racine: pathlib.Path) -> list[str]:
         fautes.append("build.gradle.kts : compileSdk illisible")
     elif not installee or installee.group(1) != attendue:
         fautes.append(f"{ACTION} : plateforme de compileSdk {installee.group(1) if installee else '?'}, le build dit {attendue}")
-    workflows = sorted((racine / ".github" / "workflows").glob("*.yml"))
+    dossier = racine / ".github" / "workflows"
+    workflows = sorted(dossier.glob("*.yml")) + sorted(dossier.glob("*.yaml"))
     if not workflows:
         fautes.append(".github/workflows : aucun workflow")
     for w in workflows:
@@ -158,7 +205,16 @@ def juger(racine: pathlib.Path) -> list[str]:
     return fautes + juger_pipeline(ci.read_text(encoding="utf-8"), pipeline.read_text(encoding="utf-8"))
 
 
+ALERTE_BONNE = """      - name: Alerte
+        if: ${{ (failure() || cancelled()) && github.event_name != 'pull_request' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -I scripts/signaler_ci.py --signaler --etat "${{ job.status }}"
+"""
 BON = """name: CI
+permissions:
+  contents: read
+  issues: write # pour l'alerte
 env:
   IMAGE_ARCH: x86_64
 jobs:
@@ -170,11 +226,11 @@ jobs:
       - name: REUSE
         run: |
           reuse lint
-  build:
+""" + ALERTE_BONNE + """  build:
     steps:
       - uses: ./.github/actions/preparer-android
       - run: ./gradlew :app:assembleDebug
-  interface:
+""" + ALERTE_BONNE + """  interface:
     env:
       IMAGE_API: 35
       IMAGE_CIBLE: google_apis
@@ -187,8 +243,8 @@ jobs:
           api-level: ${{ env.IMAGE_API }}
           target: ${{ env.IMAGE_CIBLE }}
           arch: ${{ env.IMAGE_ARCH }}
-          script: ./gradlew :app:connectedDebugAndroidTest
-"""
+          script: python3 -I scripts/arreter_emulateur.py -- ./gradlew :app:connectedDebugAndroidTest
+""" + ALERTE_BONNE
 PIPELINE_BON = """bash scripts/verifier-depot.sh
 bash scripts/reuse-au-poste.sh
 ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest
@@ -209,6 +265,18 @@ def autotest() -> bool:
         "file de fusion": BON.replace("name: CI\n", "name: CI\non:\n  merge_group:\n"),
         "pas du Dépôt non rejoué": BON.replace("      - name: REUSE\n", "      - name: Contrat\n        run: bash scripts/importer-contrat.sh --verifier\n      - name: REUSE\n"),
         "exception sans pas": BON.replace("      - name: REUSE\n        run: |\n          reuse lint\n", ""),
+        # #345 : un job ajouté sans l'alerte, une alerte qui n'est plus le dernier pas, sans sa
+        # garde (elle jouerait sur une PR), sans jeton, et un workflow sans « issues: write ».
+        "job sans alerte": BON + "  ajoute:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo\n",
+        "alerte pas en dernier": BON.replace(ALERTE_BONNE + "  interface:", ALERTE_BONNE + "      - run: echo après\n  interface:"),
+        "alerte sans garde de PR": BON.replace(ALERTE_BONNE + "  build:", ALERTE_BONNE.replace(
+            " && github.event_name != 'pull_request'", "") + "  build:"),
+        "alerte sans jeton": BON.replace(ALERTE_BONNE + "  build:", ALERTE_BONNE.replace(
+            "          GH_TOKEN: ${{ github.token }}\n", "          X: y\n") + "  build:"),
+        "sans issues: write": BON.replace("  issues: write # pour l'alerte\n", ""),
+        # #315 : un émulateur dont le script ne passe pas par l'arrêt borné.
+        "émulateur sans arrêt borné": BON.replace("script: python3 -I scripts/arreter_emulateur.py -- ./gradlew",
+                                                  "script: ./gradlew"),
     }
     pipelines_fautifs = {
         "tâche du Build absente": PIPELINE_BON.replace(":app:assembleDebug :", ":"),
@@ -263,7 +331,8 @@ def main() -> int:
         print(f"❌ {faute}")
     if fautes:
         return 1
-    print("✅ CI : chaque job Gradle passe par la préparation commune, chaque émulateur par son image ; le poste rejoue Dépôt et Build")
+    print("✅ CI : chaque job Gradle passe par la préparation commune, chaque émulateur par son image et son arrêt borné ;"
+          " chaque job finit par l'alerte ; le poste rejoue Dépôt et Build")
     return 0
 
 
