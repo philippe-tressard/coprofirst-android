@@ -21,7 +21,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -42,8 +41,8 @@ import fr.coprofirst.app.commun.perimetres.ArbreDesPerimetres
 import fr.coprofirst.app.commun.perimetres.ChoixDePerimetres
 import fr.coprofirst.app.commun.perimetres.ChoixPerimetres
 import fr.coprofirst.app.commun.perimetres.ServicePerimetres
+import fr.coprofirst.app.commun.rememberEnvoi
 import fr.coprofirst.app.session.ErreurService
-import kotlinx.coroutines.launch
 
 /**
  * « Nouvelle annonce » (`FormulaireAnnonceHall.svelte`), comme l'iOS (`NouvelleAnnonceHall`) :
@@ -56,15 +55,13 @@ import kotlinx.coroutines.launch
  */
 @Composable
 internal fun NouvelleAnnonceHall(service: ServiceAnnoncesHall, perimetres: ServicePerimetres?, creee: (AnnonceHall) -> Unit) {
-    val portee = rememberCoroutineScope()
     var titre by rememberSaveable { mutableStateOf("") }
     var message by rememberSaveable { mutableStateOf("") }
     var format by rememberSaveable { mutableStateOf(TablesEspaceCS.formatsAffiche.first().first) }
     var envoyerCS by rememberSaveable { mutableStateOf(false) }
     var envoyerSyndic by rememberSaveable { mutableStateOf(false) }
     var envoyerAuteur by rememberSaveable { mutableStateOf(false) }
-    var envoi by remember { mutableStateOf(false) }
-    var erreur by remember { mutableStateOf<ErreurService?>(null) }
+    val envoi = rememberEnvoi()
     var arbre by remember { mutableStateOf(ArbreDesPerimetres(emptyList())) }
     var choix by remember { mutableStateOf(ChoixDePerimetres()) }
     LaunchedEffect(perimetres) {
@@ -123,31 +120,23 @@ internal fun NouvelleAnnonceHall(service: ServiceAnnoncesHall, perimetres: Servi
                 Case(R.string.espacecs_annonces_envoyer_auteur, envoyerAuteur, null) { envoyerAuteur = it }
             }
         }
-        erreur?.let { MessageErreur(it) }
+        envoi.erreur?.let { MessageErreur(it) }
         BoutonPlein(
             R.string.espacecs_annonces_creer,
             Modifier.testTag(ReperesEspaceCS.NOUVELLE_CREER),
             actif = saisie.complete,
-            enCours = envoi,
+            enCours = envoi.enCours,
         ) {
-            portee.launch {
-                envoi = true
-                erreur = null
-                try {
-                    val annonce = service.creer(saisie)
-                    titre = ""
-                    message = ""
-                    format = TablesEspaceCS.formatsAffiche.first().first
-                    envoyerCS = false
-                    envoyerSyndic = false
-                    envoyerAuteur = false
-                    choix = ChoixDePerimetres().choisirDefaut(arbre)
-                    creee(annonce)
-                } catch (e: ErreurService) {
-                    erreur = e
-                } finally {
-                    envoi = false
-                }
+            envoi.lancer(effacer = true) {
+                val annonce = service.creer(saisie)
+                titre = ""
+                message = ""
+                format = TablesEspaceCS.formatsAffiche.first().first
+                envoyerCS = false
+                envoyerSyndic = false
+                envoyerAuteur = false
+                choix = ChoixDePerimetres().choisirDefaut(arbre)
+                creee(annonce)
             }
         }
     }

@@ -17,7 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -38,8 +37,7 @@ import fr.coprofirst.app.commun.ConstantesDuServeur
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.Note
 import fr.coprofirst.app.commun.apercu.NomDeLaSaisie
-import fr.coprofirst.app.session.ErreurService
-import kotlinx.coroutines.launch
+import fr.coprofirst.app.commun.rememberEnvoi
 
 /** Un champ d'un formulaire du Profil : son libellé, son repère, son clavier. */
 @Composable
@@ -79,32 +77,23 @@ fun ChampProfil(
 @Composable
 fun FormulaireIdentite(compte: UserRead, service: ServiceProfil, fermer: () -> Unit, enregistre: (Phrase) -> Unit) {
     var saisie by remember(compte) { mutableStateOf(SaisieIdentite.depuis(compte)) }
-    var envoi by remember { mutableStateOf(false) }
-    var erreur by remember { mutableStateOf<ErreurService?>(null) }
-    val portee = rememberCoroutineScope()
+    val envoi = rememberEnvoi()
     val nouvelle = saisie.changeAdresse(compte.email)
     FeuilleProfil(
         titre = stringResource(R.string.profil_informations),
         fermer = fermer,
-        geste = GesteDeFeuille(stringResource(R.string.profil_enregistrer), "profil.identite.enregistrer", saisie.complete(compte.email), envoi) {
-            portee.launch {
-                envoi = true
-                try {
-                    val lien = service.modifierIdentite(saisie, compte.email)
-                    fermer()
-                    enregistre(
-                        if (lien) Phrase.Texte(R.string.profil_lien_envoye, listOf(saisie.email.trim()))
-                        else Phrase.Texte(R.string.profil_mis_a_jour),
-                    )
-                } catch (e: ErreurService) {
-                    erreur = e
-                } finally {
-                    envoi = false
-                }
+        geste = GesteDeFeuille(stringResource(R.string.profil_enregistrer), "profil.identite.enregistrer", saisie.complete(compte.email), envoi.enCours) {
+            envoi.lancer {
+                val lien = service.modifierIdentite(saisie, compte.email)
+                fermer()
+                enregistre(
+                    if (lien) Phrase.Texte(R.string.profil_lien_envoye, listOf(saisie.email.trim()))
+                    else Phrase.Texte(R.string.profil_mis_a_jour),
+                )
             }
         },
     ) {
-        erreur?.let { MessageErreur(it, Modifier.padding(horizontal = Mise.marge)) }
+        envoi.erreur?.let { MessageErreur(it, Modifier.padding(horizontal = Mise.marge)) }
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             ChampProfil(saisie.prenom, stringResource(R.string.profil_prenom), "profil.identite.prenom") { saisie = saisie.copy(prenom = it) }
             ChampProfil(saisie.nom, stringResource(R.string.profil_nom), "profil.identite.nom") { saisie = saisie.copy(nom = it) }
@@ -151,10 +140,8 @@ fun FormulaireMotDePasse(service: ServiceProfil, fermer: () -> Unit) {
     var actuel by rememberSaveable { mutableStateOf("") }
     var nouveau by rememberSaveable { mutableStateOf("") }
     var confirmation by rememberSaveable { mutableStateOf("") }
-    var envoi by remember { mutableStateOf(false) }
-    var erreur by remember { mutableStateOf<ErreurService?>(null) }
+    val envoi = rememberEnvoi()
     var reussi by remember { mutableStateOf(false) }
-    val portee = rememberCoroutineScope()
     val couleurs = LocalCouleurs.current
     val attente = attenteMotDePasse(actuel, nouveau, confirmation)
     FeuilleProfil(titre = stringResource(R.string.profil_titre_mot_de_passe), fermer = fermer) {
@@ -172,24 +159,16 @@ fun FormulaireMotDePasse(service: ServiceProfil, fermer: () -> Unit) {
                 attente != null -> Note(attente.phrase(), marge)
             }
         }
-        erreur?.let { MessageErreur(it, Modifier.padding(horizontal = Mise.marge)) }
+        envoi.erreur?.let { MessageErreur(it, Modifier.padding(horizontal = Mise.marge)) }
         BoutonPlein(
             R.string.profil_modifier_mot_de_passe,
             Modifier.padding(horizontal = Mise.marge).testTag("profil.motDePasse.modifier"),
             actif = attente == null,
-            enCours = envoi,
+            enCours = envoi.enCours,
         ) {
-            portee.launch {
-                envoi = true
-                try {
-                    service.changerMotDePasse(actuel, nouveau)
-                    erreur = null
-                    reussi = true
-                } catch (e: ErreurService) {
-                    erreur = e
-                } finally {
-                    envoi = false
-                }
+            envoi.lancer {
+                service.changerMotDePasse(actuel, nouveau)
+                reussi = true
             }
         }
     }

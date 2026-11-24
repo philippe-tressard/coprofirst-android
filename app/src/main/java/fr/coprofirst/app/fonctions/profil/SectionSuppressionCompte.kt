@@ -16,7 +16,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,8 +29,8 @@ import fr.coprofirst.app.commun.Note
 import fr.coprofirst.app.commun.Section
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.phrase
+import fr.coprofirst.app.commun.rememberEnvoi
 import fr.coprofirst.app.session.ErreurService
-import kotlinx.coroutines.launch
 
 /**
  * « Supprimer mon compte », sous « Vos droits (RGPD) » du Profil — le même geste que le
@@ -42,12 +41,11 @@ import kotlinx.coroutines.launch
  */
 @Composable
 fun SectionSuppressionCompte(service: ServiceProfil) {
-    val portee = rememberCoroutineScope()
     var etat by remember { mutableStateOf<EtatSuppressionCompte?>(null) }
     var erreur by remember { mutableStateOf<ErreurService?>(null) }
     var lecture by remember { mutableIntStateOf(0) }
     var formulaire by remember { mutableStateOf(false) }
-    var envoi by remember { mutableStateOf(false) }
+    val retrait = rememberEnvoi()
     var phrase by remember { mutableStateOf<Phrase?>(null) }
     LaunchedEffect(lecture) {
         try {
@@ -64,18 +62,12 @@ fun SectionSuppressionCompte(service: ServiceProfil) {
             erreur != null -> Note(stringResource(R.string.profil_suppression_illisible, erreur!!.phrase()))
             demande != null -> {
                 Note(demandeEnvoyee(demande))
-                LigneAction(stringResource(R.string.profil_retirer_demande), "profil.suppression.retirer", actif = !envoi) {
-                    portee.launch {
-                        envoi = true
-                        try {
-                            service.retirerDemandeSuppression()
-                            phrase = Phrase.Texte(R.string.profil_demande_retiree)
-                            lecture++
-                        } catch (e: ErreurService) {
-                            phrase = Phrase.Erreur(e)
-                        } finally {
-                            envoi = false
-                        }
+                LigneAction(stringResource(R.string.profil_retirer_demande), "profil.suppression.retirer", actif = !retrait.enCours) {
+                    // La phrase se partage avec la demande : l'échec y va aussi.
+                    retrait.lancer(echec = { phrase = Phrase.Erreur(it) }) {
+                        service.retirerDemandeSuppression()
+                        phrase = Phrase.Texte(R.string.profil_demande_retiree)
+                        lecture++
                     }
                 }
             }
@@ -118,23 +110,14 @@ private fun invitation(delai: Int?): String =
 private fun FeuilleSuppression(etat: EtatSuppressionCompte, fermer: () -> Unit, demander: suspend (String, String) -> Unit) {
     var motDePasse by remember { mutableStateOf("") }
     var motif by remember { mutableStateOf("") }
-    var envoi by remember { mutableStateOf(false) }
-    var refus by remember { mutableStateOf<ErreurService?>(null) }
-    val portee = rememberCoroutineScope()
+    val envoi = rememberEnvoi()
     FeuilleProfil(
         titre = stringResource(R.string.profil_supprimer_compte),
         fermer = fermer,
-        geste = GesteDeFeuille(stringResource(R.string.profil_confirmer_demande), "suppression.confirmer", motDePasse.isNotEmpty(), envoi) {
-            portee.launch {
-                envoi = true
-                try {
-                    demander(motDePasse, motif)
-                    fermer()
-                } catch (e: ErreurService) {
-                    refus = e
-                } finally {
-                    envoi = false
-                }
+        geste = GesteDeFeuille(stringResource(R.string.profil_confirmer_demande), "suppression.confirmer", motDePasse.isNotEmpty(), envoi.enCours) {
+            envoi.lancer {
+                demander(motDePasse, motif)
+                fermer()
             }
         },
     ) {
@@ -145,6 +128,6 @@ private fun FeuilleSuppression(etat: EtatSuppressionCompte, fermer: () -> Unit, 
         }
         ChampProfil(motDePasse, stringResource(R.string.profil_mot_de_passe_confirmer), "suppression.motDePasse", secret = true) { motDePasse = it }
         ChampProfil(motif, stringResource(R.string.profil_motif_facultatif), "suppression.motif", lignes = 2) { motif = it }
-        refus?.let { MessageErreur(it, Modifier.fillMaxWidth().padding(horizontal = Mise.marge)) }
+        envoi.erreur?.let { MessageErreur(it, Modifier.fillMaxWidth().padding(horizontal = Mise.marge)) }
     }
 }

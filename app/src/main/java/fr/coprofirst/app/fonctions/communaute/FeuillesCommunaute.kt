@@ -29,11 +29,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -49,8 +44,7 @@ import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.commun.BoutonsFeuille
 import fr.coprofirst.app.commun.MessageErreur
-import fr.coprofirst.app.session.ErreurService
-import kotlinx.coroutines.launch
+import fr.coprofirst.app.commun.rememberEnvoi
 
 /**
  * Une feuille de saisie de la Communauté (`PiedFormulaire` de l'iOS) : le titre, l'erreur
@@ -69,35 +63,25 @@ fun FeuilleSaisie(
     champs: @Composable ColumnScope.() -> Unit,
 ) {
     val etat = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val portee = rememberCoroutineScope()
-    var envoi by remember { mutableStateOf(false) }
-    var erreur by remember { mutableStateOf<ErreurService?>(null) }
+    val envoi = rememberEnvoi()
     val quitter = {
         avis.feuilleFermee()
         fermer()
     }
-    ModalBottomSheet(onDismissRequest = { if (!envoi) quitter() }, sheetState = etat) {
+    ModalBottomSheet(onDismissRequest = { if (!envoi.enCours) quitter() }, sheetState = etat) {
         Column(
             Modifier.verticalScroll(rememberScrollState()).padding(horizontal = Mise.marge).padding(bottom = 16.dp)
                 .navigationBarsPadding().imePadding(),
             verticalArrangement = Arrangement.spacedBy(Mise.ecart),
         ) {
             Text(stringResource(titre), style = Typo.titre(), color = LocalCouleurs.current.text)
-            erreur?.let { MessageErreur(it) }
+            envoi.erreur?.let { MessageErreur(it) }
             champs()
-            BoutonsFeuille(envoi, ReperesCommunaute.ENREGISTRER, annuler = { if (!envoi) quitter() }, actif = complete) {
-                portee.launch {
-                    envoi = true
-                    erreur = null
-                    try {
-                        avis.direApresFermeture(envoyer())
-                        etat.hide()
-                        quitter()
-                    } catch (e: ErreurService) {
-                        erreur = e
-                    } finally {
-                        envoi = false
-                    }
+            BoutonsFeuille(envoi.enCours, ReperesCommunaute.ENREGISTRER, annuler = { if (!envoi.enCours) quitter() }, actif = complete) {
+                envoi.lancer(effacer = true) {
+                    avis.direApresFermeture(envoyer())
+                    etat.hide()
+                    quitter()
                 }
             }
         }

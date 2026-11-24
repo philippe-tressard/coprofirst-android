@@ -36,7 +36,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -61,8 +60,8 @@ import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.acces.TypeAcces
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.rememberEnvoi
 import fr.coprofirst.app.session.ErreurService
-import kotlinx.coroutines.launch
 
 /** La quantité qu'une demande admet (le pas de l'iOS). */
 private val QUANTITES = 1..5
@@ -151,24 +150,13 @@ private fun Feuille(
     champs: @Composable ColumnScope.(envoyer: () -> Unit) -> Unit,
 ) {
     val etat = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val portee = rememberCoroutineScope()
     val ressources = LocalResources.current
-    var enCours by remember { mutableStateOf(false) }
-    var erreur by remember { mutableStateOf<ErreurService?>(null) }
+    val envoi = rememberEnvoi()
     val lancer: () -> Unit = {
-        if (!enCours) {
-            portee.launch {
-                enCours = true
-                try {
-                    envoyer(ressources)
-                    etat.hide()
-                    fermer()
-                } catch (e: ErreurService) {
-                    erreur = e
-                } finally {
-                    enCours = false
-                }
-            }
+        envoi.lancer {
+            envoyer(ressources)
+            etat.hide()
+            fermer()
         }
     }
     ModalBottomSheet(onDismissRequest = fermer, sheetState = etat) {
@@ -177,9 +165,9 @@ private fun Feuille(
             verticalArrangement = Arrangement.spacedBy(Mise.ecart),
         ) {
             Text(stringResource(titre), style = Typo.titre(), color = LocalCouleurs.current.text)
-            erreur?.let { MessageErreur(it) }
+            envoi.erreur?.let { MessageErreur(it) }
             champs(lancer)
-            BoutonPlein(R.string.monlot_enregistrer, Modifier.testTag(ReperesMonLot.ENREGISTRER), enCours = enCours, onClick = lancer)
+            BoutonPlein(R.string.monlot_enregistrer, Modifier.testTag(ReperesMonLot.ENREGISTRER), enCours = envoi.enCours, onClick = lancer)
         }
     }
 }

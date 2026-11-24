@@ -34,6 +34,7 @@ import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.Note
 import fr.coprofirst.app.commun.Section
 import fr.coprofirst.app.commun.gesteEnLigne
+import fr.coprofirst.app.commun.rememberEnvoi
 import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.Installation
 import kotlinx.coroutines.launch
@@ -61,7 +62,7 @@ fun SectionDroits(
     val portee = rememberCoroutineScope()
     var phrase by remember { mutableStateOf<Phrase?>(null) }
     var export by remember { mutableStateOf<String?>(null) }
-    var enCours by remember { mutableStateOf(false) }
+    val exportation = rememberEnvoi()
     var effacer by remember { mutableStateOf(false) }
     val refus = compte.optOutTelemetrie == true
     val libelleRefus = stringResource(R.string.profil_refuser_statistiques)
@@ -106,15 +107,11 @@ fun SectionDroits(
                 contexte.startActivity(Intent.createChooser(envoi, null))
             }
         } else {
-            val exportation = gesteEnLigne(!enCours)
-            LigneAction(stringResource(R.string.profil_exporter), "profil.droits.exporter", actif = exportation.actif, modifier = exportation.modifier) {
-                enCours = true
-                avec(echec = { e ->
-                    enCours = false
-                    phrase = Phrase.Erreur(e)
-                }) {
+            val geste = gesteEnLigne(!exportation.enCours)
+            LigneAction(stringResource(R.string.profil_exporter), "profil.droits.exporter", actif = geste.actif, modifier = geste.modifier) {
+                // La phrase se partage avec les autres gestes de la section : l'échec y va aussi.
+                exportation.lancer(echec = { phrase = Phrase.Erreur(it) }) {
                     export = service.exporterTelemetrie()
-                    enCours = false
                     phrase = Phrase.Texte(R.string.profil_export_pret)
                 }
             }

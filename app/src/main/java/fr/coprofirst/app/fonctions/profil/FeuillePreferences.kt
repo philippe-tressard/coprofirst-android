@@ -18,7 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,8 +35,7 @@ import fr.coprofirst.app.commun.GesteEnLigne
 import fr.coprofirst.app.commun.Note
 import fr.coprofirst.app.commun.Section
 import fr.coprofirst.app.commun.gesteEnLigne
-import fr.coprofirst.app.session.ErreurService
-import kotlinx.coroutines.launch
+import fr.coprofirst.app.commun.rememberEnvoi
 
 /**
  * « Ce que j'affiche », comme l'iOS (`PreferencesView`) : la restriction aux bâtiments, puis
@@ -55,27 +53,23 @@ fun FeuillePreferences(compte: UserRead, service: ServiceProfil, fermer: () -> U
     val retour = LocalHapticFeedback.current
     var lecture by remember { mutableStateOf(LecturePreferences.depuis(compte.preferencesNotifications)) }
     var restreindre by remember { mutableStateOf(compte.restreindreAMesBatiments ?: false) }
-    var envoi by remember { mutableStateOf(false) }
+    val envoi = rememberEnvoi()
     var resultat by remember { mutableStateOf<Phrase?>(null) }
-    val portee = rememberCoroutineScope()
     FeuilleProfil(
         titre = stringResource(R.string.profil_preferences),
         fermer = fermer,
-        geste = GesteDeFeuille(stringResource(R.string.profil_enregistrer), ReperesPreferences.ENREGISTRER, true, envoi) {
-            portee.launch {
-                envoi = true
-                val json = lecture.json
-                resultat = try {
-                    service.enregistrerPreferences(json, restreindre)
-                    enregistre(compte.copy(preferencesNotifications = json, restreindreAMesBatiments = restreindre))
-                    lecture = lecture.copy(heritees = emptySet())
-                    Phrase.Texte(R.string.profil_preferences_enregistrees)
-                } catch (e: ErreurService) {
-                    Phrase.Erreur(e)
-                } finally {
-                    envoi = false
-                }
-                retour.performHapticFeedback(if (resultat is Phrase.Erreur) HapticFeedbackType.Reject else HapticFeedbackType.Confirm)
+        geste = GesteDeFeuille(stringResource(R.string.profil_enregistrer), ReperesPreferences.ENREGISTRER, true, envoi.enCours) {
+            val json = lecture.json
+            // Le résultat se dit sous les cases, l'échec comme la réussite : il ne vient pas de `envoi.erreur`.
+            envoi.lancer(echec = { e ->
+                resultat = Phrase.Erreur(e)
+                retour.performHapticFeedback(HapticFeedbackType.Reject)
+            }) {
+                service.enregistrerPreferences(json, restreindre)
+                enregistre(compte.copy(preferencesNotifications = json, restreindreAMesBatiments = restreindre))
+                lecture = lecture.copy(heritees = emptySet())
+                resultat = Phrase.Texte(R.string.profil_preferences_enregistrees)
+                retour.performHapticFeedback(HapticFeedbackType.Confirm)
             }
         },
     ) {

@@ -52,6 +52,7 @@ import fr.coprofirst.app.commun.BoutonsFeuille
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.rememberEnvoi
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -74,9 +75,8 @@ internal fun FeuilleNouvelleDelegation(service: ServiceDelegations, fermer: () -
     var fin by rememberSaveable { mutableStateOf(aujourdhui().plusDays(FIN_PROPOSEE_JOURS)) }
     var residents by remember { mutableStateOf<List<ResidentDelegable>>(emptyList()) }
     var residentsEnErreur by remember { mutableStateOf(false) }
-    var envoi by remember { mutableStateOf(false) }
-    var erreur by remember { mutableStateOf<ErreurService?>(null) }
-    val etat = rememberModalBottomSheetState(skipPartiallyExpanded = true, confirmValueChange = { it != SheetValue.Hidden || !envoi })
+    val envoi = rememberEnvoi()
+    val etat = rememberModalBottomSheetState(skipPartiallyExpanded = true, confirmValueChange = { it != SheetValue.Hidden || !envoi.enCours })
     val portee = rememberCoroutineScope()
     val couleurs = LocalCouleurs.current
     val partir: () -> Unit = { portee.launch { etat.hide() }.invokeOnCompletion { fermer() } }
@@ -89,7 +89,7 @@ internal fun FeuilleNouvelleDelegation(service: ServiceDelegations, fermer: () -
         }
     }
 
-    ModalBottomSheet(onDismissRequest = { if (!envoi) fermer() }, sheetState = etat, containerColor = couleurs.bg) {
+    ModalBottomSheet(onDismissRequest = { if (!envoi.enCours) fermer() }, sheetState = etat, containerColor = couleurs.bg) {
         Column(
             Modifier.fillMaxWidth().imePadding().verticalScroll(rememberScrollState()).padding(horizontal = Mise.marge),
             verticalArrangement = Arrangement.spacedBy(Mise.ecart),
@@ -125,26 +125,19 @@ internal fun FeuilleNouvelleDelegation(service: ServiceDelegations, fermer: () -
                 Icon(Icons.Outlined.WarningAmber, contentDescription = null, tint = couleurs.textMuted, modifier = Modifier.size(18.dp))
                 Text(stringResource(R.string.delegations_avertissement), style = MaterialTheme.typography.bodySmall, color = couleurs.textMuted)
             }
-            AnimatedVisibility(visible = erreur != null) { erreur?.let { MessageErreur(it) } }
+            AnimatedVisibility(visible = envoi.erreur != null) { envoi.erreur?.let { MessageErreur(it) } }
             BoutonsFeuille(
-                envoi = envoi,
+                envoi = envoi.enCours,
                 repere = ReperesDelegations.ENREGISTRER,
                 annuler = partir,
                 modifier = Modifier.padding(bottom = 16.dp),
                 actif = saisie.complete,
             ) {
-                envoi = true
-                erreur = null
-                portee.launch {
-                    try {
-                        service.creer(saisie.copy(dateFin = fin.takeIf { avecFin }))
-                        creee()
-                        envoi = false
-                        partir()
-                    } catch (e: ErreurService) {
-                        erreur = e
-                        envoi = false
-                    }
+                // `partir` lance la fermeture à part : elle part une fois l'envoi rendu.
+                envoi.lancer(effacer = true) {
+                    service.creer(saisie.copy(dateFin = fin.takeIf { avecFin }))
+                    creee()
+                    partir()
                 }
             }
         }
