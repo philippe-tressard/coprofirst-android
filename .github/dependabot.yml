@@ -13,6 +13,11 @@ updates:
       # CameraX reste en 1.5 : la 1.6 et la 1.7 embarquent Dagger, Guava et jsr305 (#6, #309).
       - dependency-name: "androidx.camera:*"
         versions: [">= 1.6"]
+  - package-ecosystem: pip
+    # Les outils des contrôles (reuse), épinglés dans scripts/requirements.txt (#339).
+    directory: /scripts
+    schedule:
+      interval: weekly
   - package-ecosystem: github-actions
     # L'action commune de la CI épingle ses propres actions (#232) : elle se suit aussi.
     directories: ["/", "/.github/actions/*"]

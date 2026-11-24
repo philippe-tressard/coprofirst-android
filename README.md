@@ -281,8 +281,11 @@ pre-commit et le pipeline jugent la conformité REUSE ; sans lui, INCONNU).
 brew install openjdk@21 python3 pipx
 brew install --cask android-commandlinetools
 sdkmanager "platform-tools" "platforms;android-37.2"
-pipx install reuse
+pipx install "$(grep '^reuse' scripts/requirements.txt)"
 ```
+
+`reuse` à la version de `scripts/requirements.txt`, celle de la CI : une autre version rend la
+conformité INCONNUE au poste (`scripts/reuse-au-poste.sh`) ; Dependabot en propose les montées.
 
 Un clone **complet** : la version se déduit de l'historique (nombre de commits) — un clone
 superficiel (`--depth`) arrête le build, la version n'y étant pas connue. Puis armer le hook, une

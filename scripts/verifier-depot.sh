@@ -152,6 +152,11 @@ interdire "$COULEURS_MAIN" "couleur écrite à la main — à générer depuis c
 SIGNATURE_EN_CLAIR='(storePassword|keyPassword)[[:space:]]*=[[:space:]]*"'
 autotest_motif "signature en clair" "$SIGNATURE_EN_CLAIR" 'storePassword = "secret"' 'storePassword = motDePasseTeleversement'
 interdire "$SIGNATURE_EN_CLAIR" "mot de passe de signature écrit en clair" '' '\.(kts|properties)$'
+# Un outil des contrôles s'épingle dans scripts/requirements.txt, que Dependabot suit (#339) :
+# écrit en ligne dans un workflow, il ne monterait jamais.
+OUTIL_EN_LIGNE='pip[0-9]*"?[[:space:]]+install[^#]*[A-Za-z0-9_.-]+(\[[^]]*\])?=='
+autotest_motif "outil épinglé en ligne" "$OUTIL_EN_LIGNE" '          "$V/bin/pip" install --quiet "reuse[charset-normalizer]==6.2.0"' '          "$V/bin/pip" install --quiet -r scripts/requirements.txt'
+interdire "$OUTIL_EN_LIGNE" "outil Python épinglé en ligne dans un workflow — scripts/requirements.txt (Dependabot, #339)" '' '^\.github/'
 SIGNATURE_EN_CI='COPROFIRST_SIGNATURE|coprofirst\.signature\.|construire-release'
 autotest_motif "signature en CI" "$SIGNATURE_EN_CI" '  COPROFIRST_SIGNATURE_MDP: x' '  run: ./gradlew :app:assembleRelease'
 interdire "$SIGNATURE_EN_CI" "la signature n'entre pas en CI (#33)" '' '^\.github/'

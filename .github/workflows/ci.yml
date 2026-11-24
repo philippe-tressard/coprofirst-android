@@ -55,7 +55,7 @@ jobs:
       - name: REUSE
         run: |
           python3 -m venv "$RUNNER_TEMP/reuse"
-          "$RUNNER_TEMP/reuse/bin/pip" install --quiet --disable-pip-version-check "reuse[charset-normalizer]==6.2.0"
+          "$RUNNER_TEMP/reuse/bin/pip" install --quiet --disable-pip-version-check -r scripts/requirements.txt
           "$RUNNER_TEMP/reuse/bin/reuse" lint
       - name: Alerte (un rouge de main ouvre ou complète un ticket, #345)
         if: ${{ (failure() || cancelled()) && github.event_name != 'pull_request' }}

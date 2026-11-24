@@ -1,0 +1,7 @@
+# SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+# SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+#
+# Les outils Python des contrôles, à leur version ÉPINGLÉE — la seule écriture (#339) :
+# la CI les installe d'ici (ci.yml, job « Dépôt »), le poste refuse une autre version
+# (reuse-au-poste.sh), Dependabot propose les montées (écosystème pip, dependabot.yml).
+reuse[charset-normalizer]==6.2.0
