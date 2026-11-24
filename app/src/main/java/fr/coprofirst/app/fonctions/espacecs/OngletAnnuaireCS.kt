@@ -7,7 +7,6 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -33,14 +32,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
-import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.cliquable
@@ -79,16 +75,6 @@ fun OngletAnnuaireCS(contexte: ContexteOnglet) {
     }
 }
 
-/** Une section : son titre, puis son contenu une fois lu. */
-@Composable
-internal fun TitreSection(texte: Int) {
-    Text(
-        stringResource(texte),
-        style = Typo.titre(MaterialTheme.typography.titleLarge),
-        color = LocalCouleurs.current.text,
-        modifier = Modifier.fillMaxWidth().semantics { heading() },
-    )
-}
 
 /** Le rendu factice d'une section, le temps de la lire. */
 @Composable

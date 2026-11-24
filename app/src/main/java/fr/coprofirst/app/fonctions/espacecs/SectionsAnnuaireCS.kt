@@ -30,10 +30,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
 import fr.coprofirst.app.commun.Chargement
+import fr.coprofirst.app.commun.Intertitre
 import fr.coprofirst.app.commun.annuaire.Annuaire
 import fr.coprofirst.app.commun.annuaire.CarteContact
 import fr.coprofirst.app.commun.annuaire.Coordonnees
@@ -66,7 +68,7 @@ private sealed interface Ouverte {
 @Composable
 internal fun SectionConseilCS(gestes: GestesAnnuaire, actualisation: Int) {
     Column(verticalArrangement = Arrangement.spacedBy(Mise.ecart)) {
-        TitreSection(R.string.annuaire_conseil)
+        Intertitre(stringResource(R.string.annuaire_conseil), ecartAuDessus = 0.dp)
         Chargement(charger = { gestes.service.conseil() }, cle = actualisation, squelette = { SqueletteSection() }) { lu, _ ->
             var conseil by remember(lu) { mutableStateOf(lu) }
             var ouverte by remember { mutableStateOf<Ouverte?>(null) }
@@ -144,7 +146,7 @@ internal fun SectionConseilCS(gestes: GestesAnnuaire, actualisation: Int) {
 @Composable
 internal fun SectionSyndicCS(gestes: GestesAnnuaire, actualisation: Int) {
     Column(verticalArrangement = Arrangement.spacedBy(Mise.ecart)) {
-        TitreSection(R.string.annuaire_syndic)
+        Intertitre(stringResource(R.string.annuaire_syndic), ecartAuDessus = 0.dp)
         Chargement(charger = { gestes.service.syndic() }, cle = actualisation, squelette = { SqueletteSection() }) { lu, _ ->
             var syndic by remember(lu) { mutableStateOf(lu) }
             var ouverte by remember { mutableStateOf<Ouverte?>(null) }

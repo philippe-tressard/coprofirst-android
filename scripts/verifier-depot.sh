@@ -205,6 +205,12 @@ interdire "$LECTURE_MAIN" "largeur de lecture écrite à la main — passer par 
 LIBELLE_MAIN='Typo\.libelle\('
 autotest_motif "libellé à la main" "$LIBELLE_MAIN" '    Text(t.uppercase(), style = Typo.libelle())' '    Libelle(t, Modifier.semantics { heading() })'
 interdire "$LIBELLE_MAIN" "libellé en capitales écrit à la main — passer par Libelle (commun/Fiche.kt)" '^app/src/main/java/fr/coprofirst/app/commun/Fiche\.kt$'
+# Le titre de section aussi (#323) : deux niveaux, ceux de l'iOS — `Intertitre` (serif) et
+# `TitreDeBloc` (titleMedium) —, réécrits cinq fois sous d'autres noms et déjà en deux styles.
+TITRE_MAIN='fun (Intertitre|TitreDeBloc|Titre(De)?(Section|File))[[:space:]]*\(|titleMedium.*heading\(\)'
+autotest_motif "titre de section à la main" "$TITRE_MAIN" 'private fun TitreSection(texte: Int) {' '    Intertitre(stringResource(t), ecartAuDessus = 0.dp)'
+autotest_motif "titre de bloc à la main" "$TITRE_MAIN" '    Text(t, style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })' '    TitreDeBloc(t, intro = i)'
+interdire "$TITRE_MAIN" "titre de section écrit à la main — passer par Intertitre ou TitreDeBloc (commun/Fiche.kt)" '^app/src/main/java/fr/coprofirst/app/commun/Fiche\.kt$'
 
 # Une feuille s'ouvre ENTIÈRE (`rememberModalBottomSheetState(skipPartiallyExpanded = true)`,
 # passé en `sheetState`) : à mi-hauteur, son bouton de pied restait sous le bord sur un petit

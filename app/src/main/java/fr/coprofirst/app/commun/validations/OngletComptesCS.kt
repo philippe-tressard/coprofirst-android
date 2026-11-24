@@ -7,7 +7,6 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Icon
@@ -24,18 +23,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
-import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.AlerteChiffre
 import fr.coprofirst.app.commun.AvisDuGeste
 import fr.coprofirst.app.commun.Carte
 import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.Chiffre
+import fr.coprofirst.app.commun.Intertitre
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.RangeeDeChiffres
 import fr.coprofirst.app.commun.Roles
@@ -104,14 +101,14 @@ private fun FileValidations(etat: EtatValidations, avis: AvisDuGeste) {
         Compteurs(etat.comptes.size, etat.commandes.size)
         echec?.let { MessageErreur(it) }
         Column(verticalArrangement = Arrangement.spacedBy(Mise.ecart)) {
-            TitreFile(R.string.espacecs_titre_comptes)
+            Intertitre(stringResource(R.string.espacecs_titre_comptes), ecartAuDessus = 0.dp)
             if (etat.comptes.isEmpty()) Vide(R.string.espacecs_aucun_compte)
             etat.comptes.forEach { compte ->
                 CarteCompte(compte, etat.enCours == compte.id, { demande = Demande.Approuver(compte) }, { demande = Demande.RejeterCompte(compte) })
             }
         }
         Column(verticalArrangement = Arrangement.spacedBy(Mise.ecart)) {
-            TitreFile(R.string.espacecs_titre_commandes)
+            Intertitre(stringResource(R.string.espacecs_titre_commandes), ecartAuDessus = 0.dp)
             if (etat.commandes.isEmpty()) Vide(R.string.espacecs_aucune_commande)
             etat.commandes.forEach { commande ->
                 CarteCommande(commande, etat.enCours == commande.id, { demande = Demande.Accepter(commande) }, { demande = Demande.RejeterCommande(commande) })
@@ -162,15 +159,6 @@ private fun Compteurs(comptes: Int, commandes: Int) {
     }
 }
 
-@Composable
-private fun TitreFile(texte: Int) {
-    Text(
-        stringResource(texte),
-        style = Typo.titre(MaterialTheme.typography.titleLarge),
-        color = LocalCouleurs.current.text,
-        modifier = Modifier.fillMaxWidth().semantics { heading() },
-    )
-}
 
 @Composable
 private fun Vide(texte: Int) {

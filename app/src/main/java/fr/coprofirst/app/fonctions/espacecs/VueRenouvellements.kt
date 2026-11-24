@@ -18,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
@@ -30,6 +29,7 @@ import fr.coprofirst.app.commun.EtatVide
 import fr.coprofirst.app.commun.Libelle
 import fr.coprofirst.app.commun.PastilleTeinte
 import fr.coprofirst.app.commun.RangeeDeChiffres
+import fr.coprofirst.app.commun.TitreDeBloc
 import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.app.commun.texte.Separateur
 
@@ -58,21 +58,13 @@ internal fun VueRenouvellements(releve: Renouvellements) {
     }
 }
 
-@Composable
-private fun TitreDeSection(titre: String, modifier: Modifier = Modifier, intro: String? = null) {
-    val c = LocalCouleurs.current
-    Column(modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(titre, style = MaterialTheme.typography.titleMedium, color = c.text, modifier = Modifier.semantics { heading() })
-        intro?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = c.textMuted) }
-    }
-}
 
 @Composable
 private fun SectionContrats(releve: Renouvellements) {
     val c = LocalCouleurs.current
     val annee = releve.annee.toString()
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        TitreDeSection(
+        TitreDeBloc(
             stringResource(R.string.espacecs_renouvellements_contrats_titre, annee),
             intro = stringResource(R.string.espacecs_renouvellements_contrats_intro, annee, FormatsDuSite.nombre(releve.preavisMois)),
         )
@@ -125,7 +117,7 @@ private fun LigneContrat(contrat: ContratAEcheance, dansLAnnee: Boolean) {
 private fun SectionDiagnostics(releve: Renouvellements) {
     val annee = releve.annee
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        TitreDeSection(
+        TitreDeBloc(
             stringResource(R.string.espacecs_renouvellements_diagnostics_titre, annee.toString(), (annee + 10).toString()),
             intro = stringResource(R.string.espacecs_renouvellements_diagnostics_intro),
         )
@@ -149,7 +141,7 @@ private fun SectionDiagnostics(releve: Renouvellements) {
             diagnostics.forEach { LigneDiagnostic(it, annee) }
         }
         if (releve.diagnosticsPermanents.isNotEmpty()) {
-            TitreDeSection(
+            TitreDeBloc(
                 stringResource(R.string.espacecs_renouvellements_permanent),
                 Modifier.padding(top = 6.dp),
                 intro = stringResource(R.string.espacecs_renouvellements_permanent_intro),

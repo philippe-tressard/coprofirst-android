@@ -21,14 +21,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
 import fr.coprofirst.app.charte.Mise
-import fr.coprofirst.app.charte.Typo
 import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.commun.onglets.CadreAOnglets
 import fr.coprofirst.app.commun.onglets.OngletsSurLeSite
@@ -147,13 +144,3 @@ fun RenvoiAuSite(texte: String, onglet: String, adresse: String) {
     }
 }
 
-/** Le titre d'une section d'un onglet, en serif, annoncé comme titre. */
-@Composable
-fun TitreSection(texte: String) {
-    Text(
-        texte,
-        style = Typo.titre(MaterialTheme.typography.titleLarge),
-        color = LocalCouleurs.current.text,
-        modifier = Modifier.semantics { heading() },
-    )
-}
