@@ -27,11 +27,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.foundation.clickable
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -45,12 +43,13 @@ import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.FlowCapsules
 import fr.coprofirst.app.commun.Pastille
 import fr.coprofirst.app.commun.PastilleTeinte
+import fr.coprofirst.app.commun.cliquable
 import fr.coprofirst.app.commun.formats.FormatsDuSite
-import fr.coprofirst.app.commun.onglets.ContexteOnglet
 import fr.coprofirst.app.commun.lecture.EtiquetteLieu
 import fr.coprofirst.app.commun.lecture.Lecture
 import fr.coprofirst.app.commun.lecture.LieuServi
 import fr.coprofirst.app.commun.lecture.PastilleLecture
+import fr.coprofirst.app.commun.onglets.ContexteOnglet
 import fr.coprofirst.app.commun.texte.TexteDuSite
 import fr.coprofirst.app.commun.texte.TexteRiche
 
@@ -155,7 +154,7 @@ private fun BoutonCoeur(idee: IdeeRead, voter: () -> Unit) {
     val etat = pluralStringResource(R.plurals.idees_votes, voix, voix)
     Column(
         Modifier.defaultMinSize(Mise.cible, Mise.cible).testTag(ReperesCommunaute.voter(idee.id))
-            .clickable(onClickLabel = action, role = Role.Button, onClick = voter)
+            .cliquable(action, voter)
             .semantics(mergeDescendants = true) { stateDescription = etat },
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
