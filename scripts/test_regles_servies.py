@@ -74,6 +74,10 @@ RETIREES: list[tuple[str, re.Pattern[str], str]] = [
     # le flottant `prix` d'une annonce lue ne s'affiche ni ne se trie plus (l'envoi, lui, reste `prix`).
     ("prix flottant", re.compile(r"\.prix\?"),
      "`prixCentimes` servi, rendu par `FormatsDuSite.montant`"),
+    # La part d'une option de sondage est SERVIE, arrondie par l'API (`options[].part`, contrat 2.14.0,
+    # coprofirst#3060, #380) : aucun pourcentage ne se recalcule depuis les votes.
+    ("pourcentage recalculé", re.compile(r"\bpourcentage\s*\(|\*\s*100\)?\s*\.roundToInt\(\)|/\s*\w*[tT]otal\w*\s*\*\s*100|\*\s*100\s*/\s*\w*[tT]otal"),
+     "la part servie (`OptionSondage.part`, `options[].part`)"),
 ]
 
 #: chemin → (les motifs dispensés, par leur nom ; la raison). Une dispense ne couvre QUE ses
@@ -155,6 +159,9 @@ FAUTIFS = [
     '                FormatsDuSite.nom(compte.nomAffiche, compte.prenom, compte.nom),',
     '        annonce.prix?.let { prix ->',
     '            TRI_PRIX_CROISSANT -> retenues.sortedBy { it.prix?.toDouble() ?: Double.MAX_VALUE }',
+    '    val pourcentage = CalculsSondage.pourcentage(votes, total)',
+    '    fun pourcentage(votes: Int, total: Int): Int = if (total == 0) 0 else (votes.toDouble() / total * 100).roundToInt()',
+    '    val part = votes * 100 / total',
 ]
 SAINS = [
     '                cs = estModerateur == true,',
@@ -176,6 +183,9 @@ SAINS = [
     '        annonce.prixCentimes?.let { centimes ->',
     '            prix = if (vente) saisie.prixLu?.let(BigDecimal::valueOf) else null,',
     '                saisie.prix,',
+    '    val pourcentage = option.part ?: 0',
+    '                stringResource(R.string.sondage_pourcentage, FormatsDuSite.nombre(pourcentage)),',
+    '        if (coupees) remplissage.snapTo(pourcentage / 100f) else remplissage.animateTo(pourcentage / 100f, tween(600))',
 ]
 
 

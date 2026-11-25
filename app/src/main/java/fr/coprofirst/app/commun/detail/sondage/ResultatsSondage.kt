@@ -63,7 +63,7 @@ internal fun ResultatsSondage(sondage: DetailSondage) {
                     )
                 }
                 sondage.options.forEach { option ->
-                    LigneResultat(option, sondage.totalVotes, mienne = option.id == sondage.monVote)
+                    LigneResultat(option, mienne = option.id == sondage.monVote)
                 }
             }
         } else {
@@ -92,15 +92,15 @@ internal fun ResultatsSondage(sondage: DetailSondage) {
 
 /**
  * Une réponse : libellé, ✏️, « Mon vote ✓ », la barre (qui se remplit une fois, à l'arrivée
- * des résultats ; d'un coup quand les animations de l'appareil sont coupées), le pourcentage et
+ * des résultats ; d'un coup quand les animations de l'appareil sont coupées), la part servie et
  * les votes ; puis ses réponses libres, entre guillemets. Lue d'un bloc (repère
  * `sondage.resultat.<id>`).
  */
 @Composable
-private fun LigneResultat(option: OptionSondage, total: Int, mienne: Boolean) {
+private fun LigneResultat(option: OptionSondage, mienne: Boolean) {
     val couleurs = LocalCouleurs.current
     val votes = option.nbVotes ?: 0
-    val pourcentage = CalculsSondage.pourcentage(votes, total)
+    val pourcentage = option.part ?: 0
     val champ = stringResource(R.string.sondage_champ_precision)
     val coupees = animationsCoupees()
     val remplissage = remember { Animatable(if (coupees) pourcentage / 100f else 0f) }
