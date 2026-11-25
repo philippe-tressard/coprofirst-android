@@ -3,7 +3,7 @@
  "info": {
   "title": "CoproFirst API",
   "description": "API de gestion de copropriétés",
-  "version": "2.10.0"
+  "version": "2.14.0"
  },
  "paths": {
   "/auth/batiments": {
@@ -166,6 +166,7 @@
      "auth"
     ],
     "summary": "Logout",
+    "description": "Ferme la session présentée, jetons d'accès compris — pas les autres sessions du\ncompte, ni ses montres ni ses appareils push (arbitré le 23/11/2026) :\n`auth/jetons_rafraichissement.fermer_session`.",
     "operationId": "post_auth_logout",
     "parameters": [
      {
@@ -213,7 +214,7 @@
      "auth"
     ],
     "summary": "Verifier Acces",
-    "description": "Réservé au `forward_auth` de Caddy : 204 si CE fichier se lit, 401 ou 404 sinon.\n\nCaddy interroge cet endpoint avant de servir un fichier de `/uploads/*`, qui\nétait jusqu'ici public. Il ne renvoie **aucun contenu** : seul le code compte,\net un corps vide évite d'exposer quoi que ce soit sur le porteur du cookie.\n\n🔴 Il juge le FICHIER, plus seulement la session (#2154, 23/10/2026) : Caddy\ntransmet l'adresse demandée (`X-Forwarded-Uri`), et `exiger_fichier_lisible`\napplique le droit de lire l'objet qui le cite. Une session valide lisait\njusque-là la pièce jointe d'une affaire qu'elle ne voyait pas. Sans adresse\n(un appel direct), la réponse est 404 : il n'y a rien à autoriser.\n\nIl s'appuie volontairement sur `get_current_user`, la dépendance d'authentification\ncommune, et non sur une vérification allégée maison. Une seconde façon de valider\nune session serait une seconde sémantique à maintenir — et à faire diverger. Le\ncoût dominant est le trajet HTTP interne, pas la lecture en base qu'elle effectue :\nl'économiser ne rapporterait presque rien et laisserait un compte désactivé\nconserver l'accès jusqu'à l'expiration de son jeton (120 min).",
+    "description": "Réservé au `forward_auth` de Caddy : 204 si CE fichier se lit, 401 ou 404 sinon.\n\nCaddy interroge cet endpoint avant de servir un fichier de `/uploads/*`, qui\nétait jusqu'ici public. Il ne renvoie **aucun contenu** : seul le code compte,\net un corps vide évite d'exposer quoi que ce soit sur le porteur du cookie.\n\n🔴 Il juge le FICHIER, plus seulement la session (#2154, 23/10/2026) : Caddy\ntransmet l'adresse demandée (`X-Forwarded-Uri`), et `exiger_fichier_lisible`\napplique le droit de lire l'objet qui le cite. Une session valide lisait\njusque-là la pièce jointe d'une affaire qu'elle ne voyait pas. Sans adresse\n(un appel direct), la réponse est 404 : il n'y a rien à autoriser.\n\nIl s'appuie volontairement sur `get_current_user`, la dépendance d'authentification\ncommune, et non sur une vérification allégée maison. Une seconde façon de valider\nune session serait une seconde sémantique à maintenir — et à faire diverger. Le\ncoût dominant est le trajet HTTP interne, pas la lecture en base qu'elle effectue :\nl'économiser ne rapporterait presque rien et laisserait un compte désactivé\nconserver l'accès jusqu'à l'expiration de son jeton (120 min).\n\n🔴 Sur une installation COMMUNE, toujours 404 (claude-config#604) : Caddy n'y sert\npas les fichiers, il les relaie à l'API (`installation_commune/fichiers`), qui lit\nla racine de la copropriété que l'hôte désigne. Une configuration de Caddy qui\nservirait encore sa racine unique ne sert donc rien — le sens fermé.",
     "operationId": "get_auth_verifier_acces",
     "parameters": [
      {
@@ -7137,7 +7138,7 @@
      "admin"
     ],
     "summary": "Db Integrite",
-    "description": "Le contrôle d'intégrité de la base, in-process (`dialecte.verifier_integrite`).",
+    "description": "Le contrôle d'intégrité de la base, in-process — le verdict de la sauvegarde (#2949).",
     "operationId": "get_admin_db_integrite",
     "parameters": [
      {
@@ -27539,6 +27540,17 @@
       ],
       "title": "Prix"
      },
+     "prix_centimes": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Prix Centimes"
+     },
      "negotiable": {
       "type": "boolean",
       "title": "Negotiable",
@@ -40865,6 +40877,17 @@
       ],
       "title": "Nb Votes"
      },
+     "part": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Part"
+     },
      "reponses_libres": {
       "anyOf": [
        {
@@ -40887,7 +40910,7 @@
      "ordre"
     ],
     "title": "OptionFiche",
-    "description": "Une option sur la FICHE d'un sondage.\n\n`nb_votes` et `reponses_libres` sont ABSENTS — pas à zéro — quand les\nrésultats ne sont pas visibles : « 0 vote » se lirait « personne n'a voté ».\nLa route rend donc sans les champs non posés (`response_model_exclude_unset`)."
+    "description": "Une option sur la FICHE d'un sondage.\n\n`nb_votes`, `part` et `reponses_libres` sont ABSENTS — pas à zéro — quand les\nrésultats ne sont pas visibles : « 0 vote » se lirait « personne n'a voté ».\n`part` est le pour-cent des votes, arrondi par `utils/pourcentages` (#3060).\nLa route rend donc sans les champs non posés (`response_model_exclude_unset`)."
    },
    "PageTop": {
     "properties": {
@@ -49431,6 +49454,11 @@
       "title": "Email Verifie",
       "default": false
      },
+     "mot_de_passe_a_changer": {
+      "type": "boolean",
+      "title": "Mot De Passe A Changer",
+      "default": false
+     },
      "onboarding_complete": {
       "type": "boolean",
       "title": "Onboarding Complete"
@@ -49615,6 +49643,14 @@
       "type": "boolean",
       "title": "Est Moderateur",
       "default": false
+     },
+     "acces_menu": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Acces Menu",
+      "default": []
      },
      "last_seen_actualites": {
       "anyOf": [
@@ -49770,6 +49806,11 @@
       "title": "Email Verifie",
       "default": false
      },
+     "mot_de_passe_a_changer": {
+      "type": "boolean",
+      "title": "Mot De Passe A Changer",
+      "default": false
+     },
      "onboarding_complete": {
       "type": "boolean",
       "title": "Onboarding Complete"
@@ -49954,6 +49995,14 @@
       "type": "boolean",
       "title": "Est Moderateur",
       "default": false
+     },
+     "acces_menu": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Acces Menu",
+      "default": []
      },
      "last_seen_actualites": {
       "anyOf": [
