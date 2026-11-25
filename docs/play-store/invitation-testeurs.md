@@ -24,17 +24,18 @@ sortie dans le Play Store, Google demande qu'une douzaine de personnes l'essaien
 
 1. Rejoindre le groupe des testeurs, avec le compte Google de votre téléphone :
    [lien du groupe Google]
-2. Ouvrir le lien d'inscription au test, depuis ce même compte, et accepter :
-   [lien d'inscription du test fermé]
-3. Installer CoproFirst depuis ce lien, avec le même compte Google dans le Play Store :
+2. Installer CoproFirst depuis ce lien, avec le même compte Google dans le Play Store :
    [lien de la fiche du Play Store]
    L'application n'apparaît pas dans la recherche du Play Store pendant le test : passez
    par ce lien. S'il répond « Élément introuvable », vérifiez le compte choisi dans le Play
-   Store (la pastille en haut à droite), ou réessayez une heure plus tard.
-4. Ouvrir CoproFirst, toucher « Entrer dans ma résidence », puis saisir l'adresse du site de
+   Store (la pastille en haut à droite), ou réessayez une heure plus tard. Si cela ne
+   suffit pas, ouvrez ce lien sur votre téléphone, hors d'un réseau d'entreprise, acceptez,
+   puis revenez au lien d'installation :
+   [lien d'inscription du test fermé]
+3. Ouvrir CoproFirst, toucher « Entrer dans ma résidence », puis saisir l'adresse du site de
    la résidence — [adresse du site de la résidence] — ou scanner le QR code de votre fiche
    d'arrivée.
-5. Vous connecter avec vos identifiants habituels du site de la résidence.
+4. Vous connecter avec vos identifiants habituels du site de la résidence.
 
 **Ce qu'on vous demande**
 
