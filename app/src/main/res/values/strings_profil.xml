@@ -76,6 +76,13 @@ SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
     </plurals>
     <string name="profil_attente_confirmation">Les deux saisies du nouveau mot de passe doivent être identiques.</string>
     <string name="profil_mot_de_passe_modifie">Mot de passe modifié</string>
+    <!-- Le mot de passe temporaire d'un compte initial (#371), comme l'iOS (MotDePasseTemporaireView). -->
+    <string name="profil_temporaire_titre">Choisir votre mot de passe</string>
+    <string name="profil_mot_de_passe_temporaire">Mot de passe temporaire</string>
+    <string name="profil_temporaire_aide">Votre mot de passe est temporaire : saisissez-le, puis choisissez-en un nouveau pour continuer.</string>
+    <string name="profil_attente_temporaire">Saisissez d’abord votre mot de passe temporaire.</string>
+    <string name="profil_choisir_mot_de_passe">Choisir ce mot de passe</string>
+    <string name="profil_temporaire_relecture_echouee">Votre mot de passe est changé. La résidence n’a pas pu être relue : tirez vers le bas pour l’ouvrir.</string>
 
     <!-- Demande de modification -->
     <string name="profil_titre_demande_modification">Demande de modification</string>

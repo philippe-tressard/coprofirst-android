@@ -48,6 +48,12 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   il faut cocher « Je connais cette adresse… » pour continuer. « Mot de passe oublié ? »
   et « Demander l'accès » ouvrent le site de la résidence. Le courriel de la dernière
   connexion réussie est retenu, chiffré par le Keystore, et pré-rempli ensuite.
+- **Mot de passe temporaire** (#371) : le compte initial d'une installation neuve, que le
+  serveur marque (`mot_de_passe_a_changer`), n'ouvre que « Choisir votre mot de passe » —
+  le temporaire, puis le nouveau saisi deux fois — et « Se déconnecter », confirmé. Le mot
+  de passe choisi, le compte se relit et la résidence s'ouvre en fondu ; si la relecture
+  échoue, une phrase le dit et tirer vers le bas la relance. Un écran ouvert avant la
+  lecture du compte montre la phrase du refus du serveur, comme l'iOS.
 - **Session gardée** (Android 11 et plus) : après la première connexion, « Ouvrir avec
   votre empreinte ? » propose de garder la session sur l'appareil ; la feuille dit ce qui
   la protège vraiment (biométrie, verrouillage de l'appareil, ou rien). Au lancement
