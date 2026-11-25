@@ -51,14 +51,19 @@ class SondageSimule(private val attente: Long = 150, override val moderation: Bo
         if (fiche.monVote != null) throw ErreurService.Refus("Vous avez déjà voté", 400)
         val choisie = fiche.options.firstOrNull { it.id == vote.option } ?: throw ErreurService.Refus("Option invalide", 400)
         val precision = VoteSondage.nettoye(vote.reponseLibre)
-        val options = fiche.options.map { option ->
+        val comptees = fiche.options.map { option ->
             if (option.id != choisie.id || !fiche.resultatsVisibles) return@map option
             option.copy(nbVotes = (option.nbVotes ?: 0) + 1, reponsesLibres = option.reponsesLibres + listOfNotNull(precision))
         }
+        val total = comptees.sumOf { it.nbVotes ?: 0 }
+        val options = if (!fiche.resultatsVisibles) comptees else comptees.map { it.copy(part = partEnPourcent(it.nbVotes ?: 0, total)) }
         fiche = fiche.copy(monVote = choisie.id, options = options)
         VoteSondage.nettoye(vote.commentaire)?.let { fiche = fiche.copy(commentaires = fiche.commentaires + commentaire(it, fiche)) }
         ranger(fiche)
     }
+
+    /** `utils/pourcentages.part_en_pourcent` du serveur (#380) : demi au supérieur, en entiers, 0 sans vote. */
+    internal fun partEnPourcent(votes: Int, total: Int): Int = if (total == 0) 0 else (200 * votes + total) / (2 * total)
 
     override suspend fun commenter(texte: String, sondage: Int) {
         delay(attente)

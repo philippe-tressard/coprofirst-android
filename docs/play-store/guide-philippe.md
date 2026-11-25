@@ -100,11 +100,21 @@ C'est la condition des nouveaux comptes personnels pour obtenir la production.
    rejoindre (constaté le 20/11/2026) ; **Qui peut rejoindre** = « Tous les internautes
    peuvent rejoindre le groupe » (aucune approbation à donner) ; conversations, publication
    et membres : « Gestionnaires de groupe », pour que personne ne voie les adresses des autres.
-3. **Le lien d'inscription** (« Rejoindre sur le Web ») est donné par la piste : c'est lui
-   qu'on envoie, avec le message prêt à copier de `docs/play-store/invitation-testeurs.md`.
-   On y joint le **lien de la fiche** (`https://play.google.com/store/apps/details?id=` suivi
-   de l'identifiant de l'app) : en test fermé, l'app n'apparaît **jamais dans la recherche**
-   du Play Store, elle ne s'ouvre que par ce lien (constaté le 20/11/2026).
+3. **Deux liens suffisent à un testeur** : celui du **groupe**, puis celui de la **fiche**
+   (`https://play.google.com/store/apps/details?id=` suivi de l'identifiant de l'app). Un
+   membre du groupe qui n'avait jamais ouvert le lien d'inscription a installé l'app par la
+   fiche seule (constaté le 25/11/2026). En test fermé, l'app n'apparaît **jamais dans la
+   recherche** du Play Store, elle ne s'ouvre que par ce lien (constaté le 20/11/2026).
+   Le **lien d'inscription** (« Rejoindre sur le Web »), donné par la piste, reste le
+   recours d'un testeur à qui la fiche répond « Élément introuvable ». Un réseau
+   d'entreprise peut le refuser (constaté le 25/11/2026) : il s'ouvre alors sur le
+   téléphone, hors de ce réseau. Le message prêt à copier :
+   `docs/play-store/invitation-testeurs.md`.
+
+   Ce qui n'est pas constaté : qu'un testeur entré par la fiche seule **compte parmi les
+   inscrits** — c'est ce nombre que Google exige, pas celui des installations. D'ici là
+   (#387), lire dans la console le nombre de testeurs inscrits après chaque arrivée : s'il
+   ne monte pas, le lien d'inscription redevient une étape pour tous.
 4. Envoyer la version en examen (la première passe par l'examen de Google, quelques
    jours).
 
@@ -124,9 +134,11 @@ C'est la condition des nouveaux comptes personnels pour obtenir la production.
   ci-dessus ; à défaut, l'ajouter soi-même (Membres › Ajouter des membres › « Ajouter
   directement »).
 - « Élément introuvable » sur la fiche : dans le Play Store, le compte actif (pastille en
-  haut à droite) n'est pas celui qui s'est inscrit ; ou le pays de son compte Play n'est pas
-  dans les pays de la piste ; ou l'inscription est trop récente (réessayer une à deux heures
-  plus tard, après avoir vidé le cache du Play Store).
+  haut à droite) n'est pas celui du groupe ; ou le pays de son compte Play n'est pas dans
+  les pays de la piste ; ou son arrivée est trop récente (réessayer une à deux heures plus
+  tard, après avoir vidé le cache du Play Store). Si rien n'y fait, le lien d'inscription du
+  point 3, ouvert sur son téléphone hors d'un réseau d'entreprise : il accepte, puis rouvre
+  la fiche.
 - Le compte CoproFirst n'est pas validé : la validation des inscriptions sur une résidence
   reste manuelle (Espace CS › Comptes en attente) — elle ne compte pas pour Google. Un
   testeur hors de la résidence passe par la démo.

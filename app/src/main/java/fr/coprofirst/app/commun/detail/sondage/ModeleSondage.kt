@@ -10,7 +10,6 @@ import fr.coprofirst.api.modeles.SondageDetail
 import fr.coprofirst.api.modeles.VoteBody
 import fr.coprofirst.app.R
 import java.time.Instant
-import kotlin.math.roundToInt
 
 /**
  * Un sondage, tel que GET /sondages/{id} le sert (`SondageDetail`, typé par le contrat), et
@@ -71,12 +70,17 @@ data class OptionSondage(
     val champLibre: Boolean,
     /** Absent quand les résultats sont masqués — jamais 0 : « personne n'a voté » serait faux. */
     val nbVotes: Int?,
+    /**
+     * La part des votes, de 0 à 100, arrondie par l'API (`options[].part`, coprofirst#3060, #380) —
+     * jamais recalculée ici. Absente comme `nbVotes` quand les résultats sont masqués.
+     */
+    val part: Int?,
     /** Les précisions des votants, servies avec les résultats. */
     val reponsesLibres: List<String>,
 ) {
     companion object {
         fun depuis(lue: OptionFiche) =
-            OptionSondage(lue.id, lue.libelle, lue.champLibre ?: false, lue.nbVotes, lue.reponsesLibres.orEmpty())
+            OptionSondage(lue.id, lue.libelle, lue.champLibre ?: false, lue.nbVotes, lue.part, lue.reponsesLibres.orEmpty())
     }
 }
 
@@ -105,10 +109,4 @@ data class VoteSondage(
     companion object {
         fun nettoye(texte: String): String? = texte.trim().takeIf { it.isNotEmpty() }
     }
-}
-
-/** Les calculs de la fiche du site (`ResultatsSondage.svelte`). */
-object CalculsSondage {
-    /** Le pourcentage du site : arrondi, 0 sans aucun vote. */
-    fun pourcentage(votes: Int, total: Int): Int = if (total == 0) 0 else (votes.toDouble() / total * 100).roundToInt()
 }

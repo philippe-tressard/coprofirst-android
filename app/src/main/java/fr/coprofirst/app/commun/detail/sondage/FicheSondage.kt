@@ -100,7 +100,7 @@ fun FicheSondage(
 private fun squelette() = DetailSondage(
     id = 0, question = stringResource(R.string.sondage_squelette_question),
     description = stringResource(R.string.sondage_squelette_description),
-    options = (1..3).map { OptionSondage(it, stringResource(R.string.sondage_squelette_option), false, null, emptyList()) },
+    options = (1..3).map { OptionSondage(it, stringResource(R.string.sondage_squelette_option), false, null, null, emptyList()) },
     monVote = null, cloture = false, clotureLe = null, resultatsVisibles = false, commentaires = emptyList(), moi = null,
 )
 

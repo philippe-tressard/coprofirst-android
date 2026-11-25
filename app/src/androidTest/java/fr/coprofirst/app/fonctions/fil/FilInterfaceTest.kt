@@ -100,7 +100,7 @@ class FilInterfaceTest {
         /** GET /sondages/3 à la forme du schéma (`SondageDetail`). */
         const val SONDAGE = """{"id": 3, "question": "Quel jour pour la fête des voisins ?", "cloture": false,
             "cree_le": "2026-11-08T09:00:00", "resultats_publics": true, "resultats_visibles": true,
-            "options": [{"id": 1, "libelle": "Samedi 6 juin", "ordre": 0, "nb_votes": 14}], "commentaires": []}"""
+            "options": [{"id": 1, "libelle": "Samedi 6 juin", "ordre": 0, "nb_votes": 14, "part": 100}], "commentaires": []}"""
 
         /** GET /flux à la forme du schéma (`FluxResponse`), daté de ce matin pour « Aujourd'hui ». */
         fun fil(maintenant: Instant): String {
