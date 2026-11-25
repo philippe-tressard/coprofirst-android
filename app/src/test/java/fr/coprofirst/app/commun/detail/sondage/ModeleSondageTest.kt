@@ -90,12 +90,22 @@ class ModeleSondageTest {
         assertNull(corps.commentaire)
     }
 
+    /** La part est SERVIE, arrondie par l'API (`options[].part`, #380) : lue telle quelle, absente si masquée. */
     @Test
-    fun lePourcentageEstCeluiDuSite() {
-        assertEquals(0, CalculsSondage.pourcentage(0, 0))
-        assertEquals(48, CalculsSondage.pourcentage(14, 29))
-        assertEquals(7, CalculsSondage.pourcentage(2, 29))
-        assertEquals(100, CalculsSondage.pourcentage(3, 3))
+    fun laPartSeLitTelleQuelleServie() {
+        assertEquals(listOf(48, 31, 14, 7), fiches.getValue(12).options.map { it.part })
+        assertEquals(listOf(71, 22, 7), fiches.getValue(9).options.map { it.part })
+        assertTrue(fiches.getValue(11).options.all { it.part == null })
+    }
+
+    /** Le serveur simulé arrondit comme `part_en_pourcent` : demi au supérieur, en entiers, 0 sans vote. */
+    @Test
+    fun leServeurSimuleArrondiCommeLAPI() {
+        val serveur = SondageSimule(attente = 0)
+        assertEquals(0, serveur.partEnPourcent(0, 0))
+        assertEquals(13, serveur.partEnPourcent(1, 8))
+        assertEquals(67, serveur.partEnPourcent(2, 3))
+        assertEquals(100, serveur.partEnPourcent(3, 3))
     }
 
     @Test
@@ -105,6 +115,7 @@ class ModeleSondageTest {
         val apres = serveur.sondage(12)
         assertEquals(4, apres.monVote)
         assertEquals(30, apres.totalVotes)
+        assertEquals(listOf(47, 30, 13, 10), apres.options.map { it.part })
         assertEquals("Le 20 juin", apres.options.last().reponsesLibres.last())
         assertEquals("Avec plaisir", apres.commentaires.last().contenu)
         serveur.signalerAuConseil(CibleSignalement.commentaire(32), "Hors sujet")

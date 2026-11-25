@@ -73,6 +73,8 @@ class ServiceSondageApiTest {
         assertEquals("Quel jour pour la fête des voisins ?", sondage.question)
         assertEquals(listOf(1, 4), sondage.options.map { it.id })
         assertEquals(16, sondage.totalVotes)
+        // La part servie (#380) : 14 et 2 sur 16 font 87,5 et 12,5, que l'API arrondit au supérieur.
+        assertEquals(listOf(88, 13), sondage.options.map { it.part })
         assertTrue(sondage.peutVoter)
         assertEquals(listOf(33), sondage.commentaires.map { it.id })
         assertEquals(true, sondage.commentaires.single().peutSupprimer)
@@ -161,8 +163,8 @@ class ServiceSondageApiTest {
           "description": "<p>Trois dates.</p>", "cloture": false, "cloture_le": "2026-11-20T18:00:00",
           "cree_le": "2026-11-08T09:00:00", "mon_vote": null, "resultats_publics": true, "resultats_visibles": true,
           "options": [
-            {"id": 1, "libelle": "Samedi 6 juin", "ordre": 0, "nb_votes": 14},
-            {"id": 4, "libelle": "Une autre date", "ordre": 3, "champ_libre": true, "nb_votes": 2,
+            {"id": 1, "libelle": "Samedi 6 juin", "ordre": 0, "nb_votes": 14, "part": 88},
+            {"id": 4, "libelle": "Une autre date", "ordre": 3, "champ_libre": true, "nb_votes": 2, "part": 13,
              "reponses_libres": ["Plutôt un vendredi soir"]}
           ],
           "commentaires": [$COMMENTAIRE_33]}"""
