@@ -7,7 +7,6 @@ import fr.coprofirst.api.infrastructure.Serializer
 import fr.coprofirst.api.modeles.UserRead
 import fr.coprofirst.app.charte.Pictogrammes
 import fr.coprofirst.app.fonctions.profil.AccesSimules
-import fr.coprofirst.app.fonctions.profil.FixturesProfil
 import fr.coprofirst.app.session.AdresseInstallation
 import fr.coprofirst.app.session.Installation
 import org.junit.Assert.assertEquals
@@ -70,8 +69,13 @@ class NavigationTest {
     /** `acces_menu` se lit de GET /auth/me (#333) ; un compte gardé qui ne le porte pas a les pages de tous. */
     @Test
     fun lesPublicsDuMenuSeLisentDuCompte() {
+        // Un compte à lui, sans `acces_menu` sauf celui qu'on pose (celui du Profil simulé le sert).
         fun moi(acces: String?) = Serializer.kotlinxSerializationJson.decodeFromString<UserRead>(
-            FixturesProfil.MOI.replaceFirst("{", acces?.let { """{"acces_menu": $it, """ } ?: "{"),
+            """{${acces?.let { "\"acces_menu\": $it, " } ?: ""}"id": 7, "nom": "Essai", "prenom": "Camille",
+                "email": "camille@residence.example.test", "statut": "copropriétaire_résident", "role": "résident",
+                "roles": ["résident"], "actif": true, "onboarding_complete": true, "onboarding_etape": 0,
+                "preferences_notifications": "{}", "cree_le": "2026-03-02T10:00:00", "nom_affiche": "Camille ESSAI",
+                "nom_aide_affiche": ""}""",
         )
         assertEquals(setOf("tous", "resident", "cs"), DroitsOnglet.depuis(moi("""["tous", "resident", "cs"]""")).accesMenu)
         assertEquals(setOf("tous"), DroitsOnglet.depuis(moi(null)).accesMenu)
