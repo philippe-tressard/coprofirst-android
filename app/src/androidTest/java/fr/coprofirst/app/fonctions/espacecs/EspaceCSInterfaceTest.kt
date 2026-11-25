@@ -28,6 +28,7 @@ import fr.coprofirst.app.navigation.BarreDuHaut
 import fr.coprofirst.app.navigation.ContexteDeMenu
 import fr.coprofirst.app.navigation.DroitsOnglet
 import fr.coprofirst.app.navigation.PagesParDefaut
+import fr.coprofirst.app.fonctions.profil.AccesSimules
 import mockwebserver3.Dispatcher
 import mockwebserver3.MockResponse
 import mockwebserver3.RecordedRequest
@@ -65,7 +66,7 @@ class EspaceCSInterfaceTest {
         val contexte = ContexteDeMenu(
             page = PagesParDefaut.toutes.first { it.id == "espace-cs" },
             session = session,
-            droits = DroitsOnglet.depuis(listOf("conseil_syndical"), null, "copropriétaire_résident", estModerateur = true),
+            droits = DroitsOnglet.depuis(listOf("conseil_syndical"), null, "copropriétaire_résident", estModerateur = true, accesMenu = AccesSimules.CONSEIL),
             sortie = object : GestesDeSortie {
                 override fun deconnecter() = Unit
                 override fun oublierTout() = Unit

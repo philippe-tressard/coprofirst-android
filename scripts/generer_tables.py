@@ -139,7 +139,10 @@ def kotlin(tables: dict, source: str) -> str:
             continue
         if not isinstance(p["href"], str):
             raise TableInattendue(f"page {p['id']} : href inattendu")
-        l.append(f"        {page_kotlin(p, p['href'])},")
+        # Le public de la page (#333) : une page du menu sans lui ne s'afficherait jamais.
+        if not isinstance(p.get("acces"), str) or not p["acces"]:
+            raise TableInattendue(f"page {p['id']} : acces manquant — une page du menu a son public")
+        l.append(f"        {page_kotlin(p, p['href'], p['acces'])},")
     l += ["    )", "",
           "    /** Les pages sans entrée de menu (`href` nul, route vide) : leur écran s'ouvre d'ailleurs (la cloche). */",
           "    val horsMenu: List<PageDeNavigation> = listOf(",
@@ -183,8 +186,6 @@ def kotlin(tables: dict, source: str) -> str:
           f"    val rolesAdministrateur: Set<String> = {ensemble(liste(tables, 'rolesDuDroit', 'admin'))}",
           f"    val rolesOperateur: Set<String> = {ensemble(liste(tables, 'rolesDuDroit', 'operateur'))}",
           f"    val rolesProprietaire: Set<String> = {ensemble(liste(tables, 'rolesDuDroit', 'proprietaire'))}",
-          f"    val rolesAdminSeul: Set<String> = {ensemble(liste(tables, 'rolesDuDroit', 'adminSeul'))}",
-          f"    val rolesSansAdminSeul: Set<String> = {ensemble(liste(tables, 'rolesDuDroit', 'sansAdminSeul'))}",
           f"    val statutsLocataire: Set<String> = {ensemble(liste(tables, 'statutsDuProfil', 'locataire'))}",
           f"    val statutsGestionnaire: Set<String> = {ensemble(liste(tables, 'statutsDuProfil', 'gestionnaire'))}",
           "}", ""]
@@ -241,9 +242,10 @@ def liste_kotlin(valeurs: list[str]) -> str:
     return "listOf(" + ", ".join(chaine(v) for v in valeurs) + ")"
 
 
-def page_kotlin(p: dict, route: str) -> str:
+def page_kotlin(p: dict, route: str, acces: str | None = None) -> str:
+    public = f", {chaine(acces)}" if acces else ""
     return (f"PageDeNavigation({chaine(p['id'])}, {chaine(route)}, {chaine(p['navLabel'])}, "
-            f"{chaine(p['titre'])}, {chaine(p['icone'])})")
+            f"{chaine(p['titre'])}, {chaine(p['icone'])}{public})")
 
 
 def kotlin_avis(tables: dict, source: str) -> str:

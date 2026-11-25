@@ -17,6 +17,8 @@ data class PageDeNavigation(
     val titre: String,
     /** Le nom Lucide de son icône (`Pictogrammes`). */
     val icone: String,
+    /** Son public au menu (`acces` de la table `pages`, #333) ; `null` hors du menu (Profil, À propos, la cloche). */
+    val acces: String? = null,
 )
 
 /** Ce que l'administration a écrit pour une page (`page_config_<id>` de GET /config). */
@@ -67,6 +69,14 @@ object OrdrePages {
             defaut.copy(libelle = LibellesBarre.libelle(defaut, surcharge), titre = surcharge?.titre ?: defaut.titre)
         }
     }
+
+    /**
+     * L'accueil de la barre, écrit une fois (#333, comme `OrdrePages.accueil` de l'iOS) : le fil
+     * s'il est dans la barre, sinon la première page servie ; `null` sur une barre vide, qui
+     * ouvre le Profil (le compte technique n'a qu'Admin, un compte sans public n'a rien).
+     */
+    fun accueil(barre: List<PageDeNavigation>): String? =
+        (barre.firstOrNull { it.id == LibellesBarre.ID_FIL } ?: barre.firstOrNull())?.id
 
     /** `pages_order` servi : un tableau JSON, ou des identifiants séparés par des virgules. */
     fun lire(valeur: String?): List<String>? {

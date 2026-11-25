@@ -15,6 +15,7 @@ object FixturesProfil {
     const val MOI = """{
       "id": 7, "nom": "Exemple", "prenom": "Camille", "email": "camille@exemple.test",
       "statut": "copropriétaire_résident", "role": "conseil_syndical", "roles": ["propriétaire", "conseil_syndical"],
+      "acces_menu": ["tous", "resident", "cs", "cs-ou-aidant"],
       "actif": true, "onboarding_complete": true, "onboarding_etape": 0,
       "preferences_notifications": "{\"autres_batiments_mail\": true}", "restreindre_a_mes_batiments": false,
       "cree_le": "2026-03-02T10:00:00", "nom_affiche": "Camille EXEMPLE", "nom_aide_affiche": "",
@@ -41,4 +42,26 @@ object FixturesProfil {
 
     /** Le refus du serveur pour un mot de passe faux (400) → erreur. */
     const val MOT_DE_PASSE_INCORRECT = """{"detail": "Mot de passe incorrect."}"""
+}
+
+/**
+ * Les publics du menu qu'un compte simulé reçoit (`acces_menu` de GET /auth/me, #333), tels que
+ * le serveur les sert (coprofirst v3.124.0, `acces_du_menu`) : une page s'affiche si son public en
+ * est. Pour les tests qui posent des droits à la main, compte par compte, comme l'iOS.
+ */
+object AccesSimules {
+    /** Un résident (propriétaire, locataire) : les pages de tous et la Communauté. */
+    val RESIDENT = setOf("tous", "resident")
+
+    /** Un membre du conseil syndical : en plus, ses outils et les délégations. */
+    val CONSEIL = setOf("tous", "resident", "cs", "cs-ou-aidant")
+
+    /** Un administrateur qui a un lot : en plus des pages d'un résident, Admin. */
+    val ADMINISTRATEUR = setOf("tous", "resident", "admin")
+
+    /** Le compte technique (administrateur ou opérateur seul) : Admin seulement. */
+    val TECHNIQUE = setOf("admin")
+
+    /** Un proche aidant : les pages de tous et les délégations, sans la Communauté. */
+    val AIDANT = setOf("tous", "cs-ou-aidant")
 }

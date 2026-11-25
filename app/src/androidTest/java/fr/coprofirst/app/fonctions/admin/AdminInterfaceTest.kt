@@ -41,6 +41,7 @@ import fr.coprofirst.app.navigation.DroitsOnglet
 import fr.coprofirst.app.navigation.PagesParDefaut
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsParHote
+import fr.coprofirst.app.fonctions.profil.AccesSimules
 import java.time.Instant
 import java.util.concurrent.CopyOnWriteArrayList
 import org.junit.Assert.assertEquals
@@ -61,8 +62,8 @@ class AdminInterfaceTest {
     val ecran = createComposeRule()
 
     private val service = ServiceSimule()
-    private val administrateur = DroitsOnglet.depuis(listOf("propriétaire", "admin"), null, "copropriétaire_résident", estModerateur = true)
-    private val operateur = DroitsOnglet.depuis(listOf("operateur"), null, "admin_technique", estModerateur = false)
+    private val administrateur = DroitsOnglet.depuis(listOf("propriétaire", "admin"), null, "copropriétaire_résident", estModerateur = true, accesMenu = AccesSimules.ADMINISTRATEUR)
+    private val operateur = DroitsOnglet.depuis(listOf("operateur"), null, "admin_technique", estModerateur = false, accesMenu = AccesSimules.TECHNIQUE)
 
     private fun ouvrir(droits: DroitsOnglet) {
         val contexte = ContexteDeMenu(

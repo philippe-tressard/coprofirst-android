@@ -13,9 +13,10 @@ enum class ReserveOnglet { ProprioOuCS, NonLocataire, Operateur, NonGestionnaire
 
 /**
  * Ce que l'utilisateur est, pour juger d'une page ou d'un onglet — comme l'iOS
- * (`DroitsOnglet`). Les populations sont GÉNÉRÉES (`OngletsDuSite.roles…`, `statuts…`) ;
- * seule la façon de les lire est écrite ici. ⚠️ Masquer ne protège rien : le serveur
- * tranche ; cela évite de tendre une entrée qui mène à un refus.
+ * (`DroitsOnglet`). Qui voit quelle page est SERVI (`acces_menu`, #333) ; pour les onglets,
+ * les populations sont GÉNÉRÉES (`OngletsDuSite.roles…`, `statuts…`) et seule la façon de
+ * les lire est écrite ici. ⚠️ Masquer ne protège rien : le serveur tranche ; cela évite de
+ * tendre une entrée qui mène à un refus.
  */
 data class DroitsOnglet(
     val administrateur: Boolean = false,
@@ -25,27 +26,32 @@ data class DroitsOnglet(
     val gestionnaire: Boolean = false,
     /** Conseil syndical ou administration : `est_moderateur` SERVI, jamais déduit des rôles. */
     val cs: Boolean = false,
-    /** Le compte technique : administrateur, sans lot ni conseil. */
-    val adminSeul: Boolean = false,
-    /** Un proche aidant : la page Délégations lui est ouverte. */
-    val aidant: Boolean = false,
+    /**
+     * Les publics du menu que le compte voit (`acces_menu` de GET /auth/me, #333) : une page
+     * s'affiche si son public (`PageDeNavigation.acces`) en est. Avant la relecture du compte, ou
+     * pour un compte gardé qui ne le porte pas encore, les pages de tous seulement.
+     */
+    val accesMenu: Set<String> = setOf(PagesOuvertes.TOUS),
     /** Le compte lui-même (`id` de GET /auth/me) : on ne signale ni ne masque ce qu'on a écrit (#282). */
     val compte: Int? = null,
 ) {
-    /** Les outils du conseil (Prestataires, Espace CS) : modérateur, et pas le compte technique. */
-    val outilDuConseil: Boolean get() = cs && !adminSeul
-
     companion object {
-        /** Depuis le compte servi par GET /auth/me : `roles` (ou `role` seul), `statut`, `est_moderateur`. */
+        /** Depuis le compte servi par GET /auth/me : `roles` (ou `role` seul), `statut`, `est_moderateur`, `acces_menu`. */
         fun depuis(moi: UserRead): DroitsOnglet = depuis(
             roles = moi.roles.orEmpty(),
             role = moi.role.value,
             statut = moi.statut.value,
             estModerateur = moi.estModerateur,
-            delegationsAidant = moi.delegationsAidant?.size ?: 0,
+            accesMenu = moi.accesMenu?.toSet() ?: setOf(PagesOuvertes.TOUS),
         ).copy(compte = moi.id)
 
-        fun depuis(roles: List<String>, role: String?, statut: String?, estModerateur: Boolean?, delegationsAidant: Int = 0): DroitsOnglet {
+        fun depuis(
+            roles: List<String>,
+            role: String?,
+            statut: String?,
+            estModerateur: Boolean?,
+            accesMenu: Set<String> = setOf(PagesOuvertes.TOUS),
+        ): DroitsOnglet {
             val portes = (if (roles.isEmpty()) listOfNotNull(role) else roles).toSet()
             val s = statut.orEmpty()
             return DroitsOnglet(
@@ -55,26 +61,28 @@ data class DroitsOnglet(
                 locataire = s in OngletsDuSite.statutsLocataire,
                 gestionnaire = s in OngletsDuSite.statutsGestionnaire,
                 cs = estModerateur == true,
-                adminSeul = portes.any { it in OngletsDuSite.rolesAdminSeul } && portes.none { it in OngletsDuSite.rolesSansAdminSeul },
-                aidant = s == STATUT_AIDANT || delegationsAidant > 0,
+                accesMenu = accesMenu,
             )
         }
-
-        /** Le statut d'un proche aidant (`StatutUtilisateur.aidant` du contrat). */
-        private const val STATUT_AIDANT = "aidant"
     }
 }
 
-/** Les pages qu'un compte ouvre dans la barre, comme l'iOS (`PagesOuvertes`). */
+/**
+ * Les pages qu'un compte ouvre dans la barre, comme l'iOS (`PagesOuvertes`) et `pageAuMenu` du
+ * site (#333) : une page s'affiche si son public (`acces`, généré de la table `pages`) est
+ * dans `acces_menu` servi — aucun rôle ni statut lu ici. Une page inconnue reste fermée.
+ */
 object PagesOuvertes {
-    fun filtrer(pages: List<PageDeNavigation>, droits: DroitsOnglet) = pages.filter { ouverte(it.id, droits) }
+    /** Le public ouvert à tous les comptes (`acces` de la table `pages`). */
+    const val TOUS = "tous"
 
-    fun ouverte(page: String, droits: DroitsOnglet): Boolean = when (page) {
-        "prestataires", "espace-cs" -> droits.outilDuConseil
-        "delegations" -> droits.outilDuConseil || droits.aidant
-        "admin" -> droits.administrateur || droits.operateur
-        else -> true
-    }
+    fun filtrer(pages: List<PageDeNavigation>, droits: DroitsOnglet) = pages.filter { ouverte(it, droits) }
+
+    fun ouverte(page: PageDeNavigation, droits: DroitsOnglet): Boolean = page.acces != null && page.acces in droits.accesMenu
+
+    /** Par l'identifiant d'une page du menu (un écran à onglets) : son public généré. */
+    fun ouverte(page: String, droits: DroitsOnglet): Boolean =
+        PagesParDefaut.toutes.firstOrNull { it.id == page }?.let { ouverte(it, droits) } ?: false
 }
 
 /** Les onglets qu'un compte ouvre sur une page, dans l'ordre du site (`ongletsOuverts`). */

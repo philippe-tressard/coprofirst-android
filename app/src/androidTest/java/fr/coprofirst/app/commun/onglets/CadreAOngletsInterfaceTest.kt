@@ -25,6 +25,7 @@ import fr.coprofirst.app.navigation.PagesParDefaut
 import fr.coprofirst.app.navigation.ouverts
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsParHote
+import fr.coprofirst.app.fonctions.profil.AccesSimules
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -38,7 +39,7 @@ class CadreAOngletsInterfaceTest {
     @get:Rule
     val ecran = createComposeRule()
 
-    private val conseil = DroitsOnglet.depuis(listOf("conseil_syndical"), null, "copropriétaire_résident", estModerateur = true)
+    private val conseil = DroitsOnglet.depuis(listOf("conseil_syndical"), null, "copropriétaire_résident", estModerateur = true, accesMenu = AccesSimules.CONSEIL)
 
     private val page = PageAOnglets(
         "espace-cs",
@@ -88,7 +89,7 @@ class CadreAOngletsInterfaceTest {
 
     @Test
     fun unePageReserveeLeDit() {
-        val resident = DroitsOnglet.depuis(listOf("résident"), null, "locataire", estModerateur = false)
+        val resident = DroitsOnglet.depuis(listOf("résident"), null, "locataire", estModerateur = false, accesMenu = AccesSimules.RESIDENT)
         ecran.setContent { ThemeCoproFirst { CadreAOnglets(contexte(resident), page) } }
 
         ecran.onNodeWithTag(ReperesOnglets.RESERVEE).assertIsDisplayed()

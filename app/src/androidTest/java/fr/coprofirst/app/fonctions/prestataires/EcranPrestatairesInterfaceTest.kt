@@ -32,6 +32,7 @@ import fr.coprofirst.app.navigation.DroitsOnglet
 import fr.coprofirst.app.navigation.PagesParDefaut
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.entree.ServeurDeTest
+import fr.coprofirst.app.fonctions.profil.AccesSimules
 import mockwebserver3.Dispatcher
 import mockwebserver3.MockResponse
 import mockwebserver3.RecordedRequest
@@ -60,7 +61,7 @@ class EcranPrestatairesInterfaceTest {
             }
         }
     }
-    private val conseil = DroitsOnglet.depuis(listOf("conseil_syndical"), null, "copropriétaire_résident", estModerateur = true)
+    private val conseil = DroitsOnglet.depuis(listOf("conseil_syndical"), null, "copropriétaire_résident", estModerateur = true, accesMenu = AccesSimules.CONSEIL)
 
     @Before
     fun ouvrir() {

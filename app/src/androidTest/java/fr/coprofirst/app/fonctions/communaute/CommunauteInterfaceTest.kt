@@ -48,6 +48,7 @@ import fr.coprofirst.app.navigation.PagesParDefaut
 import fr.coprofirst.app.navigation.fermerLaFiche
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.SessionsParHote
+import fr.coprofirst.app.fonctions.profil.AccesSimules
 import java.time.OffsetDateTime
 import kotlinx.coroutines.delay
 import org.junit.Assert.assertEquals
@@ -81,7 +82,7 @@ private class CommunauteSimulee(
 
     override suspend fun moi(): MoiCommunaute {
         delay(100)
-        return MoiCommunaute(1, DroitsOnglet.depuis(listOf("résident"), null, "copropriétaire_résident", false), motif)
+        return MoiCommunaute(1, DroitsOnglet.depuis(listOf("résident"), null, "copropriétaire_résident", false, AccesSimules.RESIDENT), motif)
     }
 
     override suspend fun sondages() = listOf(
@@ -149,7 +150,7 @@ class CommunauteInterfaceTest {
         val contexte = ContexteDeMenu(
             page = PagesParDefaut.toutes.first { it.id == "communaute" },
             session = SessionOuverte(residenceSimulee("https://residence.test", "Les Glycines"), SessionsParHote()),
-            droits = DroitsOnglet.depuis(listOf("résident"), null, "copropriétaire_résident", false),
+            droits = DroitsOnglet.depuis(listOf("résident"), null, "copropriétaire_résident", false, AccesSimules.RESIDENT),
             sortie = object : GestesDeSortie {
                 override fun deconnecter() = Unit
                 override fun oublierTout() = Unit
