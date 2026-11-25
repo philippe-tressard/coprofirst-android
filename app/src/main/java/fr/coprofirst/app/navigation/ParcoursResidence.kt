@@ -46,6 +46,12 @@ data class EtatResidence(
     val saisieAffaire: String? = null,
     /** Le logement du compte (`libelle_logement`, #181), en tête du fil ; `null` sans lot servi. */
     val logement: String? = null,
+    /**
+     * Le mot de passe est temporaire (`mot_de_passe_a_changer` de GET /auth/me, #371) : la
+     * résidence n'ouvre que « Choisir votre mot de passe » et la déconnexion. Faux tant que le
+     * compte n'est pas lu — le serveur refuse de toute façon le reste (403).
+     */
+    val motDePasseAChanger: Boolean = false,
 ) {
     companion object {
         const val PLUS = "plus"
@@ -75,9 +81,10 @@ class ParcoursResidence(
      * Relit les droits du compte (GET /auth/me) — à l'ouverture, et depuis un écran après un
      * geste qui les change (un rôle qu'on se retire : `ContexteDeMenu.relireDroits`, #87),
      * comme `rafraichirProfil` de l'iOS. La barre et les onglets suivent aussitôt. Un échec
-     * garde les droits d'avant ; le serveur tranche de toute façon.
+     * garde les droits d'avant ; le serveur tranche de toute façon. Rend `false` sur un échec :
+     * la porte du mot de passe temporaire le dit (#371), les autres appelants l'ignorent.
      */
-    suspend fun relireDroits() {
+    suspend fun relireDroits(): Boolean {
         try {
             val moi = compte.moi()
             val roles = RolesConnus(moi.statut.value, (moi.roles.orEmpty() + moi.role.value).distinct())
@@ -85,10 +92,13 @@ class ParcoursResidence(
                 it.copy(
                     droits = DroitsOnglet.depuis(moi), refusMesure = moi.optOutTelemetrie, roles = roles,
                     saisieAffaire = moi.saisieAffaireEffective, logement = moi.libelleLogement?.takeIf { l -> l.isNotBlank() },
+                    motDePasseAChanger = moi.motDePasseAChanger == true,
                 )
             }
+            return true
         } catch (_: ErreurService) {
             // Sans profil : les droits d'avant restent (ceux de tous, à l'ouverture).
+            return false
         }
     }
 

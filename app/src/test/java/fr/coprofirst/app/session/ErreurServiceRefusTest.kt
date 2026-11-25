@@ -29,6 +29,18 @@ class ErreurServiceRefusTest {
         assertEquals(ErreurService.Refus(phrase, 403), refus(403, """{"detail": "$phrase"}"""))
     }
 
+    /** #371 : le 403 d'un mot de passe temporaire porte un détail STRUCTURÉ ; sa phrase s'affiche, son code reste. */
+    @Test
+    fun unRefusStructureDitSonMessageEtGardeSonCode() {
+        val phrase = "Votre mot de passe est temporaire : choisissez-en un nouveau pour continuer."
+        assertEquals(
+            ErreurService.Refus(phrase, 403, "mot_de_passe_a_changer"),
+            refus(403, """{"detail": {"code": "mot_de_passe_a_changer", "message": "$phrase"}}"""),
+        )
+        // Un détail structuré sans message n'a pas de phrase : le statut décide.
+        assertEquals(ErreurService.Introuvable, refus(403, """{"detail": {"code": "x"}}"""))
+    }
+
     @Test
     fun sansPhraseServieLeStatutDecide() {
         assertEquals(ErreurService.Introuvable, refus(403, "{}"))

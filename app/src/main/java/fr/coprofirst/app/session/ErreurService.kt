@@ -49,8 +49,11 @@ sealed class ErreurService(@param:StringRes val phraseRes: Int) : Exception() {
     /** L'élément n'existe plus, ou n'est pas lisible par ce compte. */
     data object Introuvable : ErreurService(R.string.erreur_introuvable)
 
-    /** Un geste refusé, avec la phrase du serveur (`detail`) — la sienne, pas la nôtre. */
-    data class Refus(val phraseServie: String, val statut: Int) : ErreurService(R.string.erreur_inattendue)
+    /**
+     * Un geste refusé, avec la phrase du serveur (`detail`) — la sienne, pas la nôtre. Un refus
+     * STRUCTURÉ (`{"detail": {"code", "message"}}`, #371) garde aussi son `code`.
+     */
+    data class Refus(val phraseServie: String, val statut: Int, val code: String? = null) : ErreurService(R.string.erreur_inattendue)
 
     /** Tout le reste : la résidence n'a pas pu répondre (le code reste dans le journal). */
     data object Inattendue : ErreurService(R.string.erreur_inattendue)
@@ -99,12 +102,19 @@ sealed class ErreurService(@param:StringRes val phraseRes: Int) : Exception() {
             else -> Inattendue
         }
 
-        /** La phrase du serveur (`{"detail": "…"}`), s'il en a donné une en texte. */
+        /**
+         * La phrase du serveur : `{"detail": "…"}`, ou le `message` d'un détail structuré
+         * `{"detail": {"code", "message"}}` (le 403 du mot de passe à changer, #371), son code gardé.
+         */
         fun refus(erreur: ClientException): Refus? {
             val corps = (erreur.response as? ClientError<*>)?.body as? String ?: return null
             val detail = runCatching { (Json.parseToJsonElement(corps) as? JsonObject)?.get("detail") }.getOrNull()
-            val phrase = (detail as? JsonPrimitive)?.takeIf { it.isString }?.content?.trim()
-            return phrase?.takeIf { it.isNotEmpty() }?.let { Refus(it, erreur.statusCode) }
+            val structure = detail as? JsonObject
+            val phrase = texte(structure?.get("message") ?: detail)
+            return phrase?.let { Refus(it, erreur.statusCode, structure?.get("code")?.let(::texte)) }
         }
+
+        private fun texte(element: Any?): String? =
+            (element as? JsonPrimitive)?.takeIf { it.isString }?.content?.trim()?.takeIf { it.isNotEmpty() }
     }
 }

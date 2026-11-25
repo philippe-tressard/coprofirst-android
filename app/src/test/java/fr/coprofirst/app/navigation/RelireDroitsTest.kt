@@ -30,8 +30,8 @@ class RelireDroitsTest {
 
     @After fun rendre() = Dispatchers.resetMain()
 
-    private fun moi(roles: String, refus: Boolean = false) = Serializer.kotlinxSerializationJson.decodeFromString<UserRead>(
-        """{"opt_out_telemetrie": $refus, "id": 7, "nom": "Essai", "prenom": "Camille", "email": "camille@residence.example.test",
+    private fun moi(roles: String, refus: Boolean = false, temporaire: Boolean? = null) = Serializer.kotlinxSerializationJson.decodeFromString<UserRead>(
+        """{${temporaire?.let { "\"mot_de_passe_a_changer\": $it, " } ?: ""}"opt_out_telemetrie": $refus, "id": 7, "nom": "Essai", "prenom": "Camille", "email": "camille@residence.example.test",
             "statut": "copropriétaire_résident", "role": "résident", "roles": $roles, "actif": true,
             "onboarding_complete": true, "onboarding_etape": 0, "preferences_notifications": "{}",
             "cree_le": "2026-03-02T10:00:00", "nom_affiche": "Camille ESSAI", "nom_aide_affiche": ""}""",
@@ -70,7 +70,23 @@ class RelireDroitsTest {
     @Test
     fun uneRelectureEchoueeGardeLesDroitsDAvant() = runTest {
         val parcours = parcours(Compte(moi("""["admin"]"""), null))
-        parcours.relireDroits()
+        assertFalse("l'échec se dit", parcours.relireDroits())
         assertTrue(parcours.etat.value.droits.administrateur)
+    }
+
+    /**
+     * #371 : `mot_de_passe_a_changer` ferme la résidence derrière « Choisir votre mot de passe » ;
+     * le mot de passe choisi, le compte relu fait tomber le drapeau. Absent (un serveur qui ne le
+     * sert pas), il vaut faux.
+     */
+    @Test
+    fun leMotDePasseTemporaireFermeLaResidenceJusquASaRelecture() = runTest {
+        val parcours = parcours(Compte(moi("""["admin"]""", temporaire = true), null, moi("""["admin"]""", temporaire = false)))
+        assertTrue("le drapeau lu à l'ouverture", parcours.etat.value.motDePasseAChanger)
+        assertFalse("une relecture ratée le garde", parcours.relireDroits())
+        assertTrue(parcours.etat.value.motDePasseAChanger)
+        assertTrue(parcours.relireDroits())
+        assertFalse("relu, il tombe", parcours.etat.value.motDePasseAChanger)
+        assertFalse(parcours(Compte(moi("""["résident"]"""))).etat.value.motDePasseAChanger)
     }
 }
