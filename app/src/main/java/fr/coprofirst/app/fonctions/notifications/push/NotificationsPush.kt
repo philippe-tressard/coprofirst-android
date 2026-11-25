@@ -50,7 +50,7 @@ data class EtatPush(val autorisation: AutorisationPush = AutorisationPush.INCONN
  *   (`arrivee`) ; pour une autre, l'avertissement sonne (`AvertissementPush`).
  *
  * Seule une résidence qui dit servir le plancher reçoit le jeton (`Installation.sertLePlancher`) :
- * le plancher relaie FCM (contrat 2.10.0, #311) ; un contrat absent ou illisible, rien. Tant
+ * le plancher relaie FCM (depuis le contrat 2.10.0, #311) ; un contrat absent ou illisible, rien. Tant
  * que `relaisActif` est faux (`RelaisPush`, ou pas de configuration Firebase), rien de tout
  * cela ne se fait : ni offre, ni jeton, ni requête. Rien de ce qui passe ici ne s'écrit dans un journal.
  */

@@ -116,7 +116,7 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   nombre, au lecteur d'écran). Les notifications sur le téléphone (#280) : l'offre « Être averti sur ce
   téléphone » en tête de la cloche, puis l'alerte d'une actualité ⚡ urgente du conseil syndical sonne,
   sans rien dire de son contenu ; la toucher ouvre la cloche de sa résidence. Éteintes tant que le relais
-  ne l'est pas (`RelaisPush`), et seulement auprès d'une résidence qui dit servir le plancher (contrat 2.10.0).
+  ne l'est pas (`RelaisPush`), et seulement auprès d'une résidence qui dit servir le plancher (`contrat/plancher.env`).
 - **FAQ** : les questions de la résidence par catégorie, une réponse dépliée à la fois ;
   « Partager le lien » d'une question ; « Créer une affaire » et le Manuel utilisateur. La rédaction reste au site,
   et l'écran ne le dit qu'à qui le serveur l'ouvre.
