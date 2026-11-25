@@ -137,40 +137,9 @@ fun FormulaireIdentite(compte: UserRead, service: ServiceProfil, fermer: () -> U
  */
 @Composable
 fun FormulaireMotDePasse(service: ServiceProfil, fermer: () -> Unit) {
-    var actuel by rememberSaveable { mutableStateOf("") }
-    var nouveau by rememberSaveable { mutableStateOf("") }
-    var confirmation by rememberSaveable { mutableStateOf("") }
-    val envoi = rememberEnvoi()
     var reussi by remember { mutableStateOf(false) }
-    val couleurs = LocalCouleurs.current
-    val attente = attenteMotDePasse(actuel, nouveau, confirmation)
     FeuilleProfil(titre = stringResource(R.string.profil_titre_mot_de_passe), fermer = fermer) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            ChampProfil(actuel, stringResource(R.string.profil_mot_de_passe_actuel), "profil.motDePasse.actuel", secret = true) { actuel = it }
-            Note(stringResource(R.string.profil_mot_de_passe_aide), Modifier.padding(horizontal = Mise.marge + 4.dp))
-        }
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            ChampProfil(nouveau, stringResource(R.string.profil_nouveau_mot_de_passe), "profil.motDePasse.nouveau", secret = true) { nouveau = it }
-            ChampProfil(confirmation, stringResource(R.string.profil_confirmation), "profil.motDePasse.confirmation", secret = true) { confirmation = it }
-            val marge = Modifier.padding(horizontal = Mise.marge + 4.dp)
-            when {
-                confirmation.isNotEmpty() && confirmation != nouveau ->
-                    Note(stringResource(R.string.profil_confirmation_differe), marge, couleurs.danger)
-                attente != null -> Note(attente.phrase(), marge)
-            }
-        }
-        envoi.erreur?.let { MessageErreur(it, Modifier.padding(horizontal = Mise.marge)) }
-        BoutonPlein(
-            R.string.profil_modifier_mot_de_passe,
-            Modifier.padding(horizontal = Mise.marge).testTag("profil.motDePasse.modifier"),
-            actif = attente == null,
-            enCours = envoi.enCours,
-        ) {
-            envoi.lancer {
-                service.changerMotDePasse(actuel, nouveau)
-                reussi = true
-            }
-        }
+        ChampsMotDePasse(service, temporaire = false) { reussi = true }
     }
     if (reussi) {
         AlertDialog(
@@ -181,10 +150,57 @@ fun FormulaireMotDePasse(service: ServiceProfil, fermer: () -> Unit) {
     }
 }
 
+/**
+ * Les champs du mot de passe, le formulaire du Profil comme la porte d'un mot de passe
+ * temporaire (#371, `temporaire` : ses libellés, comme l'iOS) : l'actuel, puis le nouveau
+ * saisi deux fois ; une phrase à la fois dit ce qui manque, et le bouton attend. `reussi`
+ * suit le changement accepté par le serveur.
+ */
+@Composable
+fun ChampsMotDePasse(service: ServiceProfil, temporaire: Boolean, reussi: suspend () -> Unit) {
+    var actuel by rememberSaveable { mutableStateOf("") }
+    var nouveau by rememberSaveable { mutableStateOf("") }
+    var confirmation by rememberSaveable { mutableStateOf("") }
+    val envoi = rememberEnvoi()
+    val couleurs = LocalCouleurs.current
+    val attente = attenteMotDePasse(actuel, nouveau, confirmation)
+    val (libelleActuel, aide, bouton) = if (temporaire) {
+        Triple(R.string.profil_mot_de_passe_temporaire, R.string.profil_temporaire_aide, R.string.profil_choisir_mot_de_passe)
+    } else {
+        Triple(R.string.profil_mot_de_passe_actuel, R.string.profil_mot_de_passe_aide, R.string.profil_modifier_mot_de_passe)
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        ChampProfil(actuel, stringResource(libelleActuel), "profil.motDePasse.actuel", secret = true) { actuel = it }
+        Note(stringResource(aide), Modifier.padding(horizontal = Mise.marge + 4.dp))
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        ChampProfil(nouveau, stringResource(R.string.profil_nouveau_mot_de_passe), "profil.motDePasse.nouveau", secret = true) { nouveau = it }
+        ChampProfil(confirmation, stringResource(R.string.profil_confirmation), "profil.motDePasse.confirmation", secret = true) { confirmation = it }
+        val marge = Modifier.padding(horizontal = Mise.marge + 4.dp)
+        when {
+            confirmation.isNotEmpty() && confirmation != nouveau ->
+                Note(stringResource(R.string.profil_confirmation_differe), marge, couleurs.danger)
+            attente != null -> Note(attente.phrase(temporaire), marge)
+        }
+    }
+    envoi.erreur?.let { MessageErreur(it, Modifier.padding(horizontal = Mise.marge)) }
+    BoutonPlein(
+        bouton,
+        Modifier.padding(horizontal = Mise.marge).testTag("profil.motDePasse.modifier"),
+        actif = attente == null,
+        enCours = envoi.enCours,
+    ) {
+        envoi.lancer {
+            service.changerMotDePasse(actuel, nouveau)
+            reussi()
+        }
+    }
+}
+
 /** Ce qui manque, dit comme l'iOS ; la longueur minimale est celle du serveur. */
 @Composable
-private fun AttenteMotDePasse.phrase(): String = when (this) {
-    AttenteMotDePasse.Actuel -> stringResource(R.string.profil_attente_actuel)
+private fun AttenteMotDePasse.phrase(temporaire: Boolean): String = when (this) {
+    AttenteMotDePasse.Actuel -> stringResource(if (temporaire) R.string.profil_attente_temporaire else R.string.profil_attente_actuel)
     AttenteMotDePasse.Nouveau -> ConstantesDuServeur.LONGUEUR_MIN_MOT_DE_PASSE.let {
         pluralStringResource(R.plurals.profil_attente_nouveau, it, it)
     }

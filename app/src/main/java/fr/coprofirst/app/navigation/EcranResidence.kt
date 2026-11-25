@@ -4,6 +4,11 @@
 package fr.coprofirst.app.navigation
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -43,6 +48,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import fr.coprofirst.app.R
+import fr.coprofirst.app.charte.Mouvement
 import fr.coprofirst.app.charte.Pictogrammes
 import fr.coprofirst.app.commun.Apparence
 import fr.coprofirst.app.commun.BandeauInstallationSuspendue
@@ -58,6 +64,7 @@ import fr.coprofirst.app.commun.miseenpage.LocalJourDuCarnet
 import fr.coprofirst.app.commun.miseenpage.LocalPageDuCarnet
 import fr.coprofirst.app.commun.miseenpage.PageEtColonneDeFiche
 import fr.coprofirst.app.commun.miseenpage.ficheLocale
+import fr.coprofirst.app.entree.PorteMotDePasseTemporaire
 import fr.coprofirst.app.session.SessionOuverte
 import fr.coprofirst.app.session.audience.CheminDuSite
 import fr.coprofirst.app.session.audience.ResidenceMesuree
@@ -87,6 +94,35 @@ fun EcranResidence(
         factory = viewModelFactory { initializer { ParcoursResidence(session, ServiceCompteApi(session)) } },
     )
     val etat by parcours.etat.collectAsStateWithLifecycle()
+    // #371 : un mot de passe temporaire tient la résidence derrière sa porte ; choisi, elle
+    // s'ouvre en fondu, celui de l'entrée dans une résidence (comme l'iOS).
+    AnimatedContent(
+        etat.motDePasseAChanger,
+        transitionSpec = { fadeIn(tween(DUREE_PORTE_MS, easing = Mouvement.sortie)).togetherWith(fadeOut(tween(DUREE_PORTE_MS / 2))) },
+        label = "porte",
+    ) { temporaire ->
+        if (temporaire) {
+            PorteMotDePasseTemporaire(session, sortie, parcours::relireDroits)
+        } else {
+            ResidenceOuverte(session, sortie, apparence, lien, lienSuivi, parcours, etat)
+        }
+    }
+}
+
+/** La durée du fondu de la porte : celle de l'entrée (`NavigationEntree`). */
+private const val DUREE_PORTE_MS = 220
+
+/** La résidence ouverte, derrière la porte d'un mot de passe temporaire (#371). */
+@Composable
+private fun ResidenceOuverte(
+    session: SessionOuverte,
+    sortie: GestesDeSortie,
+    apparence: Apparence,
+    lien: Destination?,
+    lienSuivi: () -> Unit,
+    parcours: ParcoursResidence,
+    etat: EtatResidence,
+) {
     val pages = parcours.pagesOuvertes(etat.droits)
     val barre = pages.take(ParcoursResidence.VISIBLES)
     val plus = pages.drop(ParcoursResidence.VISIBLES)
