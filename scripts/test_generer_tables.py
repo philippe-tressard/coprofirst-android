@@ -19,8 +19,7 @@ def t(v):
     return {"source": "test", "valeur": v}
 
 
-DROITS = {"rolesDuDroit": t({"admin": ["admin"], "operateur": ["operateur"], "proprietaire": ["propriétaire"],
-                             "adminSeul": ["admin"], "sansAdminSeul": ["résident"]}),
+DROITS = {"rolesDuDroit": t({"admin": ["admin"], "operateur": ["operateur"], "proprietaire": ["propriétaire"]}),
           "statutsDuProfil": t({"locataire": ["locataire"], "gestionnaire": ["syndic"]})}
 
 
@@ -31,12 +30,14 @@ class Tables(unittest.TestCase):
     def test_pages_onglets_et_droits(self):
         texte = g.kotlin(self.tables([
             {"id": "residence", "href": "/residence", "navLabel": "Résidence", "titre": "Ma résidence", "icone": "building-2",
-             "onglets": [{"id": "fiche", "label": "📋 Fiche"}, {"id": "carnet", "label": "Carnet", "reserve": "proprioOuCS"}]},
+             "acces": "tous", "onglets": [{"id": "fiche", "label": "📋 Fiche"}, {"id": "carnet", "label": "Carnet", "reserve": "proprioOuCS"}]},
             {"id": "admin", "href": "/admin", "navLabel": "Admin", "titre": "Paramétrage", "icone": "sliders",
-             "reserveeAdmin": True, "onglets": [{"id": "telemetry", "label": "Télémétrie", "ouvertOperateur": True}]},
+             "acces": "admin", "reserveeAdmin": True, "onglets": [{"id": "telemetry", "label": "Télémétrie", "ouvertOperateur": True}]},
             {"id": "profil", "href": None, "navLabel": "Profil", "titre": "Profil", "icone": "user"},
         ]), "test.json")
-        self.assertIn('PageDeNavigation("residence", "/residence", "Résidence", "Ma résidence", "building-2"),', texte)
+        # Le public de chaque page du menu (#333) ; hors du menu, aucun.
+        self.assertIn('PageDeNavigation("residence", "/residence", "Résidence", "Ma résidence", "building-2", "tous"),', texte)
+        self.assertIn('PageDeNavigation("admin", "/admin", "Admin", "Paramétrage", "sliders", "admin"),', texte)
         # Sans entrée de menu : hors de la barre, mais connue (la cloche ouvre les notifications).
         toutes, hors_menu = texte.split("val horsMenu", 1)
         self.assertNotIn('PageDeNavigation("profil"', toutes)
@@ -47,10 +48,15 @@ class Tables(unittest.TestCase):
         self.assertIn('val pagesReserveesAdmin: Set<String> = setOf("admin")', texte)
         self.assertIn('const val TITRE_DU_FIL: String = "Fil d\'activité"', texte)
 
+    def test_une_page_du_menu_sans_public_arrete(self):
+        # #333 : sans `acces`, la page ne s'afficherait pour personne — le générateur le refuse.
+        with self.assertRaises(g.TableInattendue):
+            g.kotlin(self.tables([{"id": "faq", "href": "/faq", "navLabel": "FAQ", "titre": "FAQ", "icone": "help-circle"}]), "t")
+
     def test_descriptifs_et_adresses_des_onglets(self):
         texte = g.kotlin(self.tables([
             {"id": "admin", "href": "/admin", "navLabel": "Admin", "titre": "Paramétrage", "icone": "sliders",
-             "onglets": [{"id": "imports", "label": "Imports", "route": "/admin?onglet=imports", "descriptif": "Charger"},
+             "acces": "admin", "onglets": [{"id": "imports", "label": "Imports", "route": "/admin?onglet=imports", "descriptif": "Charger"},
                          {"id": "nu", "label": "Nu"}]},
         ]), "test.json")
         descriptifs, routes = texte.split("val descriptifs", 1)[1].split("val routes", 1)

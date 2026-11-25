@@ -3,11 +3,15 @@
 
 package fr.coprofirst.app.navigation
 
+import fr.coprofirst.api.infrastructure.Serializer
+import fr.coprofirst.api.modeles.UserRead
 import fr.coprofirst.app.charte.Pictogrammes
+import fr.coprofirst.app.fonctions.profil.AccesSimules
 import fr.coprofirst.app.session.AdresseInstallation
 import fr.coprofirst.app.session.Installation
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -56,21 +60,62 @@ class NavigationTest {
     fun droitsLusDuCompte() {
         val resident = DroitsOnglet.depuis(listOf("résident"), null, "locataire", estModerateur = false)
         assertTrue(resident.locataire)
-        assertFalse(resident.outilDuConseil)
         val conseil = DroitsOnglet.depuis(listOf("conseil_syndical"), null, "copropriétaire_résident", estModerateur = true)
-        assertTrue(conseil.outilDuConseil && conseil.proprioOuCS)
-        // Le compte technique : administrateur sans lot ni conseil, pas d'outils du conseil.
+        assertTrue(conseil.cs && conseil.proprioOuCS)
         val technique = DroitsOnglet.depuis(listOf("admin"), null, "admin_technique", estModerateur = true)
-        assertTrue(technique.adminSeul && !technique.outilDuConseil && technique.administrateur)
-        assertTrue(DroitsOnglet.depuis(emptyList(), "propriétaire", "aidant", false).aidant)
+        assertTrue(technique.administrateur)
     }
 
+    /** `acces_menu` se lit de GET /auth/me (#333) ; un compte gardé qui ne le porte pas a les pages de tous. */
     @Test
-    fun pagesOuvertesSelonLesDroits() {
-        val resident = PagesOuvertes.filtrer(PagesParDefaut.toutes, DroitsOnglet()).map { it.id }
+    fun lesPublicsDuMenuSeLisentDuCompte() {
+        // Un compte à lui, sans `acces_menu` sauf celui qu'on pose (celui du Profil simulé le sert).
+        fun moi(acces: String?) = Serializer.kotlinxSerializationJson.decodeFromString<UserRead>(
+            """{${acces?.let { "\"acces_menu\": $it, " } ?: ""}"id": 7, "nom": "Essai", "prenom": "Camille",
+                "email": "camille@residence.example.test", "statut": "copropriétaire_résident", "role": "résident",
+                "roles": ["résident"], "actif": true, "onboarding_complete": true, "onboarding_etape": 0,
+                "preferences_notifications": "{}", "cree_le": "2026-03-02T10:00:00", "nom_affiche": "Camille ESSAI",
+                "nom_aide_affiche": ""}""",
+        )
+        assertEquals(setOf("tous", "resident", "cs"), DroitsOnglet.depuis(moi("""["tous", "resident", "cs"]""")).accesMenu)
+        assertEquals(setOf("tous"), DroitsOnglet.depuis(moi(null)).accesMenu)
+        assertEquals(emptySet<String>(), DroitsOnglet.depuis(moi("[]")).accesMenu)
+    }
+
+    /**
+     * #333, comme `PagesOuvertesTests` de l'iOS : une page s'affiche si son public (`acces`, généré
+     * de la table `pages`) est dans `acces_menu` servi — aucun rôle n'est lu. Ce que le serveur a
+     * tranché (coprofirst#3003) : l'aidant n'a pas la Communauté, le compte technique n'a qu'Admin.
+     */
+    @Test
+    fun pagesOuvertesSelonLePublicServi() {
+        fun ouvertes(acces: Set<String>) = PagesOuvertes.filtrer(PagesParDefaut.toutes, DroitsOnglet(accesMenu = acces)).map { it.id }
+        val resident = ouvertes(AccesSimules.RESIDENT)
+        assertTrue("communaute" in resident && LibellesBarre.ID_FIL in resident)
         assertFalse("espace-cs" in resident || "prestataires" in resident || "admin" in resident || "delegations" in resident)
-        val conseil = PagesOuvertes.filtrer(PagesParDefaut.toutes, DroitsOnglet(cs = true)).map { it.id }
+        val conseil = ouvertes(AccesSimules.CONSEIL)
         assertTrue("espace-cs" in conseil && "prestataires" in conseil && "delegations" in conseil)
+        assertFalse("admin" in conseil)
+        assertEquals(listOf("admin"), ouvertes(AccesSimules.TECHNIQUE))
+        val aidant = ouvertes(AccesSimules.AIDANT)
+        assertTrue("delegations" in aidant)
+        assertFalse("communaute" in aidant || "espace-cs" in aidant)
+        // Avant la relecture du compte : les pages de tous seulement.
+        assertEquals(PagesParDefaut.toutes.filter { it.acces == PagesOuvertes.TOUS }.map { it.id }, ouvertes(DroitsOnglet().accesMenu))
+        assertEquals(emptyList<String>(), ouvertes(emptySet()))
+        // Une page inconnue, ou hors du menu, reste fermée.
+        assertFalse(PagesOuvertes.ouverte("inconnue", DroitsOnglet(accesMenu = AccesSimules.CONSEIL)))
+        assertFalse(PagesOuvertes.ouverte(PageDeNavigation("profil", "", "Profil", "Profil", "user"), DroitsOnglet()))
+    }
+
+    /** L'accueil de la barre (#333) : le fil s'il y est, sinon la première page servie ; rien sur une barre vide. */
+    @Test
+    fun lAccueilDeLaBarre() {
+        fun barre(acces: Set<String>) = PagesOuvertes.filtrer(PagesParDefaut.toutes, DroitsOnglet(accesMenu = acces))
+        assertEquals(LibellesBarre.ID_FIL, OrdrePages.accueil(barre(AccesSimules.RESIDENT)))
+        assertEquals(LibellesBarre.ID_FIL, OrdrePages.accueil(barre(AccesSimules.RESIDENT).reversed()))
+        assertEquals("admin", OrdrePages.accueil(barre(AccesSimules.TECHNIQUE)))
+        assertNull(OrdrePages.accueil(emptyList()))
     }
 
     @Test

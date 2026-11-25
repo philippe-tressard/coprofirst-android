@@ -99,10 +99,6 @@ DISPENSES: dict[str, tuple[frozenset[str], str]] = {
         "une sélection locale, que rien ne sert — le lieu d'un contenu, lui, se lit (`LieuServi`)"),
     "app/src/main/java/fr/coprofirst/app/fonctions/admin/FicheUtilisateur.kt": (frozenset({"constante de rôle"}),
         "la teinte d'un rôle affiché sur la fiche d'un compte"),
-    # Étape : la règle du menu n'est ni servie ni publiée ; la copie est partielle (#333).
-    # Le menu SEUL : `est_moderateur` y reste servi, jamais déduit des rôles.
-    "app/src/main/java/fr/coprofirst/app/navigation/Droits.kt": (frozenset({"menu recopié"}),
-        "`PagesOuvertes` recopie le menu du site faute de règle servie — étape, levée par #333"),
 }
 
 

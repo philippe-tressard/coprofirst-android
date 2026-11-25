@@ -7,6 +7,7 @@ import fr.coprofirst.app.navigation.DroitsOnglet
 import fr.coprofirst.app.navigation.OngletDuSite
 import fr.coprofirst.app.navigation.OngletsDuSite
 import fr.coprofirst.app.navigation.ouverts
+import fr.coprofirst.app.fonctions.profil.AccesSimules
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -15,9 +16,9 @@ import org.junit.Test
 /** La barre d'une page à onglets, comme l'iOS (`CadreAOnglets`, `AdminTests`). */
 class OngletsDeLaPageTest {
     private val surLeSite = OngletDuSite(OngletsSurLeSite.ID, "Sur le site", null, true)
-    private val conseil = DroitsOnglet.depuis(listOf("conseil_syndical"), null, "copropriétaire_résident", estModerateur = true)
-    private val admin = DroitsOnglet.depuis(listOf("propriétaire", "admin"), null, "copropriétaire_résident", estModerateur = true)
-    private val operateur = DroitsOnglet.depuis(listOf("operateur"), null, "admin_technique", estModerateur = false)
+    private val conseil = DroitsOnglet.depuis(listOf("conseil_syndical"), null, "copropriétaire_résident", estModerateur = true, accesMenu = AccesSimules.CONSEIL)
+    private val admin = DroitsOnglet.depuis(listOf("propriétaire", "admin"), null, "copropriétaire_résident", estModerateur = true, accesMenu = AccesSimules.ADMINISTRATEUR)
+    private val operateur = DroitsOnglet.depuis(listOf("operateur"), null, "admin_technique", estModerateur = false, accesMenu = AccesSimules.TECHNIQUE)
 
     private fun page(id: String, portes: Set<String>, droits: DroitsOnglet, renvoieAuSite: Boolean = false) =
         OngletsDeLaPage(id, portes, renvoieAuSite, droits, surLeSite)
@@ -42,7 +43,7 @@ class OngletsDeLaPageTest {
 
     @Test
     fun unePageReserveeNOffreAucunOnglet() {
-        val resident = DroitsOnglet.depuis(listOf("résident"), null, "locataire", estModerateur = false)
+        val resident = DroitsOnglet.depuis(listOf("résident"), null, "locataire", estModerateur = false, accesMenu = AccesSimules.RESIDENT)
         assertNull(page("espace-cs", setOf("validations"), resident).actif(null))
         assertNull(page("admin", setOf("utilisateurs"), conseil).actif(null))
     }

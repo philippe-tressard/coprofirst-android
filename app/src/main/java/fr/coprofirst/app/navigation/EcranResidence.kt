@@ -126,8 +126,10 @@ private fun ResidenceOuverte(
     val pages = parcours.pagesOuvertes(etat.droits)
     val barre = pages.take(ParcoursResidence.VISIBLES)
     val plus = pages.drop(ParcoursResidence.VISIBLES)
-    // Une page que les droits retirent (relus) ne reste pas ouverte.
-    val onglet = etat.onglet.takeIf { it == EtatResidence.PLUS || barre.any { p -> p.id == it } } ?: barre.firstOrNull()?.id
+    // Une page que les droits retirent (relus) ne reste pas ouverte : l'accueil la remplace — le
+    // fil, sinon la première page servie, sinon « Plus », sur le Profil (#333, comme l'iOS).
+    val accueil = OrdrePages.accueil(barre)
+    val onglet = etat.onglet.takeIf { it == EtatResidence.PLUS || barre.any { p -> p.id == it } } ?: accueil ?: EtatResidence.PLUS
     var pageDePlus by rememberSaveable { mutableStateOf<String?>(null) }
     // La fiche ouverte par la porte : sa nature et son identifiant (`Destination.Element`).
     var ficheNature by rememberSaveable { mutableStateOf<String?>(null) }
@@ -161,7 +163,8 @@ private fun ResidenceOuverte(
         onDispose { mesure?.courante = { null } }
     }
 
-    val enPlus = if (onglet == EtatResidence.PLUS) pageDePlus else null
+    // Une barre vide (aucun public servi) ouvre le Profil, pour qu'on puisse au moins s'en déconnecter (#333).
+    val enPlus = if (onglet == EtatResidence.PLUS) pageDePlus ?: PagesDePlus.profil.id.takeIf { barre.isEmpty() } else null
     val ouverte: PageDeNavigation? = when {
         onglet != EtatResidence.PLUS -> barre.firstOrNull { it.id == onglet }
         else -> enPlus?.let { id -> plus.firstOrNull { it.id == id } ?: PagesDePlus.fixe(id) }
@@ -200,7 +203,7 @@ private fun ResidenceOuverte(
         aiguillage != Aiguillage.Aucun
     }
     // Le marque-page d'un pliable (#242) : rouvrir où l'on avait refermé ; un lien, posé après, l'emporte.
-    val ici = MarquePage(onglet ?: EtatResidence.PLUS, pageDePlus, ficheNature, ficheId, jourDuCarnet.value, colonne.occupee && ficheId != null, pageDuCarnet.value)
+    val ici = MarquePage(onglet, pageDePlus, ficheNature, ficheId, jourDuCarnet.value, colonne.occupee && ficheId != null, pageDuCarnet.value)
     MarquePageDeLaResidence(residence, ici) { marque ->
         if (marque.onglet == EtatResidence.PLUS || barre.any { it.id == marque.onglet }) parcours.choisir(marque.onglet)
         pageDePlus = marque.pageDePlus
@@ -210,10 +213,10 @@ private fun ResidenceOuverte(
         pageDuCarnet.value = marque.page
         if (marque.enColonne) colonne.retenir()
     }
-    // Un lien d'application : l'écran visé ; une page que le compte ne voit pas, le fil (l'iOS).
+    // Un lien d'application : l'écran visé ; une page que le compte ne voit pas, l'accueil (l'iOS, #333).
     LaunchedEffect(lien) {
         val vise = lien ?: return@LaunchedEffect
-        if (!ouvrir(vise)) ouvrir(LienDuSite.FIL)
+        if (!ouvrir(vise)) aller(accueil ?: EtatResidence.PLUS)
         lienSuivi()
     }
     PageVue(
