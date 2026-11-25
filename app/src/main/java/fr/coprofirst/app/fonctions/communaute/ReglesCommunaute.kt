@@ -77,15 +77,16 @@ object ReglesCommunaute {
 
     /**
      * Les annonces filtrées et triées. Le prix absent passe toujours après les prix (le site
-     * le compte 999 999 en croissant, 0 en décroissant : même place).
+     * le compte 999 999 en croissant, 0 en décroissant : même place). Le prix se lit en centimes
+     * servis (`prix_centimes`, #370) : aucun flottant dans la comparaison.
      */
     fun annonces(annonces: List<AnnonceRead>, type: String?, categorie: String?, tri: String): List<AnnonceRead> {
         val retenues = annonces.filter {
             (type == null || it.typeAnnonce.value == type) && (categorie == null || it.categorie.value == categorie)
         }
         return when (tri) {
-            TRI_PRIX_CROISSANT -> retenues.sortedBy { it.prix?.toDouble() ?: Double.MAX_VALUE }
-            TRI_PRIX_DECROISSANT -> retenues.sortedByDescending { it.prix?.toDouble() ?: -1.0 }
+            TRI_PRIX_CROISSANT -> retenues.sortedBy { it.prixCentimes ?: Int.MAX_VALUE }
+            TRI_PRIX_DECROISSANT -> retenues.sortedByDescending { it.prixCentimes ?: -1 }
             else -> retenues.sortedByDescending { it.creeLe }
         }
     }

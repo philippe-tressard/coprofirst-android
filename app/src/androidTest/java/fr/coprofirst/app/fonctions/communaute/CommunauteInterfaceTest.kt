@@ -105,7 +105,7 @@ private class CommunauteSimulee(
     override suspend fun annonces() = listOf(
         AnnonceRead(
             21, "Vélo d'enfant", "<p>Taille 16 pouces, bon état.</p>", TypeAnnonce.VENTE, CategorieAnnonce.DIVERS,
-            StatutAnnonce.EN_COURS, 2, LE, "", prix = java.math.BigDecimal("40"), auteurAffiche = "Voisin du 3e",
+            StatutAnnonce.EN_COURS, 2, LE, "", prixCentimes = 4000, auteurAffiche = "Voisin du 3e",
             auteurEmail = "voisin@residence.test",
         ),
     )
@@ -200,6 +200,8 @@ class CommunauteInterfaceTest {
 
         rubrique("annonces")
         ecran.attendreTag(ReperesCommunaute.annonce(21))
+        // Le prix se lit en centimes servis (#370) : sans `prix`, il s'affiche quand même.
+        ecran.attendreTexte("40\u00a0€")
         ecran.toucherTag(ReperesCommunaute.annonce(21))
         ecran.attendreTag(ReperesCommunaute.ANNONCE_CONTACT)
         ecran.toucherTag(ReperesCommunaute.FERMER)

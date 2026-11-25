@@ -155,9 +155,10 @@ fun EtiquettesAnnonce(annonce: AnnonceRead) {
     FlowCapsules {
         PastilleTeinte(ReglesCommunaute.teinte(annonce.statut.value, TablesCommunaute.statutsAnnonce), compacte = true)
         PastilleTeinte(LibelleTeinte.brut(ReglesCommunaute.libelle(annonce.categorie.value, TablesCommunaute.categoriesAnnonce)), compacte = true)
-        annonce.prix?.let { prix ->
+        annonce.prixCentimes?.let { centimes ->
             Text(
-                FormatsDuSite.montant(prix.toDouble()),
+                // Des centimes entiers servis (#370) : l'euro qu'ils font est le décimal exact, sans arrondi.
+                FormatsDuSite.montant(centimes / 100.0),
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                 color = couleurs.text,
             )

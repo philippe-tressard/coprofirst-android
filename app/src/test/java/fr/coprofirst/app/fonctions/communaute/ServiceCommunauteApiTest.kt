@@ -88,8 +88,10 @@ class ServiceCommunauteApiTest {
         assertEquals("GET /api/idees", requete().first)
         repondre(200, """[{"id": 2, "titre": "Lave-linge", "description": "", "type_annonce": "vente", "categorie": "electromenager",
                          "statut": "reserve", "auteur_id": 1, "cree_le": "2026-11-15T08:30:00Z", "perimetre_libelle": "",
-                         "prix": 120.5, "peut_supprimer": true}]""")
-        assertEquals(true, service.annonces().single().peutSupprimer)
+                         "prix": 120.5, "prix_centimes": 12050, "peut_supprimer": true}]""")
+        val annonce = service.annonces().single()
+        assertEquals(true, annonce.peutSupprimer)
+        assertEquals(12050, annonce.prixCentimes)
         assertEquals("GET /api/annonces", requete().first)
         repondre(200, """{"avis": [], "gestionnaire": true, "mon_avis_id": 6}""")
         val avis = service.avis()

@@ -70,6 +70,10 @@ RETIREES: list[tuple[str, re.Pattern[str], str]] = [
     # ouvre un identifiant de page selon ce que le compte est).
     ("menu recopié", re.compile(r"^\s*\"[a-z-]+\"(\s*,\s*\"[a-z-]+\")*\s*->[^\n]*\bdroits\."),
      "la règle du menu servie ou publiée par coprofirst"),
+    # Le prix d'une annonce est SERVI en centimes entiers (`prix_centimes`, contrat 2.13.0, #370) :
+    # le flottant `prix` d'une annonce lue ne s'affiche ni ne se trie plus (l'envoi, lui, reste `prix`).
+    ("prix flottant", re.compile(r"\.prix\?"),
+     "`prixCentimes` servi, rendu par `FormatsDuSite.montant`"),
 ]
 
 #: chemin → (les motifs dispensés, par leur nom ; la raison). Une dispense ne couvre QUE ses
@@ -149,6 +153,8 @@ FAUTIFS = [
     '        "admin" -> droits.administrateur || droits.operateur',
     '    val nomAffiche: String get() = FormatsDuSite.nom(nomServi, prenom, nom)',
     '                FormatsDuSite.nom(compte.nomAffiche, compte.prenom, compte.nom),',
+    '        annonce.prix?.let { prix ->',
+    '            TRI_PRIX_CROISSANT -> retenues.sortedBy { it.prix?.toDouble() ?: Double.MAX_VALUE }',
 ]
 SAINS = [
     '                cs = estModerateur == true,',
@@ -167,6 +173,9 @@ SAINS = [
     '    internal fun titre(page: PageDuSommaire): String = when (page) {',
     '        "kanban" -> KanbanAffaires(contexte)',
     '        return tete.libelle + " · " + retenus.size',
+    '        annonce.prixCentimes?.let { centimes ->',
+    '            prix = if (vente) saisie.prixLu?.let(BigDecimal::valueOf) else null,',
+    '                saisie.prix,',
 ]
 
 
