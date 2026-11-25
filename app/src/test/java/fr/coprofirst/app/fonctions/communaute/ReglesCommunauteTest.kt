@@ -4,6 +4,7 @@
 package fr.coprofirst.app.fonctions.communaute
 
 import fr.coprofirst.api.modeles.AnnonceRead
+import fr.coprofirst.app.commun.formats.FormatsDuSite
 import fr.coprofirst.api.modeles.CategorieAnnonce
 import fr.coprofirst.api.modeles.IdeeRead
 import fr.coprofirst.api.modeles.StatutAnnonce
@@ -87,6 +88,20 @@ class ReglesCommunauteTest {
         assertEquals(listOf(3, 2, 1), ReglesCommunaute.annonces(annonces, null, null, "prix_asc").map { it.id })
         assertEquals(listOf(2, 3, 1), ReglesCommunaute.annonces(annonces, null, null, "prix_desc").map { it.id })
         assertEquals(listOf(1), ReglesCommunaute.annonces(annonces, "don", null, "recent").map { it.id })
+    }
+
+    @Test
+    fun lesCentimesServisFontLEuroExact() {
+        // L'annonce rend `prix_centimes` par `FormatsDuSite.montant(centimes / 100.0)` (#370) : le
+        // flottant de la division se relit comme le décimal exact des centimes, jusqu'au million d'euros.
+        val nbsp = '\u00a0'
+        assertEquals("40${nbsp}€", FormatsDuSite.montant(4000 / 100.0))
+        assertEquals("0,07${nbsp}€", FormatsDuSite.montant(7 / 100.0))
+        assertEquals("1\u202f234,56${nbsp}€", FormatsDuSite.montant(123456 / 100.0))
+        val inexacts = (0..100_000_000 step 9_973).filter {
+            java.math.BigDecimal((it / 100.0).toString()).compareTo(java.math.BigDecimal.valueOf(it.toLong(), 2)) != 0
+        }
+        assertEquals(emptyList<Int>(), inexacts)
     }
 
     @Test

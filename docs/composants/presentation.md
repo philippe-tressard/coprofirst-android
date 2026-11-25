@@ -104,7 +104,7 @@ valeur absente. Dates : `date`, `dateCourte`, `dateLongue`, `dateHeure`,
 `dateHeureCourte`, `heure`, `jourCourt`, `jourIso` (envoyé), `moisAnnee`, `moisCourt`,
 `relatif` (« hier », « il y a 3 jours », comme `.relative(presentation: .named)` de l'iOS) —
 chacune prend un `Instant` ou la chaîne ISO servie (`lire` la lit comme le navigateur).
-Nombres : `nombre`, `montant`, `montantCentimes` (un montant servi en centimes, #370), `octets`. Personnes : `nomServi(servi)` — le « Prénom NOM »
+Nombres : `nombre`, `montant`, `octets`. Personnes : `nomServi(servi)` — le « Prénom NOM »
 servi (`nom_affiche`, `locataire_nom_affiche`…), jamais composé dans un écran, sans repli ;
 `nom(affiche, prenom, nom)`, son repli prénom-nom, est réservé à l'annuaire (une fiche pas
 encore enregistrée n'a pas de nom servi) — `scripts/test_regles_servies.py` le refuse ailleurs (#356).

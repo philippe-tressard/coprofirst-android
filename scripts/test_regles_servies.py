@@ -73,7 +73,7 @@ RETIREES: list[tuple[str, re.Pattern[str], str]] = [
     # Le prix d'une annonce est SERVI en centimes entiers (`prix_centimes`, contrat 2.13.0, #370) :
     # le flottant `prix` d'une annonce lue ne s'affiche ni ne se trie plus (l'envoi, lui, reste `prix`).
     ("prix flottant", re.compile(r"\.prix\?"),
-     "`prixCentimes` servi, rendu par `FormatsDuSite.montantCentimes`"),
+     "`prixCentimes` servi, rendu par `FormatsDuSite.montant`"),
 ]
 
 #: chemin → (les motifs dispensés, par leur nom ; la raison). Une dispense ne couvre QUE ses
