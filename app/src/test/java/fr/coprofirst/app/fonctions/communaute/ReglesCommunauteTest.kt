@@ -15,7 +15,6 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.math.BigDecimal
 import java.time.OffsetDateTime
 
 /** Les règles de la Communauté que l'app applique — celles du site et de l'iOS. */
@@ -82,7 +81,8 @@ class ReglesCommunauteTest {
 
     @Test
     fun lePrixAbsentPasseApresLesPrix() {
-        val annonces = listOf(annonce(1, null, "2026-11-10"), annonce(2, 30.0, "2026-11-12"), annonce(3, 5.0, "2026-11-11"))
+        // Les prix en centimes servis (#370) : 30,00 € et 5,00 €.
+        val annonces = listOf(annonce(1, null, "2026-11-10"), annonce(2, 3000, "2026-11-12"), annonce(3, 500, "2026-11-11"))
         assertEquals(listOf(2, 3, 1), ReglesCommunaute.annonces(annonces, null, null, "recent").map { it.id })
         assertEquals(listOf(3, 2, 1), ReglesCommunaute.annonces(annonces, null, null, "prix_asc").map { it.id })
         assertEquals(listOf(2, 3, 1), ReglesCommunaute.annonces(annonces, null, null, "prix_desc").map { it.id })
@@ -107,10 +107,10 @@ class ReglesCommunauteTest {
         creeLe = OffsetDateTime.parse("2026-11-01T10:00:00Z"), perimetreLibelle = "", nbVotes = votes, monVote = false,
     )
 
-    private fun annonce(id: Int, prix: Double?, jour: String) = AnnonceRead(
+    private fun annonce(id: Int, centimes: Int?, jour: String) = AnnonceRead(
         id = id, titre = "Annonce $id", description = "",
-        typeAnnonce = if (prix == null) TypeAnnonce.DON else TypeAnnonce.VENTE, categorie = CategorieAnnonce.DIVERS,
+        typeAnnonce = if (centimes == null) TypeAnnonce.DON else TypeAnnonce.VENTE, categorie = CategorieAnnonce.DIVERS,
         statut = StatutAnnonce.EN_COURS, auteurId = 1, creeLe = OffsetDateTime.parse("${jour}T10:00:00Z"),
-        perimetreLibelle = "", prix = prix?.let(BigDecimal::valueOf),
+        perimetreLibelle = "", prixCentimes = centimes,
     )
 }

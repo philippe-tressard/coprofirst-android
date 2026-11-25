@@ -177,14 +177,20 @@ object FormatsDuSite {
     fun nombre(valeur: Int?): String = nombre(valeur?.toDouble())
 
     /** `fmtMontant` : une devise, de zéro à `decimales` décimales. */
-    fun montant(valeur: Double?, devise: String = "EUR", decimales: Int = 2): String {
-        valeur ?: return TIRET
+    fun montant(valeur: Double?, devise: String = "EUR", decimales: Int = 2): String =
+        valeur?.let { montant(decimal(it), devise, decimales) } ?: TIRET
+
+    /** Un montant servi en centimes entiers (`prix_centimes`, #370) : la même règle, sans flottant. */
+    fun montantCentimes(centimes: Int?, devise: String = "EUR"): String =
+        centimes?.let { montant(BigDecimal.valueOf(it.toLong(), 2), devise, 2) } ?: TIRET
+
+    private fun montant(valeur: BigDecimal, devise: String, decimales: Int): String {
         val f = NumberFormat.getCurrencyInstance(FR) as DecimalFormat
         f.currency = Currency.getInstance(devise)
         f.minimumFractionDigits = 0
         f.maximumFractionDigits = decimales
         f.roundingMode = RoundingMode.HALF_UP
-        return f.format(decimal(valeur))
+        return f.format(valeur)
     }
 
     /** `fmtOctets` : octets, Ko arrondis, Mo à une décimale, Go à deux (jamais « 1 024 Ko »). */

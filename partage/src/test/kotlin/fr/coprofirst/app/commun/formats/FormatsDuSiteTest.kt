@@ -61,6 +61,12 @@ class FormatsDuSiteTest {
         assertEquals("12,35${nbsp}€", F.montant(12.345))
         assertEquals("1${nnbsp}234,5${nbsp}€", F.montant(1234.5))
         assertEquals("0,0012${nbsp}€", F.montant(0.00123, decimales = 4))
+        // En centimes servis (#370) : le même texte que les euros, sans flottant.
+        assertEquals(F.montant(120.5), F.montantCentimes(12050))
+        assertEquals("40${nbsp}€", F.montantCentimes(4000))
+        assertEquals("1${nnbsp}234,56${nbsp}€", F.montantCentimes(123456))
+        assertEquals("0,07${nbsp}€", F.montantCentimes(7))
+        assertEquals(F.TIRET, F.montantCentimes(null))
         assertEquals(F.TIRET, F.nombre(null as Double?))
     }
 

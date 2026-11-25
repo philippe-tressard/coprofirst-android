@@ -155,9 +155,9 @@ fun EtiquettesAnnonce(annonce: AnnonceRead) {
     FlowCapsules {
         PastilleTeinte(ReglesCommunaute.teinte(annonce.statut.value, TablesCommunaute.statutsAnnonce), compacte = true)
         PastilleTeinte(LibelleTeinte.brut(ReglesCommunaute.libelle(annonce.categorie.value, TablesCommunaute.categoriesAnnonce)), compacte = true)
-        annonce.prix?.let { prix ->
+        annonce.prixCentimes?.let { centimes ->
             Text(
-                FormatsDuSite.montant(prix.toDouble()),
+                FormatsDuSite.montantCentimes(centimes),
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                 color = couleurs.text,
             )
