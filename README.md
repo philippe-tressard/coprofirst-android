@@ -347,6 +347,11 @@ Un rouge de `main` ou d'un passage planifié, dans n'importe quel workflow, ouvr
 un ticket « CI rouge : <workflow> » — le dernier pas de chaque job ; une PR, jamais
 (`scripts/signaler_ci.py`, tenu par `scripts/verifier_ci.py`).
 
+L'analyse CodeQL (`.github/workflows/codeql.yml`, #368) couvre le Kotlin, Actions et Python,
+à chaque PR, sur `main` et chaque semaine. Le Kotlin se compile sous l'extracteur, avec la
+préparation commune ; c'est une configuration avancée, la configuration par défaut de GitHub
+ne sachant pas construire l'app. Les alertes se lisent dans l'onglet « Security » du dépôt.
+
 ## Licence
 
 AGPL-3.0-or-later, avec des permissions additionnelles (article 7) : la distribution par

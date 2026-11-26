@@ -1,0 +1,71 @@
+# SPDX-FileCopyrightText: 2026 Philippe TRESSARD
+# SPDX-License-Identifier: AGPL-3.0-or-later WITH LicenseRef-CoproFirst-Magasins
+#
+# CodeQL en configuration AVANCÉE (#368) : le Kotlin, 85 % du dépôt, avec Actions et Python.
+# La configuration par défaut de GitHub ne savait pas construire l'app : son « autobuild »
+# lançait Gradle sur un clone superficiel, avec un JDK 17, et le build racine refuse une
+# version qu'il ne peut pas déduire de git (`versionDeGit`). Ici le build est écrit :
+# l'historique complet, la préparation commune (Java 21, Gradle, plateforme), puis la
+# compilation Kotlin des modules — sans démon, ni Gradle ni Kotlin, sans cache de build ni
+# de configuration : l'extracteur ne voit que le compilateur qu'il a lancé lui-même.
+# GitHub refuse l'envoi d'une analyse avancée tant que la configuration par défaut est
+# active : elle se retire quand ce workflow arrive (`code-scanning/default-setup`).
+# Les actions sont épinglées par SHA, comme le reste de la CI ; scripts/verifier_ci.py tient
+# ce workflow comme les autres (préparation commune, alerte en dernier pas).
+name: CodeQL
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "17 4 * * 1" # chaque lundi : de nouvelles requêtes trouvent de vieux défauts
+permissions:
+  contents: read
+  issues: write # pour l'alerte seule (scripts/signaler_ci.py), dont le pas ne joue jamais sur une PR
+concurrency:
+  group: codeql-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  analyse:
+    name: Analyze (${{ matrix.langage }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      issues: write # l'alerte
+      security-events: write # l'envoi de l'analyse
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - langage: actions
+            mode: none
+          - langage: python
+            mode: none
+          - langage: java-kotlin
+            mode: manual
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Tout l'historique et les étiquettes : la version se déduit de git (build racine).
+          fetch-depth: ${{ matrix.mode == 'manual' && '0' || '1' }}
+      - uses: ./.github/actions/preparer-android
+        if: matrix.mode == 'manual'
+      - uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          languages: ${{ matrix.langage }}
+          build-mode: ${{ matrix.mode }}
+      - name: Compilation Kotlin, tracée par l'extracteur (téléphone, montre et leurs modules)
+        if: matrix.mode == 'manual'
+        run: >-
+          ./gradlew --no-daemon --max-workers=4 --no-build-cache --no-configuration-cache
+          -Pkotlin.compiler.execution.strategy=in-process
+          :app:compileDebugKotlin :montre:compileDebugKotlin
+      - uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          category: /language:${{ matrix.langage }}
+      - name: Alerte (un rouge de main ou du passage planifié ouvre ou complète un ticket, #345)
+        if: ${{ (failure() || cancelled()) && github.event_name != 'pull_request' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -I scripts/signaler_ci.py --signaler --etat "${{ job.status }}"
