@@ -81,6 +81,13 @@ de publication.
 L'état publié se lit dans les étiquettes : `git tag -l 'v*'` (chacune posée par un contrôle
 vert, sur le commit envoyé).
 
+**Après le tag, la déclaration au serveur (#332).** Le rapport se termine par la ligne
+« → À déclarer dans philippe-tressard/coprofirst : contrat figé de coprofirst-android
+`<version>` au plancher `<vX.Y.Z>` ». Une piste de test fermé compte comme publiée. La CI
+du serveur (`check_versions_en_circulation.py`) lit les tags `v*` de ce dépôt : tant que la
+version n'a pas son entrée en circulation et son contrat figé, toute PR du serveur rougit.
+Ouvrir ce ticket dans coprofirst (ou le confier à une session) le jour même de l'envoi.
+
 ## 3. D'abord pour soi : le test interne (facultatif, sans attente)
 
 Tests › **Test interne** : jusqu'à 100 testeurs, aucun examen de Google, en ligne en

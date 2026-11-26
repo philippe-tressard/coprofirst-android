@@ -321,7 +321,8 @@ Le rapport d'environnement de début de session (`.claude/env-report.sh`) dit ce
 
 La release pour Google Play (les AAB du téléphone et de la montre, signés par la clé de téléversement, au poste seulement,
 jamais en CI) : `bash scripts/construire-release.sh`, qui finit par le contrôle avant soumission
-et l'étiquette `v<version>` (sans elle, les AAB sont retirés) — la marche à suivre est dans
+et l'étiquette `v<version>` (sans elle, les AAB sont retirés), puis dit la déclaration de la
+version à ouvrir dans coprofirst, dont la CI lit ces étiquettes (#332) — la marche à suivre est dans
 `docs/play-store/guide-philippe.md` (« Avant CHAQUE envoi »), la clé, son rangement et Play
 App Signing dans `docs/signature-android.md`.
 Les étiquettes `v<version>` sont les versions soumises, les seules que ces scripts lisent ;

@@ -23,8 +23,10 @@ rouge. Un point qu'elle ne peut pas établir rend INCONNU, jamais OK.
      complète, dont le dernier nombre ne se connaît qu'après le commit (#272).
 5. Aucun ticket ouvert ne porte le label `bloque-soumission`.
 6. `--taguer`, seulement si tout est vert : le tag annoté `v<version>` est posé sur ce
-   commit et poussé. C'est lui qui dit au serveur quel contrat chaque version en
-   circulation parle.
+   commit et poussé, et le rapport dit la déclaration à ouvrir dans coprofirst (#332, comme
+   l'iOS, coprofirst-ios#354). Le tag ne s'annonce pas seul : la CI du serveur
+   (`check_versions_en_circulation.py`) lit les tags `v*` de ce dépôt et rougit toute PR du
+   serveur tant que la version n'a pas son entrée en circulation et son contrat figé.
 
 Usage : controle_avant_soumission.py [--taguer] [--rapport FICHIER.md] | --autotest
 Sortie : 0 tout est vert, 1 un rouge, 2 un INCONNU.
@@ -38,6 +40,9 @@ import re
 import subprocess
 import sys
 import tempfile
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from concordance import lire_env  # noqa: E402 — la seule lecture de plancher.env
 
 RACINE = pathlib.Path(__file__).resolve().parent.parent
 CI = RACINE / ".github" / "workflows" / "ci.yml"
@@ -200,6 +205,13 @@ def taguer(sha: str, nom: str) -> tuple[int, list[str]]:
     return OK, [f"{tag} posé sur {sha[:7]} et poussé"]
 
 
+def declaration(tag: str, plancher: str) -> str:
+    """Ce que la version étiquetée doit trouver dans coprofirst (#332 ; l'iOS : coprofirst-ios#354)."""
+    return (f"→ À déclarer dans philippe-tressard/coprofirst : « contrat figé de coprofirst-android "
+            f"{tag.lstrip('v')} au plancher {plancher} » — son entrée dans `EN_CIRCULATION` (tag {tag}) et son "
+            "contrat figé. Sans elle, `check_versions_en_circulation.py` rougit toute PR du serveur.")
+
+
 def autotest() -> bool:
     ci = "on:\n  push:\njobs:\n  a:\n    name: Dépôt\n    runs-on: x\n  b:\n    runs-on: y\n  c:\n    name: 'Interface (émulateur)'\n"
     ok = jobs_requis(ci) == ["Dépôt", "b", "Interface (émulateur)"]
@@ -229,6 +241,11 @@ def autotest() -> bool:
     # téléphone, la tablette et la montre Wear OS (#207).
     ok &= {"Interface (émulateur)", "Interface tablette (échantillon)", "Interface montre (Wear OS)"} \
         <= set(jobs_requis(CI.read_text(encoding="utf-8")))
+    # #332 : la déclaration nomme l'app, la version complète, son tag et son plancher.
+    texte = declaration("v0.8.512", "v3.126.5")
+    ok &= all(m in texte for m in ("coprofirst-android 0.8.512 ", "plancher v3.126.5", "tag v0.8.512",
+                                   "philippe-tressard/coprofirst"))
+    ok &= lire_env(RACINE / "contrat" / "plancher.env").get("PLANCHER", "").startswith("v")
     return ok
 
 
@@ -244,6 +261,9 @@ def main(argv: list[str]) -> int:
             c, d = taguer(sha, nom)
             code = c
             lignes.append(f"- {MARQUES[c]} **Tag** — " + " ; ".join(d))
+            if c == OK:
+                plancher = lire_env(RACINE / "contrat" / "plancher.env").get("PLANCHER") or "INCONNU"
+                lignes.append(declaration(f"v{nom}", plancher))
         else:
             lignes.append("- ⏸️ **Tag** — non posé : le contrôle n'est pas vert")
     texte = "\n".join(["## Contrôle avant soumission au Play Store", "", *lignes, "",
