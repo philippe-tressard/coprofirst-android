@@ -21,7 +21,8 @@
 #   7 quinquies. aucun hôte hors des noms réservés et des vrais domaines déclarés (liste
 #      blanche, verifier_hotes.py), libellés, tests et API simulée compris ;
 #   7 sexies. aucun `performClick` dans les tests d'interface hors du geste commun, ni
-#      d'attente recopiée hors des attentes communes (#139) ;
+#      d'attente recopiée hors des attentes communes (#139), ni retour du système par
+#      Espresso hors de `retourDuSysteme` (#364) ;
 #   7 septies. la règle des tests d'interface est la v2 (junit4.v2), jamais la v1 ;
 #   7 octies. aucun séparateur du site (· — →) suivi d'une espace sécable ni recopié (#117) ;
 #   7 nonies. aucune version de contrat écrite dans les tests ni l'API simulée (#203) ;
@@ -271,6 +272,13 @@ CLIC_DIRECT='\.performClick\('
 autotest_motif "toucher hors du geste commun" "$CLIC_DIRECT" '        ecran.onNodeWithTag(r).performClick()' '        ecran.toucherTag(r)'
 interdire "$CLIC_DIRECT" "toucher écrit à la main dans un test d'interface — passer par toucher (commun/Gestes.kt)" \
   '^tests-interface-communs/fr/coprofirst/app/commun/Gestes\.kt$' '^((app|montre)/src/androidTest|tests-interface-communs)/.*\.kt$'
+# Le retour du système passe par `retourDuSysteme` (androidTest, navigation/NavigationDeTest.kt) :
+# `Espresso.pressBack()` attend que la fenêtre ait le focus, jusqu'à 10 s, et rougissait la
+# tablette de la CI sans rien dire de l'écran (RootViewWithoutFocusException, #364).
+RETOUR_ESPRESSO='Espresso\.pressBack|pressBackUnconditionally|^import androidx\.test\.espresso\.Espresso\.pressBack'
+autotest_motif "retour par Espresso" "$RETOUR_ESPRESSO" '        Espresso.pressBack()' '        ecran.retourDuSysteme()'
+interdire "$RETOUR_ESPRESSO" "retour du système par Espresso dans un test d'interface — passer par retourDuSysteme (navigation/NavigationDeTest.kt)" \
+  '' '^((app|montre)/src/androidTest|tests-interface-communs)/.*\.kt$'
 
 # Kotlin IMBRIQUE ses commentaires : un « /* » dans un commentaire (un chemin `/ecrans/moi/*`)
 # en ouvre un second que rien ne ferme, et le fichier ne compile plus (#293). Au poste, le
