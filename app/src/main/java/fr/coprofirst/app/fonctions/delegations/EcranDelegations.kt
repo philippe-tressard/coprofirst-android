@@ -44,6 +44,7 @@ import fr.coprofirst.app.commun.BoutonContour
 import fr.coprofirst.app.commun.Chargement
 import fr.coprofirst.app.commun.EtatVide
 import fr.coprofirst.app.commun.MessageErreur
+import fr.coprofirst.app.commun.gestesParElement
 import fr.coprofirst.app.navigation.ContexteDeMenu
 import fr.coprofirst.app.session.ErreurService
 import kotlinx.coroutines.launch
@@ -115,21 +116,20 @@ internal fun EcranDelegations(service: ServiceDelegations, conseil: Boolean) {
 @Composable
 private fun ListeDesDelegations(liste: List<Delegation>, service: ServiceDelegations, reussi: (Int) -> Unit) {
     var aRevoquer by remember { mutableStateOf<Delegation?>(null) }
-    var enCours by remember { mutableStateOf<Int?>(null) }
+    val gestes = remember { gestesParElement<Int>() }
     var erreur by remember { mutableStateOf<ErreurService?>(null) }
     val portee = rememberCoroutineScope()
     val geste: (Delegation, Int, suspend (Int) -> Delegation) -> Unit = { delegation, phrase, appel ->
         aRevoquer = null
-        enCours = delegation.id
         erreur = null
         portee.launch {
             try {
-                appel(delegation.id)
-                reussi(phrase)
+                gestes.geste(delegation.id) {
+                    appel(delegation.id)
+                    reussi(phrase)
+                }
             } catch (e: ErreurService) {
                 erreur = e
-            } finally {
-                enCours = null
             }
         }
     }
@@ -141,7 +141,7 @@ private fun ListeDesDelegations(liste: List<Delegation>, service: ServiceDelegat
         liste.forEach { delegation ->
             CarteDelegation(
                 delegation,
-                enCours = enCours == delegation.id,
+                enCours = gestes.enCours == delegation.id,
                 accepter = { geste(delegation, R.string.delegations_acceptee, service::accepter) },
                 revoquer = { aRevoquer = delegation },
             )

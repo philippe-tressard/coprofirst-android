@@ -9,8 +9,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import fr.coprofirst.app.R
+import fr.coprofirst.app.commun.GestesParElement
 import fr.coprofirst.app.commun.PhraseAvis
 import fr.coprofirst.app.commun.Roles
+import fr.coprofirst.app.commun.gestesParElement
 import fr.coprofirst.app.session.ErreurService
 
 /**
@@ -20,7 +22,7 @@ import fr.coprofirst.app.session.ErreurService
  * dépendent des autres : un rôle ne se retire jamais à son dernier titulaire).
  */
 @Stable
-class EtatUtilisateurs(private val service: ServiceAdmin) {
+class EtatUtilisateurs(private val service: ServiceAdmin) : GestesParElement<Int> by gestesParElement() {
     var comptes by mutableStateOf<List<UtilisateurAdmin>?>(null)
         private set
     var erreur by mutableStateOf<ErreurService?>(null)
@@ -28,9 +30,6 @@ class EtatUtilisateurs(private val service: ServiceAdmin) {
     var lecteur by mutableStateOf(Lecteur(null, instanceCommune = false))
         private set
 
-    /** Le compte dont un geste est en cours : sa fiche ne se touche plus. */
-    var enCours by mutableStateOf<Int?>(null)
-        private set
     var recherche by mutableStateOf("")
 
     /** Un statut de compte (dans l'ordre du site), ou tous. */
@@ -57,7 +56,7 @@ class EtatUtilisateurs(private val service: ServiceAdmin) {
     }
 
     /** Interdire ou réautoriser : l'état SERVI remplace l'ancien ; l'annonce dit lequel. */
-    suspend fun basculerCommunaute(compte: UtilisateurAdmin): AnnonceCommunaute = geste(compte) {
+    suspend fun basculerCommunaute(compte: UtilisateurAdmin): AnnonceCommunaute = geste(compte.id) {
         val interdire = !compte.ban.banni
         val ban = service.bannirCommunaute(compte.id, interdire)
         comptes = comptes?.map { if (it.id == compte.id) it.copy(ban = ban) else it }
@@ -69,27 +68,18 @@ class EtatUtilisateurs(private val service: ServiceAdmin) {
     }
 
     /** Un geste de rôle servi, puis la LISTE relue. */
-    suspend fun changerRole(compte: UtilisateurAdmin, offert: GesteDeRole) = geste(compte) {
+    suspend fun changerRole(compte: UtilisateurAdmin, offert: GesteDeRole) = geste(compte.id) {
         service.changerRole(compte.id, offert)
         charger()
     }
 
-    suspend fun relancerRapprochement(compte: UtilisateurAdmin): PhraseAvis = geste(compte) {
+    suspend fun relancerRapprochement(compte: UtilisateurAdmin): PhraseAvis = geste(compte.id) {
         service.relancerRapprochement(compte.id).also { charger() }
     }
 
-    suspend fun supprimer(compte: UtilisateurAdmin) = geste(compte) {
+    suspend fun supprimer(compte: UtilisateurAdmin) = geste(compte.id) {
         service.supprimerUtilisateur(compte.id)
         comptes = comptes?.filterNot { it.id == compte.id }
-    }
-
-    private suspend fun <T> geste(compte: UtilisateurAdmin, faire: suspend () -> T): T {
-        enCours = compte.id
-        try {
-            return faire()
-        } finally {
-            enCours = null
-        }
     }
 }
 

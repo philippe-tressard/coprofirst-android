@@ -6,8 +6,10 @@ package fr.coprofirst.app.commun.validations
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import fr.coprofirst.app.commun.GestesParElement
 import fr.coprofirst.app.commun.PhraseAvis
 import fr.coprofirst.app.commun.TonAvis
+import fr.coprofirst.app.commun.gestesParElement
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 
@@ -26,14 +28,11 @@ suspend fun ServiceValidations.file(): FileDeTravail = coroutineScope {
  * (`EtatComptesCS`). Un geste réussi retire l'élément de la file, comme le site ; un refus
  * (une `ErreurService` levée) garde la file, et l'écran dit la phrase du serveur.
  */
-class EtatValidations(private val service: ServiceValidations, file: FileDeTravail) {
+class EtatValidations(private val service: ServiceValidations, file: FileDeTravail) :
+    GestesParElement<Int> by gestesParElement() {
     var comptes by mutableStateOf(file.comptes)
         private set
     var commandes by mutableStateOf(file.commandes)
-        private set
-
-    /** L'élément dont un geste est en cours : ses boutons attendent. */
-    var enCours by mutableStateOf<Int?>(null)
         private set
 
     /**
@@ -58,14 +57,5 @@ class EtatValidations(private val service: ServiceValidations, file: FileDeTrava
     suspend fun traiter(commande: CommandeEnAttente, codes: List<String>?) = geste(commande.id) {
         service.traiterCommande(commande.id, codes)
         commandes = commandes.filterNot { it.id == commande.id }
-    }
-
-    private suspend fun <T> geste(id: Int, faire: suspend () -> T): T {
-        enCours = id
-        try {
-            return faire()
-        } finally {
-            enCours = null
-        }
     }
 }

@@ -37,11 +37,13 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import fr.coprofirst.app.LocalCouleurs
 import fr.coprofirst.app.R
+import fr.coprofirst.app.commun.GestesParElement
 import fr.coprofirst.app.commun.Intertitre
 import fr.coprofirst.app.commun.MessageErreur
 import fr.coprofirst.app.commun.PhraseAvis
 import fr.coprofirst.app.commun.Roles
 import fr.coprofirst.app.commun.formats.FormatsDuSite
+import fr.coprofirst.app.commun.gestesParElement
 import fr.coprofirst.app.commun.onglets.ContexteOnglet
 import fr.coprofirst.app.commun.texte.Separateur
 import fr.coprofirst.app.commun.validations.CarteDeFile
@@ -65,14 +67,11 @@ fun OngletATraiter(contexte: ContexteOnglet, service: ServiceAdmin) {
 
 /** La file des demandes de profil : chargée, puis approuvée ou rejetée ligne à ligne. */
 @Stable
-class EtatDemandesProfil(private val service: ServiceAdmin) {
+class EtatDemandesProfil(private val service: ServiceAdmin) : GestesParElement<Int> by gestesParElement() {
     var demandes by mutableStateOf<List<DemandeProfil>?>(null)
         private set
     var erreur by mutableStateOf<ErreurService?>(null)
         private set
-    var enCours by mutableStateOf<Int?>(null)
-        private set
-
     /** Une relecture qui échoue garde la file lue ; la première dit son erreur. */
     suspend fun charger() {
         try {
@@ -84,15 +83,10 @@ class EtatDemandesProfil(private val service: ServiceAdmin) {
     }
 
     /** Approuver, ou rejeter avec un motif : la demande quitte la file ; rend l'annonce du serveur. */
-    suspend fun traiter(demande: DemandeProfil, approuver: Boolean, motif: String? = null): PhraseAvis {
-        enCours = demande.id
-        try {
-            val annonce = service.traiterDemandeProfil(demande.id, approuver, motif)
-            demandes = demandes?.filterNot { it.id == demande.id }
-            return annonce
-        } finally {
-            enCours = null
-        }
+    suspend fun traiter(demande: DemandeProfil, approuver: Boolean, motif: String? = null): PhraseAvis = geste(demande.id) {
+        val annonce = service.traiterDemandeProfil(demande.id, approuver, motif)
+        demandes = demandes?.filterNot { it.id == demande.id }
+        annonce
     }
 }
 
