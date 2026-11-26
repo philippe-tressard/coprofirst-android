@@ -202,6 +202,15 @@ autotest_motif "envoi recopié" "$ENVOI_MAIN" '                envoi = true' '  
 autotest_motif "drapeau d'envoi recopié" "$ENVOI_MAIN" '    var enCours by remember { mutableStateOf(false) }' '            enCours = true,'
 interdire "$ENVOI_MAIN" "machine d'envoi recopiée — passer par Envoi (commun/Envoi.kt)" \
   '^app/src/main/java/fr/coprofirst/app/(commun/Envoi|fonctions/admin/OngletTelemetrie|fonctions/prestataires/ChoixAffaireAvis)\.kt$'
+# Le geste tenu PAR ÉLÉMENT (`enCours` = l'identifiant de la carte, #378) s'écrit une fois aussi :
+# `GestesParElement` (commun/Envoi.kt). Quatre files le recopiaient, clé posée puis rendue au
+# `finally`. Ouverture (commun/pieces/Ouverture.kt) en est dispensée nommément : c'est une
+# ouverture de document, une seule à la fois, qui garde son échec par document — une autre machine.
+GESTE_CLE_MAIN='var (envoi|enCours)[A-Za-z]* by (remember \{ )?mutableStateOf<[A-Za-z]+\?>\(null\)'
+autotest_motif "geste par élément recopié" "$GESTE_CLE_MAIN" '    var enCours by mutableStateOf<Int?>(null)' '    class EtatFile : GestesParElement<Int> by gestesParElement()'
+autotest_motif "geste par élément recopié dans un écran" "$GESTE_CLE_MAIN" '    var enCours by remember { mutableStateOf<Int?>(null) }' '    val gestes = remember { gestesParElement<Int>() }'
+interdire "$GESTE_CLE_MAIN" "geste par élément recopié — passer par GestesParElement (commun/Envoi.kt)" \
+  '^app/src/main/java/fr/coprofirst/app/commun/(Envoi|pieces/Ouverture)\.kt$'
 
 # Tirer pour actualiser s'écrit une fois, `Actualisable` (commun/Actualisable.kt), qui offre
 # aussi Ctrl+R au clavier d'une tablette (⌘R de l'iOS, #69) : un `PullToRefreshBox` nu en

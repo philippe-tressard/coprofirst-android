@@ -61,6 +61,40 @@ class Envoi(private val portee: CoroutineScope) {
     }
 }
 
+/**
+ * Les gestes tenus PAR ÉLÉMENT (#378) — une carte d'une file, une fiche de compte : `enCours` dit
+ * l'élément dont le geste est parti, et seule sa carte attend ; les autres restent actives, comme
+ * l'iOS (`enCours: Int?` de chaque file, `OngletATraiter.swift`, `DelegationsView.swift`). La clé
+ * se pose avant l'appel et se rend quoi qu'il arrive ; la valeur et l'exception remontent telles
+ * quelles à l'écran, qui les dit. Un état de file la porte par délégation
+ * (`: GestesParElement<Int> by gestesParElement()`) ; un écran, par `remember { gestesParElement() }`.
+ * `verifier-depot.sh` refuse la clé recopiée.
+ */
+interface GestesParElement<K : Any> {
+    /** L'élément dont un geste est en cours ; `null` : aucun. */
+    val enCours: K?
+
+    /** `faire` pour l'élément `cle`, sa clé posée le temps du geste. */
+    suspend fun <T> geste(cle: K, faire: suspend () -> T): T
+}
+
+fun <K : Any> gestesParElement(): GestesParElement<K> = ClesDeGeste()
+
+@Stable
+private class ClesDeGeste<K : Any> : GestesParElement<K> {
+    override var enCours by mutableStateOf<K?>(null)
+        private set
+
+    override suspend fun <T> geste(cle: K, faire: suspend () -> T): T {
+        enCours = cle
+        try {
+            return faire()
+        } finally {
+            enCours = null
+        }
+    }
+}
+
 /** L'envoi d'un écran, lié à sa composition : il s'annule quand l'écran se quitte. */
 @Composable
 fun rememberEnvoi(): Envoi {
