@@ -194,8 +194,6 @@ strings_validations.xml.
     <string name="espacecs_annuaire_fonction">Fonction</string>
     <string name="espacecs_annuaire_fonction_indication">Fonction — ex. Directeur de gérance</string>
     <string name="espacecs_annuaire_email">Email</string>
-    <!-- Divergence déclarée : l'iOS montre encore un numéro d'exemple hors de la tranche ARCEP
-         des fictions ; d'ici là, l'Android la suit seul (coprofirst-ios#375). -->
     <string name="espacecs_annuaire_telephone_indication">ex. 01 99 00 12 34</string>
     <string name="espacecs_annuaire_ajouter_telephone">N° de téléphone</string>
     <string name="espacecs_annuaire_telephone">Téléphone</string>
