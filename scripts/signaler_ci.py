@@ -152,6 +152,21 @@ def tenir(gh, depot: str, titre: str, corps: str, *, mode: str, maintenant: date
     return siens[0]["number"] if siens else numero
 
 
+def seul_ouvert(gh, depot: str, numero: int, titre: str, etiquette: str) -> bool:
+    """Le ticket `numero` est ouvert, sous ce titre et cette étiquette, et aucun AUTRE ne l'est.
+
+    Il se relit par son numéro, jamais par la liste : celle-ci peut ne pas montrer encore un ticket
+    créé une seconde plus tôt (26/11/2026, #396 — le garde-fou rougissait sur un ticket bien ouvert).
+    La liste ne sert qu'à voir un second ticket, plus ancien, donc déjà listé."""
+    vu = json.loads(gh(["issue", "view", str(numero), "-R", depot, "--json", "number,title,state,labels"]))
+    if not isinstance(vu, dict):
+        raise Illisible(f"ticket #{numero} illisible")
+    le_sien = (vu.get("state") == "OPEN" and vu.get("title") == titre
+               and etiquette in [e.get("name") for e in vu.get("labels", [])])
+    autres = [x for x in les_siens(lister(gh, depot, etiquette), titre, etiquette) if x["number"] != numero]
+    return le_sien and not autres
+
+
 def fermer(gh, depot: str, titre: str, commentaire: str) -> None:
     for t in les_siens(lister(gh, depot), titre):
         gh(["issue", "close", str(t["number"]), "-R", depot, "--reason", "completed", "--comment", commentaire])
@@ -217,10 +232,10 @@ def concordance(env: dict, plancher: str, montee: str, rapport_plancher: pathlib
         if a_monter == "tenir":
             assurer_etiquette(gh, depot, *A_MONTER)
             corps = rapport_montee.read_text(encoding="utf-8") + f"\nMis à jour par {passage(env)}\n"
-            tenir(gh, depot, TITRE_A_MONTER, corps, mode="remplacer", maintenant=maintenant,
-                  etiquettes=(A_MONTER[0],), filtre=A_MONTER[0])
+            numero = tenir(gh, depot, TITRE_A_MONTER, corps, mode="remplacer", maintenant=maintenant,
+                           etiquettes=(A_MONTER[0],), filtre=A_MONTER[0])
             # Le garde-fou de #344 : une montée possible a UN ticket, relu après coup.
-            if len(les_siens(lister(gh, depot, A_MONTER[0]), TITRE_A_MONTER, A_MONTER[0])) != 1:
+            if not seul_ouvert(gh, depot, numero, TITRE_A_MONTER, A_MONTER[0]):
                 print(f"::error::montée possible sans ticket « {A_MONTER[0]} » unique, relu après coup")
                 return 1
         return 0
@@ -236,11 +251,14 @@ class DepotSimule:
     """Un dépôt GitHub en mémoire, joué par `gh` : tickets, étiquettes, et les pannes à éprouver."""
 
     def __init__(self, tickets=(), etiquettes=("bug", "priorité haute"), cache_au_premier=False, panne=False,
-                 creation_perdue=False):
+                 creation_perdue=False, liste_en_retard=False):
         self.tickets = [dict(t, commentaires=list(t.get("commentaires", []))) for t in tickets]
         self.etiquettes = set(etiquettes)
         self.cache_au_premier = cache_au_premier  # course : la 1re liste ne voit pas le ticket d'un autre job
         self.panne, self.creation_perdue, self.gestes = panne, creation_perdue, []
+        # La liste de GitHub en retard sur l'écriture (26/11/2026, #396) : un ticket créé pendant le
+        # passage n'y paraît pas encore ; lu par son numéro, il existe.
+        self.liste_en_retard, self.crees = liste_en_retard, set()
 
     def __call__(self, args: list[str]) -> str:
         self.gestes.append(args[:2])
@@ -255,12 +273,15 @@ class DepotSimule:
                    and (option("--label") is None or option("--label") in [e["name"] for e in t["labels"]])]
             if self.cache_au_premier:
                 self.cache_au_premier, vus = False, []
+            if self.liste_en_retard:
+                vus = [t for t in vus if t["number"] not in self.crees]
             return json.dumps(vus)
         if args[:2] == ["issue", "create"]:
             noms = [args[i + 1] for i, a in enumerate(args) if a == "--label"]
             if any(n not in self.etiquettes for n in noms):
                 raise subprocess.CalledProcessError(1, "gh")
             numero = max([t["number"] for t in self.tickets], default=0) + 1
+            self.crees.add(numero)
             if not self.creation_perdue:
                 self.tickets.append({"number": numero, "title": option("--title"), "state": "open",
                                      "body": option("--body"), "updatedAt": "2026-11-24T12:00:00Z",
@@ -271,7 +292,12 @@ class DepotSimule:
         if args[:2] == ["label", "create"]:
             self.etiquettes.add(args[2])
             return ""
-        ticket = next(t for t in self.tickets if str(t["number"]) == args[2])
+        ticket = next((t for t in self.tickets if str(t["number"]) == args[2]), None)
+        if ticket is None:
+            raise subprocess.CalledProcessError(1, "gh")  # « Could not resolve to an issue »
+        if args[:2] == ["issue", "view"]:
+            return json.dumps({"number": ticket["number"], "title": ticket["title"],
+                               "state": ticket["state"].upper(), "labels": ticket["labels"]})
         if args[:2] == ["issue", "comment"]:
             ticket["commentaires"].append(option("--body"))
         elif args[:2] == ["issue", "edit"]:
@@ -365,6 +391,13 @@ def autotest() -> int:
         cas("vert : l'écart se ferme, a-monter reste",
             (concordance(env, "0", "0", rp, rm, d, t), len(d.ouverts(TITRE_PLANCHER)), len(d.ouverts(TITRE_A_MONTER))),
             (0, 0, 1))
+        d = DepotSimule(etiquettes=("a-monter",), liste_en_retard=True)
+        cas("montée, liste en retard sur la création : le ticket se prouve par son numéro (#396)",
+            (concordance(env, "0", "3", rp, rm, d, t), len(d.ouverts(TITRE_A_MONTER))), (0, 1))
+        d = DepotSimule([dict(ancien, number=3, title=TITRE_A_MONTER, labels=[{"name": "a-monter"}]),
+                         dict(ancien, number=4, title=TITRE_A_MONTER, labels=[{"name": "a-monter"}])],
+                        etiquettes=("a-monter",))
+        cas("montée, deux tickets a-monter ouverts : sortie 1 (garde-fou)", concordance(env, "0", "3", rp, rm, d, t), 1)
         cas("montée sans ticket produit : sortie 1 (garde-fou)",
             concordance(env, "0", "3", rp, rm, DepotSimule(creation_perdue=True), t), 1)
         cas("montée, gh en panne : sortie 1", concordance(env, "0", "3", rp, rm, DepotSimule(panne=True), t), 1)
