@@ -3,12 +3,15 @@
 
 package fr.coprofirst.app.navigation
 
+import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.ComposeTestRule
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
+import androidx.test.runner.lifecycle.Stage
 import fr.coprofirst.app.commun.DELAI_GESTE_MS
-import androidx.test.espresso.Espresso
 import fr.coprofirst.app.commun.toucherDescription
 import fr.coprofirst.app.commun.toucherTag
 import fr.coprofirst.app.commun.toucherTexte
@@ -41,6 +44,23 @@ fun ComposeTestRule.fermerLaFiche() {
     if (onAllNodes(hasContentDescription("Retour")).fetchSemanticsNodes().isNotEmpty()) {
         toucherDescription("Retour")
     } else {
-        Espresso.pressBack()
+        retourDuSysteme()
     }
+}
+
+/**
+ * Le geste « retour » du système, remis au répartiteur de l'activité, là où l'écran l'écoute
+ * (`BackHandler`). Le `pressBack` d'Espresso attendait d'abord, jusqu'à 10 s, que la fenêtre ait le
+ * focus et ne demande plus de mise en page : la tablette de la CI rougissait par
+ * `RootViewWithoutFocusException` sans rien dire de l'écran (#364). `verifier-depot.sh` le refuse.
+ */
+fun ComposeTestRule.retourDuSysteme() {
+    InstrumentationRegistry.getInstrumentation().runOnMainSync {
+        val activites = ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED)
+        val activite = checkNotNull(activites.singleOrNull() as? ComponentActivity) {
+            "retour du système : une seule activité au premier plan attendue, ${activites.size} trouvée(s)"
+        }
+        activite.onBackPressedDispatcher.onBackPressed()
+    }
+    waitForIdle()
 }

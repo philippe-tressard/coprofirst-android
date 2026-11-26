@@ -271,6 +271,13 @@ CLIC_DIRECT='\.performClick\('
 autotest_motif "toucher hors du geste commun" "$CLIC_DIRECT" '        ecran.onNodeWithTag(r).performClick()' '        ecran.toucherTag(r)'
 interdire "$CLIC_DIRECT" "toucher écrit à la main dans un test d'interface — passer par toucher (commun/Gestes.kt)" \
   '^tests-interface-communs/fr/coprofirst/app/commun/Gestes\.kt$' '^((app|montre)/src/androidTest|tests-interface-communs)/.*\.kt$'
+# Le retour du système passe par `retourDuSysteme` (androidTest, navigation/NavigationDeTest.kt) :
+# `Espresso.pressBack()` attend que la fenêtre ait le focus, jusqu'à 10 s, et rougissait la
+# tablette de la CI sans rien dire de l'écran (RootViewWithoutFocusException, #364).
+RETOUR_ESPRESSO='Espresso\.pressBack|pressBackUnconditionally|^import androidx\.test\.espresso\.Espresso\.pressBack'
+autotest_motif "retour par Espresso" "$RETOUR_ESPRESSO" '        Espresso.pressBack()' '        ecran.retourDuSysteme()'
+interdire "$RETOUR_ESPRESSO" "retour du système par Espresso dans un test d'interface — passer par retourDuSysteme (navigation/NavigationDeTest.kt)" \
+  '' '^((app|montre)/src/androidTest|tests-interface-communs)/.*\.kt$'
 
 # Kotlin IMBRIQUE ses commentaires : un « /* » dans un commentaire (un chemin `/ecrans/moi/*`)
 # en ouvre un second que rien ne ferme, et le fichier ne compile plus (#293). Au poste, le
