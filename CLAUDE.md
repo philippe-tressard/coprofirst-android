@@ -127,7 +127,7 @@ affichés à chaque session. Déclencheurs du projet : `.claude/coprofirst-andro
   **au poste, aucun `./gradlew` lourd en direct** : il passe par `pipeline.sh`, sous le verrou commun ; tests d'interface (`app/src/androidTest`, serveur local en HTTPS,
   repères = identifiants d'accessibilité de l'iOS ; tout toucher passe par `toucher`,
   `tests-interface-communs/…/commun/Gestes.kt`, commun au téléphone et à la montre (#216), qui amène l'élément à l'écran avant de toucher — un
-  `performClick` direct se perd hors de l'écran, `verifier-depot.sh` le refuse ; règle
+  `performClick` direct se perd hors de l'écran, `verifier-depot.sh` le refuse, comme le retour par Espresso — `retourDuSysteme`, #364 ; règle
   `junit4.v2.createComposeRule`, effets au fil principal — la v1 est refusée) en CI, job « Interface », et au poste
   par `bash scripts/tests-interface.sh` — une seule tâche lourde au poste à la fois
   (pas d'émulateur pendant une suite xcodebuild ou un autre émulateur), émulateur

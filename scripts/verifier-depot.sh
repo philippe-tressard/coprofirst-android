@@ -21,7 +21,8 @@
 #   7 quinquies. aucun hôte hors des noms réservés et des vrais domaines déclarés (liste
 #      blanche, verifier_hotes.py), libellés, tests et API simulée compris ;
 #   7 sexies. aucun `performClick` dans les tests d'interface hors du geste commun, ni
-#      d'attente recopiée hors des attentes communes (#139) ;
+#      d'attente recopiée hors des attentes communes (#139), ni retour du système par
+#      Espresso hors de `retourDuSysteme` (#364) ;
 #   7 septies. la règle des tests d'interface est la v2 (junit4.v2), jamais la v1 ;
 #   7 octies. aucun séparateur du site (· — →) suivi d'une espace sécable ni recopié (#117) ;
 #   7 nonies. aucune version de contrat écrite dans les tests ni l'API simulée (#203) ;
