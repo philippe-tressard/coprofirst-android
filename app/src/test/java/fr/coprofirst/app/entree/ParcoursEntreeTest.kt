@@ -4,91 +4,22 @@
 package fr.coprofirst.app.entree
 
 import fr.coprofirst.app.navigation.Destination
-import fr.coprofirst.app.session.Connexion
-import fr.coprofirst.app.session.Decouverte
 import fr.coprofirst.app.session.ErreurService
 import fr.coprofirst.app.session.Installation
-import fr.coprofirst.app.session.InstallationsConnues
 import fr.coprofirst.app.session.PreuveHote
-import fr.coprofirst.app.session.SessionsParHote
-import fr.coprofirst.app.session.StockageResidences
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
 import mockwebserver3.MockResponse
-import mockwebserver3.MockWebServer
-import okhttp3.OkHttpClient
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Test
 
 /** Le parcours d'entrée sur les choix de l'iOS : reconnaissance pendant la frappe. */
 @OptIn(ExperimentalCoroutinesApi::class)
-class ParcoursEntreeTest {
-    private val serveur = MockWebServer()
-    private val ordonnanceur = StandardTestDispatcher()
-    private val stockage = object : StockageResidences {
-        var valeur: String? = null
-        override fun lire() = valeur
-        override fun ecrire(valeur: String) { this.valeur = valeur }
-    }
-    private val connues = InstallationsConnues(stockage)
-    private var preuve = PreuveHote.Declaree
-    private lateinit var parcours: ParcoursEntree
-
-    @Before
-    fun preparer() {
-        Dispatchers.setMain(ordonnanceur)
-        serveur.start()
-        construire()
-    }
-
-    private fun construire(avantSortie: suspend () -> Unit = {}, apresSortie: (Installation) -> Unit = {}) {
-        // Toute adresse mène au serveur local : seule la base de l'API change.
-        val base = { _: Any -> serveur.url("/api").toString() }
-        val decouverte = Decouverte(OkHttpClient(), Dispatchers.Unconfined, base)
-        val sessions = SessionsParHote(OkHttpClient())
-        val connexion = Connexion(sessions, Dispatchers.Unconfined, base)
-        parcours = ParcoursEntree(decouverte, sessions, connexion, connues, baseApi = base, avantSortie = avantSortie, apresSortie = apresSortie) { preuve }
-    }
-
-    @After
-    fun ranger() {
-        serveur.close()
-        Dispatchers.resetMain()
-    }
-
-    private fun residence(nom: String) = serveur.enqueue(
-        MockResponse.Builder().code(200).addHeader("Content-Type", "application/json")
-            .body("""{"site_nom": "$nom"}""").build(),
-    )
-
-    private fun ok() = serveur.enqueue(
-        MockResponse.Builder().code(200).addHeader("Content-Type", "application/json").body("{}").build(),
-    )
-
-    /** Reconnaît la résidence et remplit les identifiants. */
-    private fun TestScope.pret(hote: String) {
-        residence("Les Glycines")
-        parcours.entrer()
-        parcours.saisir(hote)
-        advanceUntilIdle()
-        parcours.saisirEmail("a@exemple.test")
-        parcours.saisirMotDePasse("secret")
-    }
-
-    private fun test(corps: suspend TestScope.() -> Unit) = runTest(ordonnanceur) { corps() }
-
+class ParcoursEntreeTest : BancEntree() {
     @Test
     fun ceQuiNEstPasEncoreUneAdresseNeDitRien() = test {
         parcours.entrer()
