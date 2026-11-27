@@ -84,7 +84,8 @@ class ParcoursEntreeInterfaceTest {
         ecran.attendreTexte("Adresse reconnue comme une installation CoproFirst.")
         assertEquals("seul GET /config est parti", 1, serveur.serveur.requestCount)
         serveur.repondre(200) // POST /auth/login
-        serveur.repondre(404) // GET /auth/me : sans profil, la barre reste celle de tous
+        serveur.repondre(404) // GET /auth/me, lu à la connexion (#391)
+        serveur.repondre(404) // GET /auth/me relu par la résidence : sans profil, la barre reste celle de tous
         ecran.toucherTexte("Me connecter à cette adresse")
         // La résidence ouverte : la barre, la première page — le fil, vide (`ServeurDeTest.flux`).
         ecran.attendreTexte("Rien de neuf")

@@ -6,6 +6,9 @@ package fr.coprofirst.app.session
 import fr.coprofirst.api.infrastructure.ClientException
 import fr.coprofirst.api.modeles.LoginRequest
 import fr.coprofirst.api.routes.AuthApi
+import fr.coprofirst.app.navigation.ConnexionFraiche
+import fr.coprofirst.app.navigation.ServiceCompteApi
+import fr.coprofirst.app.navigation.moiOuRien
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -39,6 +42,13 @@ class Connexion(
             }
         }
     }
+
+    /**
+     * Le compte (GET /auth/me), lu sitôt connecté et AVANT d'ouvrir la résidence (#391, comme
+     * `Parcours.ouvrirApresLeCompte` de l'iOS) ; sans compte s'il ne se lit pas — rien ne s'en bloque.
+     */
+    suspend fun lireLeCompte(installation: Installation) =
+        ConnexionFraiche(ServiceCompteApi(SessionOuverte(installation, sessions, fond, baseApi)).moiOuRien())
 
     /** Une session est gardée sur l'appareil pour cette résidence (sans rien lire). */
     fun aUneSessionGardee(installation: Installation): Boolean =

@@ -77,7 +77,8 @@ class SessionGardeeInterfaceTest {
                 MockResponse.Builder().code(200).addHeader("Content-Type", "application/json")
                     .addHeader("Set-Cookie", "refresh_token=r1; Path=/; Secure; HttpOnly").body("{}").build(),
             )
-            serveur.repondre(404) // GET /auth/me
+            serveur.repondre(404) // GET /auth/me, lu à la connexion (#391)
+            serveur.repondre(404) // GET /auth/me relu par la résidence : sans profil, la barre reste celle de tous
         }
         ecran.toucherTag(ReperesGarde.ACTIVER)
         ecran.attendreTexte("Protégée par le verrouillage de l'appareil")

@@ -164,16 +164,16 @@ private fun Espaces(etat: EtatEntree, enLigne: Boolean, parcours: ParcoursEntree
                         EspaceHorsLigne(etat.consultation, enLigne, parcours::reprendreEnLigne) {
                             // Le réseau revenu, la session reprise : l'espace se reconstruit, tout se relit.
                             key(etat.consultation == null) {
-                                EcranResidence(session, parcours, apparence, lien = lien, lienSuivi = parcours::lienSuivi)
+                                EcranResidence(
+                                    session, parcours, apparence, lien = lien, connexion = etat.connexion,
+                                    // « Garder la session ? », proposée une fois après la première connexion — la porte levée (#391).
+                                    parDessus = { if (etat.proposerGarde) FeuilleGardeSession(session.installation, etat, parcours) },
+                                    lienSuivi = parcours::lienSuivi,
+                                )
                             }
                         }
                     }
                 }
-            }
-            // « Garder la session ? », proposée une fois après la première connexion.
-            val ouverte = etat.ouverte
-            if (etat.proposerGarde && etat.ecran == EcranEntree.Espace && ouverte != null) {
-                FeuilleGardeSession(ouverte, etat, parcours)
             }
         }
     }

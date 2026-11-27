@@ -4,6 +4,7 @@
 package fr.coprofirst.app.entree
 
 import fr.coprofirst.app.session.ErreurService
+import fr.coprofirst.app.navigation.ConnexionFraiche
 import fr.coprofirst.app.navigation.Destination
 import fr.coprofirst.app.session.AdresseInstallation
 import fr.coprofirst.app.session.Installation
@@ -53,6 +54,8 @@ data class EtatEntree(
     val confirmation: ConfirmationHote? = null,
     /** La résidence où une session est ouverte. */
     val ouverte: Installation? = null,
+    /** Elle s'est ouverte par le mot de passe : le compte lu avant (#391) ; `null` par une autre voie. */
+    val connexion: ConnexionFraiche? = null,
     /** L'utilisateur a choisi le mot de passe : la connexion ne redemande pas la biométrie. */
     val parMotDePasse: Boolean = false,
     /** La reprise d'une session gardée court (biométrie, puis POST /auth/refresh). */

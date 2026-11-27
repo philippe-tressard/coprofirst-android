@@ -111,6 +111,49 @@ class ParcoursEntreeTest : BancEntree() {
         assertEquals("https://jamais-vu.exemple.test", connues.liste.single().url)
     }
 
+    /**
+     * #391, comme `Parcours.ouvrirApresLeCompte` de l'iOS : le compte se lit APRÈS la connexion et
+     * AVANT l'ouverture — la résidence s'ouvre sur lui (la porte d'un mot de passe temporaire).
+     */
+    @Test
+    fun laConnexionLitLeCompteAvantDOuvrir() = test {
+        compte = """{"mot_de_passe_a_changer": true, "id": 7, "nom": "Essai", "prenom": "Camille",
+            "email": "a@exemple.test", "statut": "copropriétaire_résident", "role": "résident", "actif": true,
+            "onboarding_complete": true, "onboarding_etape": 0, "preferences_notifications": "{}",
+            "cree_le": "2026-03-02T10:00:00", "nom_affiche": "Camille ESSAI", "nom_aide_affiche": ""}"""
+        connues.retenir(Installation("https://connue.exemple.test", "Les Glycines"))
+        pret("connue.exemple.test")
+        ok()
+        parcours.seConnecter()
+        advanceUntilIdle()
+        val chemins = List(serveur.requestCount) { serveur.takeRequest().url.encodedPath }
+        assertEquals(listOf("/api/config", "/api/auth/login", "/api/auth/me"), chemins)
+        assertEquals(EcranEntree.Espace, parcours.etat.value.ecran)
+        assertEquals(true, parcours.etat.value.connexion?.compte?.motDePasseAChanger)
+    }
+
+    /** #391 : un compte illisible n'empêche pas d'entrer — la résidence le relira. */
+    @Test
+    fun unCompteIllisibleNEmpechePasDOuvrir() = test {
+        connues.retenir(Installation("https://connue.exemple.test", "Les Glycines"))
+        pret("connue.exemple.test")
+        ok()
+        parcours.seConnecter()
+        advanceUntilIdle()
+        assertEquals(EcranEntree.Espace, parcours.etat.value.ecran)
+        val ouverte = parcours.etat.value.connexion
+        assertNull("rien de lu", ouverte?.compte)
+        ok() // POST /auth/logout
+        parcours.deconnecter()
+        advanceUntilIdle()
+        assertNull("la sortie l'oublie", parcours.etat.value.connexion)
+        parcours.saisirMotDePasse("secret")
+        ok()
+        parcours.seConnecter()
+        advanceUntilIdle()
+        assertTrue("chaque connexion ouvre une résidence neuve", parcours.etat.value.connexion?.id != ouverte?.id)
+    }
+
     @Test
     fun sansPreuveIlFautLeSecondAccord() = test {
         preuve = PreuveHote.Absente
@@ -123,7 +166,7 @@ class ParcoursEntreeTest : BancEntree() {
         ok()
         parcours.confirmerHote()
         advanceUntilIdle()
-        assertEquals(2, serveur.requestCount)
+        assertEquals("GET /config, POST /auth/login, GET /auth/me (#391)", 3, serveur.requestCount)
         assertEquals(EcranEntree.Espace, parcours.etat.value.ecran)
     }
 
@@ -249,7 +292,7 @@ class ParcoursEntreeTest : BancEntree() {
         advanceUntilIdle()
         assertEquals(ouverte.copy(lien = parcours.etat.value.lien), parcours.etat.value)
         assertEquals(Destination.Element("affaire", "4"), parcours.etat.value.lien?.destination)
-        assertEquals(2, serveur.requestCount)
+        assertEquals("GET /config, POST /auth/login, GET /auth/me (#391)", 3, serveur.requestCount)
     }
 
     @Test

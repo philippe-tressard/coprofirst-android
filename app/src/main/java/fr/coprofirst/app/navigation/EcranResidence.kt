@@ -87,11 +87,15 @@ fun EcranResidence(
      * résidence ou dans la résidence ouverte ; `lienSuivi` le rend à l'entrée une fois posé.
      */
     lien: Destination? = null,
+    /** La connexion fraîche qui l'ouvre, son compte déjà lu (#391) ; `null` : ouverte autrement, le compte se lit ici. */
+    connexion: ConnexionFraiche? = null,
+    /** Ce qui vient par-dessus la résidence, jamais par-dessus la porte d'un mot de passe temporaire : « Garder la session ? » (#391). */
+    parDessus: @Composable () -> Unit = {},
     lienSuivi: () -> Unit = {},
 ) {
     val parcours: ParcoursResidence = viewModel(
-        key = session.installation.url,
-        factory = viewModelFactory { initializer { ParcoursResidence(session, ServiceCompteApi(session)) } },
+        key = session.installation.url + connexion?.id.orEmpty(),
+        factory = viewModelFactory { initializer { ParcoursResidence(session, ServiceCompteApi(session), lu = connexion?.compte) } },
     )
     val etat by parcours.etat.collectAsStateWithLifecycle()
     // #371 : un mot de passe temporaire tient la résidence derrière sa porte ; choisi, elle
@@ -105,6 +109,7 @@ fun EcranResidence(
             PorteMotDePasseTemporaire(session, sortie, parcours::relireDroits)
         } else {
             ResidenceOuverte(session, sortie, apparence, lien, lienSuivi, parcours, etat)
+            parDessus()
         }
     }
 }

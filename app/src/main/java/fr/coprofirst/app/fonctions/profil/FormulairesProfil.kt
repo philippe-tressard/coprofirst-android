@@ -20,6 +20,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -154,7 +156,8 @@ fun FormulaireMotDePasse(service: ServiceProfil, fermer: () -> Unit) {
  * Les champs du mot de passe, le formulaire du Profil comme la porte d'un mot de passe
  * temporaire (#371, `temporaire` : ses libellés, comme l'iOS) : l'actuel, puis le nouveau
  * saisi deux fois ; une phrase à la fois dit ce qui manque, et le bouton attend. `reussi`
- * suit le changement accepté par le serveur.
+ * suit le changement accepté par le serveur, que le retour haptique du succès dit d'abord —
+ * aussi sur la porte, qui n'a pas d'alerte (#391, comme l'iOS).
  */
 @Composable
 fun ChampsMotDePasse(service: ServiceProfil, temporaire: Boolean, reussi: suspend () -> Unit) {
@@ -163,6 +166,7 @@ fun ChampsMotDePasse(service: ServiceProfil, temporaire: Boolean, reussi: suspen
     var confirmation by rememberSaveable { mutableStateOf("") }
     val envoi = rememberEnvoi()
     val couleurs = LocalCouleurs.current
+    val haptique = LocalHapticFeedback.current
     val attente = attenteMotDePasse(actuel, nouveau, confirmation)
     val (libelleActuel, aide, bouton) = if (temporaire) {
         Triple(R.string.profil_mot_de_passe_temporaire, R.string.profil_temporaire_aide, R.string.profil_choisir_mot_de_passe)
@@ -192,6 +196,7 @@ fun ChampsMotDePasse(service: ServiceProfil, temporaire: Boolean, reussi: suspen
     ) {
         envoi.lancer {
             service.changerMotDePasse(actuel, nouveau)
+            haptique.performHapticFeedback(HapticFeedbackType.Confirm)
             reussi()
         }
     }
