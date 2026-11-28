@@ -9,8 +9,8 @@ GÉNÉRÉ par scripts/importer-contrat.sh — NE PAS MODIFIER À LA MAIN.
 
 | | |
 |---|---|
-| Source | philippe-tressard/coprofirst v3.126.5, pièces jointes `openapi.json tables-clients.json constantes-clients.json icones-svg.json` et les textes `ISC MIT CC0-1.0` de la release |
-| Commit | `62852e89915e6bfaf695125a8cca5affa72abdcf` (`v3.126.5`) |
+| Source | philippe-tressard/coprofirst v3.126.10, pièces jointes `openapi.json tables-clients.json constantes-clients.json icones-svg.json` et les textes `ISC MIT CC0-1.0` de la release |
+| Commit | `803696b615c922d3c0b93f69e2c81c6fa44c3e4c` (`v3.126.10`) |
 | Version du contrat | `2.14.0` (servie par chaque installation en `version_contrat` de `GET /config`) |
 | Préfixe servi | `/api` : les chemins du schéma s'entendent sous `https://<hôte>/api` |
 | Charte | `tables-clients.json` : jetons de la charte et des palettes, d'où `scripts/generer_charte.py` tire `Palette` au build |
