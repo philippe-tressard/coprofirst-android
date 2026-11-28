@@ -165,7 +165,7 @@ private fun Espaces(etat: EtatEntree, enLigne: Boolean, parcours: ParcoursEntree
                             // Le réseau revenu, la session reprise : l'espace se reconstruit, tout se relit.
                             key(etat.consultation == null) {
                                 EcranResidence(
-                                    session, parcours, apparence, lien = lien, connexion = etat.connexion,
+                                    session, parcours, apparence, lien = lien, ouverture = etat.ouverture,
                                     // « Garder la session ? », proposée une fois après la première connexion — la porte levée (#391).
                                     parDessus = { if (etat.proposerGarde) FeuilleGardeSession(session.installation, etat, parcours) },
                                     lienSuivi = parcours::lienSuivi,

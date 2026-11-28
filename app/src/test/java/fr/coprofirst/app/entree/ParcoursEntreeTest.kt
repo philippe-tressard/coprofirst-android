@@ -129,7 +129,7 @@ class ParcoursEntreeTest : BancEntree() {
         val chemins = List(serveur.requestCount) { serveur.takeRequest().url.encodedPath }
         assertEquals(listOf("/api/config", "/api/auth/login", "/api/auth/me"), chemins)
         assertEquals(EcranEntree.Espace, parcours.etat.value.ecran)
-        assertEquals(true, parcours.etat.value.connexion?.compte?.motDePasseAChanger)
+        assertEquals(true, parcours.etat.value.ouverture?.compte?.motDePasseAChanger)
     }
 
     /** #391 : un compte illisible n'empêche pas d'entrer — la résidence le relira. */
@@ -141,17 +141,17 @@ class ParcoursEntreeTest : BancEntree() {
         parcours.seConnecter()
         advanceUntilIdle()
         assertEquals(EcranEntree.Espace, parcours.etat.value.ecran)
-        val ouverte = parcours.etat.value.connexion
+        val ouverte = parcours.etat.value.ouverture
         assertNull("rien de lu", ouverte?.compte)
         ok() // POST /auth/logout
         parcours.deconnecter()
         advanceUntilIdle()
-        assertNull("la sortie l'oublie", parcours.etat.value.connexion)
+        assertNull("la sortie l'oublie", parcours.etat.value.ouverture)
         parcours.saisirMotDePasse("secret")
         ok()
         parcours.seConnecter()
         advanceUntilIdle()
-        assertTrue("chaque connexion ouvre une résidence neuve", parcours.etat.value.connexion?.id != ouverte?.id)
+        assertTrue("chaque connexion ouvre une résidence neuve", parcours.etat.value.ouverture?.id != ouverte?.id)
     }
 
     /** #391 : le compte lu à une connexion ne suit pas l'utilisateur dans une autre résidence (un lien, une notification). */
@@ -163,11 +163,11 @@ class ParcoursEntreeTest : BancEntree() {
         ok()
         parcours.seConnecter()
         advanceUntilIdle()
-        assertTrue(parcours.etat.value.connexion != null)
+        assertTrue(parcours.etat.value.ouverture != null)
         residence("Autre")
         parcours.suivreLien("https://autre.exemple.test/")
         advanceUntilIdle()
-        assertNull("la résidence quittée emporte son compte", parcours.etat.value.connexion)
+        assertNull("la résidence quittée emporte son compte", parcours.etat.value.ouverture)
     }
 
     @Test
