@@ -53,7 +53,10 @@ L'app suit les écrans et les choix de l'[app iOS](https://github.com/philippe-t
   le temporaire, puis le nouveau saisi deux fois — et « Se déconnecter », confirmé. Le mot
   de passe choisi, le compte se relit et la résidence s'ouvre en fondu ; si la relecture
   échoue, une phrase le dit et tirer vers le bas la relance. Un écran ouvert avant la
-  lecture du compte montre la phrase du refus du serveur, comme l'iOS.
+  lecture du compte montre la phrase du refus du serveur, comme l'iOS. À la connexion, le
+  compte se lit avant que la résidence s'ouvre (#391) : la porte vient seule, la barre est
+  celle du compte dès l'arrivée, et « Garder la session ? » attend que la porte soit levée.
+  Le mot de passe choisi, sur la porte comme au Profil, le succès se sent (retour haptique).
 - **Session gardée** (Android 11 et plus) : après la première connexion, « Ouvrir avec
   votre empreinte ? » propose de garder la session sur l'appareil ; la feuille dit ce qui
   la protège vraiment (biométrie, verrouillage de l'appareil, ou rien). Au lancement

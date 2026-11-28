@@ -48,7 +48,8 @@ class FilInterfaceTest {
         serveur.residence("Les Glycines")
         ecran.entrerDansLaResidence("residence.example.com", "Les Glycines") {
             serveur.repondre(200) // POST /auth/login
-            serveur.repondre(404) // GET /auth/me : sans profil, la barre reste celle de tous
+            serveur.repondre(404) // GET /auth/me, lu à la connexion (#391)
+            serveur.repondre(404) // GET /auth/me relu par la résidence : sans profil, la barre reste celle de tous
         }
     }
 

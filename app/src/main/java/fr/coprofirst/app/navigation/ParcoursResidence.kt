@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 /** Ce que la navigation lit du compte : GET /auth/me, et le nombre de ses alertes non lues. */
 interface ServiceCompte {
@@ -31,6 +32,20 @@ class ServiceCompteApi(private val session: SessionOuverte) : ServiceCompte {
     override suspend fun nonLues(): Int =
         session.appeler { base, client -> NotificationsApi(base, client).getNotifications().count { !it.lue } }
 }
+
+/** GET /auth/me, `null` sur un échec : rien ne s'en bloque, le serveur tranche de toute façon. */
+suspend fun ServiceCompte.moiOuRien(): UserRead? = try {
+    moi()
+} catch (_: ErreurService) {
+    null
+}
+
+/**
+ * Une connexion fraîche (#391) : le compte lu AVANT d'ouvrir la résidence, `null` s'il ne s'est
+ * pas lu. Chacune ouvre une résidence neuve (`id`) : celle d'une connexion précédente au même
+ * hôte, gardée par l'activité, ne resservirait pas ses droits ni sa porte.
+ */
+data class ConnexionFraiche(val compte: UserRead?, val id: String = UUID.randomUUID().toString())
 
 /** Ce que montre la barre d'une résidence ouverte. */
 data class EtatResidence(
@@ -60,21 +75,24 @@ data class EtatResidence(
 
 /**
  * La résidence ouverte : la barre (ses pages, filtrées par les droits du compte), la page
- * choisie — comme `OngletsView` et `Parcours.pagesDeLaBarre` de l'iOS. Le profil se relit
- * à l'ouverture ; un échec laisse la barre sans les outils réservés, et ne bloque rien. Le
- * nombre de non lues de la cloche se relit aussi (`relireNonLues`, dans `compteur`).
+ * choisie — comme `OngletsView` et `Parcours.pagesDeLaBarre` de l'iOS. Le profil lu à la
+ * connexion (`lu`, #391) fait l'état dès la première image — la porte d'un mot de passe
+ * temporaire, la barre du compte ; sans lui, il se relit à l'ouverture, et un échec laisse la
+ * barre sans les outils réservés, sans rien bloquer. Le nombre de non lues de la cloche se
+ * relit aussi (`relireNonLues`, dans `compteur`).
  */
 class ParcoursResidence(
     val session: SessionOuverte,
     private val compte: ServiceCompte,
     private val compteur: CompteurNonLues = CompteurNonLues.partage,
+    lu: UserRead? = null,
 ) : ViewModel() {
     private val pages = session.installation.pages
     private val _etat = MutableStateFlow(EtatResidence(onglet = pages.firstOrNull()?.id ?: EtatResidence.PLUS))
     val etat: StateFlow<EtatResidence> = _etat.asStateFlow()
 
     init {
-        viewModelScope.launch { relireDroits() }
+        if (lu != null) appliquer(lu) else viewModelScope.launch { relireDroits() }
     }
 
     /**
@@ -85,20 +103,20 @@ class ParcoursResidence(
      * la porte du mot de passe temporaire le dit (#371), les autres appelants l'ignorent.
      */
     suspend fun relireDroits(): Boolean {
-        try {
-            val moi = compte.moi()
-            val roles = RolesConnus(moi.statut.value, (moi.roles.orEmpty() + moi.role.value).distinct())
-            _etat.update {
-                it.copy(
-                    droits = DroitsOnglet.depuis(moi), refusMesure = moi.optOutTelemetrie, roles = roles,
-                    saisieAffaire = moi.saisieAffaireEffective, logement = moi.libelleLogement?.takeIf { l -> l.isNotBlank() },
-                    motDePasseAChanger = moi.motDePasseAChanger == true,
-                )
-            }
-            return true
-        } catch (_: ErreurService) {
-            // Sans profil : les droits d'avant restent (ceux de tous, à l'ouverture).
-            return false
+        // Sans profil : les droits d'avant restent (ceux de tous, à l'ouverture).
+        val moi = compte.moiOuRien() ?: return false
+        appliquer(moi)
+        return true
+    }
+
+    private fun appliquer(moi: UserRead) {
+        val roles = RolesConnus(moi.statut.value, (moi.roles.orEmpty() + moi.role.value).distinct())
+        _etat.update {
+            it.copy(
+                droits = DroitsOnglet.depuis(moi), refusMesure = moi.optOutTelemetrie, roles = roles,
+                saisieAffaire = moi.saisieAffaireEffective, logement = moi.libelleLogement?.takeIf { l -> l.isNotBlank() },
+                motDePasseAChanger = moi.motDePasseAChanger == true,
+            )
         }
     }
 

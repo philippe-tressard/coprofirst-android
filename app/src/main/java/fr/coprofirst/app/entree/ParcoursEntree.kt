@@ -160,7 +160,7 @@ class ParcoursEntree(
         _etat.update {
             it.copy(
                 ecran = EcranEntree.Connexion, pile = emptyList(), aideDemo = null,
-                ouverte = null, confirmation = null, venue = null,
+                ouverte = null, connexion = null, confirmation = null, venue = null,
                 motDePasse = "", connexionEnCours = false, erreurConnexion = null, lien = enAttente,
             )
         }
@@ -213,7 +213,7 @@ class ParcoursEntree(
             try {
                 connexion.reprendre(installation, deverrouillage)
                 connues.retenir(installation)
-                _etat.update { it.copy(repriseEnCours = false, ouverte = installation, ecran = EcranEntree.Espace) }
+                _etat.update { it.copy(repriseEnCours = false, ouverte = installation, connexion = null, ecran = EcranEntree.Espace) }
             } catch (_: RepriseAnnulee) {
                 // Une annulation ne se commente pas : la session reste gardée.
                 _etat.update { it.copy(repriseEnCours = false) }
@@ -236,7 +236,7 @@ class ParcoursEntree(
         if (erreur != ErreurService.Injoignable && erreur != ErreurService.HorsLigne) return false
         when (val lecture = connexion.consulterHorsLigne(installation)) {
             is LectureDisponible.Gardee -> _etat.update {
-                it.copy(repriseEnCours = false, ouverte = installation, ecran = EcranEntree.Espace, consultation = lecture.aJourAu)
+                it.copy(repriseEnCours = false, ouverte = installation, connexion = null, ecran = EcranEntree.Espace, consultation = lecture.aJourAu)
             }
             LectureDisponible.Perimee -> _etat.update { it.copy(repriseEnCours = false, lecturePerimee = true) }
             LectureDisponible.Aucune -> return false
@@ -287,7 +287,7 @@ class ParcoursEntree(
         versLeMotDePasse(installation)
         _etat.update {
             it.copy(
-                ouverte = null, consultation = null, proposerGarde = false, issueGarde = null,
+                ouverte = null, connexion = null, consultation = null, proposerGarde = false, issueGarde = null,
                 erreurConnexion = ErreurService.SessionExpiree,
             )
         }
@@ -350,11 +350,12 @@ class ParcoursEntree(
                 connexion.connecter(installation, etat.email, etat.motDePasse)
                 connues.retenir(installation)
                 connues.retenirIdentifiant(etat.email, installation)
+                val fraiche = connexion.lireLeCompte(installation) // AVANT d'ouvrir, comme l'iOS (#391)
                 val proposer = proposerLaGarde(installation)
                 _etat.update {
                     it.copy(
                         connexionEnCours = false, motDePasse = "", ouverte = installation, ecran = EcranEntree.Espace,
-                        proposerGarde = proposer, avisSortie = null,
+                        proposerGarde = proposer, avisSortie = null, connexion = fraiche,
                         // Le lien d'une autre résidence tombe : l'utilisateur est allé ailleurs.
                         pile = emptyList(), aideDemo = null, lien = it.lien?.takeIf { l -> l.adresse == installation.adresse },
                     )
@@ -404,7 +405,7 @@ class ParcoursEntree(
         connues.oublierGardeProposee(ouverte)
         _etat.update {
             it.copy(
-                ouverte = null, ecran = EcranEntree.Connexion, parMotDePasse = true, proposerGarde = false, consultation = null,
+                ouverte = null, connexion = null, ecran = EcranEntree.Connexion, parMotDePasse = true, proposerGarde = false, consultation = null,
                 issueGarde = null, reconnue = ouverte, saisie = ouverte.adresse?.enSaisie ?: it.saisie,
                 email = connues.identifiant(ouverte) ?: it.email, lien = null, pile = emptyList(),
             )
@@ -424,7 +425,7 @@ class ParcoursEntree(
         reconnaissance?.cancel()
         _etat.update {
             it.copy(
-                ecran = EcranEntree.Connexion, pile = emptyList(), ouverte = null, consultation = null, confirmation = null,
+                ecran = EcranEntree.Connexion, pile = emptyList(), ouverte = null, connexion = null, consultation = null, confirmation = null,
                 venue = null, proposerGarde = false, issueGarde = null, lien = null, aideDemo = null, reconnue = null,
                 saisie = "", email = "", motDePasse = "", parMotDePasse = false, connexionEnCours = false,
                 erreurConnexion = null, avisSortie = null,

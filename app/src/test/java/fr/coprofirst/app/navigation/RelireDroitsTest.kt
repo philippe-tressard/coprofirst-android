@@ -40,14 +40,16 @@ class RelireDroitsTest {
     /** Le serveur, tel qu'il répond au fil des relectures : une réponse par appel, ou un refus. */
     private class Compte(vararg reponses: UserRead?) : ServiceCompte {
         private val file = ArrayDeque(reponses.toList())
-        override suspend fun moi(): UserRead = file.removeFirst() ?: throw ErreurService.SessionExpiree
+        var lectures = 0
+        override suspend fun moi(): UserRead = (lectures++).let { file.removeFirst() } ?: throw ErreurService.SessionExpiree
         override suspend fun nonLues() = 0
     }
 
-    private fun parcours(compte: ServiceCompte) = ParcoursResidence(
+    private fun parcours(compte: ServiceCompte, lu: UserRead? = null) = ParcoursResidence(
         SessionOuverte(Installation("https://residence.test", "Les Glycines"), SessionsParHote(OkHttpClient()), Dispatchers.Unconfined),
         compte,
         CompteurNonLues(),
+        lu,
     )
 
     @Test
@@ -88,5 +90,18 @@ class RelireDroitsTest {
         assertTrue(parcours.relireDroits())
         assertFalse("relu, il tombe", parcours.etat.value.motDePasseAChanger)
         assertFalse(parcours(Compte(moi("""["résident"]"""))).etat.value.motDePasseAChanger)
+    }
+
+    /**
+     * #391 : le compte lu à la connexion, avant d'ouvrir, fait l'état dès la création — la porte,
+     * les droits — sans relecture (le serveur ne voit aucun second GET /auth/me).
+     */
+    @Test
+    fun leCompteLuALaConnexionFaitLEtatSansRelecture() = runTest {
+        val serveur = Compte()
+        val parcours = parcours(serveur, lu = moi("""["admin"]""", temporaire = true))
+        assertTrue("la porte, dès la création", parcours.etat.value.motDePasseAChanger)
+        assertTrue("les droits du compte, dès la création", parcours.etat.value.droits.administrateur)
+        assertEquals("aucune relecture", 0, serveur.lectures)
     }
 }
