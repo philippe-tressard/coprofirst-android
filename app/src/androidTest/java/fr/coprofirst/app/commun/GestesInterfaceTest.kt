@@ -89,8 +89,14 @@ class GestesInterfaceTest {
             }
         }
         ecran.onNodeWithTag("champ").performTextInput("Interphone muet")
-        // Le clavier est ouvert pour l'app (son encart), comme à la CI au moment de l'échec.
-        ecran.waitUntil(DELAI_GESTE_MS) { vue.rootWindowInsets?.isVisible(WindowInsets.Type.ime()) == true }
+        // Le clavier est ouvert pour l'app (son encart), comme à la CI au moment de l'échec. Il se
+        // redemande tant qu'il ne l'est pas : une demande faite avant que la fenêtre ait le focus
+        // est ignorée, et le clavier ne venait jamais (#403, deux fois à la CI le 26/11/2026).
+        ecran.attendreQue("le clavier ouvert pour l'app", contexte = { "focus de la fenêtre : ${vue.hasWindowFocus()}" }) {
+            val ouvert = vue.rootWindowInsets?.isVisible(WindowInsets.Type.ime()) == true
+            if (!ouvert) vue.post { vue.windowInsetsController?.show(WindowInsets.Type.ime()) }
+            ouvert
+        }
         ecran.toucherTag("envoyer")
         ecran.waitForIdle()
         assertEquals("touché clavier fermé", 0, encartAuToucher)
