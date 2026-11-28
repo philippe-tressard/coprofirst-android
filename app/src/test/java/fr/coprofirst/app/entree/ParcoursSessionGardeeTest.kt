@@ -162,6 +162,7 @@ class ParcoursSessionGardeeTest {
         parcours.saisirEmail("a@exemple.test")
         parcours.saisirMotDePasse("secret")
         repondre(200, "{}", "Set-Cookie" to "refresh_token=r1; Path=/; HttpOnly")
+        repondre(404) // GET /auth/me, lu sitôt connecté (#391)
         parcours.seConnecter()
         advanceUntilIdle()
         assertTrue(parcours.etat.value.proposerGarde)

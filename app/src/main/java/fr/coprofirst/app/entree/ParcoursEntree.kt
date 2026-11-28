@@ -160,7 +160,7 @@ class ParcoursEntree(
         _etat.update {
             it.copy(
                 ecran = EcranEntree.Connexion, pile = emptyList(), aideDemo = null,
-                ouverte = null, confirmation = null, venue = null,
+                ouverte = null, connexion = null, confirmation = null, venue = null,
                 motDePasse = "", connexionEnCours = false, erreurConnexion = null, lien = enAttente,
             )
         }
@@ -213,7 +213,7 @@ class ParcoursEntree(
             try {
                 connexion.reprendre(installation, deverrouillage)
                 connues.retenir(installation)
-                _etat.update { it.copy(repriseEnCours = false, ouverte = installation, ecran = EcranEntree.Espace) }
+                _etat.update { it.copy(repriseEnCours = false, ouverte = installation, connexion = null, ecran = EcranEntree.Espace) }
             } catch (_: RepriseAnnulee) {
                 // Une annulation ne se commente pas : la session reste gardée.
                 _etat.update { it.copy(repriseEnCours = false) }
@@ -236,7 +236,7 @@ class ParcoursEntree(
         if (erreur != ErreurService.Injoignable && erreur != ErreurService.HorsLigne) return false
         when (val lecture = connexion.consulterHorsLigne(installation)) {
             is LectureDisponible.Gardee -> _etat.update {
-                it.copy(repriseEnCours = false, ouverte = installation, ecran = EcranEntree.Espace, consultation = lecture.aJourAu)
+                it.copy(repriseEnCours = false, ouverte = installation, connexion = null, ecran = EcranEntree.Espace, consultation = lecture.aJourAu)
             }
             LectureDisponible.Perimee -> _etat.update { it.copy(repriseEnCours = false, lecturePerimee = true) }
             LectureDisponible.Aucune -> return false

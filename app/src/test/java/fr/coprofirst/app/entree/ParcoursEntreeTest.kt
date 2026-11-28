@@ -154,6 +154,22 @@ class ParcoursEntreeTest : BancEntree() {
         assertTrue("chaque connexion ouvre une résidence neuve", parcours.etat.value.connexion?.id != ouverte?.id)
     }
 
+    /** #391 : le compte lu à une connexion ne suit pas l'utilisateur dans une autre résidence (un lien, une notification). */
+    @Test
+    fun leCompteLuNeSuitPasVersUneAutreResidence() = test {
+        connues.retenir(Installation("https://autre.exemple.test", "Autre"))
+        connues.retenir(Installation("https://connue.exemple.test", "Les Glycines"))
+        pret("connue.exemple.test")
+        ok()
+        parcours.seConnecter()
+        advanceUntilIdle()
+        assertTrue(parcours.etat.value.connexion != null)
+        residence("Autre")
+        parcours.suivreLien("https://autre.exemple.test/")
+        advanceUntilIdle()
+        assertNull("la résidence quittée emporte son compte", parcours.etat.value.connexion)
+    }
+
     @Test
     fun sansPreuveIlFautLeSecondAccord() = test {
         preuve = PreuveHote.Absente
