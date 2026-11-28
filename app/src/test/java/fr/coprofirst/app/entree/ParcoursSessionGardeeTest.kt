@@ -101,6 +101,28 @@ class ParcoursSessionGardeeTest {
         assertEquals(1, serveur.requestCount)
     }
 
+    /**
+     * #407 : chaque reprise ouvre une résidence neuve — son parcours ne retrouve pas celui d'une
+     * ouverture précédente du même hôte (un autre compte, d'autres droits), et lit le compte.
+     */
+    @Test
+    fun chaqueRepriseOuvreUneResidenceNeuve() = test {
+        connues.retenir(residence)
+        gardees.garder(hote, "r1")
+        val parcours = lancer()
+        repondre(200, "{}", "Set-Cookie" to "refresh_token=r2; Path=/; HttpOnly")
+        parcours.ouvrirDOffice()
+        advanceUntilIdle()
+        val premiere = parcours.etat.value.ouverture
+        assertTrue("une ouverture, sans compte lu : la résidence le lira", premiere != null && premiere.compte == null)
+        repondre(200, """{"site_nom": "Connue"}""")
+        repondre(200, "{}", "Set-Cookie" to "refresh_token=r3; Path=/; HttpOnly")
+        parcours.changerDeResidence(residence)
+        advanceUntilIdle()
+        assertEquals(EcranEntree.Espace, parcours.etat.value.ecran)
+        assertTrue("une résidence neuve", parcours.etat.value.ouverture?.id != premiere?.id)
+    }
+
     @Test
     fun unJetonRefuseMeneAuMotDePasseCourrielPreRempli() = test {
         connues.retenir(residence)

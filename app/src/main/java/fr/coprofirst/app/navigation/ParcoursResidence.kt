@@ -41,11 +41,12 @@ suspend fun ServiceCompte.moiOuRien(): UserRead? = try {
 }
 
 /**
- * Une connexion fraîche (#391) : le compte lu AVANT d'ouvrir la résidence, `null` s'il ne s'est
- * pas lu. Chacune ouvre une résidence neuve (`id`) : celle d'une connexion précédente au même
- * hôte, gardée par l'activité, ne resservirait pas ses droits ni sa porte.
+ * Une ouverture de la résidence : chacune en ouvre une neuve (`id`, #407) — le parcours d'une
+ * ouverture précédente du même hôte, gardé par l'activité, ne resservirait ni ses droits ni sa
+ * porte. `compte` : lu AVANT d'ouvrir, à une connexion par le mot de passe (#391) ; `null`
+ * sinon, et la résidence le lit.
  */
-data class ConnexionFraiche(val compte: UserRead?, val id: String = UUID.randomUUID().toString())
+data class OuvertureResidence(val compte: UserRead?, val id: String = UUID.randomUUID().toString())
 
 /** Ce que montre la barre d'une résidence ouverte. */
 data class EtatResidence(

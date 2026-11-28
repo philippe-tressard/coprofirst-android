@@ -4,7 +4,7 @@
 package fr.coprofirst.app.entree
 
 import fr.coprofirst.app.session.ErreurService
-import fr.coprofirst.app.navigation.ConnexionFraiche
+import fr.coprofirst.app.navigation.OuvertureResidence
 import fr.coprofirst.app.navigation.Destination
 import fr.coprofirst.app.session.AdresseInstallation
 import fr.coprofirst.app.session.Installation
@@ -54,8 +54,8 @@ data class EtatEntree(
     val confirmation: ConfirmationHote? = null,
     /** La résidence où une session est ouverte. */
     val ouverte: Installation? = null,
-    /** Elle s'est ouverte par le mot de passe : le compte lu avant (#391) ; `null` par une autre voie. */
-    val connexion: ConnexionFraiche? = null,
+    /** Son ouverture : une résidence neuve à chacune (#407), et le compte lu avant si c'est par le mot de passe (#391). */
+    val ouverture: OuvertureResidence? = null,
     /** L'utilisateur a choisi le mot de passe : la connexion ne redemande pas la biométrie. */
     val parMotDePasse: Boolean = false,
     /** La reprise d'une session gardée court (biométrie, puis POST /auth/refresh). */
@@ -81,6 +81,13 @@ data class EtatEntree(
     /** Une sortie dont le serveur n'a pas été joint (#177), dite sur la connexion jusqu'à la suivante. */
     val avisSortie: AvisSortie? = null,
 ) {
+    /**
+     * La résidence s'ouvre — connexion, reprise, consultation hors ligne : chaque fois une
+     * résidence neuve (#407), partie du compte s'il est déjà lu (#391), sinon elle le lit.
+     */
+    fun ouvrir(installation: Installation, ouverture: OuvertureResidence = OuvertureResidence(compte = null)): EtatEntree =
+        copy(ouverte = installation, ouverture = ouverture, ecran = EcranEntree.Espace)
+
     /** Vers cet écran, celui-ci gardé pour le retour. */
     fun vers(suivant: EcranEntree): EtatEntree = copy(ecran = suivant, pile = pile + ecran)
 
